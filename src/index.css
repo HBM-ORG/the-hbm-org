@@ -1,34 +1,37 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap');
-
-/* ============================================
-   THE HBM - Design System
-   ============================================ */
 
 @theme {
   --color-hbm-blue: #4A5ACF;
-  --color-hbm-blue-light: #6B7AE8;
-  --color-hbm-blue-dark: #3A48B0;
   --color-hbm-coral: #E8845A;
-  --color-hbm-coral-light: #F0A07A;
-  --color-hbm-coral-dark: #D06A3E;
-  --color-hbm-peach: #F5D5C0;
-  --color-hbm-peach-light: #FBE8DA;
-  --color-hbm-lavender: #B8A5D4;
-  --color-hbm-purple: #7B6BA0;
+  --color-hbm-peach: #fbd5c1;
+  --color-hbm-lavender: #bbc0ff;
+  --color-hbm-mint: #d8eecf;
   --color-hbm-cream: #FFF8F0;
   --color-hbm-dark: #1A1A2E;
   --color-hbm-gray: #6B7280;
-  --color-hbm-gray-light: #F3F4F6;
-
-  --font-display: 'DM Serif Display', Georgia, serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'DM Sans', sans-serif;
 }
+
+@theme {
+  --color-hbm-blue: #4A5ACF;
+  --color-hbm-coral: #E8845A;
+  --color-hbm-peach: #fbd5c1;
+  --color-hbm-lavender: #bbc0ff;
+  --color-hbm-mint: #d8eecf;
+  --color-hbm-cream: #FFF8F0;
+  --color-hbm-dark: #1A1A2E;
+  --color-hbm-gray: #6B7280;
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; }
 
 body {
   font-family: var(--font-body);
   color: var(--color-hbm-dark);
-  background-color: #ffffff;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -36,84 +39,171 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--color-hbm-cream); }
-::-webkit-scrollbar-thumb { background: var(--color-hbm-lavender); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-hbm-purple); }
-
-@keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeOutUp {
-  0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-20px); }
-}
-.animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
-.animate-fade-out-up { animation: fadeOutUp 0.5s ease-out forwards; }
-
-.circle-image {
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid var(--color-hbm-lavender);
-  transition: transform 0.3s ease, border-color 0.3s ease;
-}
-.circle-image:hover {
-  transform: scale(1.05);
-  border-color: var(--color-hbm-coral);
-}
-
+/* ─── Buttons ─── */
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
   background-color: var(--color-hbm-coral);
   color: white;
-  padding: 0.875rem 2.5rem;
-  border-radius: 50px;
+  border-radius: 9999px;
   font-weight: 600;
-  font-size: 1.125rem;
-  transition: all 0.3s ease;
-  display: inline-block;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
-  border: 2px solid transparent;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(232, 132, 90, 0.25);
 }
 .btn-primary:hover {
-  background-color: var(--color-hbm-coral-dark);
+  background-color: #d4733f;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(232, 132, 90, 0.35);
 }
 
-.btn-secondary {
-  background-color: transparent;
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+  background: transparent;
   color: var(--color-hbm-blue);
-  padding: 0.875rem 2.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 1.125rem;
-  transition: all 0.3s ease;
-  display: inline-block;
-  text-decoration: none;
   border: 2px solid var(--color-hbm-blue);
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s;
+  text-decoration: none;
+  cursor: pointer;
 }
-.btn-secondary:hover {
+.btn-outline:hover {
   background-color: var(--color-hbm-blue);
   color: white;
-  transform: translateY(-2px);
 }
 
+/* ─── Section spacing ─── */
+.section-padding {
+  padding: 5rem 1.5rem;
+}
+@media (min-width: 768px) {
+  .section-padding { padding: 7rem 2rem; }
+}
+
+/* ─── Video circle avatars (like WP hero) ─── */
+.video-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid;
+  flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+@media (min-width: 768px) {
+  .video-circle { width: 110px; height: 110px; }
+}
+.video-circle video, .video-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ─── Card system ─── */
 .card-hover {
-  transition: all 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
 }
 .card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.1);
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, var(--color-hbm-blue), var(--color-hbm-coral));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* ─── Phone mockup ─── */
+.phone-mockup {
+  max-width: 280px;
+  border-radius: 2rem;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+  border: 8px solid #222;
+}
+
+/* ─── Animated word rotation ─── */
+.word-rotate {
+  display: inline-block;
+  animation: fadeInUp 0.5s ease-out;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Gradient backgrounds ─── */
+.bg-gradient-hero {
+  background: linear-gradient(180deg, #FFF8F0 0%, #fff 100%);
+}
+.bg-gradient-dark {
+  background: linear-gradient(180deg, #1A1A2E 0%, #2d2d50 100%);
+}
+
+/* ─── FAQ accordion ─── */
+.faq-answer {
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s;
+}
+
+/* ─── Team photo hover ─── */
+.team-photo {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.team-photo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px rgba(74, 90, 207, 0.2);
+}
+
+/* ─── Smooth scroll ─── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ─── WhatsApp floating button ─── */
+.whatsapp-float {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+  transition: all 0.3s;
+  animation: pulse 2s infinite;
+}
+.whatsapp-float:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(37, 211, 102, 0.5);
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+  50% { box-shadow: 0 4px 30px rgba(37, 211, 102, 0.6); }
+}
+
+/* ─── Value card images ─── */
+.value-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* ─── Guideline icons ─── */
+.guideline-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
 }

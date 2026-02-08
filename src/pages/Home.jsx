@@ -1,298 +1,191 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { ArrowRight, Play, ChevronRight } from 'lucide-react'
-import {
-  heroContent,
-  valuePropsContent,
-  why8Content,
-  howItWorksContent,
-  guidelinesContent,
-  siteConfig,
-} from '../data/content'
+import { ArrowRight, Play, ExternalLink } from 'lucide-react'
+import { siteContent } from '../data/content'
+import { useI18n } from '../i18n/context'
+import { useT } from '../i18n/useT'
+import { getWhatsappUrl } from '../components/Layout'
 
-/* ============================================
-   HERO SECTION
-   ============================================ */
+const { home, global: g } = siteContent
+
 function HeroSection() {
   const [wordIndex, setWordIndex] = useState(0)
-  const [isAnimating, setIsAnimating] = useState(false)
+  const { lang } = useI18n()
+  const t = useT()
+  const words = lang === 'he' ? (home.hero.rotatingWordsHe || home.hero.rotatingWords) : home.hero.rotatingWords
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsAnimating(true)
-      setTimeout(() => {
-        setWordIndex((prev) => (prev + 1) % heroContent.rotatingWords.length)
-        setIsAnimating(false)
-      }, 400)
-    }, 2500)
+    const interval = setInterval(() => setWordIndex((p) => (p + 1) % words.length), 2000)
     return () => clearInterval(interval)
-  }, [])
-
-  // Placeholder circle images using ui-avatars
-  const avatarGroups = [
-    ['Emma', 'Liam', 'Sofia'],
-    ['Noah', 'Ava', 'Maya'],
-    ['Eli', 'Mia', 'Dan'],
-    ['Yael', 'Tom', 'Noa'],
-  ]
+  }, [words.length])
 
   return (
-    <section className="relative overflow-hidden bg-white pt-8 pb-20">
-      {/* Decorative background */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-hbm-peach-light rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-hbm-blue/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-6">
-        {/* Avatar Circles Row */}
-        <div className="flex justify-center gap-6 md:gap-12 mb-12">
-          {avatarGroups.map((group, gi) => (
-            <div key={gi} className="flex -space-x-4">
-              {group.map((name, i) => (
-                <motion.img
-                  key={name}
-                  src={`https://ui-avatars.com/api/?name=${name}&background=random&color=fff&size=96&rounded=true&bold=true`}
-                  alt={name}
-                  className="circle-image w-16 h-16 md:w-20 md:h-20"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: gi * 0.15 + i * 0.1, duration: 0.5 }}
-                />
-              ))}
+    <section className="section-padding text-center bg-gradient-hero overflow-hidden">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-center gap-4 md:gap-8 mb-10 flex-wrap">
+          {home.hero.imagePairs.map((pair, i) => (
+            <div key={i} className="flex items-center">
+              <div className="video-circle" style={{ borderColor: pair.leftBorder }}>
+                <video src={pair.left} autoPlay muted loop playsInline poster={pair.poster} />
+              </div>
+              <div className="video-circle -ml-3" style={{ borderColor: pair.rightBorder }}>
+                <video src={pair.right} autoPlay muted loop playsInline poster={pair.poster} />
+              </div>
             </div>
           ))}
         </div>
-
-        {/* Rotating Word */}
-        <div className="text-center mb-4">
-          <span
-            className={`inline-block text-lg md:text-xl font-medium text-hbm-lavender tracking-wide ${
-              isAnimating ? 'animate-fade-out-up' : 'animate-fade-in-up'
-            }`}
-          >
-            {heroContent.rotatingWords[wordIndex]}
-          </span>
-        </div>
-
-        {/* Main Headline */}
-        <motion.h1
-          className="text-center font-[var(--font-display)] text-5xl md:text-7xl lg:text-8xl leading-tight text-hbm-blue mb-8"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-        >
-          {heroContent.title}
-          <br />
-          {heroContent.titleEnd}
-        </motion.h1>
-
-        {/* CTA */}
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          <a href={heroContent.ctaLink} className="btn-primary text-lg px-10 py-4">
-            {heroContent.cta}
-          </a>
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-/* ============================================
-   VALUE PROPS SECTION
-   ============================================ */
-function ValuePropsSection() {
-  const colorClasses = {
-    coral: 'bg-hbm-coral/10 border-hbm-coral/20',
-    peach: 'bg-hbm-peach/40 border-hbm-peach',
-    lavender: 'bg-hbm-lavender/10 border-hbm-lavender/20',
-  }
-
-  return (
-    <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Headline Stack */}
-        <div className="mb-16">
-          <motion.h2
-            className="text-4xl md:text-5xl font-[var(--font-display)] text-hbm-dark mb-2"
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            {valuePropsContent.headline}
-          </motion.h2>
-          <motion.h2
-            className="text-4xl md:text-5xl font-[var(--font-display)] text-hbm-coral mb-2"
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            {valuePropsContent.subline}
-          </motion.h2>
-          <motion.h2
-            className="text-4xl md:text-5xl font-[var(--font-display)] text-hbm-blue"
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            {valuePropsContent.detail}
-          </motion.h2>
-        </div>
-
-        {/* Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {valuePropsContent.cards.map((card, i) => (
-            <motion.div
-              key={i}
-              className={`p-8 rounded-3xl border ${colorClasses[card.color]} card-hover`}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
-            >
-              <p className="text-hbm-dark text-lg leading-relaxed font-medium">
-                {card.text}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="text-center mt-10">
-          <a href={`mailto:${siteConfig.email}`} className="btn-secondary">
-            Join Us <ArrowRight className="inline ml-2" size={18} />
-          </a>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ============================================
-   WHY 8 MINUTES SECTION
-   ============================================ */
-function Why8Section() {
-  return (
-    <section className="py-24 bg-hbm-cream relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-hbm-coral/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-
-      <div className="relative max-w-4xl mx-auto px-6 text-center">
-        <motion.h2
-          className="text-4xl md:text-6xl font-[var(--font-display)] text-hbm-blue mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          {why8Content.headline}
-        </motion.h2>
-
-        <motion.p
-          className="text-xl md:text-2xl text-hbm-dark mb-4 leading-relaxed"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-        >
-          Short enough <strong className="text-hbm-coral">{why8Content.bold1}</strong>,
-          yet long enough <strong className="text-hbm-coral">{why8Content.bold2}</strong>
-        </motion.p>
-
-        <motion.p
-          className="text-lg text-hbm-gray max-w-2xl mx-auto mb-10"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.35 }}
-        >
-          {why8Content.subtext}
-        </motion.p>
-
-        <a href={`mailto:${siteConfig.email}`} className="btn-primary">
-          {why8Content.cta}
+        <p className="text-hbm-coral text-lg font-medium mb-2 h-7 word-rotate" key={wordIndex}>{words[wordIndex]}</p>
+        <h1 className="text-5xl md:text-7xl font-[var(--font-display)] text-hbm-blue leading-tight mb-8">
+          {t(home.hero.titlePrefix)}<span className="text-hbm-coral word-rotate" key={`w-${wordIndex}`}>{words[wordIndex]}</span>
+          <br />{t(home.hero.titleSuffix)}
+        </h1>
+        <a href={getWhatsappUrl(lang)} target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-10 py-4">
+          {t(home.hero.ctaText)}
         </a>
       </div>
     </section>
   )
 }
 
-/* ============================================
-   VIDEO SECTION
-   ============================================ */
-function VideoSection() {
+function ConversationCards() {
+  const t = useT()
+  const { lang } = useI18n()
+  const titles = home.conversationCards.titleLines[lang] || home.conversationCards.titleLines.en
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-4xl mx-auto px-6">
-        <motion.div
-          className="relative rounded-3xl overflow-hidden bg-hbm-dark aspect-video flex items-center justify-center group cursor-pointer"
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-        >
-          {/* Placeholder - replace with actual video embed */}
-          <div className="absolute inset-0 bg-gradient-to-br from-hbm-blue/20 to-hbm-coral/20" />
-          <div className="relative z-10 text-center">
-            <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-4 group-hover:bg-white/30 transition-all group-hover:scale-110">
-              <Play size={32} className="text-white ml-1" />
+    <section className="section-padding">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-10">
+          {titles.map((line, i) => (
+            <h2 key={i} className={`text-4xl md:text-5xl font-[var(--font-display)] leading-tight ${i === 0 ? 'text-hbm-dark' : i === 1 ? 'text-hbm-coral/60' : 'text-hbm-blue'}`}>{line}</h2>
+          ))}
+        </div>
+        <div className="grid md:grid-cols-3 gap-6 mb-10">
+          {home.conversationCards.cards.map((card, i) => (
+            <div key={i} className="p-8 rounded-2xl card-hover" style={{ backgroundColor: card.bgColor }}>
+              <h4 className="font-bold text-hbm-dark text-lg mb-2">{t(card.title)}</h4>
+              <p className="text-hbm-dark/80">{t(card.text)}</p>
             </div>
-            <h3 className="text-white text-xl md:text-2xl font-[var(--font-display)]">
-              See Video: The Power of 8 Minutes
-            </h3>
+          ))}
+        </div>
+        <div className="text-center">
+          <a href={getWhatsappUrl(lang)} target="_blank" rel="noopener noreferrer" className="btn-outline">
+            {t(home.conversationCards.ctaText)} <ArrowRight size={18} />
+          </a>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function BannerSection() {
+  const t = useT()
+  const { lang } = useI18n()
+  return (
+    <section className="relative overflow-hidden">
+      <div className="relative">
+        <video src={home.banner.video} autoPlay muted loop playsInline className="w-full h-[500px] object-cover" />
+        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white text-center px-6">
+          <h2 className="text-4xl md:text-5xl font-[var(--font-display)] mb-4">{t(home.banner.title)}</h2>
+          <p className="text-xl md:text-2xl font-semibold mb-4" dangerouslySetInnerHTML={{ __html: t(home.banner.textHtml) }} />
+          <p className="text-base md:text-lg opacity-80 max-w-2xl mb-8">{t(home.banner.description)}</p>
+          <a href={getWhatsappUrl(lang)} target="_blank" rel="noopener noreferrer" className="btn-primary text-lg px-10 py-4">{t(home.banner.ctaText)}</a>
+        </div>
+      </div>
+      {/* Elad's YouTube video */}
+      <div className="bg-hbm-dark py-16">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h3 className="text-2xl font-[var(--font-display)] text-white mb-8">{t(home.banner.eladVideoTitle)}</h3>
+          <div className="relative rounded-2xl overflow-hidden aspect-video">
+            <iframe
+              src="https://www.youtube.com/embed/R7smYF02Kjo"
+              title="Why 8 Minutes - The HBM"
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
-        </motion.div>
+          <a href="https://www.youtube.com/@TheHBM" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 mt-6 text-white/70 hover:text-white transition-colors text-sm">
+            {t({ en: 'Watch more on our YouTube channel →', he: 'צפו בעוד בערוץ היוטיוב שלנו →' })}
+          </a>
+        </div>
       </div>
     </section>
   )
 }
 
-/* ============================================
-   HOW IT WORKS SECTION
-   ============================================ */
-function HowItWorksSection() {
+function EliVideoSection() {
+  const t = useT()
+  if (!home.eliVideo.videoUrl || home.eliVideo.videoUrl === 'PLACEHOLDER_ELI_VIDEO_URL') {
+    return (
+      <section className="section-padding bg-hbm-cream/30">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-[var(--font-display)] text-hbm-blue mb-6">{t(home.eliVideo.title)}</h2>
+          <div className="aspect-video rounded-2xl bg-gray-200 flex items-center justify-center">
+            <p className="text-hbm-gray">Video coming soon</p>
+          </div>
+          <p className="mt-4 text-hbm-gray">{t(home.eliVideo.description)}</p>
+        </div>
+      </section>
+    )
+  }
+  return null
+}
+
+function HowItWorks() {
+  const [activeTab, setActiveTab] = useState('video')
+  const t = useT()
+  const section = activeTab === 'video' ? home.howItWorks.videoSteps : home.howItWorks.physicalSteps
+
   return (
-    <section className="py-24 bg-hbm-gray-light">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <motion.h2
-            className="text-4xl md:text-5xl font-[var(--font-display)] text-hbm-blue mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            {howItWorksContent.headline}
-          </motion.h2>
-          <p className="text-lg text-hbm-gray max-w-2xl mx-auto">
-            {howItWorksContent.subline}
-          </p>
+    <section className="section-padding bg-white">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-4xl md:text-5xl font-[var(--font-display)] text-hbm-blue text-center mb-4">{t(home.howItWorks.title)}</h2>
+        <p className="text-center text-hbm-gray max-w-2xl mx-auto mb-8 font-semibold">{t(home.howItWorks.subtitle)}</p>
+
+        {/* Toggle Video / Physical */}
+        <div className="flex justify-center gap-4 mb-12">
+          {['video', 'physical'].map((tab) => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className={`px-8 py-3 rounded-full font-semibold transition-all ${activeTab === tab ? 'bg-hbm-blue text-white' : 'bg-gray-100 text-hbm-dark hover:bg-gray-200'}`}>
+              {t(tab === 'video' ? home.howItWorks.videoSteps.title : home.howItWorks.physicalSteps.title)}
+            </button>
+          ))}
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6">
-          {howItWorksContent.steps.map((step, i) => (
-            <motion.div
-              key={step.number}
-              className="relative bg-white rounded-3xl p-8 card-hover"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.12 }}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-hbm-blue/10 flex items-center justify-center mb-5">
-                <span className="text-hbm-blue font-bold text-xl">{step.number}</span>
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            {section.steps.map((step, i) => (
+              <div key={i} className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-hbm-blue/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-hbm-blue font-bold text-lg">{i + 1}</span>
+                </div>
+                <p className="text-lg text-hbm-dark pt-2">{t(step.text)}</p>
               </div>
-              <p className="text-hbm-dark font-medium leading-relaxed">{step.text}</p>
-              {i < howItWorksContent.steps.length - 1 && (
-                <ChevronRight
-                  className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 text-hbm-lavender"
-                  size={24}
-                />
-              )}
-            </motion.div>
+            ))}
+          </div>
+          <div className="flex justify-center">
+            <img src={home.howItWorks.phoneMockup} alt="HBM App" className="phone-mockup" />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Guidelines() {
+  const t = useT()
+  return (
+    <section className="section-padding bg-hbm-cream/50">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-3xl md:text-4xl font-[var(--font-display)] text-center mb-4">{t(home.guidelines.title)}</h2>
+        <p className="text-center text-hbm-gray max-w-3xl mx-auto mb-14">{t(home.guidelines.subtitle)}</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {home.guidelines.items.map((item, i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl card-hover">
+              <img src={item.icon} alt="" className="guideline-icon mb-4" />
+              <h4 className="font-bold text-hbm-dark mb-2">{t(item.title)}</h4>
+              <p className="text-sm text-hbm-gray leading-relaxed">{t(item.text)}</p>
+            </div>
           ))}
         </div>
       </div>
@@ -300,92 +193,43 @@ function HowItWorksSection() {
   )
 }
 
-/* ============================================
-   GUIDELINES SECTION
-   ============================================ */
-function GuidelinesSection() {
-  return (
-    <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <motion.h2
-            className="text-4xl md:text-5xl font-[var(--font-display)] text-hbm-dark mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            {guidelinesContent.headline}
-          </motion.h2>
-          <p className="text-lg text-hbm-gray max-w-3xl mx-auto">
-            {guidelinesContent.subline}
-          </p>
+function ClientLogos() {
+  const logos = g.clientLogos.filter(l => l.logo)
+  if (logos.length === 0) {
+    return (
+      <section className="py-12 bg-white">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <p className="text-hbm-gray/40 text-sm">Partner logos coming soon</p>
+          <div className="flex justify-center gap-8 mt-6 flex-wrap">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="w-24 h-12 rounded bg-gray-100" />
+            ))}
+          </div>
         </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {guidelinesContent.items.map((item, i) => (
-            <motion.div
-              key={i}
-              className="p-6 rounded-2xl bg-hbm-cream border border-hbm-peach/30 card-hover"
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-            >
-              <span className="text-3xl mb-3 block">{item.icon}</span>
-              <h4 className="text-hbm-dark font-[var(--font-display)] text-lg mb-2">
-                {item.title}
-              </h4>
-              <p className="text-hbm-gray text-sm leading-relaxed">{item.text}</p>
-            </motion.div>
-          ))}
+      </section>
+    )
+  }
+  return (
+    <section className="py-12 bg-white">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="flex justify-center gap-10 flex-wrap items-center">
+          {logos.map((l, i) => <img key={i} src={l.logo} alt={l.name} className="h-10 opacity-60 hover:opacity-100 transition-opacity" />)}
         </div>
       </div>
     </section>
   )
 }
 
-/* ============================================
-   NEWSLETTER SECTION
-   ============================================ */
-function NewsletterSection() {
-  return (
-    <section className="py-20 bg-hbm-blue">
-      <div className="max-w-2xl mx-auto px-6 text-center">
-        <h2 className="text-3xl md:text-4xl font-[var(--font-display)] text-white mb-4">
-          Subscribe to News & Resources
-        </h2>
-        <p className="text-white/70 mb-8">Stay connected with The Human Being Movement</p>
-        <form
-          className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <input
-            type="email"
-            placeholder="Your email address"
-            className="flex-1 px-5 py-3 rounded-full text-hbm-dark outline-none focus:ring-2 focus:ring-hbm-coral"
-          />
-          <button type="submit" className="btn-primary bg-hbm-coral text-white py-3 px-8">
-            Subscribe
-          </button>
-        </form>
-      </div>
-    </section>
-  )
-}
-
-/* ============================================
-   HOME PAGE
-   ============================================ */
 export default function Home() {
   return (
     <>
       <HeroSection />
-      <ValuePropsSection />
-      <Why8Section />
-      <VideoSection />
-      <HowItWorksSection />
-      <GuidelinesSection />
-      <NewsletterSection />
+      <ConversationCards />
+      <BannerSection />
+      <EliVideoSection />
+      <HowItWorks />
+      <Guidelines />
+      <ClientLogos />
     </>
   )
 }
