@@ -8,7 +8,7 @@ const whatsappMessages = {
   en: "Hi! I'd like to learn more about The HBM and connect.",
   he: 'היי! אשמח לשמוע עוד על The HBM ולהתחבר.',
   es: '¡Hola! Me gustaría saber más sobre The HBM y conectar.',
-  fr: 'Bonjour ! Je voudrais en savoir plus sur The HBM et me connecter.',
+  fr: 'Bonjour !voudrai Je s en savoir plus sur The HBM et me connecter.',
   de: 'Hallo! Ich möchte mehr über The HBM erfahren und mich verbinden.',
   ar: 'مرحبًا! أود معرفة المزيد عن The HBM والتواصل.',
 }
