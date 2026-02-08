@@ -1,0 +1,119 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap');
+
+/* ============================================
+   THE HBM - Design System
+   ============================================ */
+
+@theme {
+  --color-hbm-blue: #4A5ACF;
+  --color-hbm-blue-light: #6B7AE8;
+  --color-hbm-blue-dark: #3A48B0;
+  --color-hbm-coral: #E8845A;
+  --color-hbm-coral-light: #F0A07A;
+  --color-hbm-coral-dark: #D06A3E;
+  --color-hbm-peach: #F5D5C0;
+  --color-hbm-peach-light: #FBE8DA;
+  --color-hbm-lavender: #B8A5D4;
+  --color-hbm-purple: #7B6BA0;
+  --color-hbm-cream: #FFF8F0;
+  --color-hbm-dark: #1A1A2E;
+  --color-hbm-gray: #6B7280;
+  --color-hbm-gray-light: #F3F4F6;
+
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-hbm-dark);
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--color-hbm-cream); }
+::-webkit-scrollbar-thumb { background: var(--color-hbm-lavender); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-hbm-purple); }
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOutUp {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+.animate-fade-out-up { animation: fadeOutUp 0.5s ease-out forwards; }
+
+.circle-image {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-hbm-lavender);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+.circle-image:hover {
+  transform: scale(1.05);
+  border-color: var(--color-hbm-coral);
+}
+
+.btn-primary {
+  background-color: var(--color-hbm-coral);
+  color: white;
+  padding: 0.875rem 2.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1.125rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+  text-decoration: none;
+  border: 2px solid transparent;
+}
+.btn-primary:hover {
+  background-color: var(--color-hbm-coral-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(232, 132, 90, 0.35);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-hbm-blue);
+  padding: 0.875rem 2.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1.125rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+  text-decoration: none;
+  border: 2px solid var(--color-hbm-blue);
+}
+.btn-secondary:hover {
+  background-color: var(--color-hbm-blue);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-hbm-blue), var(--color-hbm-coral));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
