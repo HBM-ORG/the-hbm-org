@@ -15,7 +15,7 @@ const whatsappMessages = {
 
 export function getWhatsappUrl(lang) {
   const msg = encodeURIComponent(whatsappMessages[lang] || whatsappMessages.en)
-  return `https://wa.me/972587073136?text=${msg}`
+  return `https://wa.me/972000000000?text=${msg}`
 }
 
 export default function Layout() {

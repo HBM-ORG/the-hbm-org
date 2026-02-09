@@ -1,196 +1,125 @@
 import { useState } from 'react'
-import { Calendar, MapPin, ArrowLeft, ExternalLink } from 'lucide-react'
-import { siteContent } from '../data/content'
-import { useI18n } from '../i18n/context'
-import { useT } from '../i18n/useT'
+import { Link } from 'react-router-dom'
+import { useI18n, t } from '../i18n/context'
 import { getWhatsappUrl } from '../components/Layout'
+import { Calendar, Camera, Plus, Minus, ArrowRight, MapPin } from 'lucide-react'
 
-const { events } = siteContent
-
-function formatDate(dateStr) {
-  const d = new Date(dateStr)
-  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
-  return { month: months[d.getMonth()], day: d.getDate(), year: d.getFullYear() }
-}
-
-function EventCard({ event, onClick, isUpcoming }) {
-  const t = useT()
-  const date = formatDate(event.date)
-  return (
-    <div onClick={onClick} className="bg-white rounded-2xl overflow-hidden card-hover cursor-pointer border border-gray-100 group">
-      {/* Cover */}
-      <div className="relative h-48 bg-gradient-to-br from-hbm-blue/20 to-hbm-lavender/30 overflow-hidden">
-        {event.coverImage ? (
-          <img src={event.coverImage} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-6xl opacity-30">🤝</span>
-          </div>
-        )}
-        {/* Date badge */}
-        <div className="absolute top-4 left-4 bg-white rounded-xl px-3 py-2 shadow-lg text-center">
-          <span className="text-xs font-bold text-hbm-blue block">{date.month}</span>
-          <span className="text-2xl font-bold text-hbm-dark block leading-none">{date.day}</span>
-        </div>
-        {event.type && (
-          <span className="absolute top-4 right-4 bg-hbm-dark/70 text-white text-xs font-semibold px-3 py-1 rounded-full">{event.type}</span>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-6">
-        <h3 className="font-bold text-lg text-hbm-dark mb-2 group-hover:text-hbm-blue transition-colors">{t(event.title)}</h3>
-        <p className="text-hbm-gray text-sm mb-3 line-clamp-2">{t(event.description)}</p>
-        {event.location && (
-          <div className="flex items-center gap-1.5 text-xs text-hbm-gray">
-            <MapPin size={14} />
-            <span>{t(event.location)}</span>
-          </div>
-        )}
-        {isUpcoming && event.registerUrl && (
-          <a href={event.registerUrl} onClick={e => e.stopPropagation()}
-            className="btn-primary text-sm py-2.5 px-6 mt-4 w-full">
-            {t({ en: 'Register', he: 'הרשמה' })}
-          </a>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function EventDetail({ event, onBack }) {
-  const t = useT()
-  const { lang } = useI18n()
-  const date = formatDate(event.date)
-  const hasGallery = event.gallery && event.gallery.length > 0
-
-  return (
-    <div>
-      <button onClick={onBack} className="flex items-center gap-2 text-hbm-blue hover:text-hbm-dark transition-colors mb-8 font-medium">
-        <ArrowLeft size={18} />
-        {t({ en: 'Back to Events', he: 'חזרה לאירועים' })}
-      </button>
-
-      {/* Hero */}
-      <div className="relative rounded-2xl overflow-hidden mb-8 h-64 md:h-80">
-        {event.coverImage ? (
-          <img src={event.coverImage} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-hbm-blue/20 to-hbm-coral/20 flex items-center justify-center">
-            <span className="text-8xl opacity-20">🤝</span>
-          </div>
-        )}
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="absolute bottom-6 left-6 text-white">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="bg-white rounded-xl px-3 py-2 text-center">
-              <span className="text-xs font-bold text-hbm-blue block">{date.month}</span>
-              <span className="text-2xl font-bold text-hbm-dark block leading-none">{date.day}</span>
-            </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">{t(event.title)}</h1>
-              {event.location && (
-                <p className="flex items-center gap-1 text-white/80 text-sm mt-1">
-                  <MapPin size={14} /> {t(event.location)}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Description */}
-      <div className="mb-12">
-        <p className="text-lg text-hbm-gray leading-relaxed">{t(event.description)}</p>
-        {event.registerUrl && event.registerUrl !== '#' && (
-          <a href={event.registerUrl} className="btn-primary mt-6 inline-flex">
-            {t({ en: 'Register Now', he: 'הירשמו עכשיו' })} <ExternalLink size={16} />
-          </a>
-        )}
-      </div>
-
-      {/* Gallery */}
-      <div>
-        <h2 className="text-2xl font-[var(--font-display)] text-hbm-blue mb-6">
-          {t({ en: 'Event Gallery', he: 'גלריית האירוע' })}
-        </h2>
-        {hasGallery ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {event.gallery.map((img, i) => (
-              <div key={i} className="aspect-square rounded-xl overflow-hidden">
-                <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {[1,2,3,4,5,6,7,8].map(i => (
-              <div key={i} className="aspect-square rounded-xl bg-gray-100 flex items-center justify-center">
-                <span className="text-3xl text-gray-300">📸</span>
-              </div>
-            ))}
-          </div>
-        )}
-        <p className="text-center text-hbm-gray/50 text-sm mt-4">
-          {t({ en: 'Photos will be uploaded after the event', he: 'תמונות יועלו לאחר האירוע' })}
-        </p>
-      </div>
-    </div>
-  )
-}
+const timeline2025 = [
+  { month:'JAN', date:'January 28, 2025', topic:{en:'Beginning/Start',he:'התחלה'}, desc:{en:'Managing emotions (Fear, Guilt, Hope) without letting them manage us.',he:'ניהול רגשות (פחד, אשמה, תקווה) בלי לתת להם לנהל אותנו.'}, active:true },
+  { month:'FEB', date:'February 25, 2025', topic:{en:'Why?',he:'למה?'}, desc:{en:"The Dalai Lama's happiness book. Discussion on core values and philosophy.",he:'ספר האושר של הדלאי לאמה. דיון על ערכים ופילוסופיה.'}, active:true },
+  { month:'MAR', date:'March 25, 2025', topic:{en:'Belonging',he:'שייכות'}, desc:{en:'The importance of belonging and community in human life.',he:'חשיבות השייכות והקהילה בחיי האדם.'}, active:true },
+  { month:'APR', date:'April 2025', topic:{en:'No Meeting',he:'אין מפגש'}, desc:{en:'No meeting this month.',he:'אין מפגש החודש.'}, active:false },
+  { month:'MAY', date:'May 27, 2025', topic:{en:'Gratitude',he:'הכרת תודה'}, desc:{en:'The connection between gratitude and happiness. Changing "I deserve" to "Thank you".',he:'הקשר בין הכרת תודה לאושר. שינוי "מגיע לי" ל"תודה".'}, active:true },
+  { month:'JUN', date:'June 24, 2025', topic:{en:'Habits',he:'הרגלים'}, desc:{en:'Habits as a solution to willpower. The loop: Cue → Routine → Reward.',he:'הרגלים כפתרון לכוח רצון. הלולאה: רמז → שגרה → תגמול.'}, active:true },
+  { month:'JUL', date:'July 29, 2025', topic:{en:'Self-Actualization',he:'מימוש עצמי'}, desc:{en:'Focusing on being yourself and bringing out your potential.',he:'התמקדות בלהיות עצמך ולהוציא את הפוטנציאל.'}, active:true },
+  { month:'AUG', date:'August 26, 2025', topic:{en:'Trust',he:'אמון'}, desc:{en:'Building and maintaining trust in relationships and communities.',he:'בניית ושמירת אמון ביחסים ובקהילות.'}, active:true },
+  { month:'SEP', date:'September 30, 2025', topic:{en:'Prayer',he:'תפילה'}, desc:{en:'Prayer as connection. Authenticity vs. Inner Politics.',he:'תפילה כחיבור. אותנטיות מול פוליטיקה פנימית.'}, active:true },
+  { month:'OCT', date:'October 28, 2025', topic:{en:'Responsibility',he:'אחריות'}, desc:{en:'Analysis of Response-Ability. Taking ownership of outcomes.',he:'ניתוח Response-Ability. לקיחת אחריות על תוצאות.'}, active:true },
+  { month:'NOV', date:'November 25, 2025', topic:{en:'Responsibility (Cont.)',he:'אחריות (המשך)'}, desc:{en:'Collaboration with Dale Carnegie. Active listening, handling people, smiling.',he:'שיתוף פעולה עם דייל קארנגי. הקשבה פעילה, טיפול באנשים, חיוך.'}, active:true },
+  { month:'DEC', date:'December 30, 2025', topic:{en:'Confidence',he:'ביטחון'}, desc:{en:'"What\'s in it for me". Personal benefit as a driver for helping others.',he:'"מה יוצא לי מזה". תועלת אישית כמניע לעזרה לאחרים.'}, active:true },
+]
 
 export default function Events() {
-  const [selectedEvent, setSelectedEvent] = useState(null)
-  const [tab, setTab] = useState('upcoming')
-  const t = useT()
   const { lang } = useI18n()
-
-  const currentEvents = tab === 'upcoming' ? events.upcoming : events.past
-
-  if (selectedEvent) {
-    return (
-      <section className="section-padding bg-white">
-        <div className="max-w-5xl mx-auto">
-          <EventDetail event={selectedEvent} onBack={() => setSelectedEvent(null)} />
-        </div>
-      </section>
-    )
-  }
+  const [year, setYear] = useState('2025')
+  const [openCard, setOpenCard] = useState(null)
+  const whatsappUrl = getWhatsappUrl(lang)
 
   return (
-    <section className="section-padding bg-white">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-[var(--font-display)] text-hbm-blue text-center mb-4">{t(events.title)}</h1>
-        <p className="text-center text-hbm-gray max-w-2xl mx-auto mb-10">{t(events.subtitle)}</p>
+    <div className="min-h-screen">
 
-        {/* Tab toggle */}
-        <div className="flex justify-center gap-4 mb-12">
-          <button onClick={() => setTab('upcoming')}
-            className={`px-8 py-3 rounded-full font-semibold transition-all ${tab === 'upcoming' ? 'bg-hbm-blue text-white' : 'bg-gray-100 text-hbm-dark hover:bg-gray-200'}`}>
-            {t({ en: 'Upcoming', he: 'קרובים' })}
-          </button>
-          <button onClick={() => setTab('past')}
-            className={`px-8 py-3 rounded-full font-semibold transition-all ${tab === 'past' ? 'bg-hbm-blue text-white' : 'bg-gray-100 text-hbm-dark hover:bg-gray-200'}`}>
-            {t({ en: 'Past Events', he: 'אירועים קודמים' })}
-          </button>
+      {/* Hero + Stats */}
+      <section className="bg-gradient-hero section-padding text-center">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-hbm-green font-semibold text-sm uppercase tracking-widest mb-3">The Community</p>
+          <h1 className="text-4xl md:text-7xl font-bold text-hbm-dark mb-4" style={{letterSpacing:'-2px'}}>
+            {t({en:'The Community Hub.',he:'מרכז הקהילה.'},lang)}
+          </h1>
+          <p className="text-xl text-hbm-gray max-w-2xl mx-auto mb-8">
+            {t({en:'Join our monthly "End of Month" events to experience the connection firsthand.',he:'הצטרפו לאירועי "סוף חודש" שלנו כדי לחוות את החיבור בעצמכם.'},lang)}
+          </p>
+          <Link to="/events/register" className="btn-orange text-lg px-10 py-4 rounded-full inline-flex items-center gap-2" style={{animation:'pulse 2s infinite'}}>
+            {t({en:'Register for Next Event',he:'הירשמו לאירוע הקרוב'},lang)} <ArrowRight size={20}/>
+          </Link>
         </div>
+      </section>
 
-        {/* Events grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentEvents.map((event, i) => (
-            <EventCard key={event.id} event={event} isUpcoming={tab === 'upcoming'}
-              onClick={() => setSelectedEvent(event)} />
+      {/* Stats */}
+      <section className="py-10 bg-white border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-6 grid grid-cols-3 gap-8 text-center">
+          <div><p className="stat-number">12+</p><p className="text-hbm-gray text-sm font-semibold">{t({en:'Events',he:'אירועים'},lang)}</p></div>
+          <div><p className="stat-number">200+</p><p className="text-hbm-gray text-sm font-semibold">{t({en:'Participants',he:'משתתפים'},lang)}</p></div>
+          <div><p className="stat-number">500+</p><p className="text-hbm-gray text-sm font-semibold">{t({en:'Connections',he:'חיבורים'},lang)}</p></div>
+        </div>
+      </section>
+
+      {/* Year filter */}
+      <section className="py-6 bg-white border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 flex justify-center gap-3">
+          {['2025','2026'].map(y => (
+            <button key={y} onClick={() => {setYear(y);setOpenCard(null)}}
+              className={`year-pill ${year===y?'year-pill-active':'year-pill-inactive'}`}>{y}</button>
           ))}
         </div>
+      </section>
 
-        {/* CTA */}
-        <div className="text-center mt-16">
-          <p className="text-hbm-gray mb-4">{t({ en: 'Want to host an event with HBM?', he: 'רוצים לארגן אירוע עם HBM?' })}</p>
-          <a href={getWhatsappUrl(lang)} target="_blank" rel="noopener noreferrer" className="btn-primary">
-            {t({ en: "Let's Talk", he: 'בואו נדבר' })}
+      {/* 2025 Accordion Timeline */}
+      {year === '2025' && (
+        <section className="section-padding bg-hbm-cream">
+          <div className="max-w-3xl mx-auto space-y-3">
+            {timeline2025.map((ev, i) => (
+              <div key={i}
+                className={`rounded-xl overflow-hidden transition-all duration-300 ${
+                  !ev.active ? 'opacity-40' : openCard === i ? 'shadow-lg shadow-hbm-purple/20 bg-white' : 'bg-white hover:shadow-md'
+                }`}>
+                {/* Collapsed header */}
+                <button onClick={() => ev.active && setOpenCard(openCard === i ? null : i)}
+                  className="w-full flex items-center px-6 py-5 text-left gap-4">
+                  <span className="text-sm font-bold text-hbm-purple bg-hbm-purple/10 px-3 py-1 rounded-full w-14 text-center flex-shrink-0">{ev.month}</span>
+                  <span className="font-bold text-hbm-dark flex-1">{t(ev.topic, lang)}</span>
+                  {ev.active && (
+                    openCard === i ? <Minus size={20} className="text-hbm-purple"/> : <Plus size={20} className="text-hbm-gray"/>
+                  )}
+                </button>
+                {/* Expanded */}
+                {openCard === i && ev.active && (
+                  <div className="px-6 pb-6" style={{animation:'fadeIn 0.3s ease-out'}}>
+                    <p className="text-xs text-hbm-orange font-semibold mb-2">{ev.date}</p>
+                    <p className="text-hbm-gray leading-relaxed mb-4">{t(ev.desc, lang)}</p>
+                    <button className="inline-flex items-center gap-2 text-sm font-semibold text-hbm-purple hover:text-hbm-orange transition-colors">
+                      <Camera size={16}/> {t({en:'View Event Photos',he:'צפו בתמונות האירוע'},lang)}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 2026 */}
+      {year === '2026' && (
+        <section className="section-padding bg-hbm-cream">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-2xl font-bold text-hbm-dark mb-6">{t({en:'2026 Events — Coming Soon',he:'אירועי 2026 — בקרוב'},lang)}</h2>
+            <p className="text-hbm-gray mb-8">{t({en:'Register now to be the first to know about upcoming events.',he:'הירשמו עכשיו להיות הראשונים לדעת על אירועים קרובים.'},lang)}</p>
+            <Link to="/events/register" className="btn-primary text-lg px-10 py-4 rounded-full inline-flex items-center gap-2">
+              {t({en:'Register Now',he:'הירשמו עכשיו'},lang)} <ArrowRight size={20}/>
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* CTA */}
+      <section className="py-16 bg-gradient-purple text-white text-center">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-4">{t({en:'Want to host an HBM event?',he:'רוצים לארח אירוע HBM?'},lang)}</h2>
+          <p className="text-lg opacity-90 mb-6">{t({en:'Or create your own with our platform.',he:'או ליצור משלכם עם הפלטפורמה שלנו.'},lang)}</p>
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-orange text-lg px-10 py-4 rounded-full inline-flex items-center gap-2">
+            {t({en:"Let's Talk",he:'בואו נדבר'},lang)} <ArrowRight size={20}/>
           </a>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   )
 }

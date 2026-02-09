@@ -1,57 +1,53 @@
-import { Link } from 'react-router-dom'
-import { Instagram, MessageCircle, Facebook, Linkedin, Mail, Youtube } from 'lucide-react'
-import { siteContent } from '../data/content'
 import { useI18n, t } from '../i18n/context'
 import { ui } from '../i18n/translations'
+import { siteContent } from '../data/content'
 
 const { global } = siteContent
 
-const platformIcons = {
-  Instagram, WhatsApp: MessageCircle, Facebook, LinkedIn: Linkedin, YouTube: Youtube, Email: Mail,
-}
-
 export default function Footer() {
   const { lang } = useI18n()
-
   return (
-    <footer className="bg-hbm-dark text-white">
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <h3 className="text-2xl md:text-3xl font-[var(--font-display)] text-center mb-12">
-          {t(ui.footer.title, lang)}
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {global.footer.socialCards.map((card) => {
-            const Icon = platformIcons[card.platform]
-            return (
-              <a key={card.platform} href={card.url} target="_blank" rel="noopener noreferrer"
-                className="group p-5 rounded-2xl bg-white/5 hover:bg-white/10 transition-all duration-300">
-                <div className="flex items-center gap-3 mb-3">
-                  {Icon && <Icon size={20} className="text-hbm-coral" />}
-                  <span className="font-semibold text-sm">{card.platform}</span>
-                </div>
-                <p className="text-xs text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors">
-                  {card.text}
-                </p>
-              </a>
-            )
-          })}
+    <footer>
+      {/* Newsletter */}
+      <div className="bg-white py-12 text-center">
+        <h3 className="text-2xl md:text-3xl font-bold text-hbm-purple mb-2">{t({en:"Don't miss the next connection.",he:'אל תפספסו את החיבור הבא.'},lang)}</h3>
+        <p className="text-hbm-gray mb-6 max-w-md mx-auto px-6">{t({en:'Join the HBM circle to get updates on upcoming events, community insights, and early access.',he:'הצטרפו למעגל HBM לקבלת עדכונים על אירועים קרובים ותובנות קהילתיות.'},lang)}</p>
+        <div className="max-w-md mx-auto px-6 flex gap-2">
+          <input type="email" placeholder={t(ui.newsletter.placeholder,lang)} className="flex-1 px-5 py-3 rounded-full border border-gray-300 focus:outline-none focus:border-hbm-purple"/>
+          <button className="btn-orange py-3 px-8 rounded-full">{t({en:'Join the Circle',he:'הצטרפו למעגל'},lang)}</button>
         </div>
       </div>
 
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <img src={global.logo} alt="HBM" className="h-8 w-auto brightness-0 invert" />
-            <span className="text-sm text-gray-400">{t(ui.footer.copyright, lang)}</span>
+      {/* Main footer — gradient */}
+      <div style={{background:'linear-gradient(180deg,#bbc0ff 0%,#8584C7 50%,#6160AB 100%)'}} className="text-white">
+        {/* Fixed Motto */}
+        <div className="text-center pt-12 pb-4">
+          <p className="text-2xl md:text-3xl font-bold mb-2">Do good and do it good!</p>
+          <p className="text-xl font-semibold italic opacity-90">One Movement. Many Ways to Reach Us.</p>
+        </div>
+
+        {/* Social cards */}
+        <div className="max-w-6xl mx-auto px-6 py-10">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            {global.footer.socialCards.filter(c => c.platform !== 'YouTube').map((card,i) => (
+              <a key={i} href={card.url} target="_blank" rel="noopener noreferrer" className="group">
+                <h4 className="font-bold text-lg mb-2 group-hover:underline">{card.platform}</h4>
+                <p className="text-sm opacity-80 leading-relaxed">{card.text}</p>
+              </a>
+            ))}
           </div>
-          <div className="flex gap-6">
-            <Link to="/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">
-              {t(ui.footer.privacy, lang)}
-            </Link>
-            <Link to="/terms" className="text-sm text-gray-400 hover:text-white transition-colors">
-              {t(ui.footer.terms, lang)}
-            </Link>
+        </div>
+
+        {/* Big logo */}
+        <div className="text-center pb-8">
+          <h2 className="text-5xl md:text-7xl font-bold opacity-40">The HBM</h2>
+          <p className="text-lg opacity-60 mt-2">{t(global.tagline,lang)}</p>
+        </div>
+
+        <div className="border-t border-white/20 py-5">
+          <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-3 text-sm opacity-60">
+            <p>{t(ui.footer.copyright,lang)}</p>
+            <div className="flex gap-6"><span>{t(ui.footer.terms,lang)}</span><span>{t(ui.footer.privacy,lang)}</span></div>
           </div>
         </div>
       </div>
