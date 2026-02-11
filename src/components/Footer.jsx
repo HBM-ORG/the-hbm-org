@@ -14,14 +14,14 @@ export default function Footer() {
         <p className="text-hbm-gray mb-6 max-w-md mx-auto px-6">{t({en:'Join the HBM circle to get updates on upcoming events, community insights, and early access.',he:'הצטרפו למעגל HBM לקבלת עדכונים על אירועים קרובים ותובנות קהילתיות.'},lang)}</p>
         <div className="max-w-md mx-auto px-6 flex gap-2">
           <input type="email" placeholder={t(ui.newsletter.placeholder,lang)} className="flex-1 px-5 py-3 rounded-full border border-gray-300 focus:outline-none focus:border-hbm-purple"/>
-          <button className="btn-orange py-3 px-8 rounded-full">{t({en:'Join the Circle',he:'הצטרפו למעגל'},lang)}</button>
+          <button className="btn-orange py-3 px-8 rounded-full">{t({en:'Join the Club',he:'הצטרפו למעגל'},lang)}</button>
         </div>
       </div>
 
       {/* Main footer — gradient */}
       <div style={{background:'linear-gradient(180deg,#bbc0ff 0%,#8584C7 50%,#6160AB 100%)'}} className="text-white">
         {/* Fixed Motto */}
-        <div className="text-center pt-12 pb-4">
+        <div className="text-center pt-8 pb-4">
           <p className="text-2xl md:text-3xl font-bold mb-2">Do good and do it good!</p>
           <p className="text-xl font-semibold italic opacity-90">One Movement. Many Ways to Reach Us.</p>
         </div>
@@ -39,7 +39,7 @@ export default function Footer() {
         </div>
 
         {/* Big logo */}
-        <div className="text-center pb-8">
+        <div className="text-center pt-16 pb-12">
           <h2 className="text-5xl md:text-7xl font-bold opacity-40">The HBM</h2>
           <p className="text-lg opacity-60 mt-2">{t(global.tagline,lang)}</p>
         </div>

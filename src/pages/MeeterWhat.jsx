@@ -3,9 +3,17 @@ import { Link } from 'react-router-dom'
 import { useI18n, t } from '../i18n/context'
 import { getWhatsappUrl } from '../components/Layout'
 import { ArrowRight, Users, BookOpen, Briefcase, Handshake, Coffee, GraduationCap, Timer, Shield, ChevronDown } from 'lucide-react'
+import ComparisonSection from '../components/Meeter/ComparisonSection'
+import Why8MinutesTimer from '../components/Meeter/Why8MinutesTimer'
+const words = [
+  'Partner', 'Deal', 'Friend', 'Mentor', 'Study Buddy', 
+  'Coffee Mate', 'Venture', 'Community', 'Job', 'Date', 'Opportunity'
+];
 
-const words = ['Partner', 'Deal', 'Friend', 'Mentor', 'Study Buddy', 'Coffee Mate']
-const wordsHe = ['שותף', 'עסקה', 'חבר', 'מנטור', 'שותף ללימודים', 'שותף לקפה']
+const wordsHe = [
+  'שותף', 'עסקה', 'חבר', 'מנטור', 'שותף ללימודים', 
+  'שותף לקפה', 'מיזם', 'קהילה', 'עבודה', 'דייט', 'הזדמנות'
+];
 
 const opportunities = [
   { icon: Briefcase, label: { en: 'A Deal', he: 'עסקה' } },
@@ -20,6 +28,7 @@ export default function MeeterWhat() {
   const { lang } = useI18n()
   const isHe = lang === 'he' || lang === 'ar'
   const [mode, setMode] = useState('virtual')
+  const [isPlaying, setIsPlaying] = useState(false)
   const [wordIdx, setWordIdx] = useState(0)
   const wList = isHe ? wordsHe : words
 
@@ -28,14 +37,19 @@ export default function MeeterWhat() {
     return () => clearInterval(i)
   }, [wList.length])
 
+  // Reset play state when mode changes
+  useEffect(() => {
+    setIsPlaying(false)
+  }, [mode])
+
   return (
     <div className="min-h-screen">
 
       {/* ── S1: HERO + VIDEO TOGGLE ── */}
       <section className="bg-gradient-hero section-padding text-center">
         <div className="max-w-4xl mx-auto">
-          <p className="text-hbm-purple font-semibold text-sm uppercase tracking-widest mb-3">The Meeter</p>
-          <h1 className="text-4xl md:text-7xl font-bold text-hbm-dark mb-6" style={{letterSpacing:'-2px'}}>
+          <p className="text-hbm-purple font-semibold text-sm uppercase tracking-widest mb-3">The Meeter - What is it?</p>
+          <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>
             {t({ en: 'Bringing Real Conversations to Life.', he: 'מביאים שיחות אמיתיות לחיים.' }, lang)}
           </h1>
           <p className="text-xl text-hbm-gray max-w-2xl mx-auto mb-8">
@@ -51,8 +65,34 @@ export default function MeeterWhat() {
             </button>
           </div>
           <div className="rounded-2xl overflow-hidden shadow-xl max-w-3xl mx-auto">
-            <div className="aspect-video bg-hbm-purple/5">
-              <iframe src="https://www.youtube.com/embed/R7smYF02Kjo" title="HBM" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+            <div className="aspect-video bg-hbm-purple/5 relative group">
+              {!isPlaying && (
+                <div 
+                  className="absolute inset-0 z-10 cursor-pointer"
+                  onClick={() => setIsPlaying(true)}
+                >
+                  <img 
+                    src={mode === 'virtual' 
+                      ? "https://img.youtube.com/vi/PaElS1jAVEo/maxresdefault.jpg" 
+                      : "https://img.youtube.com/vi/Zkym_6Kd-lo/maxresdefault.jpg"}
+                    alt="Video Thumbnail"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-all">
+                    <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-hbm-orange border-b-[10px] border-b-transparent ml-1" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <iframe 
+                key={mode}
+                src={`${mode === 'virtual' ? "https://www.youtube.com/embed/PaElS1jAVEo" : "https://www.youtube.com/embed/Zkym_6Kd-lo"}?autoplay=${isPlaying ? 1 : 0}`} 
+                title="HBM" 
+                className="w-full h-full" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen 
+              />
             </div>
           </div>
           <p className="text-hbm-gray mt-4 italic text-sm">{t({ en: 'See how 8 minutes change everything.', he: 'ראו איך 8 דקות משנות הכל.' }, lang)}</p>
@@ -60,52 +100,10 @@ export default function MeeterWhat() {
       </section>
 
       {/* ── S2: OLD vs NEW ── */}
-      <section className="section-padding bg-white">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-          <div className="bg-gray-50 rounded-2xl p-8 border-2 border-gray-200 relative overflow-hidden">
-            <span className="absolute top-4 right-4 text-xs font-bold text-red-400 bg-red-50 px-3 py-1 rounded-full">OLD WAY</span>
-            <h3 className="text-2xl font-bold text-hbm-dark mb-4 mt-6">{t({ en: 'Awkward Networking', he: 'נטוורקינג מביך' }, lang)}</h3>
-            <ul className="space-y-3 text-hbm-gray">
-              <li>❌ {t({ en: 'Standing alone checking your phone', he: 'עומדים לבד ובודקים את הטלפון' }, lang)}</li>
-              <li>❌ {t({ en: 'Forced small talk with strangers', he: 'שיחת חולין מאולצת עם זרים' }, lang)}</li>
-              <li>❌ {t({ en: 'Exchanging cards you\'ll never use', he: 'מחליפים כרטיסי ביקור שלא תשתמשו בהם' }, lang)}</li>
-              <li>❌ {t({ en: 'Leaving without real connections', he: 'עוזבים בלי חיבורים אמיתיים' }, lang)}</li>
-            </ul>
-          </div>
-          <div className="bg-hbm-light rounded-2xl p-8 border-2 border-hbm-purple/30 relative overflow-hidden">
-            <span className="absolute top-4 right-4 text-xs font-bold text-hbm-green bg-hbm-green/10 px-3 py-1 rounded-full">HBM WAY</span>
-            <h3 className="text-2xl font-bold text-hbm-dark mb-4 mt-6">{t({ en: 'Guided Connection', he: 'חיבור מונחה' }, lang)}</h3>
-            <ul className="space-y-3 text-hbm-dark">
-              <li>✅ {t({ en: 'Instant smart matching', he: 'התאמה חכמה מיידית' }, lang)}</li>
-              <li>✅ {t({ en: 'Curated ice-breakers', he: 'שוברי קרח מותאמים' }, lang)}</li>
-              <li>✅ {t({ en: 'Structured 8-minute deep conversations', he: 'שיחות עמוקות מובנות של 8 דקות' }, lang)}</li>
-              <li>✅ {t({ en: 'Real relationships that last', he: 'מערכות יחסים אמיתיות שנמשכות' }, lang)}</li>
-            </ul>
-          </div>
-        </div>
-      </section>
+      <ComparisonSection />
 
       {/* ── S3: WHY 8 MINUTES — Psychology ── */}
-      <section className="section-padding bg-hbm-cream">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-bold text-hbm-purple mb-6">{t({ en: 'Why 8 Minutes?', he: 'למה 8 דקות?' }, lang)}</h2>
-          <p className="text-xl text-hbm-dark leading-relaxed max-w-2xl mx-auto mb-10">
-            {t({ en: "It's the psychological 'Sweet Spot'. Short enough to feel safe (low risk), but long enough to create a meaningful bond (high reward).", he: "זו נקודת ה'Sweet Spot' הפסיכולוגית. מספיק קצר כדי להרגיש בטוח (סיכון נמוך), אבל מספיק ארוך כדי ליצור קשר משמעותי (תגמול גבוה)." }, lang)}
-          </p>
-          {/* Timer visual */}
-          <div className="relative w-48 h-48 mx-auto">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="8" />
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#6160AB" strokeWidth="8"
-                strokeDasharray="283" strokeDashoffset="0" strokeLinecap="round"
-                style={{ animation: 'timerFill 3s ease-out forwards' }} />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-4xl font-bold text-hbm-purple">8<span className="text-lg"> min</span></span>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Why8MinutesTimer compact={true} />
 
       {/* ── S4: OPPORTUNITY — Word Rotator ── */}
       <section className="section-padding bg-white">

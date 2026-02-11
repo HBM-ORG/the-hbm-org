@@ -82,32 +82,38 @@ export const siteContent = {
       imagePairs: [
         { left: `${WP}/2025/07/20250707_1016_Warm-Sunlit-Sharing_simple_compose_01jzhvxbqneh9szxfqj9c3tkrj.mp4`, right: `${WP}/2025/07/20250707_1657_Enthusiastic-Conversation_simple_compose_01jzjjv7fce9z9tjjxebwh5ycr.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/4.png` },
         { left: `${WP}/2025/07/20250707_1036_Engaging-Kitchen-Conversation_simple_compose_01jzhx0rg4egza4ssgfftr605h.mp4`, right: `${WP}/2025/07/20250707_1608_Warm-Connection_simple_compose_01jzjg0y48fnbvn23bse4n6jcc.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/7.png` },
-        { left: `${WP}/2025/07/20250707_1155_Warm-Virtual-Connection_simple_compose_01jzj1hmrfexe9v2vzqwyf0f22.mp4`, right: `${WP}/2025/07/20250707_1042_Cozy-Storytime-Glow_simple_compose_01jzhxcvzjfgsspaqekpe9svc8.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/3.png` },
+        { left: `${WP}/2025/07/20250707_1155_Warm-Video-Connection_simple_compose_01jzj1hmrfexe9v2vzqwyf0f22.mp4`, right: `${WP}/2025/07/20250707_1042_Cozy-Storytime-Glow_simple_compose_01jzhxcvzjfgsspaqekpe9svc8.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/3.png` },
         { left: `${WP}/2025/07/20250707_1632_Focused-Video-Call_simple_compose_01jzjhd88vfwdtpnxjx387fc1c.mp4`, right: `${WP}/2025/07/20250707_1340_Friendly-Video-Chat_simple_compose_01jzj7hq1vefyva88tyhpsyjer.mp4`, leftBorder: '#bbc0ff', rightBorder: '#ed9f7d', poster: `${WP}/2025/05/7.png` },
       ],
     },
 
     conversationCards: {
       titleLines: {
-        en: ['One Conversation', 'A Real Connection', '8 Minutes'],
-        he: ['שיחה אחת', 'חיבור אמיתי', '8 דקות'],
+        en: ['One on One Conversation', '8 Minutes'],
+        he: ['שיחה אחד על אחד', '8 דקות'],
       },
       ctaText: { en: 'Join Us', he: 'הצטרפו אלינו' },
       cards: [
         {
+          icon: '💬',
           title: { en: 'Everyone talks about it, but we actually do it.', he: 'כולם מדברים על זה, אבל אנחנו עושים את זה.' },
           text: { en: "It's more than a conversation, It's an opportunity.", he: 'זה יותר משיחה, זו הזדמנות.' },
           bgColor: '#fbd5c1',
+          iconBg: '#F07B3C',
         },
         {
+          icon: '🎉',
           title: { en: 'Have fun while getting to know new people!', he: 'תהנו בזמן שאתם מכירים אנשים חדשים!' },
           text: { en: "Because connection doesn't have to be complicated.", he: 'כי חיבור לא חייב להיות מסובך.' },
           bgColor: '#bbc0ff',
+          iconBg: '#6160AB',
         },
         {
+          icon: '✨',
           title: { en: 'Just be yourself.', he: 'פשוט תהיו עצמכם.' },
           text: { en: 'Everyone is awesome and welcome! Bring whatever version of you shows up today.', he: 'כולם מדהימים ומוזמנים! תביאו את הגרסה שלכם מהיום.' },
           bgColor: '#d8eecf',
+          iconBg: '#73C154',
         },
       ],
     },
@@ -132,28 +138,62 @@ export const siteContent = {
     },
 
     howItWorks: {
-      title: { en: 'How It Works', he: 'איך זה עובד?' },
-      subtitle: { en: 'The Platform Is a Safe and Authentic Space for Meaningful Conversations.', he: 'הפלטפורמה היא מרחב בטוח ואותנטי לשיחות משמעותיות.' },
-      // Video (online)
-      videoSteps: {
-        title: { en: 'Video', he: 'וידאו' },
-        steps: [
-          { image: `${WP}/2025/06/11.png`, text: { en: 'Sign up to TheHBM platform.', he: 'הירשמו לפלטפורמת TheHBM.' } },
-          { image: `${WP}/2025/06/22.png`, text: { en: 'Click "Let\'s Go!" and wait for a match', he: 'לחצו "בואו נתחיל!" וחכו לשידוך' } },
-          { image: `${WP}/2025/06/33.png`, text: { en: 'Enter an 8-minute call with someone new!', he: 'היכנסו לשיחה של 8 דקות עם מישהו חדש!' } },
-          { image: `${WP}/2025/06/44.png`, text: { en: "That's it! Simple right?", he: 'זהו! פשוט, נכון?' } },
-        ],
-      },
-      // Physical (events)
-      physicalSteps: {
-        title: { en: 'Physical', he: 'פיזי' },
-        steps: [
-          { image: `${WP}/2025/06/11.png`, text: { en: 'Scan the QR Code', he: 'סרקו את קוד ה-QR' } },
-          { image: `${WP}/2025/06/22.png`, text: { en: 'Find Your Match', he: 'מצאו את ההתאמה שלכם' } },
-          { image: `${WP}/2025/06/33.png`, text: { en: 'Start the Conversation', he: 'התחילו את השיחה' } },
-        ],
-      },
-      phoneMockup: `${WP}/2025/05/Settings-3.png`,
+      title: { en: 'How It Works', he: 'איך זה עובד' },
+      subtitle: { en: 'A Safe & Authentic Space.', he: 'מרחב בטוח ואותנטי.' },
+      videoSteps: [
+        {
+          title: { en: 'Set Your Vibe', he: 'בחרו את האווירה' },
+          desc: { en: 'Pick interests & an emoji to start.', he: 'בחרו תחומי עניין ואימוג׳י להתחלה.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/11.png'
+        },
+        {
+          title: { en: 'Mindset Lobby', he: 'לובי מיינדסט' },
+          desc: { en: 'Get tips for a great talk while we match you.', he: 'קבלו טיפים לשיחה מעולה בזמן שאנחנו מוצאים התאמה.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/22.png'
+        },
+        {
+          title: { en: 'Guided 8-Min', he: '8 דקות מונחות' },
+          desc: { en: 'Talk deep with real-time Ice-breakers.', he: 'שיחה עמוקה עם שוברי קרח בזמן אמת.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/33.png'
+        },
+        {
+          title: { en: 'Stay in Touch', he: 'שמרו על קשר' },
+          desc: { en: 'Choose which details to share.', he: 'בחרו אילו פרטים לשתף.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/44.png'
+        },
+        {
+          title: { en: 'Connection Card', he: 'כרטיס חיבור' },
+          desc: { en: 'Your digital souvenir. Exchange details instantly.', he: 'המזכרת הדיגיטלית שלכם. החליפו פרטים מיד.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/44.png'
+        }
+      ],
+      physicalSteps: [
+        {
+          title: { en: 'Set Your Vibe', he: 'בחרו את האווירה' },
+          desc: { en: 'Pick your interests to alert the room.', he: 'בחרו תחומי עניין כדי לאותת לחדר.' },
+          image: '/assets/how-it-works/path1.png'
+        },
+        {
+          title: { en: 'Instant Radar', he: 'רדאר מיידי' },
+          desc: { en: 'We scan the space and find your match instantly.', he: 'אנחנו סורקים את החלל ומוצאים התאמה מיד.' },
+          image: '/assets/how-it-works/path2.png'
+        },
+        {
+          title: { en: 'Flip to Find', he: 'הפכו למציאה' },
+          desc: { en: 'Use the color-sync to find your partner in the crowd.', he: 'השתמשו בסנכרון צבעים למציאת הפרטנר בקהל.' },
+          image: '/assets/how-it-works/path3.png'
+        },
+        {
+          title: { en: 'Meaningful Talk', he: 'שיחה משמעותית' },
+          desc: { en: 'Skip small talk with our curated Ice-breaker cards.', he: 'דלגו על הסמול טוק עם קלפי שוברי קרח.' },
+          image: '/assets/how-it-works/path4.png'
+        },
+        {
+          title: { en: 'Connection Card', he: 'כרטיס חיבור' },
+          desc: { en: 'Exchange digital cards instantly to stay in touch.', he: 'החליפו כרטיסים דיגיטליים מיד לשמירה על קשר.' },
+          image: '/assets/how-it-works/path5.png'
+        }
+      ]
     },
 
     guidelines: {
@@ -180,7 +220,7 @@ export const siteContent = {
       title: { en: 'Who We Are', he: 'מי אנחנו' },
       subtitle: { en: 'The HBM – The Human Being Movement', he: 'The HBM – תנועת בני האדם' },
       bigText: {
-        en: 'WE HAVE ONE JOB — TO CONNECT',
+        en: 'WE HAVE ONE JOB — TO HELP PEOPLE CONNECT',
         he: 'יש לנו עבודה אחת — לחבר',
       },
       description: {

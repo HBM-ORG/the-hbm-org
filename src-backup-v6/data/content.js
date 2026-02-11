@@ -82,7 +82,7 @@ export const siteContent = {
       imagePairs: [
         { left: `${WP}/2025/07/20250707_1016_Warm-Sunlit-Sharing_simple_compose_01jzhvxbqneh9szxfqj9c3tkrj.mp4`, right: `${WP}/2025/07/20250707_1657_Enthusiastic-Conversation_simple_compose_01jzjjv7fce9z9tjjxebwh5ycr.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/4.png` },
         { left: `${WP}/2025/07/20250707_1036_Engaging-Kitchen-Conversation_simple_compose_01jzhx0rg4egza4ssgfftr605h.mp4`, right: `${WP}/2025/07/20250707_1608_Warm-Connection_simple_compose_01jzjg0y48fnbvn23bse4n6jcc.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/7.png` },
-        { left: `${WP}/2025/07/20250707_1155_Warm-Virtual-Connection_simple_compose_01jzj1hmrfexe9v2vzqwyf0f22.mp4`, right: `${WP}/2025/07/20250707_1042_Cozy-Storytime-Glow_simple_compose_01jzhxcvzjfgsspaqekpe9svc8.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/3.png` },
+        { left: `${WP}/2025/07/20250707_1155_Warm-Video-Connection_simple_compose_01jzj1hmrfexe9v2vzqwyf0f22.mp4`, right: `${WP}/2025/07/20250707_1042_Cozy-Storytime-Glow_simple_compose_01jzhxcvzjfgsspaqekpe9svc8.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/3.png` },
         { left: `${WP}/2025/07/20250707_1632_Focused-Video-Call_simple_compose_01jzjhd88vfwdtpnxjx387fc1c.mp4`, right: `${WP}/2025/07/20250707_1340_Friendly-Video-Chat_simple_compose_01jzj7hq1vefyva88tyhpsyjer.mp4`, leftBorder: '#bbc0ff', rightBorder: '#ed9f7d', poster: `${WP}/2025/05/7.png` },
       ],
     },

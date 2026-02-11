@@ -99,28 +99,44 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-1" ref={dropdownRef}>
           {navStructure.map((item) => (
             <div key={item.key} className="relative group">
-              <button
-                onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
-                className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
-                  isActive(item.path)
-                    ? 'text-hbm-purple bg-hbm-purple/5'
-                    : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
-                }`}>
-                {t(ui.nav[item.key], lang)}
-                <ChevronDown size={14} className={`transition-transform ${openDropdown === item.key ? 'rotate-180' : ''}`} />
-              </button>
+              {item.key === 'home' ? (
+                <Link
+                  to={item.path}
+                  className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
+                    isActive(item.path)
+                      ? 'text-hbm-purple bg-hbm-purple/5'
+                      : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
+                  }`}
+                >
+                  {t(ui.nav[item.key], lang)}
+                </Link>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
+                    className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
+                      isActive(item.path)
+                        ? 'text-hbm-purple bg-hbm-purple/5'
+                        : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
+                    }`}
+                  >
+                    {t(ui.nav[item.key], lang)}
+                    <ChevronDown size={14} className={`transition-transform ${openDropdown === item.key ? 'rotate-180' : ''}`} />
+                  </button>
 
-              {/* Dropdown */}
-              {openDropdown === item.key && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-50 animate-in fade-in">
-                  {item.subs.map((sub) => (
-                    <Link key={sub.id} to={sub.href || `${item.path}#${sub.id}`}
-                      onClick={() => setOpenDropdown(null)}
-                      className="block px-4 py-2.5 text-sm text-hbm-dark hover:bg-hbm-purple/5 hover:text-hbm-purple transition-colors">
-                      {t(sub.label, lang)}
-                    </Link>
-                  ))}
-                </div>
+                  {/* Dropdown */}
+                  {openDropdown === item.key && (
+                    <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-50 animate-in fade-in">
+                      {item.subs.map((sub) => (
+                        <Link key={sub.id} to={sub.href || `${item.path}#${sub.id}`}
+                          onClick={() => setOpenDropdown(null)}
+                          className="block px-4 py-2.5 text-sm text-hbm-dark hover:bg-hbm-purple/5 hover:text-hbm-purple transition-colors">
+                          {t(sub.label, lang)}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ))}

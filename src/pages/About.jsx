@@ -7,7 +7,7 @@ import { ArrowRight } from 'lucide-react'
 const { about, global } = siteContent
 
 const vision = {
-  en: 'To create a world where no person is a stranger, by turning random meetings into meaningful connections.',
+  en: 'To create a world where no one is a stranger, by transforming chance encounters into meaningful connections that reshape reality.',
   he: 'ליצור עולם שבו אף אדם אינו זר, על ידי הפיכת מפגשים אקראיים לחיבורים משמעותיים.',
   es: 'Crear un mundo donde nadie sea un extraño, convirtiendo encuentros casuales en conexiones significativas.',
   fr: "Créer un monde où personne n'est un étranger, en transformant les rencontres fortuites en connexions significatives.",
@@ -15,7 +15,7 @@ const vision = {
   ar: 'خلق عالم لا يكون فيه أي شخص غريباً، من خلال تحويل اللقاءات العشوائية إلى روابط ذات معنى.',
 }
 const mission = {
-  en: 'To provide communities and organizations with the technological tools and experiences to create authentic, fast, and inspiring interactions that encourage personal growth and collaboration.',
+  en: 'To develop and operate a social platform, bridging physical and digital realms, that leverages technology, data, and AI to identify, amplify, and harness meaningful interactions, transforming them into authentic and lasting human connections.',
   he: 'לספק לקהילות ולארגונים את הכלים הטכנולוגיים והחוויות ליצירת אינטראקציות אותנטיות, מהירות ומעוררות השראה המעודדות צמיחה אישית ושיתוף פעולה.',
   es: 'Proporcionar a comunidades y organizaciones herramientas tecnológicas para crear interacciones auténticas e inspiradoras.',
   fr: "Fournir aux communautés et organisations les outils pour créer des interactions authentiques et inspirantes.",
@@ -47,7 +47,7 @@ export default function About() {
       {/* Hero */}
       <section className="bg-gradient-hero section-padding text-center">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold text-hbm-dark mb-2">{t(about.hero.title, lang)}</h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-2 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent">{t(about.hero.title, lang)}</h1>
           <p className="text-xl text-hbm-gray">{t(about.hero.subtitle, lang)}</p>
         </div>
       </section>

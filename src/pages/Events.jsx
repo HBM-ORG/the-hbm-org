@@ -1,125 +1,286 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useI18n, t } from '../i18n/context'
-import { getWhatsappUrl } from '../components/Layout'
-import { Calendar, Camera, Plus, Minus, ArrowRight, MapPin } from 'lucide-react'
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { Calendar, MapPin, Users, Image as ImageIcon, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import EventModal from '../components/Events/EventModal';
+import { events2025, events2026, nextEvent } from '../data/events';
+import { useI18n, t } from '../i18n/context';
 
-const timeline2025 = [
-  { month:'JAN', date:'January 28, 2025', topic:{en:'Beginning/Start',he:'התחלה'}, desc:{en:'Managing emotions (Fear, Guilt, Hope) without letting them manage us.',he:'ניהול רגשות (פחד, אשמה, תקווה) בלי לתת להם לנהל אותנו.'}, active:true },
-  { month:'FEB', date:'February 25, 2025', topic:{en:'Why?',he:'למה?'}, desc:{en:"The Dalai Lama's happiness book. Discussion on core values and philosophy.",he:'ספר האושר של הדלאי לאמה. דיון על ערכים ופילוסופיה.'}, active:true },
-  { month:'MAR', date:'March 25, 2025', topic:{en:'Belonging',he:'שייכות'}, desc:{en:'The importance of belonging and community in human life.',he:'חשיבות השייכות והקהילה בחיי האדם.'}, active:true },
-  { month:'APR', date:'April 2025', topic:{en:'No Meeting',he:'אין מפגש'}, desc:{en:'No meeting this month.',he:'אין מפגש החודש.'}, active:false },
-  { month:'MAY', date:'May 27, 2025', topic:{en:'Gratitude',he:'הכרת תודה'}, desc:{en:'The connection between gratitude and happiness. Changing "I deserve" to "Thank you".',he:'הקשר בין הכרת תודה לאושר. שינוי "מגיע לי" ל"תודה".'}, active:true },
-  { month:'JUN', date:'June 24, 2025', topic:{en:'Habits',he:'הרגלים'}, desc:{en:'Habits as a solution to willpower. The loop: Cue → Routine → Reward.',he:'הרגלים כפתרון לכוח רצון. הלולאה: רמז → שגרה → תגמול.'}, active:true },
-  { month:'JUL', date:'July 29, 2025', topic:{en:'Self-Actualization',he:'מימוש עצמי'}, desc:{en:'Focusing on being yourself and bringing out your potential.',he:'התמקדות בלהיות עצמך ולהוציא את הפוטנציאל.'}, active:true },
-  { month:'AUG', date:'August 26, 2025', topic:{en:'Trust',he:'אמון'}, desc:{en:'Building and maintaining trust in relationships and communities.',he:'בניית ושמירת אמון ביחסים ובקהילות.'}, active:true },
-  { month:'SEP', date:'September 30, 2025', topic:{en:'Prayer',he:'תפילה'}, desc:{en:'Prayer as connection. Authenticity vs. Inner Politics.',he:'תפילה כחיבור. אותנטיות מול פוליטיקה פנימית.'}, active:true },
-  { month:'OCT', date:'October 28, 2025', topic:{en:'Responsibility',he:'אחריות'}, desc:{en:'Analysis of Response-Ability. Taking ownership of outcomes.',he:'ניתוח Response-Ability. לקיחת אחריות על תוצאות.'}, active:true },
-  { month:'NOV', date:'November 25, 2025', topic:{en:'Responsibility (Cont.)',he:'אחריות (המשך)'}, desc:{en:'Collaboration with Dale Carnegie. Active listening, handling people, smiling.',he:'שיתוף פעולה עם דייל קארנגי. הקשבה פעילה, טיפול באנשים, חיוך.'}, active:true },
-  { month:'DEC', date:'December 30, 2025', topic:{en:'Confidence',he:'ביטחון'}, desc:{en:'"What\'s in it for me". Personal benefit as a driver for helping others.',he:'"מה יוצא לי מזה". תועלת אישית כמניע לעזרה לאחרים.'}, active:true },
-]
+const Events = () => {
+  const [selectedYear, setSelectedYear] = useState('2026');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { lang } = useI18n();
 
-export default function Events() {
-  const { lang } = useI18n()
-  const [year, setYear] = useState('2025')
-  const [openCard, setOpenCard] = useState(null)
-  const whatsappUrl = getWhatsappUrl(lang)
+  const currentEvents = selectedYear === '2025' ? events2025 : events2026;
+
+  const openEventModal = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50">
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <motion.div
+          className="absolute top-0 right-0 w-96 h-96 bg-[#6160AB]/20 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, 50, 0],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+          }}
+        />
 
-      {/* Hero + Stats */}
-      <section className="bg-gradient-hero section-padding text-center">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-hbm-green font-semibold text-sm uppercase tracking-widest mb-3">The Community</p>
-          <h1 className="text-4xl md:text-7xl font-bold text-hbm-dark mb-4" style={{letterSpacing:'-2px'}}>
-            {t({en:'The Community Hub.',he:'מרכז הקהילה.'},lang)}
-          </h1>
-          <p className="text-xl text-hbm-gray max-w-2xl mx-auto mb-8">
-            {t({en:'Join our monthly "End of Month" events to experience the connection firsthand.',he:'הצטרפו לאירועי "סוף חודש" שלנו כדי לחוות את החיבור בעצמכם.'},lang)}
-          </p>
-          <Link to="/events/register" className="btn-orange text-lg px-10 py-4 rounded-full inline-flex items-center gap-2" style={{animation:'pulse 2s infinite'}}>
-            {t({en:'Register for Next Event',he:'הירשמו לאירוע הקרוב'},lang)} <ArrowRight size={20}/>
-          </Link>
+        <motion.div
+          className="absolute bottom-0 left-0 w-96 h-96 bg-[#F07B3C]/20 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.3, 1],
+            x: [0, -50, 0],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+          }}
+        />
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className="text-6xl md:text-8xl font-bold mb-6 font-['Sora']">
+                        <p className="text-hbm-purple font-semibold text-sm uppercase tracking-widest mb-3">HBM Events - Past and Future</p>
+              <span className="bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent">
+                {t({ en: 'Events', he: 'אירועים' }, lang)}
+              </span>
+            </h1>
+          </motion.div>
+
+          {/* Year Toggle */}
+          <motion.div
+            className="flex justify-center gap-4 mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <button
+              onClick={() => setSelectedYear('2025')}
+              className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 font-['Sora'] ${
+                selectedYear === '2025'
+                  ? 'bg-gradient-to-r from-[#6160AB] to-[#8b7fd9] text-white shadow-2xl scale-105'
+                  : 'bg-white text-gray-600 border-2 border-gray-200 hover:border-[#6160AB]'
+              }`}
+            >
+              2025
+            </button>
+            <button
+              onClick={() => setSelectedYear('2026')}
+              className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 font-['Sora'] ${
+                selectedYear === '2026'
+                  ? 'bg-gradient-to-r from-[#6160AB] to-[#8b7fd9] text-white shadow-2xl scale-105'
+                  : 'bg-white text-gray-600 border-2 border-gray-200 hover:border-[#6160AB]'
+              }`}
+            >
+              2026
+            </button>
+          </motion.div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-10 bg-white border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-6 grid grid-cols-3 gap-8 text-center">
-          <div><p className="stat-number">12+</p><p className="text-hbm-gray text-sm font-semibold">{t({en:'Events',he:'אירועים'},lang)}</p></div>
-          <div><p className="stat-number">200+</p><p className="text-hbm-gray text-sm font-semibold">{t({en:'Participants',he:'משתתפים'},lang)}</p></div>
-          <div><p className="stat-number">500+</p><p className="text-hbm-gray text-sm font-semibold">{t({en:'Connections',he:'חיבורים'},lang)}</p></div>
-        </div>
-      </section>
+      {/* 2026 Featured Registration Card */}
+      {selectedYear === '2026' && (
+        <section className="pb-12">
+          <div className="max-w-7xl mx-auto px-6">
+            <motion.div
+              className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl overflow-hidden shadow-2xl"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Image Side */}
+                <div className="relative h-80 md:h-auto">
+                  <img
+                    src={nextEvent.image}
+                    alt={nextEvent.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
 
-      {/* Year filter */}
-      <section className="py-6 bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 flex justify-center gap-3">
-          {['2025','2026'].map(y => (
-            <button key={y} onClick={() => {setYear(y);setOpenCard(null)}}
-              className={`year-pill ${year===y?'year-pill-active':'year-pill-inactive'}`}>{y}</button>
-          ))}
-        </div>
-      </section>
+                {/* Content Side */}
+                <div className="p-12 flex flex-col justify-center">
+                  <div className="mb-6">
+                    <span className="text-[#F07B3C] text-sm font-bold uppercase tracking-wider">
+                      {t(nextEvent.month, lang)}
+                    </span>
+                    <h2 className="text-5xl font-bold text-white mt-2 mb-4 font-['Sora']">
+                      {t(nextEvent.title, lang)}
+                    </h2>
+                    <p className="text-gray-300 text-lg mb-6 font-['Sofia_Sans']">
+                      {t(nextEvent.description, lang)}
+                    </p>
+                    <div className="flex items-center gap-2 text-gray-400 mb-8">
+                       {nextEvent.tags.map(tag => (
+                        <span key={tag} className="px-3 py-1 bg-white/10 rounded-full text-sm font-semibold">
+                          {tag}
+                        </span>
+                       ))}
+                    </div>
+                  </div>
 
-      {/* 2025 Accordion Timeline */}
-      {year === '2025' && (
-        <section className="section-padding bg-hbm-cream">
-          <div className="max-w-3xl mx-auto space-y-3">
-            {timeline2025.map((ev, i) => (
-              <div key={i}
-                className={`rounded-xl overflow-hidden transition-all duration-300 ${
-                  !ev.active ? 'opacity-40' : openCard === i ? 'shadow-lg shadow-hbm-purple/20 bg-white' : 'bg-white hover:shadow-md'
-                }`}>
-                {/* Collapsed header */}
-                <button onClick={() => ev.active && setOpenCard(openCard === i ? null : i)}
-                  className="w-full flex items-center px-6 py-5 text-left gap-4">
-                  <span className="text-sm font-bold text-hbm-purple bg-hbm-purple/10 px-3 py-1 rounded-full w-14 text-center flex-shrink-0">{ev.month}</span>
-                  <span className="font-bold text-hbm-dark flex-1">{t(ev.topic, lang)}</span>
-                  {ev.active && (
-                    openCard === i ? <Minus size={20} className="text-hbm-purple"/> : <Plus size={20} className="text-hbm-gray"/>
-                  )}
-                </button>
-                {/* Expanded */}
-                {openCard === i && ev.active && (
-                  <div className="px-6 pb-6" style={{animation:'fadeIn 0.3s ease-out'}}>
-                    <p className="text-xs text-hbm-orange font-semibold mb-2">{ev.date}</p>
-                    <p className="text-hbm-gray leading-relaxed mb-4">{t(ev.desc, lang)}</p>
-                    <button className="inline-flex items-center gap-2 text-sm font-semibold text-hbm-purple hover:text-hbm-orange transition-colors">
-                      <Camera size={16}/> {t({en:'View Event Photos',he:'צפו בתמונות האירוע'},lang)}
+                  <div className="flex gap-4">
+                    <Link
+                      to={nextEvent.registrationLink}
+                      className="px-8 py-4 bg-gradient-to-r from-[#F07B3C] to-[#ff9b6b] text-white rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all font-['Sora']"
+                    >
+                      {t({ en: 'Register', he: 'הרשמה' }, lang)}
+                    </Link>
+                    <button className="px-8 py-4 border-2 border-white/20 text-white rounded-full font-semibold hover:bg-white/10 transition-all font-['Sora']">
+                      {t({ en: 'Details', he: 'פרטים' }, lang)}
                     </button>
                   </div>
-                )}
+                </div>
               </div>
-            ))}
+            </motion.div>
           </div>
         </section>
       )}
 
-      {/* 2026 */}
-      {year === '2026' && (
-        <section className="section-padding bg-hbm-cream">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl font-bold text-hbm-dark mb-6">{t({en:'2026 Events — Coming Soon',he:'אירועי 2026 — בקרוב'},lang)}</h2>
-            <p className="text-hbm-gray mb-8">{t({en:'Register now to be the first to know about upcoming events.',he:'הירשמו עכשיו להיות הראשונים לדעת על אירועים קרובים.'},lang)}</p>
-            <Link to="/events/register" className="btn-primary text-lg px-10 py-4 rounded-full inline-flex items-center gap-2">
-              {t({en:'Register Now',he:'הירשמו עכשיו'},lang)} <ArrowRight size={20}/>
-            </Link>
-          </div>
-        </section>
-      )}
-
-      {/* CTA */}
-      <section className="py-16 bg-gradient-purple text-white text-center">
-        <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-4">{t({en:'Want to host an HBM event?',he:'רוצים לארח אירוע HBM?'},lang)}</h2>
-          <p className="text-lg opacity-90 mb-6">{t({en:'Or create your own with our platform.',he:'או ליצור משלכם עם הפלטפורמה שלנו.'},lang)}</p>
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-orange text-lg px-10 py-4 rounded-full inline-flex items-center gap-2">
-            {t({en:"Let's Talk",he:'בואו נדבר'},lang)} <ArrowRight size={20}/>
-          </a>
+      {/* Events Grid */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedYear}
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+            >
+              {currentEvents.map((event, index) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  index={index}
+                  onClick={() => openEventModal(event)}
+                  lang={lang}
+                />
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </section>
+
+      {/* Event Modal */}
+      <EventModal
+        event={selectedEvent}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
-  )
-}
+  );
+};
+
+// Event Card Component
+const EventCard = ({ event, index, onClick, lang }) => {
+  return (
+    <motion.div
+      className="group relative cursor-pointer"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      onClick={onClick}
+      whileHover={{ y: -10 }}
+    >
+      <div className="relative h-full bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-gray-100 transition-all duration-300 group-hover:shadow-2xl group-hover:border-[#6160AB]">
+        {/* Image */}
+        <div className="relative h-64 overflow-hidden">
+          <motion.img
+            src={event.image}
+            alt={event.title}
+            className="w-full h-full object-cover"
+            whileHover={{ scale: 1.1 }}
+            transition={{ duration: 0.6 }}
+          />
+          
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
+          {/* Date badge */}
+          <motion.div
+            className="absolute top-4 left-4 bg-white rounded-2xl px-4 py-3 shadow-lg"
+            whileHover={{ scale: 1.1 }}
+          >
+            <div className="text-center">
+              <p className="text-xs font-semibold text-[#6160AB] uppercase tracking-wide">{event.month}</p>
+              <p className="text-3xl font-bold text-gray-900 font-['Sora']">{event.day}</p>
+            </div>
+          </motion.div>
+
+          {/* Face to Face badge */}
+          <div className="absolute top-4 right-4 bg-gradient-to-r from-[#F07B3C] to-[#ff9b6b] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            {event.type}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#6160AB] transition-colors font-['Sora']">
+            {event.title}
+          </h3>
+          
+          <p className="text-gray-600 mb-4 leading-relaxed font-['Sofia_Sans']">
+            {event.description}
+          </p>
+
+          {/* Meta info */}
+          <div className="flex items-center gap-4 text-sm text-gray-500 mb-4 font-['Sofia_Sans']">
+            {event.location && (
+              <div className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                <span>{event.location}</span>
+              </div>
+            )}
+            
+            {event.participants > 0 && (
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                <span>{event.participants}</span>
+              </div>
+            )}
+          </div>
+
+          {/* CTA - Always "View Gallery" */}
+          <div className="flex items-center justify-between">
+            <button className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-semibold hover:bg-gray-200 transition-all font-['Sofia_Sans']">
+              <ImageIcon className="w-5 h-5" />
+              {t({ en: 'View Gallery', he: 'צפה בגלריה' }, lang)}
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Hover shine effect */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 pointer-events-none"
+          initial={{ x: '-100%' }}
+          whileHover={{
+            x: '100%',
+            transition: { duration: 0.8 }
+          }}
+        />
+      </div>
+    </motion.div>
+  );
+};
+
+export default Events;
