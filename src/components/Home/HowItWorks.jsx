@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
 import { useI18n, t } from '../../i18n/context'
 import { siteContent } from '../../data/content'
+import BubbleContainer from '../BubbleContainer'
 
 // 3D Tilt Card Component
 const MagicCard = ({ image }) => {
@@ -91,20 +92,8 @@ export default function HowItWorks() {
   }
 
   return (
-    <section className="py-20 bg-white relative overflow-hidden" ref={containerRef}>
-      {/* Background Decor - Anti-Gravity Blobs */}
-      <motion.div 
-        className="absolute top-0 right-0 w-[500px] h-[500px] bg-hbm-purple/5 rounded-full blur-[100px] pointer-events-none"
-        animate={{ y: [-20, 20, -20], scale: [1, 1.1, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div 
-        className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-hbm-orange/5 rounded-full blur-[80px] pointer-events-none"
-        animate={{ y: [20, -20, 20], scale: [1, 1.2, 1] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-      />
-
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
+    <section className="section-padding bg-hbm-cream" ref={containerRef}>
+      <BubbleContainer bgColor="#D8EECF">
         
         {/* Header & Toggle */}
         <div className="text-center mb-16">
@@ -262,7 +251,7 @@ export default function HowItWorks() {
             </motion.div>
           </div>
         </div>
-      </div>
+      </BubbleContainer>
     </section>
   )
 }

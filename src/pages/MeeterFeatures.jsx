@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n, t } from '../i18n/context'
 import { ArrowRight, Shield, Globe, Lock, BarChart3 } from 'lucide-react'
+import EyebrowBadge from '../components/EyebrowBadge'
 
 
 
@@ -42,7 +43,9 @@ export default function MeeterFeatures() {
       {/* Original MeeterFeatures Content */}
       <section className="bg-gradient-hero section-padding text-center">
         <div className="max-w-4xl mx-auto">
-          <p className="text-hbm-purple font-semibold text-sm uppercase tracking-widest mb-3">Meeter — Features</p>
+          <div className="mb-6">
+            <EyebrowBadge text="THE MEETER - FEATURES" />
+          </div>
           <h1 className="text-4xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>{t({en:'How Will This Help You?',he:'איך זה יעזור לכם?'},lang)}</h1>
           <p className="text-xl text-hbm-gray">{t({en:'See what awaits you.',he:'ראו מה מחכה לכם.'},lang)}</p>
         </div>

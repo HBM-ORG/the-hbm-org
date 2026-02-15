@@ -6,6 +6,7 @@ import { ui } from '../i18n/translations'
 import { getWhatsappUrl } from '../components/Layout'
 import { ArrowRight } from 'lucide-react'
 import { AnimatedHero, Why8Minutes, QuoteCarousel, InteractiveCard, PhilosophyQuote, ManifestoSection, Guidelines, HowItWorks } from '../components/Home'
+import BubbleContainer from '../components/BubbleContainer'
 
 const WP = 'https://www.thehbm.org/wp-content/uploads'
 const { home, global } = siteContent
@@ -89,45 +90,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════════ CONVERSATION CARDS — SPLIT LAYOUT ═══════════════════ */}
-      <section className="section-padding bg-hbm-cream">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
-          {/* Left side — Headlines + CTA */}
-          <div className="md:w-2/5">
-            <h2 className="text-4xl md:text-5xl font-bold text-hbm-dark mb-1 leading-tight">
-              {t(home.conversationCards.titleLines, lang)?.[0]}
-            </h2>
-            <h2 className="text-4xl md:text-5xl font-bold text-hbm-purple/60 mb-1 italic leading-tight">
-              {t(home.conversationCards.titleLines, lang)?.[1]}
-            </h2>
-            <h2 className="text-4xl md:text-5xl font-bold text-hbm-dark mb-8 leading-tight">
-              {t(home.conversationCards.titleLines, lang)?.[2]}
-            </h2>
-            <Link to="/events" className="btn-orange rounded-full px-8 py-3">
-              {t(home.conversationCards.ctaText, lang)}
-            </Link>
-          </div>
-
-          {/* Right side — 3 floating cards with 3D hover effects */}
-          <div className="md:w-3/5 relative space-y-4">
-            {home.conversationCards.cards.map((card, i) => (
-              <InteractiveCard 
-                key={i}
-                card={card}
-                index={i}
-                lang={lang}
-                t={t}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ═══════════════════ MANIFESTO — WE HAVE ONE JOB ═══════════════════ */}
+      <ManifestoSection />
 
       {/* ═══════════════════ PHILOSOPHY QUOTE — ANIMATED ═══════════════════ */}
       <PhilosophyQuote />
 
-      {/* ═══════════════════ MANIFESTO — WE HAVE ONE JOB ═══════════════════ */}
-      <ManifestoSection />
+      {/* ═══════════════════ CONVERSATION CARDS — SPLIT LAYOUT ═══════════════════ */}
+      <section className="section-padding bg-hbm-cream">
+        <BubbleContainer bgColor="white">
+          <div className="flex flex-col md:flex-row items-center gap-12">
+            {/* Left side — Headlines + CTA */}
+            <div className="md:w-2/5">
+              <h2 className="text-4xl md:text-5xl font-bold text-hbm-dark mb-1 leading-tight">
+                {t(home.conversationCards.titleLines, lang)?.[0]}
+              </h2>
+              <h2 className="text-4xl md:text-5xl font-bold text-hbm-purple/60 mb-1 italic leading-tight">
+                {t(home.conversationCards.titleLines, lang)?.[1]}
+              </h2>
+              <h2 className="text-4xl md:text-5xl font-bold text-hbm-dark mb-8 leading-tight">
+                {t(home.conversationCards.titleLines, lang)?.[2]}
+              </h2>
+              <Link to="/events" className="btn-orange rounded-full px-8 py-3">
+                {t(home.conversationCards.ctaText, lang)}
+              </Link>
+            </div>
+
+            {/* Right side — 3 floating cards with 3D hover effects */}
+            <div className="md:w-3/5 relative space-y-4">
+              {home.conversationCards.cards.map((card, i) => (
+                <InteractiveCard 
+                  key={i}
+                  card={card}
+                  index={i}
+                  lang={lang}
+                  t={t}
+                />
+              ))}
+            </div>
+          </div>
+        </BubbleContainer>
+      </section>
 
       {/* ═══════════════════ WHY 8 MINUTES — INSTAGRAM CAROUSEL ═══════════════════ */}
       <Why8Minutes />

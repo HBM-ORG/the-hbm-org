@@ -6,6 +6,7 @@ import {
   MessageCircle, Zap, BarChart3, Heart, TrendingUp, Smile, Globe, Coffee, 
   Briefcase, Layout, Award, Shield, UserPlus, Sparkles 
 } from 'lucide-react'
+import EyebrowBadge from '../components/EyebrowBadge'
 
 const tabs = [
   { id:'events', icon:CalendarDays, label:{en:'Events',he:'אירועים'},
@@ -73,7 +74,9 @@ export default function MeeterWho() {
     <div className="min-h-screen">
       <section className="bg-gradient-hero section-padding text-center">
         <div className="max-w-4xl mx-auto">
-          <p className="text-hbm-purple font-semibold text-sm uppercase tracking-widest mb-3">Meeter - Who is it for?</p>
+          <div className="mb-6">
+            <EyebrowBadge text="THE MEETER - WHO IS IT FOR?" />
+          </div>
           <h1 className="text-4xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>{t({en:'Where Does It Meet You?',he:'איפה זה פוגש אותנו?'},lang)}</h1>
           <p className="text-xl text-hbm-gray">{t({en:'Tailored solutions for every sector.',he:'פתרונות מותאמים לכל סקטור.'},lang)}</p>
         </div>

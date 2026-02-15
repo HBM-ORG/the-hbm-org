@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Instagram } from 'lucide-react'
 import { useI18n, t } from '../../i18n/context'
+import BubbleContainer from '../BubbleContainer'
 
 // Placeholder videos - will be replaced with Instagram API later
 
@@ -48,15 +49,8 @@ export default function Why8Minutes() {
   }, [])
 
   return (
-    <section className="section-padding bg-gradient-to-br from-[#fef5ed] via-white to-[#f8f9fa] relative overflow-hidden">
-      {/* Decorative elements */}
-      <motion.div
-        className="absolute top-10 right-10 w-64 h-64 bg-[#F07B3C]/10 rounded-full blur-3xl"
-        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 8, repeat: Infinity }}
-      />
-
-      <div className="max-w-6xl mx-auto relative z-10">
+    <section className="section-padding bg-hbm-cream">
+      <BubbleContainer bgColor="#FBD5C1">
         {/* Section Header */}
         <div className="text-center mb-12">
           <motion.div
@@ -78,6 +72,7 @@ export default function Why8Minutes() {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-bold text-hbm-purple mb-4"
           >
+            Why 8 Minutes?
           </motion.h2>
 
           <motion.p
@@ -164,7 +159,7 @@ export default function Why8Minutes() {
             </motion.a>
           </motion.div>
         </div>
-      </div>
+      </BubbleContainer>
     </section>
   )
 }

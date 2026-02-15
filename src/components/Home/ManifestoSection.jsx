@@ -1,186 +1,282 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Target, Users, Heart, Sparkles, Zap, Globe } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Users, Zap, ArrowRight, Sparkles } from 'lucide-react'
+import BubbleContainer from '../BubbleContainer'
 
 const ManifestoSection = () => {
-  // Floating icons with animations
-  const floatingIcons = [
-    { Icon: Heart, color: '#F07B3C', delay: 0, x: '10%', y: '20%', size: 'w-16 h-16' },
-    { Icon: Users, color: '#6160AB', delay: 0.5, x: '85%', y: '15%', size: 'w-20 h-20' },
-    { Icon: Sparkles, color: '#73C154', delay: 1, x: '15%', y: '75%', size: 'w-12 h-12' },
-    { Icon: Target, color: '#F07B3C', delay: 1.5, x: '80%', y: '80%', size: 'w-14 h-14' },
-    { Icon: Zap, color: '#6160AB', delay: 2, x: '50%', y: '10%', size: 'w-16 h-16' },
-    { Icon: Globe, color: '#73C154', delay: 2.5, x: '5%', y: '50%', size: 'w-18 h-18' },
-  ]
-
-  // Stats/numbers animation
-  const stats = [
-    { number: '1', label: 'Mission', icon: Target },
-    { number: '8', label: 'Minutes', icon: Sparkles },
-    { number: '∞', label: 'Connections', icon: Heart },
-  ]
-
   return (
-    <section className="relative py-24 overflow-hidden bg-hbm-dark">
-      {/* Subtle animated gradient background */}
+    <section className="section-padding bg-gradient-to-br from-orange-50 via-purple-50 to-orange-50 relative overflow-hidden">
+      {/* Animated background blobs */}
       <motion.div
-        className="absolute inset-0 opacity-40"
-        style={{
-          background: 'radial-gradient(circle at 50% 50%, #2d2554 0%, #1a1d3a 80%)'
-        }}
+        className="absolute top-0 left-0 w-96 h-96 bg-hbm-orange/20 rounded-full blur-3xl"
         animate={{
-          scale: [1, 1.1, 1],
+          scale: [1, 1.3, 1],
+          x: [0, 30, 0],
+          y: [0, 50, 0],
         }}
         transition={{
-          duration: 20,
+          duration: 18,
           repeat: Infinity,
           ease: "easeInOut"
         }}
       />
-
-      {/* 2 Soft Gradient Blobs (Top-Left & Bottom-Right) */}
       <motion.div
-        className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#6160AB]/10 rounded-full blur-[100px] pointer-events-none"
-        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-hbm-purple/20 rounded-full blur-3xl"
+        animate={{
+          scale: [1, 1.4, 1],
+          x: [0, -40, 0],
+          y: [0, -30, 0],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 2
+        }}
       />
-      <motion.div
-        className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-[#F07B3C]/10 rounded-full blur-[120px] pointer-events-none"
-        animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-      />
 
-      {/* Content */}
-      <div className="max-w-5xl mx-auto px-6 relative z-10 text-center">
-        {/* Eyebrow */}
-        <motion.div
-          className="mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <span className="inline-block px-4 py-1 border border-white/20 rounded-full text-white/60 text-sm uppercase tracking-widest">
-            Our Mission
-          </span>
-        </motion.div>
+      <BubbleContainer bgColor="rgba(255, 255, 255, 0.95)" className="max-w-6xl backdrop-blur-xl">
+        <div className="text-center">
+          {/* Eyebrow badge */}
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="eyebrow-badge">Our Mission</span>
+          </motion.div>
 
-        {/* Main headline */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-2 tracking-tight">
-            We have{' '}
-            <span className="relative inline-block mx-2">
-              <motion.span
-                className="absolute inset-0 rounded-full blur-2xl"
-                style={{ background: 'linear-gradient(90deg, #F07B3C, #ff9b6b)' }}
-                animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.2, 1] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
-              <span className="relative z-10 text-[#F07B3C]">ONE</span>
-            </span>{' '}
-            job.
-          </h2>
-        </motion.div>
+          {/* Main headline with giant ONE */}
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <h2 className="text-4xl md:text-7xl font-bold text-gray-900 mb-4 leading-tight">
+              We have{' '}
+              <span className="relative inline-block mx-2">
+                <motion.span
+                  className="absolute inset-0 rounded-full blur-3xl"
+                  style={{ background: 'linear-gradient(135deg, #F07B3C, #ff9b6b)' }}
+                  animate={{ 
+                    opacity: [0.3, 0.6, 0.3], 
+                    scale: [1, 1.3, 1],
+                    rotate: [0, 180, 360]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+                <span className="relative z-10 text-hbm-orange text-5xl md:text-8xl">ONE</span>
+              </span>{' '}
+              job.
+            </h2>
+          </motion.div>
 
-        {/* Description paragraphs */}
-        <div className="max-w-3xl mx-auto space-y-8">
+          {/* Hero quote */}
           <motion.p
-            className="text-xl text-gray-400 font-light"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            className="text-2xl md:text-3xl font-light text-gray-700 mb-12 italic"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            We don't do Real Estate. We don't do Cyber. We don't do CRM or Medical Devices.
+            "We turn strangers into friends,
+            <br className="hidden md:block" />
+            and moments into memories."
           </motion.p>
 
+          {/* Split Visual - Physical + Digital = Connection */}
           <motion.div
-            className="relative py-8"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            className="relative mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <p className="text-2xl md:text-4xl font-semibold text-white leading-normal">
-              We help people{' '}
-              <motion.span
-                className="inline-block text-[#73C154] cursor-default"
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: 'spring', stiffness: 300 }}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+              {/* Left: Physical World */}
+              <motion.div
+                className="relative group"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
               >
-                connect
-              </motion.span>.
-              <br className="hidden md:block" />
-              Connect with{' '}
-              <motion.span
-                className="inline-block text-[#6160AB] cursor-default"
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: 'spring', stiffness: 300 }}
+                <div className="p-8 rounded-3xl bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 shadow-lg">
+                  <motion.div
+                    className="mb-4 flex justify-center"
+                    animate={{ 
+                      y: [0, -10, 0],
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <div className="w-20 h-20 rounded-full bg-hbm-purple/20 flex items-center justify-center">
+                      <Users size={40} className="text-hbm-purple" strokeWidth={2} />
+                    </div>
+                  </motion.div>
+                  <h3 className="text-2xl font-bold text-hbm-purple mb-2">Physical</h3>
+                  <p className="text-sm text-gray-600">Real-world spaces & moments</p>
+                </div>
+              </motion.div>
+
+              {/* Middle: Connecting Arrow */}
+              <div className="flex flex-col items-center justify-center">
+                <motion.div
+                  animate={{ 
+                    x: [0, 10, 0],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="hidden md:block"
+                >
+                  <ArrowRight size={48} className="text-hbm-orange" strokeWidth={2.5} />
+                </motion.div>
+                
+                {/* Plus sign for mobile */}
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 90, 0]
+                  }}
+                  transition={{ 
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="md:hidden text-4xl font-bold text-hbm-orange my-4"
+                >
+                  +
+                </motion.div>
+
+                <motion.div
+                  className="mt-4 px-6 py-2 bg-gradient-to-r from-hbm-purple to-hbm-orange rounded-full"
+                  animate={{
+                    boxShadow: [
+                      '0 0 20px rgba(97, 96, 171, 0.3)',
+                      '0 0 40px rgba(240, 123, 60, 0.5)',
+                      '0 0 20px rgba(97, 96, 171, 0.3)',
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <p className="text-white font-bold text-sm uppercase tracking-wider">
+                    AI + Data
+                  </p>
+                </motion.div>
+              </div>
+
+              {/* Right: Digital Technology */}
+              <motion.div
+                className="relative group"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
               >
-                themselves
-              </motion.span>.{' '}
-              Connect with{' '}
-              <motion.span
-                className="inline-block text-[#F07B3C] cursor-default"
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-              >
-                others
-              </motion.span>.{' '}
-              Connect with{' '}
-              <motion.span
-                className="inline-block text-[#73C154] cursor-default"
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-              >
-                nature
-              </motion.span>.
-            </p>
+                <div className="p-8 rounded-3xl bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 shadow-lg">
+                  <motion.div
+                    className="mb-4 flex justify-center"
+                    animate={{ 
+                      rotate: [0, 360],
+                    }}
+                    transition={{ 
+                      duration: 8,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                  >
+                    <div className="w-20 h-20 rounded-full bg-hbm-orange/20 flex items-center justify-center">
+                      <Zap size={40} className="text-hbm-orange" strokeWidth={2} />
+                    </div>
+                  </motion.div>
+                  <h3 className="text-2xl font-bold text-hbm-orange mb-2">Digital</h3>
+                  <p className="text-sm text-gray-600">Technology & intelligence</p>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Result: Meaningful Connections */}
+            <motion.div
+              className="mt-12"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 1 }}
+            >
+              <div className="inline-block px-8 py-4 bg-gradient-to-r from-hbm-purple via-hbm-orange to-hbm-purple bg-[length:200%_100%] rounded-full relative">
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  animate={{
+                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  style={{
+                    background: 'linear-gradient(90deg, rgba(97,96,171,0.3), rgba(240,123,60,0.3), rgba(97,96,171,0.3))',
+                    backgroundSize: '200% 100%',
+                  }}
+                />
+                <div className="relative flex items-center gap-3">
+                  <Sparkles className="text-white" size={24} />
+                  <span className="text-2xl md:text-3xl font-bold text-white">
+                    Meaningful Connections
+                  </span>
+                  <Sparkles className="text-white" size={24} />
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
 
-          <div className="space-y-6 max-w-2xl mx-auto mt-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-            >
-              <p className="text-lg md:text-xl text-gray-300 font-light">
-                Because this is what we do best.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 1.4 }}
-            >
-              <p className="text-lg md:text-xl text-gray-300 font-light">
-                We know how to do it.
-              </p>
-            </motion.div>
-
-            <motion.div
+          {/* Bottom statement */}
+          <motion.div
+            className="space-y-4 border-t border-gray-200 pt-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 1.2 }}
+          >
+            <p className="text-xl md:text-2xl text-gray-700 font-light">
+              Because this is what we do best.
+            </p>
+            <motion.p
+              className="text-2xl md:text-4xl font-bold"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 2.0, type: "spring" }}
+              transition={{ duration: 0.6, delay: 1.4, type: "spring" }}
             >
-               <p className="text-xl md:text-3xl font-bold text-white">
-                And we are the <span className="text-[#F07B3C]">BEST</span> at it.
-              </p>
-            </motion.div>
-          </div>
+              And we are the{' '}
+              <motion.span
+                className="bg-gradient-to-r from-hbm-orange via-hbm-purple to-hbm-orange bg-clip-text text-transparent"
+                animate={{
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+                style={{
+                  backgroundSize: '200% 200%',
+                }}
+              >
+                BEST
+              </motion.span>{' '}
+              at it.
+            </motion.p>
+          </motion.div>
         </div>
-      </div>
+      </BubbleContainer>
     </section>
   )
 }

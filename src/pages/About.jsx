@@ -3,6 +3,7 @@ import { siteContent } from '../data/content'
 import { useI18n, t } from '../i18n/context'
 import { getWhatsappUrl } from '../components/Layout'
 import { ArrowRight } from 'lucide-react'
+import EyebrowBadge from '../components/EyebrowBadge'
 
 const { about, global } = siteContent
 
@@ -47,6 +48,9 @@ export default function About() {
       {/* Hero */}
       <section className="bg-gradient-hero section-padding text-center">
         <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <EyebrowBadge text="ABOUT US" />
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-2 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent">{t(about.hero.title, lang)}</h1>
           <p className="text-xl text-hbm-gray">{t(about.hero.subtitle, lang)}</p>
         </div>

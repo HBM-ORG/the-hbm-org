@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import EventModal from '../components/Events/EventModal';
 import { events2025, events2026, nextEvent } from '../data/events';
 import { useI18n, t } from '../i18n/context';
+import EyebrowBadge from '../components/EyebrowBadge';
 
 const Events = () => {
   const [selectedYear, setSelectedYear] = useState('2026');
@@ -55,8 +56,10 @@ const Events = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            <div className="mb-6">
+              <EyebrowBadge text="HBM EVENTS - PAST AND FUTURE" />
+            </div>
             <h1 className="text-6xl md:text-8xl font-bold mb-6 font-['Sora']">
-                        <p className="text-hbm-purple font-semibold text-sm uppercase tracking-widest mb-3">HBM Events - Past and Future</p>
               <span className="bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent">
                 {t({ en: 'Events', he: 'אירועים' }, lang)}
               </span>

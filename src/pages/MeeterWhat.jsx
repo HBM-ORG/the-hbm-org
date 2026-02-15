@@ -5,6 +5,8 @@ import { getWhatsappUrl } from '../components/Layout'
 import { ArrowRight, Users, BookOpen, Briefcase, Handshake, Coffee, GraduationCap, Timer, Shield, ChevronDown } from 'lucide-react'
 import ComparisonSection from '../components/Meeter/ComparisonSection'
 import Why8MinutesTimer from '../components/Meeter/Why8MinutesTimer'
+import EyebrowBadge from '../components/EyebrowBadge'
+
 const words = [
   'Partner', 'Deal', 'Friend', 'Mentor', 'Study Buddy', 
   'Coffee Mate', 'Venture', 'Community', 'Job', 'Date', 'Opportunity'
@@ -48,7 +50,9 @@ export default function MeeterWhat() {
       {/* ── S1: HERO + VIDEO TOGGLE ── */}
       <section className="bg-gradient-hero section-padding text-center">
         <div className="max-w-4xl mx-auto">
-          <p className="text-hbm-purple font-semibold text-sm uppercase tracking-widest mb-3">The Meeter - What is it?</p>
+          <div className="mb-6">
+            <EyebrowBadge text="THE MEETER - WHAT IS IT?" />
+          </div>
           <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>
             {t({ en: 'Bringing Real Conversations to Life.', he: 'מביאים שיחות אמיתיות לחיים.' }, lang)}
           </h1>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { User, Eye, Heart, MessageCircle, Sparkles, Shield, Smile, Clock } from 'lucide-react'
+import BubbleContainer from '../BubbleContainer'
 
 const items = [
   {
@@ -55,20 +56,8 @@ const items = [
 
 const Guidelines = () => {
   return (
-    <section className="relative py-32 bg-gradient-to-br from-[#fff7ee] via-white to-[#f7f2ff] overflow-hidden">
-      {/* Background blobs */}
-      <motion.div
-        className="absolute top-0 right-[-10%] w-[400px] h-[400px] bg-[#6160AB]/10 rounded-full blur-3xl"
-        animate={{ y: [0, 30, 0] }}
-        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute bottom-[-10%] left-[-10%] w-[450px] h-[450px] bg-[#F07B3C]/10 rounded-full blur-3xl"
-        animate={{ y: [0, -30, 0] }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-      />
-
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
+    <section className="section-padding bg-hbm-cream">
+      <BubbleContainer bgColor="#BBC0FF">
         {/* Header */}
         <motion.div
           className="text-center mb-16"
@@ -143,7 +132,7 @@ const Guidelines = () => {
             </motion.div>
           ))}
         </div>
-      </div>
+      </BubbleContainer>
     </section>
   )
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useI18n, t } from '../i18n/context'
 import { BookOpen, Play, Calendar, Sparkles } from 'lucide-react'
+import EyebrowBadge from '../components/EyebrowBadge'
 
 const books = [
   { title: 'You Were Born Rich', author: 'Bob Proctor', insight: { en: 'Your thoughts create your reality. Reprogram yourself for abundance.', he: 'המחשבות שלך יוצרות את המציאות שלך. תכנת מחדש את עצמך לשפע.' } },
@@ -25,7 +26,9 @@ export default function Knowledge() {
     <div className="min-h-screen">
       <section className="bg-gradient-hero section-padding text-center">
         <div className="max-w-4xl mx-auto">
-          <p className="text-hbm-green font-semibold text-sm uppercase tracking-widest mb-3">The Wisdom Base</p>
+          <div className="mb-6">
+            <EyebrowBadge text="THE WISDOM BASE" />
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold text-hbm-dark mb-4">
             {t({ en: 'Knowledge', he: 'ידע', es: 'Conocimiento', fr: 'Savoir', de: 'Wissen', ar: 'المعرفة' }, lang)}
           </h1>

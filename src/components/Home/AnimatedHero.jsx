@@ -202,7 +202,7 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
           animate={{ y: [0, 15, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="flex flex-col items-center gap-2 text-gray-400">
+          <div className="flex flex-col items-center gap text-gray-400">
             <span className="text-sm font-medium tracking-wide">
               {t({ en: 'Scroll to explore', he: 'גללו למטה' }, lang)}
             </span>
