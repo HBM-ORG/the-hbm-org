@@ -1,11 +1,61 @@
-import React, { useState, useRef } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useRef, useEffect } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+// Register ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger)
 
 export default function InteractiveCard({ card, index, lang, t }) {
   const [rotateX, setRotateX] = useState(0)
   const [rotateY, setRotateY] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
   const cardRef = useRef(null)
+
+  useEffect(() => {
+    if (!cardRef.current) return
+
+    // Detect if mobile/tablet
+    const isMobile = window.innerWidth < 768
+    
+    // Calculate initial offset based on card index
+    // Desktop: Card 0: 240px, Card 1: 480px, Card 2: 720px
+    // Mobile: Card 0: 80px, Card 1: 160px, Card 2: 240px (reduced for smaller screens)
+    const baseOffset = isMobile ? 80 : 240
+    const initialOffset = (index + 1) * baseOffset
+    
+    // Calculate initial rotation (slight rotation for visual interest)
+    // Reduce rotation on mobile for cleaner look
+    const baseRotation = isMobile ? -1.5 : -2.88
+    const initialRotation = (index + 1) * baseRotation
+
+    // Set initial state
+    gsap.set(cardRef.current, {
+      x: initialOffset,
+      rotation: initialRotation,
+      opacity: 0
+    })
+
+    // Create ScrollTrigger animation
+    const animation = gsap.to(cardRef.current, {
+      x: 0,
+      rotation: 0,
+      opacity: 1,
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: cardRef.current,
+        start: 'top 80%', // Start when top of card is at 80% of viewport
+        end: 'top 30%',   // End when top of card is at 30% of viewport
+        scrub: 1,         // Smooth scrubbing, takes 1 second to "catch up"
+        // markers: true, // Uncomment for debugging
+      }
+    })
+
+    // Cleanup
+    return () => {
+      animation.scrollTrigger?.kill()
+      animation.kill()
+    }
+  }, [index])
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return
@@ -35,12 +85,8 @@ export default function InteractiveCard({ card, index, lang, t }) {
   }
 
   return (
-    <motion.div
+    <div
       ref={cardRef}
-      initial={{ opacity: 0, x: 50 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.15, duration: 0.5 }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
@@ -87,6 +133,6 @@ export default function InteractiveCard({ card, index, lang, t }) {
           transition: 'opacity 0.3s ease',
         }}
       />
-    </motion.div>
+    </div>
   )
 }

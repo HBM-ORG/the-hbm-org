@@ -142,8 +142,8 @@ export const siteContent = {
       subtitle: { en: 'A Safe & Authentic Space.', he: 'מרחב בטוח ואותנטי.' },
       videoSteps: [
         {
-          title: { en: 'Set Your Vibe', he: 'בחרו את האווירה' },
-          desc: { en: 'Pick interests & an emoji to start.', he: 'בחרו תחומי עניין ואימוג׳י להתחלה.' },
+          title: { en: 'Scan & Set Your Vibe', he: 'בחרו את האווירה' },
+          desc: { en: 'No app download needed. Scan the QR code to enter Meeter. Pick your interests and choose an emoji to get started.', he: 'בחרו תחומי עניין ואימוג׳י להתחלה.' },
           image: 'https://thehbm.org/wp-content/uploads/2025/06/11.png'
         },
         {

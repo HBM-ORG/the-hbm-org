@@ -1,18 +1,22 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Sofia+Pro:wght@300;400;500;600;700;800&display=swap');
 
 @theme {
-  --color-hbm-purple: #6160AB;
-  --color-hbm-orange: #F07B3C;
+  --color-hbm-purple: #6F6EB3;
+  --color-hbm-orange: #F3884F;
   --color-hbm-green: #73C154;
   --color-hbm-dark: #1A1A2E;
-  --color-hbm-cream: #FFF8F0;
+  --color-hbm-cream: #FAF9F5;
   --color-hbm-gray: #6B7280;
   --color-hbm-light: #F5F3FF;
   --color-hbm-purple-light: #8584C7;
   --color-hbm-orange-light: #F5A06A;
   --color-hbm-green-light: #95D47D;
-  --font-display: 'Sora', sans-serif;
-  --font-body: 'Sofia Sans', sans-serif;
+  --color-bubble-orange: #FBD5C1;
+  --color-bubble-purple: #BBC0FF;
+  --color-bubble-green: #D8EECF;
+  --font-display: 'Sofia Pro', 'Sora', sans-serif;
+  --font-body: 'Sofia Pro', 'Sofia Sans', sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -175,4 +179,52 @@ html { scroll-behavior: smooth; }
 @keyframes scrollLogos {
   0% { transform: translateX(0); }
   100% { transform: translateX(-20%); } /* Move 1/5th for 5 sets */
+}
+
+/* Bubble Container System */
+.bubble-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px;
+  border-radius: 60px;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.bubble-container-sm {
+  max-width: 900px;
+}
+
+.bubble-rotated {
+  transform: rotate(-2deg);
+}
+
+@media (max-width: 768px) {
+  .bubble-container {
+    padding: 24px;
+    border-radius: 30px;
+  }
+}
+
+/* Eyebrow Badge */
+.eyebrow-badge {
+  display: inline-block;
+  padding: 8px 24px;
+  background: rgba(111, 110, 179, 0.1);
+  border: 1px solid rgba(111, 110, 179, 0.2);
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #6F6EB3;
+  font-family: var(--font-display);
+}
+
+@media (max-width: 768px) {
+  .eyebrow-badge {
+    font-size: 10px;
+    padding: 6px 18px;
+    letter-spacing: 1px;
+  }
 }

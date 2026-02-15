@@ -82,10 +82,10 @@ const Guidelines = () => {
             Guidelines
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            What Makes This Work:
+            HBM Tips:
           </h2>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-            Clear guidelines create a safe, respectful, and meaningful space — so every 8-minute
+            Clear guidelines create a safe, respectful, and meaningful space - so every 8 minute
             conversation can really matter.
           </p>
         </motion.div>
