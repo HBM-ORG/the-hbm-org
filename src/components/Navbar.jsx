@@ -25,32 +25,19 @@ const navStructure = [
       { id: 'what', label: { en: 'What is it?', he: 'מה זה?' }, href: '/meeter' },
       { id: 'who', label: { en: 'Who is it for?', he: 'למי זה?' }, href: '/meeter/who' },
       { id: 'features', label: { en: 'Features', he: 'יכולות' }, href: '/meeter/features' },
-      { id: 'pricing', label: { en: 'Pricing', he: 'תמחור' }, href: '/meeter/pricing' },
     ],
   },
   {
     key: 'events', path: '/events',
-    subs: [
-      { id: '2025', label: { en: '2025 Archive', he: 'ארכיון 2025' } },
-      { id: '2026', label: { en: '2026 Upcoming', he: '2026 קרוב' } },
-    ],
+    // subs removed as per user request
   },
   {
     key: 'knowledge', path: '/knowledge',
-    subs: [
-      { id: 'books', label: { en: 'Books', he: 'ספרים' } },
-      { id: 'videos', label: { en: 'Videos', he: 'סרטונים' } },
-      { id: 'brand', label: { en: 'Our Logo', he: 'הלוגו שלנו' } },
-    ],
+    // subs removed as per user request
   },
   {
     key: 'about', path: '/about',
-    subs: [
-      { id: 'mission', label: { en: 'Mission', he: 'משימה' } },
-      { id: 'vision', label: { en: 'Vision', he: 'חזון' } },
-      { id: 'values', label: { en: 'Values', he: 'ערכים' } },
-      { id: 'team', label: { en: 'Team', he: 'צוות' } },
-    ],
+    // subs removed as per user request
   },
 ]
 
@@ -99,7 +86,7 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-1" ref={dropdownRef}>
           {navStructure.map((item) => (
             <div key={item.key} className="relative group">
-              {item.key === 'home' ? (
+              {item.key === 'home' || !item.subs ? (
                 <Link
                   to={item.path}
                   className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
@@ -169,7 +156,7 @@ export default function Navbar() {
                 {t(ui.nav[item.key], lang)}
               </Link>
               <div className="pl-4 space-y-1">
-                {item.subs.map((sub) => (
+                {item.subs && item.subs.map((sub) => (
                   <Link key={sub.id} to={sub.href || `${item.path}#${sub.id}`}
                     onClick={() => setMobileOpen(false)}
                     className="block text-sm text-hbm-gray py-1 hover:text-hbm-purple">

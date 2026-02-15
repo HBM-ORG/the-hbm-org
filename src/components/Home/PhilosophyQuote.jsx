@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Quote } from 'lucide-react'
+import BubbleContainer from '../BubbleContainer'
 
 const PhilosophyQuote = () => {
   // Animation variants for word-by-word reveal
@@ -53,37 +54,8 @@ const PhilosophyQuote = () => {
   }
 
   return (
-    <section className="relative py-32 overflow-hidden bg-gradient-to-br from-white via-purple-50 to-orange-50">
-      {/* Animated background elements */}
-      <motion.div
-        className="absolute top-20 left-20 w-96 h-96 bg-[#6160AB]/20 rounded-full blur-3xl"
-        animate={{
-          scale: [1, 1.3, 1],
-          x: [0, 50, 0],
-          y: [0, -30, 0],
-        }}
-        transition={{
-          duration: 15,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-
-      <motion.div
-        className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-[#F07B3C]/20 rounded-full blur-3xl"
-        animate={{
-          scale: [1, 1.4, 1],
-          x: [0, -60, 0],
-          y: [0, 40, 0],
-        }}
-        transition={{
-          duration: 18,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
+    <section className="section-padding bg-hbm-cream">
+      <BubbleContainer className="max-w-6xl">
         <motion.div
           className="relative"
           initial={{ opacity: 0, y: 50 }}
@@ -176,7 +148,7 @@ const PhilosophyQuote = () => {
             <Quote className="w-24 h-24 md:w-32 md:h-32 text-[#F07B3C]/20" strokeWidth={1.5} />
           </motion.div>
         </motion.div>
-      </div>
+      </BubbleContainer>
     </section>
   )
 }

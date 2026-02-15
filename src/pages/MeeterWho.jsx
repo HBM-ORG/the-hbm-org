@@ -7,6 +7,9 @@ import {
   Briefcase, Layout, Award, Shield, UserPlus, Sparkles 
 } from 'lucide-react'
 import EyebrowBadge from '../components/EyebrowBadge'
+import BubbleContainer from '../components/BubbleContainer'
+import NextPageBridge from '../components/NextPageBridge'
+
 
 const tabs = [
   { id:'events', icon:CalendarDays, label:{en:'Events',he:'אירועים'},
@@ -63,96 +66,98 @@ const testimonials = [
   { quote:{en:'"Students found study partners within the first week."',he:'"סטודנטים מצאו שותפי לימוד בתוך השבוע הראשון."'}, name:'Prof. Amit R.', role:{en:'Dean of Students',he:'דיקן סטודנטים'} },
 ]
 
-
-
 export default function MeeterWho() {
   const { lang } = useI18n()
   const [activeTab, setActiveTab] = useState('events')
   const currentTab = tabs.find(t => t.id === activeTab)
 
   return (
-    <div className="min-h-screen">
-      <section className="bg-gradient-hero section-padding text-center">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <EyebrowBadge text="THE MEETER - WHO IS IT FOR?" />
+    <div className="min-h-screen bg-hbm-cream">
+      {/* Hero */}
+      <section className="bg-hbm-cream pt-20 pb-16">
+          <div className="max-w-4xl mx-auto text-center px-6">
+            <div className="mb-6">
+              <EyebrowBadge text="THE MEETER - WHO IS IT FOR?" />
+            </div>
+            <h1 className="text-4xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>{t({en:'Where Does It Meet You?',he:'איפה זה פוגש אותנו?'},lang)}</h1>
+            <p className="text-xl text-hbm-gray">{t({en:'Tailored solutions for every sector.',he:'פתרונות מותאמים לכל סקטור.'},lang)}</p>
           </div>
-          <h1 className="text-4xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>{t({en:'Where Does It Meet You?',he:'איפה זה פוגש אותנו?'},lang)}</h1>
-          <p className="text-xl text-hbm-gray">{t({en:'Tailored solutions for every sector.',he:'פתרונות מותאמים לכל סקטור.'},lang)}</p>
-        </div>
       </section>
 
       {/* Tabs */}
-      <section className="section-padding bg-gradient-to-br from-[#fff7ee] via-white to-[#f7f2ff]">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-center gap-2 md:gap-4 mb-16 flex-wrap">
-            {tabs.map(tb => (
-              <button key={tb.id} onClick={() => setActiveTab(tb.id)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 shadow-sm
-                  ${activeTab===tb.id
-                    ? 'bg-gradient-to-r from-[#6160AB] to-[#F07B3C] text-white shadow-lg scale-105'
-                    : 'bg-white text-hbm-gray border border-gray-200 hover:border-[#F07B3C]'
-                  }`}>
-                <tb.icon size={18}/>{t(tb.label,lang)}
-              </button>
-            ))}
-          </div>
-          {currentTab && (
-            <div key={currentTab.id} style={{animation:'fadeIn 0.4s ease-out'}}>
-              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-5xl font-bold text-hbm-dark mb-4">{t(currentTab.headline,lang)}</h2>
-                {currentTab.subtitle && (
-                  <p className="text-xl text-hbm-gray max-w-3xl mx-auto">{t(currentTab.subtitle,lang)}</p>
-                )}
-              </div>
-              
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {currentTab.items.map((item,i) => (
-                  <div key={i} 
-                    className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-[#F07B3C]/20 group"
-                    style={{animation:`fadeIn 0.5s ease-out ${i*0.1}s both`, transformOrigin: 'center bottom'}}
-                  >
-                    <div className="w-12 h-12 rounded-2xl bg-[#F07B3C]/10 flex items-center justify-center mb-6 text-[#F07B3C] group-hover:scale-110 transition-transform">
-                      {item.icon && <item.icon size={24} />}
-                    </div>
-                    <h3 className="font-bold text-hbm-dark text-xl mb-3">{t(item.title,lang)}</h3>
-                    <p className="text-hbm-gray leading-relaxed">{t(item.text,lang)}</p>
-                  </div>
-                ))}
-              </div>
+      <section className="bg-hbm-cream">
+        <BubbleContainer bgColor="white">
+          <div className="max-w-6xl mx-auto w-full">
+            <div className="flex justify-center gap-2 md:gap-4 mb-16 flex-wrap">
+              {tabs.map(tb => (
+                <button key={tb.id} onClick={() => setActiveTab(tb.id)}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 shadow-sm
+                    ${activeTab===tb.id
+                      ? 'bg-gradient-to-r from-[#6160AB] to-[#F07B3C] text-white shadow-lg scale-105'
+                      : 'bg-white text-hbm-gray border border-gray-200 hover:border-[#F07B3C]'
+                    }`}>
+                  <tb.icon size={18}/>{t(tb.label,lang)}
+                </button>
+              ))}
             </div>
-          )}
-        </div>
+            {currentTab && (
+              <div key={currentTab.id} style={{animation:'fadeIn 0.4s ease-out'}}>
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-5xl font-bold text-hbm-dark mb-4">{t(currentTab.headline,lang)}</h2>
+                  {currentTab.subtitle && (
+                    <p className="text-xl text-hbm-gray max-w-3xl mx-auto">{t(currentTab.subtitle,lang)}</p>
+                  )}
+                </div>
+                
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {currentTab.items.map((item,i) => (
+                    <div key={i} 
+                      className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-[#F07B3C]/20 group"
+                      style={{animation:`fadeIn 0.5s ease-out ${i*0.1}s both`, transformOrigin: 'center bottom'}}
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-[#F07B3C]/10 flex items-center justify-center mb-6 text-[#F07B3C] group-hover:scale-110 transition-transform">
+                        {item.icon && <item.icon size={24} />}
+                      </div>
+                      <h3 className="font-bold text-hbm-dark text-xl mb-3">{t(item.title,lang)}</h3>
+                      <p className="text-hbm-gray leading-relaxed">{t(item.text,lang)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </BubbleContainer>
       </section>
 
       {/* Success Stories */}
-      <section className="section-padding bg-hbm-cream">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-hbm-purple mb-10">{t({en:'Real Impact.',he:'השפעה אמיתית.'},lang)}</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((tm,i) => (
-              <div key={i} className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/50 card-hover">
-                <div className="flex gap-1 mb-4 justify-center">{[...Array(5)].map((_,j)=><Star key={j} size={16} className="text-hbm-orange fill-hbm-orange"/>)}</div>
-                <p className="text-hbm-dark font-semibold mb-4 italic">{t(tm.quote,lang)}</p>
-                <p className="text-sm font-bold text-hbm-dark">{tm.name}</p>
-                <p className="text-xs text-hbm-gray">{t(tm.role,lang)}</p>
-              </div>
-            ))}
+      <section className="bg-hbm-cream">
+        <BubbleContainer bgColor="#FAF9F5">
+          <div className="max-w-5xl mx-auto text-center w-full">
+            <h2 className="text-3xl font-bold text-hbm-purple mb-10">{t({en:'Real Impact.',he:'השפעה אמיתית.'},lang)}</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {testimonials.map((tm,i) => (
+                <div key={i} className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/50 card-hover">
+                  <div className="flex gap-1 mb-4 justify-center">{[...Array(5)].map((_,j)=><Star key={j} size={16} className="text-hbm-orange fill-hbm-orange"/>)}</div>
+                  <p className="text-hbm-dark font-semibold mb-4 italic">{t(tm.quote,lang)}</p>
+                  <p className="text-sm font-bold text-hbm-dark">{tm.name}</p>
+                  <p className="text-xs text-hbm-gray">{t(tm.role,lang)}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </BubbleContainer>
       </section>
 
+      {/* Bridge to Features */}
+      <NextPageBridge 
+        to="/meeter/features"
+        eyebrow={{ en: 'How It Works', he: 'איך זה עובד' }}
+        title={{ en: 'Explore Features', he: 'גלו פיצ\'רים' }}
+        description={{ en: 'Understand the features that make genuine connection possible.', he: 'הבינו את הפיצ\'רים שמאפשרים חיבור אמיתי.' }}
+        buttonText={{ en: 'Explore Features', he: 'גלו פיצ\'רים' }}
+      />
 
 
-      {/* CTA */}
-      <section className="py-20 bg-gradient-purple text-white text-center">
-        <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-6">{t({en:'See what the platform can do',he:'ראו מה הפלטפורמה יכולה'},lang)}</h2>
-          <Link to="/meeter/features" className="btn-orange text-lg px-10 py-4 rounded-full inline-flex items-center gap-2 hover:scale-105 transition-transform">
-            {t({en:'Explore Features',he:'גלו יכולות'},lang)} <ArrowRight size={20}/>
-          </Link>
-        </div>
-      </section>
     </div>
   )
 }

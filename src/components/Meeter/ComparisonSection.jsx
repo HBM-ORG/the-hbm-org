@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { X, Check, Zap } from 'lucide-react'
 import { useI18n, t } from '../../i18n/context'
+import BubbleContainer from '../BubbleContainer'
 
 const ComparisonSection = () => {
   const { lang } = useI18n()
@@ -20,155 +21,143 @@ const ComparisonSection = () => {
   ]
 
   return (
-    <section className="relative py-32 overflow-hidden bg-gradient-to-br from-white via-gray-50 to-purple-50">
-      {/* Animated background */}
-      <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-[#6160AB]/10 via-[#F07B3C]/10 to-[#73C154]/10 rounded-full blur-3xl"
-        animate={{
-          scale: [1, 1.2, 1],
-          rotate: [0, 90, 0],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "linear"
-        }}
-      />
-
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Section Header */}
-        <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent mb-4">
-            {t({ en: 'The Difference', he: 'ההבדל' }, lang)}
-          </h2>
-          <p className="text-xl text-gray-600">
-             {t({ en: 'Stop settling for awkward. Start connecting for real.', he: 'תפסיקו להסתפק במביך. תתחילו להתחבר באמת.' }, lang)}
-          </p>
-        </motion.div>
-
-        {/* Comparison Grid */}
-        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {/* OLD WAY - Left Card */}
+    <section className="bg-hbm-cream">
+      <BubbleContainer bgColor="white">
+        <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
+          {/* Section Header */}
           <motion.div
-            className="relative"
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
-            <div className="relative h-full p-6 rounded-3xl bg-white border-2 border-red-200 shadow-xl overflow-hidden">
-
-
-              {/* Badge */}
-              <motion.div
-                className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 rounded-full text-sm font-semibold mb-6"
-                whileHover={{ scale: 1.05 }}
-              >
-                <X className="w-4 h-4" />
-                {t({ en: 'OLD WAY', he: 'הדרך הישנה' }, lang)}
-              </motion.div>
-
-              {/* Title */}
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                {t({ en: 'Awkward Networking', he: 'נטוורקינג מביך' }, lang)}
-              </h3>
-
-              {/* List */}
-              <div className="space-y-5">
-                {oldWay.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    className="flex items-start gap-4 p-3 bg-red-50 rounded-xl border border-red-100"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <X className="flex-shrink-0 w-6 h-6 text-red-500 mt-0.5" strokeWidth={3} />
-                    <div className="flex items-center gap-3">
-                      <p className="text-gray-700 font-medium">{item.text}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+            <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent mb-4">
+              {t({ en: 'The Difference', he: 'ההבדל' }, lang)}
+            </h2>
+            <p className="text-xl text-gray-600">
+               {t({ en: 'Stop settling for awkward. Start connecting for real.', he: 'תפסיקו להסתפק במביך. תתחילו להתחבר באמת.' }, lang)}
+            </p>
           </motion.div>
 
-          {/* HBM WAY - Right Card */}
-          <motion.div
-            className="relative"
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="relative h-full p-6 rounded-3xl bg-gradient-to-br from-[#6160AB]/5 via-[#F07B3C]/5 to-[#73C154]/5 border-2 border-[#73C154] shadow-2xl overflow-hidden">
+          {/* Comparison Grid */}
+          <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {/* OLD WAY - Left Card */}
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="relative h-full p-6 rounded-3xl bg-white border-2 border-red-200 shadow-xl overflow-hidden">
 
 
-              {/* Badge */}
-              <motion.div
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#73C154] to-[#6160AB] text-white rounded-full text-sm font-semibold mb-6"
-                whileHover={{ scale: 1.05 }}
-                animate={{
-                  boxShadow: [
-                    '0 0 0 0 rgba(115, 193, 84, 0)',
-                    '0 0 0 10px rgba(115, 193, 84, 0.2)',
-                    '0 0 0 0 rgba(115, 193, 84, 0)',
-                  ]
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Check className="w-4 h-4" />
-                {t({ en: 'HBM WAY', he: 'דרך HBM' }, lang)}
-              </motion.div>
+                {/* Badge */}
+                <motion.div
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 rounded-full text-sm font-semibold mb-6"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <X className="w-4 h-4" />
+                  {t({ en: 'OLD WAY', he: 'הדרך הישנה' }, lang)}
+                </motion.div>
 
-              {/* Title */}
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent mb-6">
-                {t({ en: 'Guided Connection', he: 'חיבור מודרך' }, lang)}
-              </h3>
+                {/* Title */}
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                  {t({ en: 'Awkward Networking', he: 'נטוורקינג מביך' }, lang)}
+                </h3>
 
-              {/* List */}
-              <div className="space-y-5">
-                {hbmWay.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    className="flex items-start gap-4 p-3 bg-white rounded-xl border border-[#73C154]/30 shadow-sm"
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    whileHover={{ 
-                      scale: 1.03,
-                      boxShadow: '0 10px 30px rgba(115, 193, 84, 0.2)'
-                    }}
-                  >
-                    <Check className="flex-shrink-0 w-6 h-6 text-[#73C154] mt-0.5" strokeWidth={3} />
-                    <div className="flex items-center gap-3">
-                      <p className="text-gray-700 font-medium">{item.text}</p>
-                    </div>
-                  </motion.div>
-                ))}
+                {/* List */}
+                <div className="space-y-5">
+                  {oldWay.map((item, index) => (
+                    <motion.div
+                      key={index}
+                      className="flex items-start gap-4 p-3 bg-red-50 rounded-xl border border-red-100"
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                      <X className="flex-shrink-0 w-6 h-6 text-red-500 mt-0.5" strokeWidth={3} />
+                      <div className="flex items-center gap-3">
+                        <p className="text-gray-700 font-medium">{item.text}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
+            </motion.div>
 
-              {/* Glow effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-br from-[#73C154]/20 via-transparent to-[#6160AB]/20 rounded-3xl opacity-0"
-                whileHover={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              />
-            </div>
-          </motion.div>
+            {/* HBM WAY - Right Card */}
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="relative h-full p-6 rounded-3xl bg-gradient-to-br from-[#6160AB]/5 via-[#F07B3C]/5 to-[#73C154]/5 border-2 border-[#73C154] shadow-2xl overflow-hidden">
+
+
+                {/* Badge */}
+                <motion.div
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#73C154] to-[#6160AB] text-white rounded-full text-sm font-semibold mb-6"
+                  whileHover={{ scale: 1.05 }}
+                  animate={{
+                    boxShadow: [
+                      '0 0 0 0 rgba(115, 193, 84, 0)',
+                      '0 0 0 10px rgba(115, 193, 84, 0.2)',
+                      '0 0 0 0 rgba(115, 193, 84, 0)',
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Check className="w-4 h-4" />
+                  {t({ en: 'HBM WAY', he: 'דרך HBM' }, lang)}
+                </motion.div>
+
+                {/* Title */}
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent mb-6">
+                  {t({ en: 'Guided Connection', he: 'חיבור מודרך' }, lang)}
+                </h3>
+
+                {/* List */}
+                <div className="space-y-5">
+                  {hbmWay.map((item, index) => (
+                    <motion.div
+                      key={index}
+                      className="flex items-start gap-4 p-3 bg-white rounded-xl border border-[#73C154]/30 shadow-sm"
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      whileHover={{ 
+                        scale: 1.03,
+                        boxShadow: '0 10px 30px rgba(115, 193, 84, 0.2)'
+                      }}
+                    >
+                      <Check className="flex-shrink-0 w-6 h-6 text-[#73C154] mt-0.5" strokeWidth={3} />
+                      <div className="flex items-center gap-3">
+                        <p className="text-gray-700 font-medium">{item.text}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Glow effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-[#73C154]/20 via-transparent to-[#6160AB]/20 rounded-3xl opacity-0"
+                  whileHover={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+            </motion.div>
+          </div>
+
+          {/* CTA below */}
+
         </div>
-
-        {/* CTA below */}
-
-      </div>
+      </BubbleContainer>
     </section>
   )
 }

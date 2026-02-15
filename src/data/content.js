@@ -33,9 +33,9 @@ export const siteContent = {
         { platform: 'Instagram', text: 'Here we try to look cooler than we are. Come for the visuals, stay for the behind-the-scenes chaos.', url: 'https://www.instagram.com/the__hbm/' },
         { platform: 'WhatsApp', text: "A direct line to the team! Questions, feedback, or just a hello—we're here.", url: 'https://wa.me/972587073136' },
         { platform: 'Facebook', text: "Yes, we still use Facebook. And no, we're not here for the drama.", url: 'https://www.facebook.com/people/The-HBM/61573100935457/' },
-        { platform: 'LinkedIn', text: 'Our "we\'re professional, promise" face. For updates, partnerships, and synergy.', url: 'https://www.linkedin.com/company/the-human-being-movement/' },
+        { platform: 'LinkedIn', text: 'Our "we\'re professional, promise" face. For updates, partnerships, and sentences that use the word "synergy".', url: 'https://www.linkedin.com/company/the-human-being-movement/' },
         { platform: 'YouTube', text: "Where we share stories, events, and the magic behind 8-minute connections.", url: 'https://www.youtube.com/@TheHBM' },
-        { platform: 'Email', text: "Old school. Like handwritten letters, but with CCs. We actually read them.", url: 'mailto:office@thehbm.org' },
+        { platform: 'Email', text: "Old school. Like handwritten letters, but with CCs. Reach out. We actually read them. And we reply. Mostly...", url: 'mailto:Eladh@Thehbm.Org' },
       ],
     },
     // Client/partner logos - PLACEHOLDER: replace URLs when ready
@@ -139,7 +139,7 @@ export const siteContent = {
 
     howItWorks: {
       title: { en: 'How It Works', he: 'איך זה עובד' },
-      subtitle: { en: 'A Safe & Authentic Space.', he: 'מרחב בטוח ואותנטי.' },
+      subtitle: { en: 'New Ways to Connect.', he: 'דרכים חדשות ליצור חיבור.' },
       videoSteps: [
         {
           title: { en: 'Scan & Set Your Vibe', he: 'בחרו את האווירה' },
@@ -147,51 +147,46 @@ export const siteContent = {
           image: 'https://thehbm.org/wp-content/uploads/2025/06/11.png'
         },
         {
-          title: { en: 'Mindset Lobby', he: 'לובי מיינדסט' },
-          desc: { en: 'Get tips for a great talk while we match you.', he: 'קבלו טיפים לשיחה מעולה בזמן שאנחנו מוצאים התאמה.' },
+          title: { en: 'Enter the Lobby', he: 'לובי מיינדסט' },
+          desc: { en: 'Get tips to prepare for a great conversation while we find your match.', he: 'קבלו טיפים לשיחה מעולה בזמן שאנחנו מוצאים התאמה.' },
           image: 'https://thehbm.org/wp-content/uploads/2025/06/22.png'
         },
         {
-          title: { en: 'Guided 8-Min', he: '8 דקות מונחות' },
-          desc: { en: 'Talk deep with real-time Ice-breakers.', he: 'שיחה עמוקה עם שוברי קרח בזמן אמת.' },
+          title: { en: '8-Minutes', he: '8 דקות מונחות' },
+          desc: { en: 'Connect through guided icebreakers that make online interaction natural and fun.', he: 'שיחה עמוקה עם שוברי קרח בזמן אמת.' },
           image: 'https://thehbm.org/wp-content/uploads/2025/06/33.png'
         },
         {
-          title: { en: 'Stay in Touch', he: 'שמרו על קשר' },
-          desc: { en: 'Choose which details to share.', he: 'בחרו אילו פרטים לשתף.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/44.png'
-        },
-        {
-          title: { en: 'Connection Card', he: 'כרטיס חיבור' },
-          desc: { en: 'Your digital souvenir. Exchange details instantly.', he: 'המזכרת הדיגיטלית שלכם. החליפו פרטים מיד.' },
+          title: { en: 'Stay in Touch', he: 'כרטיס חיבור' },
+          desc: { en: 'Decide what details to share and keep the connection alive beyond the experience.', he: 'המזכרת הדיגיטלית שלכם. החליפו פרטים מיד.' },
           image: 'https://thehbm.org/wp-content/uploads/2025/06/44.png'
         }
       ],
       physicalSteps: [
         {
-          title: { en: 'Set Your Vibe', he: 'בחרו את האווירה' },
-          desc: { en: 'Pick your interests to alert the room.', he: 'בחרו תחומי עניין כדי לאותת לחדר.' },
-          image: '/assets/how-it-works/path1.png'
+          title: { en: 'Scan & Set Your Vibe', he: 'בחרו את האווירה' },
+          desc: { en: 'No app download needed. Scan the QR code, select your interests, and pick an emoji to start.', he: 'בחרו תחומי עניין כדי לאותת לחדר.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/11.png'
         },
         {
-          title: { en: 'Instant Radar', he: 'רדאר מיידי' },
-          desc: { en: 'We scan the space and find your match instantly.', he: 'אנחנו סורקים את החלל ומוצאים התאמה מיד.' },
-          image: '/assets/how-it-works/path2.png'
+          title: { en: 'Go To Your Matching Zone', he: 'לובי מיינדסט' },
+          desc: { en: 'Meeter guides you to the specific zone where you’ll meet your match.', he: 'קבלו טיפים לשיחה מעולה בזמן שאנחנו מוצאים התאמה.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/22.png'
         },
         {
-          title: { en: 'Flip to Find', he: 'הפכו למציאה' },
-          desc: { en: 'Use the color-sync to find your partner in the crowd.', he: 'השתמשו בסנכרון צבעים למציאת הפרטנר בקהל.' },
-          image: '/assets/how-it-works/path3.png'
+          title: { en: 'Flip To Find', he: '8 דקות מונחות' },
+          desc: { en: 'Flip your card to see your match’s interests and start a conversation.', he: 'הפכו את הכרטיס כדי לראות את תחומי העניין של ההתאמה שלכם ולהתחיל שיחה.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/33.png'
         },
         {
-          title: { en: 'Meaningful Talk', he: 'שיחה משמעותית' },
-          desc: { en: 'Skip small talk with our curated Ice-breaker cards.', he: 'דלגו על הסמול טוק עם קלפי שוברי קרח.' },
-          image: '/assets/how-it-works/path4.png'
+          title: { en: '8 Minutes', he: '8 דקות מונחות' },
+          desc: { en: 'Enjoy live guided icebreakers and tips that make conversation effortless and fun.', he: 'השיחה מתנהלת עם שאלות מנחות בזמן אמת.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/44.png'
         },
         {
-          title: { en: 'Connection Card', he: 'כרטיס חיבור' },
-          desc: { en: 'Exchange digital cards instantly to stay in touch.', he: 'החליפו כרטיסים דיגיטליים מיד לשמירה על קשר.' },
-          image: '/assets/how-it-works/path5.png'
+          title: { en: 'Stay In Touch', he: 'כרטיס חיבור' },
+          desc: { en: 'Choose which details to share and continue the connection beyond the event.', he: 'החליפו כרטיסים דיגיטליים מיד לשמירה על קשר.' },
+          image: 'https://thehbm.org/wp-content/uploads/2025/06/55.png'
         }
       ]
     },
@@ -209,6 +204,66 @@ export const siteContent = {
         { icon: `${WP}/2025/06/Celebrate-different-perspectives.svg`, title: { en: 'Celebrate different perspectives.', he: 'חגגו נקודות מבט שונות.' }, text: { en: "Connection doesn't require agreement, just curiosity.", he: 'חיבור לא דורש הסכמה, רק סקרנות.' } },
         { icon: `${WP}/2025/06/End-strong.svg`, title: { en: 'End strong.', he: 'סיימו חזק.' }, text: { en: 'A kind word, a smile, a thank you.', he: 'מילה טובה, חיוך, תודה.' } },
       ],
+    },
+
+    features: {
+      sectionTitle: { 
+        en: 'Bringing Real Conversations to Life', 
+        he: 'מביאים שיחות אמיתיות לחיים' 
+      },
+      
+      iceBreakers: {
+        title: { en: 'Ice-Breakers That Actually Work', he: 'שוברי קרח שבאמת עובדים' },
+        description: { 
+          en: 'No awkward silence. No forced small talk. Just real questions that spark real conversations.',
+          he: 'בלי שתיקה מביכה. בלי שיחת חולין מאולצת. רק שאלות אמיתיות שמצתות שיחות אמיתיות.'
+        },
+        bullets: [
+          { en: 'Curated questions designed by conversation experts', he: 'שאלות מעוצבות על ידי מומחי שיחה' },
+          { en: 'Fresh prompts every session', he: 'שאלות חדשות בכל מפגש' },
+          { en: 'From light to deep in 8 minutes', he: 'מקל לעמוק ב-8 דקות' }
+        ],
+        questions: [
+          { en: 'What kind of superhero would you like to be?', he: 'איזה גיבור על היית רוצה להיות?' },
+          { en: 'What's a skill you'd love to master overnight?', he: 'איזה כישרון היית רוצה לשלוט בו בן לילה?' },
+          { en: 'If you could have dinner with anyone, who would it be?', he: 'אם היית יכול לאכול ארוחת ערב עם מישהו, מי זה היה?' },
+          { en: 'What's the best advice you've ever received?', he: 'מה העצה הכי טובה שקיבלת?' },
+          { en: 'What's something you're proud of but rarely talk about?', he: 'על מה אתה גאה אבל לא מדבר עליו?' },
+          { en: 'If you could time travel, where would you go?', he: 'אם היית יכול לנסוע בזמן, לאן היית הולך?' },
+          { en: 'What's a small thing that makes your day better?', he: 'מה דבר קטן שעושה את היום שלך טוב יותר?' }
+        ]
+      },
+      
+      liveData: {
+        title: { en: 'Live Data on the Spot', he: 'נתונים חיים במקום' },
+        description: {
+          en: 'Don't guess. Know exactly what happened at your event. Track connections made, top interests, satisfaction scores — all in real time.',
+          he: 'אל תנחשו. דעו בדיוק מה קרה באירוע שלכם. עקבו אחרי חיבורים שנוצרו, תחומי עניין מובילים, ציוני שביעות רצון — הכל בזמן אמת.'
+        },
+        bullets: [
+          { en: 'Real-time connection analytics', he: 'אנליטיקה של חיבורים בזמן אמת' },
+          { en: 'Engagement heatmaps', he: 'מפות חום של מעורבות' },
+          { en: 'Export reports instantly', he: 'ייצוא דוחות מיידי' }
+        ]
+      },
+      
+      matchingZone: {
+        title: { en: 'Smart Matching That Feels Human', he: 'התאמה חכמה שמרגישה אנושית' },
+        description: {
+          en: 'Our algorithm pairs people based on shared interests, conversation style, and energy — not just random chance.',
+          he: 'האלגוריתם שלנו מתאים אנשים על בסיס תחומי עניין משותפים, סגנון שיחה ואנרגיה — לא רק מזל.'
+        },
+        bullets: [
+          { en: 'Interest-based pairing', he: 'התאמה מבוססת תחומי עניין' },
+          { en: 'Conversation style matching', he: 'התאמת סגנון שיחה' },
+          { en: 'Balanced energy levels', he: 'רמות אנרגיה מאוזנות' }
+        ]
+      },
+
+      bridge: {
+        text: { en: 'Ready to experience it in real life?', he: 'מוכנים לחוות את זה במציאות?' },
+        buttonText: { en: 'View Upcoming Events', he: 'צפו באירועים הקרובים' }
+      }
     },
   },
 

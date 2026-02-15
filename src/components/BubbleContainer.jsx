@@ -1,50 +1,50 @@
+import React from 'react'
 import { motion } from 'framer-motion'
 
 /**
  * BubbleContainer - A reusable container component with bubble styling
- * @param {Object} props
- * @param {React.ReactNode} props.children - Content to display inside the bubble
- * @param {string} props.bgColor - Background color (default: 'white')
- * @param {boolean} props.rotated - Apply slight rotation (default: false)
- * @param {boolean} props.small - Use smaller max-width (default: false)
- * @param {string} props.className - Additional CSS classes
+ * Consistently applies the "Bubble Design System" across the site.
+ * 
+ * Specs:
+ * - Background: Cream (#FAF9F5) or White.
+ * - Size: min-height: 100vh.
+ * - Centering: Flexbox centering.
+ * - Glow: Subtle purple inner-glow.
  */
 export default function BubbleContainer({ 
   children, 
-  bgColor = 'white', 
-  rotated = false, 
-  small = false,
-  className = '' 
+  bgColor = '#FAF9F5', // Default: Cream
+  className = '',
+  // Allow overriding min-height behavior via className if needed, but default is min-h-screen
 }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      viewport={{ once: true, margin: "-10%" }}
       transition={{ duration: 0.6 }}
       className={`
-        bubble-container 
-        ${small ? 'bubble-container-sm' : ''} 
-        ${rotated ? 'bubble-rotated' : ''}
+        w-full 
+        min-h-screen 
+        flex flex-col items-center justify-center 
+        relative 
+        rounded-[60px] 
+        overflow-hidden
+        py-12 px-6 md:px-12
+        my-4 mx-auto
+        max-w-[95%] md:max-w-[98%]
+        bg-white 
+        shadow-[inset_0_0_80px_rgba(187,192,255,0.2),0_10px_30px_rgba(0,0,0,0.02)]
+        border border-[rgba(111,110,179,0.15)]
         ${className}
       `}
-      style={{ backgroundColor: bgColor }}
+      style={{ 
+        backgroundColor: bgColor,
+        // Ensure shadow is always applied unless overridden, but the class above handles it.
+        // The inline style for bgColor allows easy prop override.
+      }}
     >
       {children}
     </motion.div>
-  )
-}
-
-/**
- * EyebrowBadge - A small badge component for section labels
- * @param {Object} props
- * @param {string} props.text - Badge text
- * @param {string} props.className - Additional CSS classes
- */
-export function EyebrowBadge({ text, className = '' }) {
-  return (
-    <span className={`eyebrow-badge ${className}`}>
-      {text}
-    </span>
   )
 }

@@ -57,7 +57,7 @@ const items = [
 const Guidelines = () => {
   return (
     <section className="section-padding bg-hbm-cream">
-      <BubbleContainer bgColor="#BBC0FF">
+      <BubbleContainer bgColor="#FAF9F5">
         {/* Header */}
         <motion.div
           className="text-center mb-16"

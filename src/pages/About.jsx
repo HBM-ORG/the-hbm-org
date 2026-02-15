@@ -1,9 +1,13 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { siteContent } from '../data/content'
 import { useI18n, t } from '../i18n/context'
 import { getWhatsappUrl } from '../components/Layout'
 import { ArrowRight } from 'lucide-react'
 import EyebrowBadge from '../components/EyebrowBadge'
+import BubbleContainer from '../components/BubbleContainer'
+import NextPageBridge from '../components/NextPageBridge'
+
 
 const { about, global } = siteContent
 
@@ -46,104 +50,128 @@ export default function About() {
     <div className="min-h-screen">
 
       {/* Hero */}
-      <section className="bg-gradient-hero section-padding text-center">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <EyebrowBadge text="ABOUT US" />
+      <section className="bg-hbm-cream pt-20 pb-12">
+          <div className="max-w-4xl mx-auto text-center px-6">
+            <div className="mb-6 flex justify-center">
+              <EyebrowBadge text="ABOUT US" />
+            </div>
+            <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>
+              {t(about.hero.title, lang)}
+            </h1>
+            <p className="text-xl text-hbm-gray">{t(about.hero.subtitle, lang)}</p>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-2 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent">{t(about.hero.title, lang)}</h1>
-          <p className="text-xl text-hbm-gray">{t(about.hero.subtitle, lang)}</p>
-        </div>
       </section>
 
       {/* Big statement */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold text-hbm-dark mb-8">{t(about.hero.bigText, lang)}</h2>
-          <p className="text-lg text-hbm-gray leading-relaxed whitespace-pre-line">{t(about.hero.description, lang)}</p>
-        </div>
+      <section className="bg-hbm-cream">
+        <BubbleContainer bgColor="white">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-hbm-dark mb-8">{t(about.hero.bigText, lang)}</h2>
+            <p className="text-lg text-hbm-gray leading-relaxed whitespace-pre-line">{t(about.hero.description, lang)}</p>
+          </div>
+        </BubbleContainer>
       </section>
 
       {/* Vision & Mission */}
-      <section id="mission" className="section-padding bg-hbm-cream">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <h3 className="text-sm font-bold text-hbm-purple uppercase tracking-widest mb-4">
-              {t({ en: 'Our Vision', he: 'החזון שלנו', es: 'Nuestra Visión', fr: 'Notre Vision', de: 'Unsere Vision', ar: 'رؤيتنا' }, lang)}
-            </h3>
-            <p className="text-lg text-hbm-dark leading-relaxed font-semibold">{t(vision, lang)}</p>
+      <section id="mission" className="bg-hbm-cream">
+        <BubbleContainer bgColor="#FAF9F5">
+          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
+            <div className="bg-white rounded-2xl p-8 shadow-sm">
+              <h3 className="text-sm font-bold text-hbm-purple uppercase tracking-widest mb-4">
+                {t({ en: 'Our Vision', he: 'החזון שלנו', es: 'Nuestra Visión', fr: 'Notre Vision', de: 'Unsere Vision', ar: 'رؤيتنا' }, lang)}
+              </h3>
+              <p className="text-lg text-hbm-dark leading-relaxed font-semibold">{t(vision, lang)}</p>
+            </div>
+            <div className="bg-white rounded-2xl p-8 shadow-sm">
+              <h3 className="text-sm font-bold text-hbm-orange uppercase tracking-widest mb-4">
+                {t({ en: 'Our Mission', he: 'המשימה שלנו', es: 'Nuestra Misión', fr: 'Notre Mission', de: 'Unsere Mission', ar: 'مهمتنا' }, lang)}
+              </h3>
+              <p className="text-lg text-hbm-dark leading-relaxed">{t(mission, lang)}</p>
+            </div>
           </div>
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <h3 className="text-sm font-bold text-hbm-orange uppercase tracking-widest mb-4">
-              {t({ en: 'Our Mission', he: 'המשימה שלנו', es: 'Nuestra Misión', fr: 'Notre Mission', de: 'Unsere Mission', ar: 'مهمتنا' }, lang)}
-            </h3>
-            <p className="text-lg text-hbm-dark leading-relaxed">{t(mission, lang)}</p>
-          </div>
-        </div>
+        </BubbleContainer>
       </section>
 
       {/* Values — Click to reveal */}
-      <section id="values" className="section-padding bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-4">{t(about.values.title, lang)}</h2>
-          <p className="text-hbm-gray text-center mb-12">
-            {t({ en: 'Click to reveal each value', he: 'לחצו לחשיפת כל ערך', es: 'Haz clic para revelar', fr: 'Cliquez pour révéler', de: 'Klicken zum Aufdecken', ar: 'انقر للكشف' }, lang)}
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {values.map((v, i) => (
-              <div key={i} onClick={() => setFlippedCard(flippedCard === i ? null : i)}
-                   className="cursor-pointer rounded-xl p-5 min-h-[140px] flex items-center justify-center text-center transition-all card-hover"
-                   style={{ backgroundColor: flippedCard === i ? '#6160AB' : '#F5F3FF' }}>
-                {flippedCard === i ? (
-                  <p className="text-white text-xs leading-relaxed">{t(v.text, lang)}</p>
-                ) : (
-                  <h4 className="font-bold text-hbm-purple text-lg">{t(v.title, lang)}</h4>
-                )}
-              </div>
-            ))}
+      <section id="values" className="bg-hbm-cream">
+        <BubbleContainer bgColor="white">
+          <div className="max-w-6xl mx-auto w-full">
+            <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-4">{t(about.values.title, lang)}</h2>
+            <p className="text-hbm-gray text-center mb-12">
+              {t({ en: 'Click to reveal each value', he: 'לחצו לחשיפת כל ערך', es: 'Haz clic para revelar', fr: 'Cliquez pour révéler', de: 'Klicken zum Aufdecken', ar: 'انقر للكشف' }, lang)}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {values.map((v, i) => (
+                <div key={i} onClick={() => setFlippedCard(flippedCard === i ? null : i)}
+                     className="cursor-pointer rounded-xl p-5 min-h-[140px] flex items-center justify-center text-center transition-all card-hover"
+                     style={{ backgroundColor: flippedCard === i ? '#6160AB' : '#F5F3FF' }}>
+                  {flippedCard === i ? (
+                    <p className="text-white text-xs leading-relaxed">{t(v.text, lang)}</p>
+                  ) : (
+                    <h4 className="font-bold text-hbm-purple text-lg">{t(v.title, lang)}</h4>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </BubbleContainer>
       </section>
 
       {/* Team */}
-      <section id="team" className="section-padding bg-hbm-cream">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-12">{t(about.team.title, lang)}</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {about.team.members.filter(m => m.name && m.image).map((member, i) => (
-              <div key={i} className="text-center group">
-                <div className="w-28 h-28 mx-auto rounded-full overflow-hidden mb-3 team-photo border-3 border-hbm-purple/20">
-                  <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+      <section id="team" className="bg-hbm-cream">
+        <BubbleContainer bgColor="#FAF9F5">
+          <div className="max-w-6xl mx-auto w-full">
+            <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-12">{t(about.team.title, lang)}</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {about.team.members.filter(m => m.name && m.image).map((member, i) => (
+                <div key={i} className="text-center group">
+                  <div className="w-28 h-28 mx-auto rounded-full overflow-hidden mb-3 team-photo border-3 border-hbm-purple/20">
+                    <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                  </div>
+                  <h4 className="font-bold text-hbm-dark text-sm">{member.name}</h4>
+                  <p className="text-hbm-purple text-xs font-semibold">{t(member.role, lang)}</p>
+                  {member.nickname && <p className="text-hbm-gray text-xs italic mt-1">"{member.nickname}"</p>}
                 </div>
-                <h4 className="font-bold text-hbm-dark text-sm">{member.name}</h4>
-                <p className="text-hbm-purple text-xs font-semibold">{t(member.role, lang)}</p>
-                {member.nickname && <p className="text-hbm-gray text-xs italic mt-1">"{member.nickname}"</p>}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        </BubbleContainer>
       </section>
 
       {/* Guiding Principles */}
-      <section className="section-padding bg-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-hbm-dark mb-8">{t(about.guidingPrinciples.title, lang)}</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {about.guidingPrinciples.items.map((item, i) => (
-              <div key={i} className="bg-hbm-cream rounded-xl p-6 text-left">
-                <p className="text-hbm-dark font-semibold">{t(item, lang)}</p>
-              </div>
-            ))}
+      <section className="bg-hbm-cream">
+        <BubbleContainer bgColor="white">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold text-hbm-dark mb-8">{t(about.guidingPrinciples.title, lang)}</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              {about.guidingPrinciples.items.map((item, i) => (
+                <div key={i} className="bg-hbm-cream rounded-xl p-6 text-left">
+                  <p className="text-hbm-dark font-semibold">{t(item, lang)}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </BubbleContainer>
       </section>
 
       {/* Closing Statement */}
-      <section className="section-padding bg-hbm-cream">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xl md:text-2xl text-hbm-dark leading-relaxed whitespace-pre-line">{t(about.closingStatement, lang)}</p>
-        </div>
+      <section className="bg-hbm-cream">
+        <BubbleContainer bgColor="#FAF9F5">
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-xl md:text-2xl text-hbm-dark leading-relaxed whitespace-pre-line">{t(about.closingStatement, lang)}</p>
+          </div>
+        </BubbleContainer>
       </section>
+
+      {/* Next Page Bridge — To Knowledge */}
+      <NextPageBridge 
+        to="/knowledge"
+        eyebrow={{ en: 'Expand Your Mind', he: 'הרחיבו את הדעת' }}
+        title={{ en: 'The Wisdom Base', he: 'בסיס הידע' }}
+        description={{ en: 'Explore the books, videos, and ideas that inspire our movement.', he: 'גלו את הספרים, הסרטונים והרעיונות שמעוררים השראה בתנועה שלנו.' }}
+        buttonText={{ en: 'Explore Knowledge', he: 'גלו ידע' }}
+      />
+
 
     </div>
   )

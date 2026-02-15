@@ -1,56 +1,128 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useI18n, t } from '../i18n/context'
-import { ui } from '../i18n/translations'
 import { siteContent } from '../data/content'
+import { legalContent } from '../data/legal'
+import { Mail, Instagram, Facebook, Linkedin, MessageCircle, Send } from 'lucide-react'
+import LegalModal from './LegalModal'
 
 const { global } = siteContent
 
 export default function Footer() {
   const { lang } = useI18n()
+  const [legalModalOpen, setLegalModalOpen] = useState(false)
+  const [legalKey, setLegalKey] = useState(null)
+  
+  const socialItems = global.footer.socialCards.filter(c => c.platform !== 'YouTube')
+
+  const openLegal = (key) => {
+    setLegalKey(key)
+    setLegalModalOpen(true)
+  }
+
+  const getSocialIcon = (platform) => {
+    switch (platform) {
+      case 'Instagram': return <Instagram size={20} />
+      case 'Facebook': return <Facebook size={20} />
+      case 'LinkedIn': return <Linkedin size={20} />
+      case 'WhatsApp': return <MessageCircle size={20} />
+      default: return <Send size={20} />
+    }
+  }
+
+  const getBrandColor = (platform) => {
+    switch (platform) {
+      case 'WhatsApp': return 'hover:bg-[#25D366] hover:text-white hover:border-[#25D366]'
+      case 'LinkedIn': return 'hover:bg-[#0077B5] hover:text-white hover:border-[#0077B5]'
+      case 'Instagram': return 'hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] hover:text-white hover:border-transparent' // Instagram gradient approx
+      case 'Facebook': return 'hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2]'
+      default: return 'hover:bg-hbm-orange hover:text-white hover:border-hbm-orange'
+    }
+  }
+
+  const currentLegal = legalKey ? legalContent[legalKey] : null
+
   return (
-    <footer>
-      {/* Newsletter */}
-      <div className="bg-white py-12 text-center">
-        <h3 className="text-2xl md:text-3xl font-bold text-hbm-purple mb-2">{t({en:"Don't miss the next connection.",he:'אל תפספסו את החיבור הבא.'},lang)}</h3>
-        <p className="text-hbm-gray mb-6 max-w-md mx-auto px-6">{t({en:'Join the HBM circle to get updates on upcoming events, community insights, and early access.',he:'הצטרפו למעגל HBM לקבלת עדכונים על אירועים קרובים ותובנות קהילתיות.'},lang)}</p>
-        <div className="max-w-md mx-auto px-6 flex gap-2">
-          <input type="email" placeholder={t(ui.newsletter.placeholder,lang)} className="flex-1 px-5 py-3 rounded-full border border-gray-300 focus:outline-none focus:border-hbm-purple"/>
-          <button className="btn-orange py-3 px-8 rounded-full">{t({en:'Join the Club',he:'הצטרפו למעגל'},lang)}</button>
+    <footer className="bg-gradient-purple text-white py-12 relative overflow-hidden">
+      
+      <div className="container mx-auto px-6 relative z-10">
+        
+        {/* Main Footer Content: Menu & Socials */}
+        <div className="flex flex-col md:flex-row justify-center md:justify-between items-center md:items-start gap-12 mb-24 border-b border-white/10 pb-12">
+             
+             {/* Menu */}
+             <div className="text-center md:text-left">
+               <h4 className="font-bold text-sm mb-6 opacity-60 uppercase tracking-widest font-sofia">Menu</h4>
+               <ul className="flex flex-col md:block space-y-3 text-base font-medium font-sofia opacity-90">
+                 <li><Link to="/" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">Home</Link></li>
+                 <li><Link to="/meeter/what" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">Meeter</Link></li>
+                 <li><Link to="/events" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">Events</Link></li>
+                 <li><Link to="/about" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">About</Link></li>
+                 <li><Link to="/knowledge" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">Knowledge</Link></li>
+               </ul>
+             </div>
+
+             {/* Socials */}
+             <div className="text-center md:text-left">
+                <h4 className="font-bold text-sm mb-6 opacity-60 uppercase tracking-widest font-sofia">Socials</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  {socialItems.map((item, index) => (
+                    <a 
+                      key={index} 
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center gap-3 px-5 py-3 rounded-xl bg-white/5 border border-white/10 transition-all group ${getBrandColor(item.platform)}`}
+                      title={item.platform}
+                    >
+                      <div className="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
+                        {getSocialIcon(item.platform)}
+                      </div>
+                      <span className="font-medium text-sm group-hover:font-bold">{item.platform}</span>
+                    </a>
+                  ))}
+                  {/* Email Button */}
+                  <a 
+                      href="mailto:Office@TheHBM.Org"
+                      className="flex items-center gap-3 px-5 py-3 rounded-xl bg-white/5 border border-white/10 transition-all group hover:bg-hbm-orange hover:border-hbm-orange hover:text-white"
+                  >
+                      <div className="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
+                        <Mail size={20} />
+                      </div>
+                      <span className="font-medium text-sm group-hover:font-bold">Email</span>
+                  </a>
+                </div>
+             </div>
         </div>
+
+        {/* Bottom Section: Watermark & Copyright */}
+        <div className="text-center relative pt-12">
+            {/* Watermark */}
+            <h1 className="text-[18vw] font-bold leading-none opacity-5 tracking-tighter select-none font-sofia mix-blend-overlay pointer-events-none absolute left-1/2 bottom-0 -translate-x-1/2 w-full text-center whitespace-nowrap z-0">
+              The HBM
+            </h1>
+            <p className="text-sm tracking-[0.3em] uppercase opacity-40 font-sofia mb-8 relative z-10">Bringing People Together</p>
+            
+            <div className="relative z-10 flex flex-col items-center justify-center text-[11px] font-bold tracking-widest opacity-50 uppercase border-t border-white/5 pt-8 gap-6">
+              <div className="flex gap-8">
+                <button onClick={() => openLegal('terms')} className="hover:opacity-100 hover:text-white transition-all underline decoration-white/30 underline-offset-4">Terms of Use</button>
+                <button onClick={() => openLegal('privacy')} className="hover:opacity-100 hover:text-white transition-all underline decoration-white/30 underline-offset-4">Privacy Policy</button>
+              </div>
+              <p>© 2025 THE HBM, INC. ALL RIGHTS RESERVED.</p>
+            </div>
+        </div>
+
       </div>
 
-      {/* Main footer — gradient */}
-      <div style={{background:'linear-gradient(180deg,#bbc0ff 0%,#8584C7 50%,#6160AB 100%)'}} className="text-white">
-        {/* Fixed Motto */}
-        <div className="text-center pt-8 pb-4">
-          <p className="text-2xl md:text-3xl font-bold mb-2">Do good and do it good!</p>
-          <p className="text-xl font-semibold italic opacity-90">One Movement. Many Ways to Reach Us.</p>
-        </div>
-
-        {/* Social cards */}
-        <div className="max-w-6xl mx-auto px-6 py-10">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-            {global.footer.socialCards.filter(c => c.platform !== 'YouTube').map((card,i) => (
-              <a key={i} href={card.url} target="_blank" rel="noopener noreferrer" className="group">
-                <h4 className="font-bold text-lg mb-2 group-hover:underline">{card.platform}</h4>
-                <p className="text-sm opacity-80 leading-relaxed">{card.text}</p>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* Big logo */}
-        <div className="text-center pt-16 pb-12">
-          <h2 className="text-5xl md:text-7xl font-bold opacity-40">The HBM</h2>
-          <p className="text-lg opacity-60 mt-2">{t(global.tagline,lang)}</p>
-        </div>
-
-        <div className="border-t border-white/20 py-5">
-          <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-3 text-sm opacity-60">
-            <p>{t(ui.footer.copyright,lang)}</p>
-            <div className="flex gap-6"><span>{t(ui.footer.terms,lang)}</span><span>{t(ui.footer.privacy,lang)}</span></div>
-          </div>
-        </div>
-      </div>
+      <LegalModal 
+        isOpen={legalModalOpen} 
+        onClose={() => setLegalModalOpen(false)} 
+        title={currentLegal && t(currentLegal.title, lang)}
+        content={currentLegal && (
+          <div dangerouslySetInnerHTML={{ __html: currentLegal.content }} className="space-y-4" />
+        )}
+      />
     </footer>
   )
 }
+

@@ -1,7 +1,11 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useI18n, t } from '../i18n/context'
-import { BookOpen, Play, Calendar, Sparkles } from 'lucide-react'
+import { BookOpen, Play, Calendar, Sparkles, ArrowRight } from 'lucide-react'
 import EyebrowBadge from '../components/EyebrowBadge'
+import BubbleContainer from '../components/BubbleContainer'
+import NextPageBridge from '../components/NextPageBridge'
+
 
 const books = [
   { title: 'You Were Born Rich', author: 'Bob Proctor', insight: { en: 'Your thoughts create your reality. Reprogram yourself for abundance.', he: 'המחשבות שלך יוצרות את המציאות שלך. תכנת מחדש את עצמך לשפע.' } },
@@ -24,81 +28,104 @@ export default function Knowledge() {
 
   return (
     <div className="min-h-screen">
-      <section className="bg-gradient-hero section-padding text-center">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <EyebrowBadge text="THE WISDOM BASE" />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-hbm-dark mb-4">
-            {t({ en: 'Knowledge', he: 'ידע', es: 'Conocimiento', fr: 'Savoir', de: 'Wissen', ar: 'المعرفة' }, lang)}
-          </h1>
-          <p className="text-xl text-hbm-gray max-w-2xl mx-auto">
-            {t({ en: 'We believe that thought creates reality. Here are the sources that inspire our movement.', he: 'אנחנו מאמינים שמחשבה יוצרת מציאות. הנה המקורות שמעוררים השראה בתנועה שלנו.', es: 'Creemos que el pensamiento crea la realidad.', fr: 'Nous croyons que la pensée crée la réalité.', de: 'Wir glauben, dass Gedanken Realität schaffen.', ar: 'نؤمن أن الفكر يصنع الواقع.' }, lang)}
-          </p>
-        </div>
-      </section>
+      
+      {/* Hero & Navigation */}
+      <section className="bg-hbm-cream pt-20 pb-12">
+          <div className="max-w-4xl mx-auto text-center px-6">
+            <div className="mb-6 flex justify-center">
+              <EyebrowBadge text="THE WISDOM BASE" />
+            </div>
+            <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>
+              {t({ en: 'Knowledge', he: 'ידע', es: 'Conocimiento', fr: 'Savoir', de: 'Wissen', ar: 'المعرفة' }, lang)}
+            </h1>
+            <p className="text-xl text-hbm-gray max-w-2xl mx-auto mb-10">
+              {t({ en: 'We believe that thought creates reality. Here are the sources that inspire our movement.', he: 'אנחנו מאמינים שמחשבה יוצרת מציאות. הנה המקורות שמעוררים השראה בתנועה שלנו.', es: 'Creemos que el pensamiento crea la realidad.', fr: 'Nous croyons que la pensée crée la réalité.', de: 'Wir glauben, dass Gedanken Realität schaffen.', ar: 'نؤمن أن الفكر يصنع الواقع.' }, lang)}
+            </p>
 
-      <section className="max-w-6xl mx-auto px-6 py-4 border-b border-gray-200">
-        <div className="flex gap-8 overflow-x-auto">
-          {tabs.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 py-3 px-1 font-semibold text-sm whitespace-nowrap ${activeTab === tab.id ? 'tab-active' : 'tab-inactive'}`}>
-              <tab.icon size={18} />{t(tab.label, lang)}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section id="books" className="section-padding max-w-6xl mx-auto">
-        {activeTab === 'books' && (
-          <div>
-            <h2 className="text-3xl font-bold text-hbm-dark mb-8">{t({ en: 'Recommended Reading', he: 'קריאה מומלצת', es: 'Lectura Recomendada', fr: 'Lecture Recommandée', de: 'Empfohlene Lektüre', ar: 'قراءة موصى بها' }, lang)}</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {books.map((book, i) => (
-                <div key={i} className="knowledge-card card-hover">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-xl bg-hbm-light flex items-center justify-center"><BookOpen size={24} className="text-hbm-purple" /></div>
-                    <div><h3 className="font-bold text-hbm-dark text-sm">{book.title}</h3><p className="text-hbm-gray text-xs">{book.author}</p></div>
-                  </div>
-                  <p className="text-hbm-gray text-sm">💡 {t(book.insight, lang)}</p>
-                </div>
+            {/* Navigation Tabs */}
+            <div className="inline-flex flex-wrap justify-center gap-4 bg-white p-2 rounded-full border border-gray-200 shadow-sm">
+              {tabs.map(tab => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 py-3 px-6 rounded-full font-semibold text-sm transition-all ${
+                    activeTab === tab.id 
+                    ? 'bg-hbm-purple text-white shadow-lg' 
+                    : 'hover:bg-gray-50 text-hbm-gray'
+                  }`}>
+                  <tab.icon size={18} />{t(tab.label, lang)}
+                </button>
               ))}
             </div>
           </div>
-        )}
+      </section>
 
-        {activeTab === 'videos' && (
-          <div>
-            <h2 className="text-3xl font-bold text-hbm-dark mb-8">{t({ en: 'Videos', he: 'סרטונים', es: 'Videos', fr: 'Vidéos', de: 'Videos', ar: 'فيديوهات' }, lang)}</h2>
-            <div className="rounded-2xl overflow-hidden shadow-lg mb-8">
-              <div className="aspect-video">
-                <iframe src="https://www.youtube.com/embed/R7smYF02Kjo" title="HBM" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'brand' && (
-          <div>
-            <h2 className="text-3xl font-bold text-hbm-dark mb-8">{t({ en: 'Our Logo', he: 'הלוגו שלנו', es: 'Nuestro Logo', fr: 'Notre Logo', de: 'Unser Logo', ar: 'شعارنا' }, lang)}</h2>
-            <div className="grid md:grid-cols-2 gap-10 items-center">
-              <div className="flex justify-center">
-                <img src="https://www.thehbm.org/wp-content/uploads/2025/06/Logo-and-Tagline.png" alt="HBM Logo" className="max-w-xs w-full" />
-              </div>
+      {/* Content Section */}
+      <section id="content" className="bg-hbm-cream">
+        <BubbleContainer bgColor="white">
+          <div className="max-w-6xl mx-auto w-full">
+            
+            {activeTab === 'books' && (
               <div>
-                <p className="text-hbm-gray leading-relaxed mb-6">
-                  {t({ en: 'Our logo represents two figures connecting—bringing the human element back to the center of the circle. The colors (Orange, Green, Purple) symbolize energy, growth, and depth.', he: 'הלוגו שלנו מייצג שתי דמויות שמתחברות — מחזיר את האלמנט האנושי למרכז המעגל. הצבעים (כתום, ירוק, סגול) מסמלים אנרגיה, צמיחה ועומק.', es: 'Nuestro logo representa dos figuras conectándose. Los colores simbolizan energía, crecimiento y profundidad.', fr: 'Notre logo représente deux figures qui se connectent. Les couleurs symbolisent énergie, croissance et profondeur.', de: 'Unser Logo zeigt zwei sich verbindende Figuren. Die Farben symbolisieren Energie, Wachstum und Tiefe.', ar: 'يمثل شعارنا شخصيتين تتواصلان. الألوان ترمز للطاقة والنمو والعمق.' }, lang)}
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-hbm-orange" /><span className="font-semibold text-sm">{t({ en: 'Orange — Energy & Warmth', he: 'כתום — אנרגיה וחום', es: 'Naranja — Energía', fr: 'Orange — Énergie', de: 'Orange — Energie', ar: 'برتقالي — طاقة' }, lang)}</span></div>
-                  <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-hbm-green" /><span className="font-semibold text-sm">{t({ en: 'Green — Growth & Authenticity', he: 'ירוק — צמיחה ואותנטיות', es: 'Verde — Crecimiento', fr: 'Vert — Croissance', de: 'Grün — Wachstum', ar: 'أخضر — نمو' }, lang)}</span></div>
-                  <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-hbm-purple" /><span className="font-semibold text-sm">{t({ en: 'Purple — Wisdom & Trust', he: 'סגול — חוכמה ואמון', es: 'Púrpura — Sabiduría', fr: 'Violet — Sagesse', de: 'Lila — Weisheit', ar: 'بنفسجي — حكمة' }, lang)}</span></div>
+                <h2 className="text-3xl font-bold text-hbm-dark mb-8 text-center">{t({ en: 'Recommended Reading', he: 'קריאה מומלצת', es: 'Lectura Recomendada', fr: 'Lecture Recommandée', de: 'Empfohlene Lektüre', ar: 'قراءة موصى بها' }, lang)}</h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {books.map((book, i) => (
+                    <div key={i} className="knowledge-card card-hover bg-hbm-light/30 p-6 rounded-xl border border-gray-100">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm"><BookOpen size={24} className="text-hbm-purple" /></div>
+                        <div><h3 className="font-bold text-hbm-dark text-sm">{book.title}</h3><p className="text-hbm-gray text-xs">{book.author}</p></div>
+                      </div>
+                      <p className="text-hbm-gray text-sm">💡 {t(book.insight, lang)}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
+
+            {activeTab === 'videos' && (
+              <div>
+                <h2 className="text-3xl font-bold text-hbm-dark mb-8 text-center">{t({ en: 'Videos', he: 'סרטונים', es: 'Videos', fr: 'Vidéos', de: 'Videos', ar: 'فيديوهات' }, lang)}</h2>
+                <div className="rounded-2xl overflow-hidden shadow-lg mb-8 max-w-3xl mx-auto">
+                  <div className="aspect-video">
+                    <iframe src="https://www.youtube.com/embed/R7smYF02Kjo" title="HBM" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'brand' && (
+              <div>
+                <h2 className="text-3xl font-bold text-hbm-dark mb-8 text-center">{t({ en: 'Our Logo', he: 'הלוגו שלנו', es: 'Nuestro Logo', fr: 'Notre Logo', de: 'Unser Logo', ar: 'شعارنا' }, lang)}</h2>
+                <div className="grid md:grid-cols-2 gap-10 items-center">
+                  <div className="flex justify-center">
+                    <img src="https://www.thehbm.org/wp-content/uploads/2025/06/Logo-and-Tagline.png" alt="HBM Logo" className="max-w-xs w-full" />
+                  </div>
+                  <div>
+                    <p className="text-hbm-gray leading-relaxed mb-6">
+                      {t({ en: 'Our logo represents two figures connecting—bringing the human element back to the center of the circle. The colors (Orange, Green, Purple) symbolize energy, growth, and depth.', he: 'הלוגו שלנו מייצג שתי דמויות שמתחברות — מחזיר את האלמנט האנושי למרכז המעגל. הצבעים (כתום, ירוק, סגול) מסמלים אנרגיה, צמיחה ועומק.', es: 'Nuestro logo representa dos figuras conectándose. Los colores simbolizan energía, crecimiento y profundidad.', fr: 'Notre logo représente deux figures qui se connectent. Les couleurs symbolisent énergie, croissance et profondeur.', de: 'Unser Logo zeigt zwei sich verbindende Figuren. Die Farben symbolisieren Energie, Wachstum und Tiefe.', ar: 'يمثل شعارنا شخصيتين تتواصلان. الألوان ترمز للطاقة والنمو والعمق.' }, lang)}
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-hbm-orange" /><span className="font-semibold text-sm">{t({ en: 'Orange — Energy & Warmth', he: 'כתום — אנרגיה וחום', es: 'Naranja — Energía', fr: 'Orange — Énergie', de: 'Orange — Energie', ar: 'برتقالي — طاقة' }, lang)}</span></div>
+                      <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-hbm-green" /><span className="font-semibold text-sm">{t({ en: 'Green — Growth & Authenticity', he: 'ירוק — צמיחה ואותנטיות', es: 'Verde — Crecimiento', fr: 'Vert — Croissance', de: 'Grün — Wachstum', ar: 'أخضر — نمو' }, lang)}</span></div>
+                      <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-hbm-purple" /><span className="font-semibold text-sm">{t({ en: 'Purple — Wisdom & Trust', he: 'סגול — חוכמה ואמון', es: 'Púrpura — Sabiduría', fr: 'Violet — Sagesse', de: 'Lila — Weisheit', ar: 'بنفسجي — حكمة' }, lang)}</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
-        )}
+        </BubbleContainer>
       </section>
+
+      {/* Next Page Bridge — To Contact */}
+      <NextPageBridge 
+        to="/contact"
+        eyebrow={{ en: 'Ready to Connect?', he: 'מוכנים להתחבר?' }}
+        title={{ en: 'Let\'s Start a Conversation', he: 'בואו נתחיל שיחה' }}
+        description={{ en: 'Whether you have a question or just want to say hi, we are here.', he: 'בין אם יש לכם שאלה או סתם רוצים להגיד היי, אנחנו כאן.' }}
+        buttonText={{ en: 'Contact Us', he: 'צרו קשר' }}
+      />
+
+
     </div>
   )
 }

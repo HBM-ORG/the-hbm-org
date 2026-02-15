@@ -7,6 +7,8 @@ import { getWhatsappUrl } from '../components/Layout'
 import { ArrowRight } from 'lucide-react'
 import { AnimatedHero, Why8Minutes, QuoteCarousel, InteractiveCard, PhilosophyQuote, ManifestoSection, Guidelines, HowItWorks } from '../components/Home'
 import BubbleContainer from '../components/BubbleContainer'
+import NextPageBridge from '../components/NextPageBridge'
+
 
 const WP = 'https://www.thehbm.org/wp-content/uploads'
 const { home, global } = siteContent
@@ -55,37 +57,31 @@ export default function Home() {
       />
 
       {/* ═══════════════════ TRUSTED PARTNERS — RIGHT AFTER HERO ═══════════════════ */}
-      <section id="partners" className="py-8 bg-white border-b border-gray-100 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-6">
-          <p className="text-center text-hbm-gray text-xs uppercase tracking-widest mb-5 font-semibold">
+      {/* ═══════════════════ TRUSTED PARTNERS — RIGHT AFTER HERO ═══════════════════ */}
+      {/* ═══════════════════ TRUSTED PARTNERS — SIMPLE ROW ═══════════════════ */}
+      <section id="partners" className="bg-hbm-cream py-12 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <p className="text-center text-gray-400 text-xs uppercase tracking-[0.2em] mb-10 font-bold">
             {t({ en: 'Trusted Partners', he: 'שותפים מהימנים' }, lang)}
           </p>
-          {/* Infinite scrolling carousel */}
-          <div className="relative overflow-hidden group">
+          
+          <div className="relative w-full overflow-hidden mask-gradient-x">
             <div 
-              className="flex gap-16 animate-scroll"
-              style={{ animationDuration: '4s' }}
+              className="flex gap-20 items-center w-max animate-scroll-fast"
+              style={{ paddingLeft: '2rem' }}
             >
-              {/* Duplicate the logos multiple times for seamless loop */}
+              {/* 5 Sets of logos to ensure smooth infinite loop */}
               {[...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos].map((partner, i) => (
-                <div key={i} className="flex-shrink-0 h-36 flex items-center justify-center grayscale-0 opacity-100 md:grayscale md:opacity-40 md:hover:opacity-100 md:hover:grayscale-0 transition-all duration-300">
+                <div key={i} className="flex-shrink-0 h-16 md:h-24 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-500 transform hover:scale-110">
                   <img 
                     src={partner.src} 
                     alt={partner.name}
-                    className="h-full w-auto object-contain"
-                    onError={(e) => {
-                      // Fallback to text if image fails to load
-                      e.target.style.display = 'none'
-                      e.target.nextSibling.style.display = 'block'
-                    }}
+                    className="h-full w-auto object-contain mix-blend-multiply drop-shadow-none" 
+                    onError={(e) => { e.target.style.display = 'none' }}
                   />
-                  <span className="text-sm font-bold text-hbm-dark whitespace-nowrap hidden">{partner.title}</span>
                 </div>
               ))}
             </div>
-            {/* Gradient masks for smooth edges */}
-            <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10" />
-            <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10" />
           </div>
         </div>
       </section>
@@ -138,28 +134,26 @@ export default function Home() {
       {/* ═══════════════════ HOW IT WORKS — ANTI-GRAVITY ═══════════════════ */}
       <HowItWorks />
 
-      {/* ═══════════════════ MEETER TEASER ═══════════════════ */}
-      <section id="meeter-teaser" className="section-padding bg-gradient-purple text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-sm uppercase tracking-widest opacity-70 mb-3">The Product</p>
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            {t({ en: 'Meet The Meeter App', he: 'הכירו את אפליקציית Meeter' }, lang)}
-          </h2>
-          <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-            {t({ en: 'No downloads. No pre-registration. Just scan a QR code and start meeting people in the real world.', he: 'בלי הורדות. בלי הרשמה מראש. פשוט סרקו QR ותתחילו להכיר אנשים.' }, lang)}
-          </p>
-          <Link to="/meeter" className="btn-orange text-lg px-10 py-4 rounded-full">
-            {t({ en: 'Learn More', he: 'למידע נוסף' }, lang)} <ArrowRight size={20} />
-          </Link>
-        </div>
-      </section>
+
+
+
 
       {/* ═══════════════════ DAILY INSPIRATION — QUOTE CAROUSEL ═══════════════════ */}
       <QuoteCarousel />
 
       {/* ═══════════════════ WHAT MAKES THIS WORK — Guidelines ═══════════════════ */}
-      {/* ═══════════════════ WHAT MAKES THIS WORK — Guidelines ═══════════════════ */}
       <Guidelines />
+
+
+      {/* ═══════════════════ MEETER TEASER — NEXT PAGE CARD ═══════════════════ */}
+      <NextPageBridge 
+        to="/meeter"
+        eyebrow={{ en: 'Curious?', he: 'סקרנים?' }}
+        title={{ en: 'More than an App, its a new way to connect.', he: 'יותר מאפליקציה. דרך חדשה להתחבר.' }}
+        description={{ en: 'Imagine a social network where you don\'t scroll, you just meet. In real life. 8 minutes at a time.', he: 'תארו לעצמכם רשת חברתית שבה לא גוללים, אלא פשוט נפגשים. במציאות. 8 דקות בכל פעם.' }}
+        buttonText={{ en: 'What Is It?', he: 'מה זה?' }}
+      />
+
 
     </div>
   )

@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { MessageCircle } from 'lucide-react'
 import Navbar from './Navbar'
 import Footer from './Footer'
+import NewsletterSection from './NewsletterSection'
 import { useI18n } from '../i18n/context'
 
 const whatsappMessages = {
@@ -28,6 +29,7 @@ export default function Layout() {
       <main className="flex-1">
         <Outlet />
       </main>
+      <NewsletterSection />
       <Footer />
       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
         className="whatsapp-float" aria-label="Contact us on WhatsApp">

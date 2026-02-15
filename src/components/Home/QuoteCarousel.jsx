@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Quote } from 'lucide-react'
 import { useI18n, t } from '../../i18n/context'
+import BubbleContainer from '../BubbleContainer'
 
 const quotes = [
   { text: "We cannot live only for ourselves. A thousand fibers connect us.", author: "Herman Melville" },
@@ -34,37 +35,9 @@ export default function QuoteCarousel() {
   const quote = quotes[currentQuote]
 
   return (
-    <section id="daily-inspiration" className="section-padding bg-white relative overflow-hidden">
-      {/* Animated gradient background blobs */}
-      <motion.div
-        className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-[#6160AB]/20 to-[#8b7fd9]/20 rounded-full blur-3xl"
-        animate={{
-          x: [0, 100, 0],
-          y: [0, -50, 0],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 15,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-
-      <motion.div
-        className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#F07B3C]/15 to-[#ff9b6b]/15 rounded-full blur-3xl"
-        animate={{
-          x: [0, -80, 0],
-          y: [0, 80, 0],
-          scale: [1, 1.3, 1],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-
-      <div className="max-w-5xl mx-auto relative z-10">
+    <section id="daily-inspiration" className="section-padding bg-hbm-cream relative overflow-hidden">
+      <BubbleContainer bgColor="#FAF9F5">
+        <div className="max-w-5xl mx-auto relative z-10 w-full">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -163,6 +136,7 @@ export default function QuoteCarousel() {
           {currentQuote + 1} / {quotes.length}
         </motion.p>
       </div>
+      </BubbleContainer>
     </section>
   )
 }

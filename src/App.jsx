@@ -7,7 +7,7 @@ import Home from './pages/Home'
 import MeeterWhat from './pages/MeeterWhat'
 import MeeterWho from './pages/MeeterWho'
 import MeeterFeatures from './pages/MeeterFeatures'
-import MeeterPricing from './pages/MeeterPricing'
+
 import About from './pages/About'
 import Events from './pages/Events'
 import Knowledge from './pages/Knowledge'
@@ -45,7 +45,7 @@ export default function App() {
               <Route path="/meeter" element={<MeeterWhat />} />
               <Route path="/meeter/who" element={<MeeterWho />} />
               <Route path="/meeter/features" element={<MeeterFeatures />} />
-              <Route path="/meeter/pricing" element={<MeeterPricing />} />
+
               <Route path="/events" element={<Events />} />
               <Route path="/events/register" element={<EventRegister />} />
               <Route path="/knowledge" element={<Knowledge />} />

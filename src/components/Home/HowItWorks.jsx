@@ -93,7 +93,7 @@ export default function HowItWorks() {
 
   return (
     <section className="section-padding bg-hbm-cream" ref={containerRef}>
-      <BubbleContainer bgColor="#D8EECF">
+      <BubbleContainer bgColor="#FAF9F5">
         
         {/* Header & Toggle */}
         <div className="text-center mb-16">
@@ -116,8 +116,9 @@ export default function HowItWorks() {
           </motion.p>
 
           {/* Floating Toggle */}
+          {/* Floating Toggle - Resized 2x */}
           <motion.div 
-            className="inline-flex bg-gray-100/50 backdrop-blur-sm p-1.5 rounded-full shadow-inner border border-white/50"
+            className="inline-flex bg-gray-100/50 backdrop-blur-sm p-2 rounded-full shadow-inner border border-white/50"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -125,23 +126,23 @@ export default function HowItWorks() {
           >
             <button 
               onClick={() => { setMode('video'); setActiveStep(0); }}
-              className={`px-8 py-3 rounded-full font-bold text-sm transition-all duration-300 ${
+              className={`px-12 md:px-16 py-4 md:py-5 rounded-full font-bold text-lg md:text-xl transition-all duration-300 ${
                 mode === 'video' 
                   ? 'bg-white text-hbm-purple shadow-lg scale-105' 
                   : 'text-gray-500 hover:text-hbm-purple/70'
               }`}
             >
-              {t({ en: '🎥 Meeter Video', he: '🎥 Meeter וידאו' }, lang)}
+              {t({ en: 'Meeter Video', he: 'Meeter וידאו' }, lang)}
             </button>
             <button 
               onClick={() => { setMode('physical'); setActiveStep(0); }}
-              className={`px-8 py-3 rounded-full font-bold text-sm transition-all duration-300 ${
+              className={`px-12 md:px-16 py-4 md:py-5 rounded-full font-bold text-lg md:text-xl transition-all duration-300 ${
                 mode === 'physical' 
                   ? 'bg-white text-hbm-orange shadow-lg scale-105' 
                   : 'text-gray-500 hover:text-hbm-orange/70'
               }`}
             >
-              {t({ en: '🤝 Meeter F2F', he: '🤝 Meeter פיזי' }, lang)}
+              {t({ en: 'Meeter F2F', he: 'Meeter פיזי' }, lang)}
             </button>
           </motion.div>
         </div>

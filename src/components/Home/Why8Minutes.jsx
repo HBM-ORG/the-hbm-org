@@ -39,28 +39,25 @@ export default function Why8Minutes() {
     document.body.appendChild(script)
     
     return () => {
-       // Allow reuse if navigated back? Or remove?
-       // Removing might break if other components use it.
-       // But proper cleanup is good practice.
-       // For now, let's keep it to avoid "spinner stuck" on re-mount if script serves as init trigger.
        const existingScript = document.querySelector('script[src*="sociablekit"]')
        if (existingScript) existingScript.remove()
     }
   }, [])
 
   return (
-    <section className="section-padding bg-hbm-cream">
-      <BubbleContainer bgColor="#FBD5C1">
+    <section className="section-padding bg-hbm-cream flex flex-col items-center justify-center min-h-[85vh] md:min-h-screen relative overflow-hidden">
+      <BubbleContainer bgColor="#FAF9F5" className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center py-8 px-4 md:px-8">
+        
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-6 md:mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#F07B3C]/10 rounded-full mb-4"
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#F07B3C]/10 rounded-full mb-3"
           >
-            <Instagram className="w-5 h-5 text-[#F07B3C]" />
-            <span className="text-sm font-semibold text-[#F07B3C] uppercase tracking-wide">
+            <Instagram className="w-4 h-4 text-[#F07B3C]" />
+            <span className="text-xs font-semibold text-[#F07B3C] uppercase tracking-wide">
               {t({ en: 'From Our Instagram', he: 'מהאינסטגרם שלנו' }, lang)}
             </span>
           </motion.div>
@@ -70,7 +67,7 @@ export default function Why8Minutes() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-6xl font-bold text-hbm-purple mb-4"
+            className="text-3xl md:text-5xl font-bold text-hbm-purple mb-2 leading-tight"
           >
             Why 8 Minutes?
           </motion.h2>
@@ -80,7 +77,7 @@ export default function Why8Minutes() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-xl text-hbm-gray max-w-2xl mx-auto"
+            className="text-lg md:text-xl text-hbm-gray max-w-lg mx-auto leading-relaxed"
           >
             {t({
               en: 'Discover the perfect balance between meaningful connection and your busy schedule',
@@ -89,76 +86,50 @@ export default function Why8Minutes() {
           </motion.p>
         </div>
 
-        {/* Main Content - Video Carousel + Feature Cards */}
-        <div className="flex flex-col lg:flex-row gap-8 items-center">
-          {/* Left: Video Carousel */}
+        {/* Main Content - Centered Layout */}
+        <div className="flex flex-col items-center relative w-full">
+          
+          {/* Phone Mockup - Scaled Down */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="lg:w-1/2"
+            className="relative w-full max-w-[280px] md:max-w-[320px] mx-auto z-10"
           >
-            <div className="relative">
-              {/* SociableKIT Instagram Reels Widget */}
-              <div className="relative aspect-[9/16] max-w-sm mx-auto bg-gradient-to-br from-[#6160AB] to-[#8b7fd9] rounded-3xl p-1 shadow-2xl">
-                <div className="relative w-full h-full bg-black rounded-[22px] overflow-hidden">
-                  <div 
-                    className='sk-ww-instagram-reels w-full h-full' 
-                    data-embed-id='25653662'
-                    dangerouslySetInnerHTML={{ __html: `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;flex-direction:column;gap:10px"><svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="4" fill="none" stroke-opacity="0.3"></circle><path fill="#fff" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><p style="font-family:sans-serif;font-size:14px;opacity:0.7">Loading Reels...</p><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style></div>` }} 
-                  ></div>
-                </div>
-              </div>
+            <div className="relative aspect-[9/16] bg-black rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] md:border-[8px] border-gray-900">
+               {/* SociableKIT Widget */}
+               <div 
+                 className='sk-ww-instagram-reels w-full h-full' 
+                 data-embed-id='25653662'
+                 dangerouslySetInnerHTML={{ __html: `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;flex-direction:column;gap:10px"><svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="4" fill="none" stroke-opacity="0.3"></circle><path fill="#fff" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><p style="font-family:sans-serif;font-size:14px;opacity:0.7">Loading Reels...</p><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style></div>` }} 
+               ></div>
             </div>
           </motion.div>
 
-          {/* Right: Feature Cards */}
+          {/* Follow Button - Directly Below */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="lg:w-1/2 space-y-4"
+            transition={{ delay: 0.3 }}
+            className="mt-6 md:mt-8 z-20"
           >
-            {featureCards.map((card, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.02, x: 10 }}
-                className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-[#F07B3C] hover:shadow-xl transition-all"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl">{card.icon}</div>
-                  <div>
-                    <h4 className="text-xl font-bold text-hbm-dark mb-2">
-                      {t(card.title, lang)}
-                    </h4>
-                    <p className="text-hbm-gray">
-                      {t(card.text, lang)}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-
-            {/* Follow CTA */}
-            <motion.a
+            <a
               href="https://instagram.com/the__hbm"
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="block w-full bg-gradient-to-r from-[#F07B3C] to-[#ff9b6b] text-white rounded-2xl p-6 text-center font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-[#F07B3C] to-[#ff9b6b] text-white rounded-full px-6 py-2.5 text-sm md:text-base font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 transform active:scale-95"
             >
-              <div className="flex items-center justify-center gap-3">
-                <Instagram className="w-6 h-6" />
-                {t({ en: 'Follow Us on Instagram', he: 'עקבו אחרינו באינסטגרם' }, lang)}
-              </div>
-            </motion.a>
+              <Instagram className="w-5 h-5" />
+              <span>{t({ en: 'Follow Us @the__hbm', he: 'עקבו אחרינו @the__hbm' }, lang)}</span>
+            </a>
           </motion.div>
+
+          {/* Decorative Elements for Balance */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[80%] bg-gradient-to-b from-[#FFF0E5] to-transparent rounded-full blur-3xl -z-10 opacity-60 pointer-events-none"></div>
+
         </div>
+
       </BubbleContainer>
     </section>
   )
