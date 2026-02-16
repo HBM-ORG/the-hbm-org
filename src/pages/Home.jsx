@@ -72,11 +72,11 @@ export default function Home() {
             >
               {/* 5 Sets of logos to ensure smooth infinite loop */}
               {[...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos].map((partner, i) => (
-                <div key={i} className="flex-shrink-0 h-16 md:h-24 flex items-center justify-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-500 transform hover:scale-110">
+                <div key={i} className="flex-shrink-0 h-16 md:h-24 flex items-center justify-center opacity-70 hover:opacity-100 transition-all duration-500 transform hover:scale-110">
                   <img 
                     src={partner.src} 
                     alt={partner.name}
-                    className="h-full w-auto object-contain mix-blend-multiply drop-shadow-none" 
+                    className="h-full w-auto object-contain"
                     onError={(e) => { e.target.style.display = 'none' }}
                   />
                 </div>
@@ -94,7 +94,7 @@ export default function Home() {
 
       {/* ═══════════════════ CONVERSATION CARDS — SPLIT LAYOUT ═══════════════════ */}
       <section className="section-padding bg-hbm-cream">
-        <BubbleContainer bgColor="white">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center gap-12">
             {/* Left side — Headlines + CTA */}
             <div className="md:w-2/5">
@@ -125,7 +125,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </BubbleContainer>
+        </div>
       </section>
 
       {/* ═══════════════════ WHY 8 MINUTES — INSTAGRAM CAROUSEL ═══════════════════ */}

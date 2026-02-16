@@ -99,22 +99,97 @@ const ComparisonSection = () => {
               <div className="relative h-full p-6 rounded-3xl bg-gradient-to-br from-[#6160AB]/5 via-[#F07B3C]/5 to-[#73C154]/5 border-2 border-[#73C154] shadow-2xl overflow-hidden">
 
 
-                {/* Badge */}
-                <motion.div
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#73C154] to-[#6160AB] text-white rounded-full text-sm font-semibold mb-6"
-                  whileHover={{ scale: 1.05 }}
-                  animate={{
-                    boxShadow: [
-                      '0 0 0 0 rgba(115, 193, 84, 0)',
-                      '0 0 0 10px rgba(115, 193, 84, 0.2)',
-                      '0 0 0 0 rgba(115, 193, 84, 0)',
-                    ]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <Check className="w-4 h-4" />
-                  {t({ en: 'HBM WAY', he: 'דרך HBM' }, lang)}
-                </motion.div>
+                {/* Badge - Enhanced with Multiple Animations */}
+                <div className="relative inline-block mb-6">
+                  {/* Floating Particles */}
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-1.5 h-1.5 bg-white rounded-full"
+                      style={{
+                        top: `${Math.random() * 100}%`,
+                        left: `${Math.random() * 100}%`,
+                      }}
+                      animate={{
+                        y: [0, -20, 0],
+                        x: [0, Math.random() * 10 - 5, 0],
+                        opacity: [0, 1, 0],
+                        scale: [0, 1, 0],
+                      }}
+                      transition={{
+                        duration: 2 + Math.random() * 2,
+                        repeat: Infinity,
+                        delay: i * 0.3,
+                        ease: "easeInOut"
+                      }}
+                    />
+                  ))}
+
+                  {/* Main Badge */}
+                  <motion.div
+                    className="relative inline-flex items-center gap-2 px-6 py-3 text-white rounded-full text-sm font-bold overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(135deg, #73C154, #6160AB, #F07B3C, #73C154)',
+                      backgroundSize: '300% 300%',
+                    }}
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      backgroundPosition: {
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "linear"
+                      },
+                      scale: {
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    {/* Shimmer Effect */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30"
+                      animate={{
+                        x: ['-100%', '200%'],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        repeatDelay: 1
+                      }}
+                    />
+
+                    {/* Content */}
+                    <Check className="w-5 h-5 relative z-10" strokeWidth={3} />
+                    <span className="relative z-10 tracking-wide">
+                      {t({ en: 'HBM WAY', he: 'דרך HBM' }, lang)}
+                    </span>
+                  </motion.div>
+
+                  {/* Dynamic Glow */}
+                  <motion.div
+                    className="absolute inset-0 rounded-full blur-xl -z-10"
+                    style={{
+                      background: 'linear-gradient(135deg, #73C154, #6160AB, #F07B3C)',
+                      backgroundSize: '200% 200%',
+                    }}
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                      opacity: [0.3, 0.6, 0.3],
+                      scale: [1, 1.2, 1],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                </div>
 
                 {/* Title */}
                 <h3 className="text-2xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent mb-6">

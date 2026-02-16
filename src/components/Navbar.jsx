@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { siteContent } from '../data/content'
 import { useI18n, t } from '../i18n/context'
 import { ui } from '../i18n/translations'
@@ -146,31 +147,56 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 shadow-lg max-h-[70vh] overflow-y-auto">
-          {navStructure.map((item) => (
-            <div key={item.key} className="mb-4">
-              <Link to={item.path} onClick={() => setMobileOpen(false)}
-                className={`block text-lg font-bold mb-1 ${isActive(item.path) ? 'text-hbm-purple' : 'text-hbm-dark'}`}>
-                {t(ui.nav[item.key], lang)}
-              </Link>
-              <div className="pl-4 space-y-1">
-                {item.subs && item.subs.map((sub) => (
-                  <Link key={sub.id} to={sub.href || `${item.path}#${sub.id}`}
+      {/* Mobile menu - Full Screen Overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-white pt-24 pb-10 px-6 flex flex-col overflow-y-auto"
+          >
+            <div className="flex flex-col items-center gap-8 text-center">
+              {navStructure.map((item) => (
+                <div key={item.key} className="w-full">
+                  <Link 
+                    to={item.path} 
                     onClick={() => setMobileOpen(false)}
-                    className="block text-sm text-hbm-gray py-1 hover:text-hbm-purple">
-                    {t(sub.label, lang)}
+                    className={`block text-3xl font-bold font-[var(--font-display)] mb-2 ${
+                      isActive(item.path) ? 'text-hbm-purple' : 'text-hbm-dark'
+                    }`}
+                  >
+                    {t(ui.nav[item.key], lang)}
                   </Link>
-                ))}
-              </div>
+                  
+                  {/* Show subs for non-home items only */}
+                  {item.key !== 'home' && item.subs && (
+                    <div className="flex flex-col gap-3 mt-2">
+                      {item.subs.map((sub) => (
+                        <Link 
+                          key={sub.id} 
+                          to={sub.href || `${item.path}#${sub.id}`}
+                          onClick={() => setMobileOpen(false)}
+                          className="text-lg text-hbm-gray hover:text-hbm-purple font-medium"
+                        >
+                          {t(sub.label, lang)}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              <div className="w-full h-px bg-gray-100 my-4" />
+              
+              <a href={global.ctaUrl} className="btn-primary text-lg py-4 px-10 w-full max-w-xs shadow-xl">
+                {t(ui.cta.your8min, lang)}
+              </a>
             </div>
-          ))}
-          <a href={global.ctaUrl} className="btn-primary block text-center mt-4">
-            {t(ui.cta.your8min, lang)}
-          </a>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

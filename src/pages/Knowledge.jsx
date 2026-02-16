@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n, t } from '../i18n/context'
-import { BookOpen, Play, Calendar, Sparkles, ArrowRight } from 'lucide-react'
+import { BookOpen, Play, Calendar, ArrowRight } from 'lucide-react'
 import EyebrowBadge from '../components/EyebrowBadge'
 import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
@@ -19,7 +19,6 @@ const books = [
 const tabs = [
   { id: 'books', label: { en: 'Books', he: 'ספרים', es: 'Libros', fr: 'Livres', de: 'Bücher', ar: 'كتب' }, icon: BookOpen },
   { id: 'videos', label: { en: 'Videos', he: 'סרטונים', es: 'Videos', fr: 'Vidéos', de: 'Videos', ar: 'فيديو' }, icon: Play },
-  { id: 'brand', label: { en: 'Our Logo', he: 'הלוגו שלנו', es: 'Nuestro Logo', fr: 'Notre Logo', de: 'Unser Logo', ar: 'شعارنا' }, icon: Sparkles },
 ]
 
 export default function Knowledge() {
@@ -91,26 +90,7 @@ export default function Knowledge() {
               </div>
             )}
 
-            {activeTab === 'brand' && (
-              <div>
-                <h2 className="text-3xl font-bold text-hbm-dark mb-8 text-center">{t({ en: 'Our Logo', he: 'הלוגו שלנו', es: 'Nuestro Logo', fr: 'Notre Logo', de: 'Unser Logo', ar: 'شعارنا' }, lang)}</h2>
-                <div className="grid md:grid-cols-2 gap-10 items-center">
-                  <div className="flex justify-center">
-                    <img src="https://www.thehbm.org/wp-content/uploads/2025/06/Logo-and-Tagline.png" alt="HBM Logo" className="max-w-xs w-full" />
-                  </div>
-                  <div>
-                    <p className="text-hbm-gray leading-relaxed mb-6">
-                      {t({ en: 'Our logo represents two figures connecting—bringing the human element back to the center of the circle. The colors (Orange, Green, Purple) symbolize energy, growth, and depth.', he: 'הלוגו שלנו מייצג שתי דמויות שמתחברות — מחזיר את האלמנט האנושי למרכז המעגל. הצבעים (כתום, ירוק, סגול) מסמלים אנרגיה, צמיחה ועומק.', es: 'Nuestro logo representa dos figuras conectándose. Los colores simbolizan energía, crecimiento y profundidad.', fr: 'Notre logo représente deux figures qui se connectent. Les couleurs symbolisent énergie, croissance et profondeur.', de: 'Unser Logo zeigt zwei sich verbindende Figuren. Die Farben symbolisieren Energie, Wachstum und Tiefe.', ar: 'يمثل شعارنا شخصيتين تتواصلان. الألوان ترمز للطاقة والنمو والعمق.' }, lang)}
-                    </p>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-hbm-orange" /><span className="font-semibold text-sm">{t({ en: 'Orange — Energy & Warmth', he: 'כתום — אנרגיה וחום', es: 'Naranja — Energía', fr: 'Orange — Énergie', de: 'Orange — Energie', ar: 'برتقالي — طاقة' }, lang)}</span></div>
-                      <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-hbm-green" /><span className="font-semibold text-sm">{t({ en: 'Green — Growth & Authenticity', he: 'ירוק — צמיחה ואותנטיות', es: 'Verde — Crecimiento', fr: 'Vert — Croissance', de: 'Grün — Wachstum', ar: 'أخضر — نمو' }, lang)}</span></div>
-                      <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-hbm-purple" /><span className="font-semibold text-sm">{t({ en: 'Purple — Wisdom & Trust', he: 'סגול — חוכמה ואמון', es: 'Púrpura — Sabiduría', fr: 'Violet — Sagesse', de: 'Lila — Weisheit', ar: 'بنفسجي — حكمة' }, lang)}</span></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+
 
           </div>
         </BubbleContainer>

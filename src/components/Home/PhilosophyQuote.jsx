@@ -1,7 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Quote } from 'lucide-react'
-import BubbleContainer from '../BubbleContainer'
 
 const PhilosophyQuote = () => {
   // Animation variants for word-by-word reveal
@@ -55,7 +54,7 @@ const PhilosophyQuote = () => {
 
   return (
     <section className="section-padding bg-hbm-cream">
-      <BubbleContainer className="max-w-6xl">
+      <div className="max-w-6xl mx-auto">
         <motion.div
           className="relative"
           initial={{ opacity: 0, y: 50 }}
@@ -148,7 +147,7 @@ const PhilosophyQuote = () => {
             <Quote className="w-24 h-24 md:w-32 md:h-32 text-[#F07B3C]/20" strokeWidth={1.5} />
           </motion.div>
         </motion.div>
-      </BubbleContainer>
+      </div>
     </section>
   )
 }

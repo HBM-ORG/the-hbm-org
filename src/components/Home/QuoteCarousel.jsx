@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Quote } from 'lucide-react'
 import { useI18n, t } from '../../i18n/context'
-import BubbleContainer from '../BubbleContainer'
 
 const quotes = [
   { text: "We cannot live only for ourselves. A thousand fibers connect us.", author: "Herman Melville" },
@@ -36,7 +35,7 @@ export default function QuoteCarousel() {
 
   return (
     <section id="daily-inspiration" className="section-padding bg-hbm-cream relative overflow-hidden">
-      <BubbleContainer bgColor="#FAF9F5">
+      <div className="max-w-7xl mx-auto px-6">
         <div className="max-w-5xl mx-auto relative z-10 w-full">
         {/* Section Header */}
         <motion.div
@@ -136,7 +135,7 @@ export default function QuoteCarousel() {
           {currentQuote + 1} / {quotes.length}
         </motion.p>
       </div>
-      </BubbleContainer>
+      </div>
     </section>
   )
 }

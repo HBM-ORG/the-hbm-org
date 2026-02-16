@@ -177,7 +177,7 @@ html { scroll-behavior: smooth; }
   animation: scrollLogos 40s linear infinite;
 }
 .animate-scroll-fast {
-  animation: scrollLogos 20s linear infinite;
+  animation: scrollLogos 10s linear infinite;
 }
 @keyframes scrollLogos {
   0% { transform: translateX(0); }

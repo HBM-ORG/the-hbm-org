@@ -144,49 +144,49 @@ export const siteContent = {
         {
           title: { en: 'Scan & Set Your Vibe', he: 'בחרו את האווירה' },
           desc: { en: 'No app download needed. Scan the QR code to enter Meeter. Pick your interests and choose an emoji to get started.', he: 'בחרו תחומי עניין ואימוג׳י להתחלה.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/11.png'
+          image: '/meeter-video/step-1.png'
         },
         {
           title: { en: 'Enter the Lobby', he: 'לובי מיינדסט' },
           desc: { en: 'Get tips to prepare for a great conversation while we find your match.', he: 'קבלו טיפים לשיחה מעולה בזמן שאנחנו מוצאים התאמה.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/22.png'
+          image: '/meeter-video/step-2.png'
         },
         {
           title: { en: '8-Minutes', he: '8 דקות מונחות' },
           desc: { en: 'Connect through guided icebreakers that make online interaction natural and fun.', he: 'שיחה עמוקה עם שוברי קרח בזמן אמת.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/33.png'
+          image: '/meeter-video/step-3.png'
         },
         {
           title: { en: 'Stay in Touch', he: 'כרטיס חיבור' },
           desc: { en: 'Decide what details to share and keep the connection alive beyond the experience.', he: 'המזכרת הדיגיטלית שלכם. החליפו פרטים מיד.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/44.png'
+          image: '/meeter-video/step-4.png'
         }
       ],
       physicalSteps: [
         {
           title: { en: 'Scan & Set Your Vibe', he: 'בחרו את האווירה' },
           desc: { en: 'No app download needed. Scan the QR code, select your interests, and pick an emoji to start.', he: 'בחרו תחומי עניין כדי לאותת לחדר.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/11.png'
+          image: '/how-it-works/f2f-step-3.png'
         },
         {
           title: { en: 'Go To Your Matching Zone', he: 'לובי מיינדסט' },
           desc: { en: 'Meeter guides you to the specific zone where you’ll meet your match.', he: 'קבלו טיפים לשיחה מעולה בזמן שאנחנו מוצאים התאמה.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/22.png'
+          image: '/how-it-works/f2f-step-2.png'
         },
         {
           title: { en: 'Flip To Find', he: '8 דקות מונחות' },
           desc: { en: 'Flip your card to see your match’s interests and start a conversation.', he: 'הפכו את הכרטיס כדי לראות את תחומי העניין של ההתאמה שלכם ולהתחיל שיחה.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/33.png'
+          image: '/how-it-works/f2f-step-4.png'
         },
         {
           title: { en: '8 Minutes', he: '8 דקות מונחות' },
           desc: { en: 'Enjoy live guided icebreakers and tips that make conversation effortless and fun.', he: 'השיחה מתנהלת עם שאלות מנחות בזמן אמת.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/44.png'
+          image: '/how-it-works/f2f-step-1.png'
         },
         {
           title: { en: 'Stay In Touch', he: 'כרטיס חיבור' },
           desc: { en: 'Choose which details to share and continue the connection beyond the event.', he: 'החליפו כרטיסים דיגיטליים מיד לשמירה על קשר.' },
-          image: 'https://thehbm.org/wp-content/uploads/2025/06/55.png'
+          image: '/how-it-works/f2f-step-5.png'
         }
       ]
     },
@@ -225,20 +225,20 @@ export const siteContent = {
         ],
         questions: [
           { en: 'What kind of superhero would you like to be?', he: 'איזה גיבור על היית רוצה להיות?' },
-          { en: 'What's a skill you'd love to master overnight?', he: 'איזה כישרון היית רוצה לשלוט בו בן לילה?' },
+          { en: 'What\'s a skill you\'d love to master overnight?', he: 'איזה כישרון היית רוצה לשלוט בו בן לילה?' },
           { en: 'If you could have dinner with anyone, who would it be?', he: 'אם היית יכול לאכול ארוחת ערב עם מישהו, מי זה היה?' },
-          { en: 'What's the best advice you've ever received?', he: 'מה העצה הכי טובה שקיבלת?' },
-          { en: 'What's something you're proud of but rarely talk about?', he: 'על מה אתה גאה אבל לא מדבר עליו?' },
+          { en: 'What\'s the best advice you\'ve ever received?', he: 'מה העצה הכי טובה שקיבלת?' },
+          { en: 'What\'s something you\'re proud of but rarely talk about?', he: 'על מה אתה גאה אבל לא מדבר עליו?' },
           { en: 'If you could time travel, where would you go?', he: 'אם היית יכול לנסוע בזמן, לאן היית הולך?' },
-          { en: 'What's a small thing that makes your day better?', he: 'מה דבר קטן שעושה את היום שלך טוב יותר?' }
+          { en: 'What\'s a small thing that makes your day better?', he: 'מה דבר קטן שעושה את היום שלך טוב יותר?' }
         ]
       },
       
       liveData: {
         title: { en: 'Live Data on the Spot', he: 'נתונים חיים במקום' },
         description: {
-          en: 'Don't guess. Know exactly what happened at your event. Track connections made, top interests, satisfaction scores — all in real time.',
-          he: 'אל תנחשו. דעו בדיוק מה קרה באירוע שלכם. עקבו אחרי חיבורים שנוצרו, תחומי עניין מובילים, ציוני שביעות רצון — הכל בזמן אמת.'
+          en: 'Don\'t guess. Know exactly what happened at your event. Track connections made, top interests, satisfaction scores - all in real time.',
+          he: 'אל תנחשו. דעו בדיוק מה קרה באירוע שלכם. עקבו אחרי חיבורים שנוצרו, תחומי עניין מובילים, ציוני שביעות רצון - הכל בזמן אמת.'
         },
         bullets: [
           { en: 'Real-time connection analytics', he: 'אנליטיקה של חיבורים בזמן אמת' },

@@ -1,7 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Heart, Users, Sparkles } from 'lucide-react'
-import BubbleContainer from '../BubbleContainer'
 import ManifestoCard from './ManifestoCard'
 
 const ManifestoSection = () => {
@@ -13,7 +12,7 @@ const ManifestoSection = () => {
 
   return (
     <section className="section-padding bg-hbm-cream relative">
-      <BubbleContainer bgColor="#FAF9F5" className="max-w-6xl">
+      <div className="max-w-6xl mx-auto px-6">
         <div className="text-center py-4">
           {/* Eyebrow badge */}
           <motion.div
@@ -110,7 +109,7 @@ const ManifestoSection = () => {
             </motion.p>
           </motion.div>
         </div>
-      </BubbleContainer>
+      </div>
     </section>
   )
 }

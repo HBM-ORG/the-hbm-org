@@ -8,6 +8,7 @@ import Why8MinutesTimer from '../components/Meeter/Why8MinutesTimer'
 import EyebrowBadge from '../components/EyebrowBadge'
 import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
+import DidYouKnowSection from '../components/Meeter/DidYouKnowSection'
 
 
 const words = [
@@ -100,15 +101,9 @@ export default function MeeterWhat() {
           </div>
       </section>
 
-      {/* ── S2: OLD vs NEW ── */}
-      <ComparisonSection />
-
-      {/* ── S3: WHY 8 MINUTES — Psychology ── */}
-      <Why8MinutesTimer compact={true} />
-
-      {/* ── S4: OPPORTUNITY — Word Rotator ── */}
-      <section className="bg-hbm-cream">
-        <BubbleContainer bgColor="white">
+      {/* ── S2: OPPORTUNITY — Word Rotator ── */}
+      <section className="bg-hbm-cream section-padding">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center w-full">
             <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark mb-2">
               {t({ en: 'Find your next...', he: '...מצאו את ה' }, lang)}
@@ -127,21 +122,17 @@ export default function MeeterWhat() {
               ))}
             </div>
           </div>
-        </BubbleContainer>
+        </div>
       </section>
 
-      {/* ── S5: DID YOU KNOW — Stats ── */}
-      <section className="bg-hbm-cream">
-        <BubbleContainer bgColor="#1F1F1F" className="text-white">
-          <div className="max-w-4xl mx-auto px-6 text-center">
-            <p className="text-hbm-orange font-bold text-sm uppercase tracking-widest mb-4">{t({ en: 'Did You Know?', he: 'הידעתם?' }, lang)}</p>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6" style={{letterSpacing:'-2px'}}>
-              {t({ en: '95% of people hate small talk.', he: '95% מהאנשים שונאים שיחות חולין.' }, lang)}
-            </h2>
-            <p className="text-2xl font-bold text-hbm-orange">{t({ en: 'We fixed it.', he: 'תיקנו את זה.' }, lang)}</p>
-          </div>
-        </BubbleContainer>
-      </section>
+      {/* ── S3: DID YOU KNOW — 95% Sticky Section ── */}
+      <DidYouKnowSection />
+
+      {/* ── S4: OLD vs NEW ── */}
+      <ComparisonSection />
+
+      {/* ── S5: WHY 8 MINUTES — Psychology ── */}
+      <Why8MinutesTimer compact={true} />
 
 
 

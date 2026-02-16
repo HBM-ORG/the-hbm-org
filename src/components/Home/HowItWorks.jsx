@@ -208,48 +208,45 @@ export default function HowItWorks() {
 
           {/* Right: Sticky Phone Mockup (Floating) */}
           <div className="w-full md:w-5/12 sticky top-24 self-start">
-            <motion.div
-              className="relative mx-auto w-[280px] md:w-[320px]"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              {/* Phone Frame */}
-              <div className="relative bg-hbm-dark/5 backdrop-blur-xl border border-white/20 rounded-[48px] p-2 shadow-2xl">
-                <div className="relative bg-black rounded-[40px] overflow-hidden aspect-[9/19] border-[8px] border-black">
+              <motion.div
+                className="relative mx-auto w-[280px] md:w-[320px]"
+                animate={{ y: [0, -15, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                {/* Single Continuous Gradient Border */}
+                <div className="relative rounded-[2.5rem] overflow-hidden p-[4px] shadow-2xl bg-gradient-to-b from-hbm-purple via-[#9F7AEA] to-hbm-orange">
                   
-                  {/* Dynamic Screen Content */}
-                  <AnimatePresence mode="wait">
-                    {mode === 'physical' && activeStep === 4 ? (
-                      // Step 5 F2F: Connection Card Magic Tilt
-                      <MagicCard key="magic-card" image={steps[activeStep].image} />
-                    ) : (
-                       // Standard Image Fade
-                      <motion.img
-                        key={steps[activeStep].image}
-                        src={steps[activeStep].image}
-                        alt={`Step ${activeStep + 1}`}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        initial={{ opacity: 0, scale: 1.1 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.4 }}
-                      />
-                    )}
-                  </AnimatePresence>
-
-                  {/* UI Overlay (Time/Status) */}
-                  <div className="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-black/50 to-transparent z-20 pointer-events-none" />
-                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-6 bg-black rounded-b-2xl z-30" />
+                  {/* Inner White Screen */}
+                  <div className="relative bg-white w-full h-full rounded-[2.3rem] overflow-hidden aspect-[9/19]">
+                    
+                    {/* Dynamic Screen Content */}
+                    <AnimatePresence mode="wait">
+                      {mode === 'physical' && activeStep === 4 ? (
+                        // Step 5 F2F: Connection Card Magic Tilt
+                        <MagicCard key="magic-card" image={steps[activeStep].image} />
+                      ) : (
+                         // Standard Image Fade
+                        <motion.img
+                          key={steps[activeStep].image}
+                          src={steps[activeStep].image}
+                          alt={`Step ${activeStep + 1}`}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          initial={{ opacity: 0, scale: 1.05 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
+                    </AnimatePresence>
+  
+                    {/* Minimal Notch - Transparent/Subtle */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-white/90 backdrop-blur-sm rounded-b-2xl z-20 shadow-sm" />
+                  </div>
                 </div>
-              </div>
 
-              {/* Float Shadow */}
-              <motion.div 
-                className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-4 bg-black/20 rounded-[100%] blur-md"
-                animate={{ scale: [1, 0.9, 1], opacity: [0.3, 0.5, 0.3] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </motion.div>
+                {/* Soft Glow Behind */}
+                <div className="absolute -inset-4 bg-hbm-purple/20 blur-2xl rounded-full -z-10" />
+              </motion.div>
           </div>
         </div>
       </BubbleContainer>
