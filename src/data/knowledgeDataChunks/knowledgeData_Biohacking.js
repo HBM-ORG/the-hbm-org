@@ -1,0 +1,323 @@
+export const biohackingData = [
+  {
+    id: 'bio-1',
+    type: 'BOOK',
+    title: 'Breath',
+    author: 'James Nestor',
+    category: 'Biohacking',
+    tags: ['Health', 'Physiology', 'Wellness'],
+    description: 'No matter what you eat, how much you exercise, how skinny or young or wise you are, none of it matters if you’re not breathing properly.',
+    essence: "A scientific adventure into the lost art of breathing and how it shapes our health.",
+    takeaways: [
+      "Breathe through your nose, not your mouth.",
+      "Breathing less delivers more oxygen to your cells.",
+      "Chewing hard foods expands the airways."
+    ],
+    hbmPerspective: "Calm breath is the foundation of a calm, present mind during interaction.",
+  },
+  {
+    id: 'bio-2',
+    type: 'BOOK',
+    title: 'Why We Sleep',
+    author: 'Matthew Walker',
+    category: 'Biohacking',
+    tags: ['Sleep', 'Health', 'Neuroscience'],
+    description: 'Neuroscientist Matthew Walker provides a revolutionary exploration of sleep, examining how it affects every aspect of our physical and mental well-being.',
+    essence: "The non-negotiable biological necessity of sleep for health, memory, and longevity.",
+    takeaways: [
+      "Sleep is your superpower.",
+      "Lack of sleep contributes to every major disease.",
+      "Consistency in wake/sleep times is critical."
+    ],
+    hbmPerspective: "A well-rested mind is a kind and patient mind.",
+  },
+  {
+    id: 'bio-3',
+    type: 'BOOK',
+    title: 'Lifespan',
+    author: 'David A. Sinclair',
+    category: 'Biohacking',
+    tags: ['Aging', 'Genetics', 'Longevity'],
+    description: 'A leading authority on genetics and longevity reveals a bold new theory for why we age and he believes that "aging is a disease, and that disease is treatable."',
+    essence: "Aging is a loss of information, and it can be slowed or even reversed.",
+    takeaways: [
+      "Aging is a disease that is treatable.",
+      "Intermittent fasting activates longevity genes.",
+      "Stress your body (hormesis) to strengthen it."
+    ],
+    hbmPerspective: "Living longer means more time to create meaningful connections.",
+  },
+  {
+    id: 'bio-4',
+    type: 'BOOK',
+    title: 'The 4-Hour Body',
+    author: 'Tim Ferriss',
+    category: 'Biohacking',
+    tags: ['Fitness', 'Diet', 'Optimization'],
+    description: 'The result of an obsessive quest, spanning more than a decade, to hack the human body using one simple principle: search for the minimum effective dose.',
+    essence: "A handbook for hacking the human body using the minimum effective dose.",
+    takeaways: [
+      "The Slow-Carb Diet: simple rules for fat loss.",
+      "Occam's Protocol: minimum exercise for maximum gain.",
+      "Cold exposure boosts metabolism and immunity."
+    ],
+    hbmPerspective: "Optimizing the vessel enables the soul to connect more fully.",
+  },
+  {
+    id: 'bio-5',
+    type: 'BOOK',
+    title: 'Super Human',
+    author: 'Dave Asprey',
+    category: 'Biohacking',
+    tags: ['Longevity', 'Health', 'Performance'],
+    description: 'From the creator of Bulletproof Coffee comes a revolutionary plan to upgrade your brain power, boost energy, and stay youthful.',
+    essence: "A guide to upgrading your biology to live longer and perform better.",
+    takeaways: [
+      "Manage your light exposure (block blue light at night).",
+      "Control inflammation through diet.",
+      "Upgrade your mitochondria."
+    ],
+    hbmPerspective: "Energy management is social management.",
+  },
+  {
+    id: 'bio-6',
+    type: 'BOOK',
+    title: 'The Oxygen Advantage',
+    author: 'Patrick McKeown',
+    category: 'Biohacking',
+    tags: ['Breathing', 'Performance', 'Health'],
+    description: 'The secret to weight loss, health, and athletic excellence.',
+    essence: "Applying the Buteyko method to improve oxygen delivery and athletic performance.",
+    takeaways: [
+      "Breathe light to breathe right.",
+      "Hold your breath to simulate high altitude training.",
+      "Nasal breathing during exercise prevents burnout."
+    ],
+    hbmPerspective: "Control your breath, control your state.",
+  },
+  {
+    id: 'bio-7',
+    type: 'BOOK',
+    title: 'Boundless',
+    author: 'Ben Greenfield',
+    category: 'Biohacking',
+    tags: ['Optimization', 'Holistic', 'Encyclopedia'],
+    description: 'Upgrade your brain, optimize your body, and defy aging.',
+    essence: "The comprehensive encyclopedia of biohacking for total human optimization.",
+    takeaways: [
+      "Grounding/Earthing reduces inflammation.",
+      "Sunlight is a nutrient.",
+      "Community and connection are vital for longevity."
+    ],
+    hbmPerspective: "Ben specifically highlights that loneliness is as deadly as smoking—connection is biohacking.",
+  },
+  {
+    id: 'bio-8',
+    type: 'BOOK',
+    title: 'Head Strong',
+    author: 'Dave Asprey',
+    category: 'Biohacking',
+    tags: ['Brain', 'Mitochondria', 'Focus'],
+    description: 'The bulletproof plan to activate untreated energy in your brain.',
+    essence: "It's not you, it's your mitochondria. Fix your energy production to fix your brain.",
+    takeaways: [
+      "Ketosis fuels the brain efficiently.",
+      "Cold showers wake up your mitochondria.",
+      "Avoid mold toxins in coffee and food."
+    ],
+    hbmPerspective: "A clear brain leads to clear communication.",
+  },
+  {
+    id: 'bio-9',
+    type: 'BOOK',
+    title: 'Deep Nutrition',
+    author: 'Catherine Shanahan',
+    category: 'Biohacking',
+    tags: ['Diet', 'Genetics', 'Health'],
+    description: 'Why your genes need traditional food.',
+    essence: "Returning to the 'Human Diet' of our ancestors to heal our genes.",
+    takeaways: [
+      "Avoid vegetable oils (The Hateful Eight).",
+      "Eat organ meats and bone broth.",
+      "Food speaks to your genes."
+    ],
+    hbmPerspective: "Nourishing the body allows us to nourish relationships.",
+  },
+  {
+    id: 'bio-10',
+    type: 'BOOK',
+    title: 'Metabolical',
+    author: 'Robert Lustig',
+    category: 'Biohacking',
+    tags: ['Food', 'Health', 'Science'],
+    description: 'The lure and the lies of processed food, nutrition, and modern medicine.',
+    essence: "Processed food is poison; real food is medicine.",
+    takeaways: [
+      "Protect your liver; feed your gut.",
+      "It's not the calories, it's the insulin.",
+      "Eat real food."
+    ],
+    hbmPerspective: "Real food, like real connection, cannot be processed or faked.",
+  },
+  {
+    id: 'bio-11',
+    type: 'BOOK',
+    title: 'Outlive',
+    author: 'Peter Attia',
+    category: 'Biohacking',
+    tags: ['Longevity', 'Medicine', 'Strategy'],
+    description: 'The science and art of longevity.',
+    fullSummary: "Outlive is a manifesto for a new approach to medicine—one that shifts the focus from treating disease to preventing it. Peter Attia argues that the current medical model (Medicine 2.0) is failing to address the chronic diseases of aging: heart disease, cancer, neurodegenerative disease, and type 2 diabetes. He proposes Medicine 3.0, a proactive strategy that emphasizes lifespan and healthspan equally. By optimizing exercise, nutrition, sleep, and emotional health, Attia provides a roadmap to living longer and better, ensuring that our final decades are filled with vitality rather than decline.",
+    essence: "Move from Medicine 2.0 (treating disease) to Medicine 3.0 (prevention and personalized strategy).",
+    takeaways: [
+      "Exercise is the most potent longevity drug.",
+      "Metabolic health is the foundation.",
+      "Emotional health is part of physical health."
+    ],
+    hbmPerspective: "Emotional health—connection—is the final pillar of longevity.",
+  },
+  {
+    id: 'bio-12',
+    type: 'BOOK',
+    title: 'Food of the Gods',
+    author: 'Terence McKenna',
+    category: 'Biohacking',
+    tags: ['History', 'Plants', 'Consciousness'],
+    description: 'The search for the original tree of knowledge.',
+    essence: "A radical history of human relationship with plants and altered states.",
+    takeaways: [
+      "Humans co-evolved with psychoactive plants.",
+      "Consciousness expansion driven by diet.",
+      "Shamanism is an ancient technology."
+    ],
+    hbmPerspective: "Expanding consciousness breaks down barriers between self and other.",
+  },
+  {
+    id: 'bio-13',
+    type: 'BOOK',
+    title: 'Change Your Brain, Change Your Life',
+    author: 'Daniel G. Amen',
+    category: 'Biohacking',
+    tags: ['Brain', 'Psychiatry', 'Health'],
+    description: 'The breakthrough program for conquering anxiety, depression, obsessiveness, lack of focus, anger, and memory problems.',
+    essence: "Look at the organ you are treating. Brain health determines life quality.",
+    takeaways: [
+      "Kill the ANTs (Automatic Negative Thoughts).",
+      "Your brain is soft; protect it from injury.",
+      "Diet affects mood and behavior."
+    ],
+    hbmPerspective: "A healthy brain fosters healthy relationships.",
+  },
+  {
+    id: 'bio-14',
+    type: 'BOOK',
+    title: 'The Circadian Code',
+    author: 'Satchin Panda',
+    category: 'Biohacking',
+    tags: ['Sleep', 'Time', 'Health'],
+    description: 'Lose weight, supercharge your energy, and transform your health from morning to midnight.',
+    essence: "Aligning your lifestyle with your body's natural clocks.",
+    takeaways: [
+      "Time-restricted eating (TRE) syncs your clocks.",
+      "Light is the primary zeitgeber (time-giver).",
+      "Consistency is key."
+    ],
+    hbmPerspective: "Rhythm and timing are essential in music and in conversation.",
+  },
+  {
+    id: 'bio-15',
+    type: 'BOOK',
+    title: 'Fast This Way',
+    author: 'Dave Asprey',
+    category: 'Biohacking',
+    tags: ['Fasting', 'Health', 'Willpower'],
+    description: 'Burn fat, heal inflammation, and energize your mental performance.',
+    essence: "Fasting is not starvation; it is a tool for energy and clarity.",
+    takeaways: [
+      "Fasting builds metabolic flexibility.",
+      "It teaches psychological resilience.",
+      "Autophagy cleans out damaged cells."
+    ],
+    hbmPerspective: "Removing the constant need for consumption creates space for reflection.",
+  },
+  {
+    id: 'bio-16',
+    type: 'BOOK',
+    title: 'Grain Brain',
+    author: 'David Perlmutter',
+    category: 'Biohacking',
+    tags: ['Brain', 'Diet', 'Gluten'],
+    description: 'The surprising truth about wheat, carbs, and sugar--your brain\'s silent killers.',
+    essence: "Inflammation from carbs and gluten destroys brain health.",
+    takeaways: [
+      "Cholesterol is good for the brain.",
+      "Sugar is the enemy.",
+      "Neurogenesis is possible at any age."
+    ],
+    hbmPerspective: "Protect your mind so you can share it with others.",
+  },
+  {
+    id: 'bio-17',
+    type: 'BOOK',
+    title: 'Dopamine Nation',
+    author: 'Anna Lembke',
+    category: 'Biohacking',
+    tags: ['Addiction', 'Balance', 'Psychology'],
+    description: 'Finding balance in the age of indulgence.',
+    essence: "We are over-stimulated. The cure is a dopamine fast and embracing pain.",
+    takeaways: [
+      "The pleasure-pain balance is delicate.",
+      "Pursuing pain (exercise, cold) resets the balance.",
+      "Radical honesty promotes recovery."
+    ],
+    hbmPerspective: "Disconnection often comes from numbing ourselves. Reconnection requires feeling.",
+  },
+  {
+    id: 'bio-18',
+    type: 'BOOK',
+    title: 'The Wim Hof Method',
+    author: 'Wim Hof',
+    category: 'Biohacking',
+    tags: ['Cold', 'Breathing', 'Mindset'],
+    description: 'Activate your full human potential.',
+    essence: "Cold, breathing, and mindset allow you to control your own physiology.",
+    takeaways: [
+      "The cold is your teacher.",
+      "Breathing influences the immune system.",
+      "Commitment overcomes discomfort."
+    ],
+    hbmPerspective: "Shared challenge (like an ice bath) creates instant bonds.",
+  },
+  {
+    id: 'bio-19',
+    type: 'BOOK',
+    title: 'How Not to Die',
+    author: 'Michael Greger',
+    category: 'Biohacking',
+    tags: ['Nutrition', 'Health', 'Plant-Based'],
+    description: 'Discover the foods scientifically proven to prevent and reverse disease.',
+    essence: "A plant-based diet is the most scientifically supported way to prevent premature death.",
+    takeaways: [
+      "The Daily Dozen checklist.",
+      "Food is the most powerful preventative medicine.",
+      "Genes load the gun; lifestyle pulls the trigger."
+    ],
+    hbmPerspective: "Vitality allows us to be of service.",
+  },
+  {
+    id: 'bio-20',
+    type: 'BOOK',
+    title: 'Spark',
+    author: 'John J. Ratey',
+    category: 'Biohacking',
+    tags: ['Exercise', 'Brain', 'Science'],
+    description: 'The revolutionary new science of exercise and the brain.',
+    essence: "Exercise is Miracle-Gro for the brain.",
+    takeaways: [
+      "Cardio generates new brain cells (neurogenesis).",
+      "Exercise beats depression and anxiety.",
+      "Movement is thinking."
+    ],
+    hbmPerspective: "Move together, think together.",
+  }
+];

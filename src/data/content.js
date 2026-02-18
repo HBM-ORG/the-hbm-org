@@ -35,7 +35,6 @@ export const siteContent = {
         { platform: 'Facebook', text: "Yes, we still use Facebook. And no, we're not here for the drama.", url: 'https://www.facebook.com/people/The-HBM/61573100935457/' },
         { platform: 'LinkedIn', text: 'Our "we\'re professional, promise" face. For updates, partnerships, and sentences that use the word "synergy".', url: 'https://www.linkedin.com/company/the-human-being-movement/' },
         { platform: 'YouTube', text: "Where we share stories, events, and the magic behind 8-minute connections.", url: 'https://www.youtube.com/@TheHBM' },
-        { platform: 'Email', text: "Old school. Like handwritten letters, but with CCs. Reach out. We actually read them. And we reply. Mostly...", url: 'mailto:Eladh@Thehbm.Org' },
       ],
     },
     // Client/partner logos - PLACEHOLDER: replace URLs when ready
@@ -144,22 +143,22 @@ export const siteContent = {
         {
           title: { en: 'Scan & Set Your Vibe', he: 'בחרו את האווירה' },
           desc: { en: 'No app download needed. Scan the QR code to enter Meeter. Pick your interests and choose an emoji to get started.', he: 'בחרו תחומי עניין ואימוג׳י להתחלה.' },
-          image: '/meeter-video/step-1.png'
+          image: '/assets/how-it-works/videopath1.png'
         },
         {
           title: { en: 'Enter the Lobby', he: 'לובי מיינדסט' },
           desc: { en: 'Get tips to prepare for a great conversation while we find your match.', he: 'קבלו טיפים לשיחה מעולה בזמן שאנחנו מוצאים התאמה.' },
-          image: '/meeter-video/step-2.png'
+          image: '/assets/how-it-works/videopath2.png'
         },
         {
           title: { en: '8-Minutes', he: '8 דקות מונחות' },
           desc: { en: 'Connect through guided icebreakers that make online interaction natural and fun.', he: 'שיחה עמוקה עם שוברי קרח בזמן אמת.' },
-          image: '/meeter-video/step-3.png'
+          image: '/assets/how-it-works/videopath3.png'
         },
         {
           title: { en: 'Stay in Touch', he: 'כרטיס חיבור' },
           desc: { en: 'Decide what details to share and keep the connection alive beyond the experience.', he: 'המזכרת הדיגיטלית שלכם. החליפו פרטים מיד.' },
-          image: '/meeter-video/step-4.png'
+          image: '/assets/how-it-works/videopath4.png'
         }
       ],
       physicalSteps: [

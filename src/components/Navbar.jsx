@@ -73,10 +73,23 @@ export default function Navbar() {
     <header className={`sticky top-0 z-50 transition-all duration-300 ${
       scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
     }`}>
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16 md:h-20">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <img src={global.logo} alt="The HBM" className="h-9 md:h-11 w-auto" />
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16 md:h-20 relative">
+        
+        {/* Left Side (Mobile): Hamburger + Language */}
+        <div className="flex md:hidden items-center gap-2 relative z-50">
+           <button 
+            className="p-1 text-hbm-dark" 
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+          <LanguageSwitcher />
+        </div>
+
+        {/* Logo (Center on mobile, Left on Desktop) */}
+        <Link to="/" className="flex items-center gap-2 group md:static absolute left-1/2 -translate-x-1/2 md:translate-x-0">
+          <img src={global.logo} alt="The HBM" className="h-8 md:h-11 w-auto" />
           <span className="text-lg md:text-xl font-bold font-[var(--font-display)]">
             <span className="text-hbm-dark">The</span>{' '}
             <span className="text-hbm-purple">HBM</span>
@@ -130,69 +143,38 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Right side */}
+        {/* Right side (Desktop: Lang + CTA, Mobile: Empty/Hidden) */}
         <div className="hidden md:flex items-center gap-3">
           <LanguageSwitcher />
           <a href={global.ctaUrl} className="btn-primary text-sm py-3 px-7">
             {t(ui.cta.your8min, lang)}
           </a>
         </div>
-
-        {/* Mobile toggle */}
-        <div className="flex md:hidden items-center gap-2">
-          <LanguageSwitcher />
-          <button className="p-2 text-hbm-dark" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
       </div>
 
-      {/* Mobile menu - Full Screen Overlay */}
+      {/* Mobile menu - Slide from Left - Full Screen - No Scroll */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-white pt-24 pb-10 px-6 flex flex-col overflow-y-auto"
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: "tween", duration: 0.3, ease: "circOut" }}
+            className="fixed inset-0 z-40 bg-white flex flex-col items-center justify-center overflow-hidden touch-none"
           >
-            <div className="flex flex-col items-center gap-8 text-center">
+            <div className="flex flex-col items-center gap-10 text-center w-full">
               {navStructure.map((item) => (
-                <div key={item.key} className="w-full">
-                  <Link 
-                    to={item.path} 
-                    onClick={() => setMobileOpen(false)}
-                    className={`block text-3xl font-bold font-[var(--font-display)] mb-2 ${
-                      isActive(item.path) ? 'text-hbm-purple' : 'text-hbm-dark'
-                    }`}
-                  >
-                    {t(ui.nav[item.key], lang)}
-                  </Link>
-                  
-                  {/* Show subs for non-home items only */}
-                  {item.key !== 'home' && item.subs && (
-                    <div className="flex flex-col gap-3 mt-2">
-                      {item.subs.map((sub) => (
-                        <Link 
-                          key={sub.id} 
-                          to={sub.href || `${item.path}#${sub.id}`}
-                          onClick={() => setMobileOpen(false)}
-                          className="text-lg text-hbm-gray hover:text-hbm-purple font-medium"
-                        >
-                          {t(sub.label, lang)}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <Link 
+                  key={item.key}
+                  to={item.path} 
+                  onClick={() => setMobileOpen(false)}
+                  className={`block text-3xl font-bold font-[var(--font-display)] ${
+                    isActive(item.path) ? 'text-hbm-purple' : 'text-hbm-dark'
+                  }`}
+                >
+                  {t(ui.nav[item.key], lang)}
+                </Link>
               ))}
-              
-              <div className="w-full h-px bg-gray-100 my-4" />
-              
-              <a href={global.ctaUrl} className="btn-primary text-lg py-4 px-10 w-full max-w-xs shadow-xl">
-                {t(ui.cta.your8min, lang)}
-              </a>
             </div>
           </motion.div>
         )}

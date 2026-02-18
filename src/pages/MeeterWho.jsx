@@ -64,6 +64,15 @@ const testimonials = [
   { quote:{en:'"Increased our retention by 20% in 6 months."',he:'"העלינו את השימור ב-20% בשישה חודשים."'}, name:'Sarah L.', role:{en:'HR Director',he:'מנהלת משאבי אנוש'} },
   { quote:{en:'"Our guests finally talk to each other. The lobby is alive."',he:'"האורחים שלנו סוף סוף מדברים אחד עם השני. הלובי חי."'}, name:'David K.', role:{en:'Hotel GM',he:'מנכ"ל מלון'} },
   { quote:{en:'"Students found study partners within the first week."',he:'"סטודנטים מצאו שותפי לימוד בתוך השבוע הראשון."'}, name:'Prof. Amit R.', role:{en:'Dean of Students',he:'דיקן סטודנטים'} },
+  { quote:{en:'"The most authentic networking event I have ever attended."',he:'"אירוע הנטוורקינג הכי אותנטי שהייתי בו פעם."'}, name:'Jessica M.', role:{en:'Event Planner',he:'מפיקת אירועים'} },
+  { quote:{en:'"Finally, real conversations. No sales pitches."',he:'"סוף סוף, שיחות אמיתיות. בלי מכירות."'}, name:'Mark T.', role:{en:'Tech CEO',he:'מנכ"ל הייטק'} },
+  { quote:{en:'"Simple, effective, and deeply human."',he:'"פשוט, יעיל, ואנושי עמוק."'}, name:'Rachel G.', role:{en:'Community Mgr',he:'מנהלת קהילה'} },
+  { quote:{en:'"Our remote team feels closer than ever before."',he:'"הצוות המרוחק שלנו מרגיש קרוב מאי פעם."'}, name:'Tom H.', role:{en:'Startup Founder',he:'מייסד סטארטאפ'} },
+  { quote:{en:'"It broke the ice immediately. No awkward pauses."',he:'"זה שבר את הקרח מיד. בלי שתיקות מביכות."'}, name:'Emily S.', role:{en:'Team Lead',he:'ראש צוות'} },
+  { quote:{en:'"A game changer for large conferences."',he:'"משנה משחק לכנסים גדולים."'}, name:'Michael B.', role:{en:'Conf Organizer',he:'מארגן כנסים'} },
+  { quote:{en:'"Psychologically safe and structured perfectly."',he:'"בטוח פסיכולוגית ומובנה בצורה מושלמת."'}, name:'Dr. Cohen', role:{en:'Psychologist',he:'פסיכולוג'} },
+  { quote:{en:'"Attendees stayed longer because of the connections."',he:'"משתתפים נשארו יותר זמן בגלל החיבורים."'}, name:'Nina P.', role:{en:'Festival Director',he:'מנהלת פסטיבל'} },
+  { quote:{en:'"Authentic connection at scale. Brilliant."',he:'"חיבור אותנטי בקנה מידה רחב. מבריק."'}, name:'Alex W.', role:{en:'VP Innovation',he:'סמנכ"ל חדשנות'} },
 ]
 
 export default function MeeterWho() {
@@ -129,24 +138,31 @@ export default function MeeterWho() {
         </BubbleContainer>
       </section>
 
-      {/* Success Stories */}
-      <section className="bg-hbm-cream">
-        <BubbleContainer bgColor="#FAF9F5">
-          <div className="max-w-5xl mx-auto text-center w-full">
-            <h2 className="text-3xl font-bold text-hbm-purple mb-10">{t({en:'Real Impact.',he:'השפעה אמיתית.'},lang)}</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {testimonials.map((tm,i) => (
-                <div key={i} className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/50 card-hover">
-                  <div className="flex gap-1 mb-4 justify-center">{[...Array(5)].map((_,j)=><Star key={j} size={16} className="text-hbm-orange fill-hbm-orange"/>)}</div>
-                  <p className="text-hbm-dark font-semibold mb-4 italic">{t(tm.quote,lang)}</p>
-                  <p className="text-sm font-bold text-hbm-dark">{tm.name}</p>
-                  <p className="text-xs text-hbm-gray">{t(tm.role,lang)}</p>
-                </div>
+     {/* Success Stories (Testimonials Marquee) - Without Bubble */}
+     <section className="bg-hbm-cream py-24 overflow-hidden relative">
+        <div className="max-w-5xl mx-auto text-center w-full mb-12 px-6">
+          <h2 className="text-3xl font-bold text-hbm-purple">{t({en:'Real Impact.',he:'השפעה אמיתית.'},lang)}</h2>
+        </div>
+
+        {/* Marquee Track */}
+        <div className="relative w-full mask-gradient-x">
+           <div className="flex gap-6 w-max animate-marquee hover:[animation-play-state:paused]">
+              {/* Duplicate items for infinite effect */}
+              {[...testimonials, ...testimonials].map((tm, i) => (
+                 <div key={i} className="w-80 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between shrink-0 hover:shadow-md transition-shadow">
+                    <div>
+                      <div className="flex gap-1 mb-4 justify-center">{[...Array(5)].map((_,j)=><Star key={j} size={16} className="text-hbm-orange fill-hbm-orange"/>)}</div>
+                      <p className="text-hbm-dark font-medium mb-4 italic text-center leading-relaxed">"{t(tm.quote,lang).replace(/"/g, '')}"</p>
+                    </div>
+                    <div className="text-center border-t border-gray-100 pt-4 mt-2">
+                       <p className="text-sm font-bold text-hbm-dark">{tm.name}</p>
+                       <p className="text-xs text-hbm-gray uppercase tracking-wider">{t(tm.role,lang)}</p>
+                    </div>
+                 </div>
               ))}
-            </div>
-          </div>
-        </BubbleContainer>
-      </section>
+           </div>
+        </div>
+     </section>
 
       {/* Bridge to Features */}
       <NextPageBridge 

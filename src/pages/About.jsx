@@ -62,34 +62,24 @@ export default function About() {
           </div>
       </section>
 
-      {/* Big statement */}
-      <section className="bg-hbm-cream">
-        <BubbleContainer bgColor="white">
-          <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-3xl md:text-5xl font-bold text-hbm-dark mb-8">{t(about.hero.bigText, lang)}</h2>
-            <p className="text-lg text-hbm-gray leading-relaxed whitespace-pre-line">{t(about.hero.description, lang)}</p>
-          </div>
-        </BubbleContainer>
-      </section>
+
 
       {/* Vision & Mission */}
-      <section id="mission" className="bg-hbm-cream">
-        <BubbleContainer bgColor="#FAF9F5">
-          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
-            <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <h3 className="text-sm font-bold text-hbm-purple uppercase tracking-widest mb-4">
-                {t({ en: 'Our Vision', he: 'החזון שלנו', es: 'Nuestra Visión', fr: 'Notre Vision', de: 'Unsere Vision', ar: 'رؤيتنا' }, lang)}
-              </h3>
-              <p className="text-lg text-hbm-dark leading-relaxed font-semibold">{t(vision, lang)}</p>
-            </div>
-            <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <h3 className="text-sm font-bold text-hbm-orange uppercase tracking-widest mb-4">
-                {t({ en: 'Our Mission', he: 'המשימה שלנו', es: 'Nuestra Misión', fr: 'Notre Mission', de: 'Unsere Mission', ar: 'مهمتنا' }, lang)}
-              </h3>
-              <p className="text-lg text-hbm-dark leading-relaxed">{t(mission, lang)}</p>
-            </div>
+      <section id="mission" className="bg-hbm-cream py-12 px-6">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
+          <div className="bg-white rounded-2xl p-8 shadow-sm">
+            <h3 className="text-sm font-bold text-hbm-purple uppercase tracking-widest mb-4">
+              {t({ en: 'Our Vision', he: 'החזון שלנו', es: 'Nuestra Visión', fr: 'Notre Vision', de: 'Unsere Vision', ar: 'رؤيتنا' }, lang)}
+            </h3>
+            <p className="text-lg text-hbm-dark leading-relaxed font-semibold">{t(vision, lang)}</p>
           </div>
-        </BubbleContainer>
+          <div className="bg-white rounded-2xl p-8 shadow-sm">
+            <h3 className="text-sm font-bold text-hbm-orange uppercase tracking-widest mb-4">
+              {t({ en: 'Our Mission', he: 'המשימה שלנו', es: 'Nuestra Misión', fr: 'Notre Mission', de: 'Unsere Mission', ar: 'مهمتنا' }, lang)}
+            </h3>
+            <p className="text-lg text-hbm-dark leading-relaxed">{t(mission, lang)}</p>
+          </div>
+        </div>
       </section>
 
       {/* Values — Click to reveal */}
@@ -160,31 +150,6 @@ export default function About() {
                 </div>
               </div>
             </div>
-          </div>
-        </BubbleContainer>
-      </section>
-
-      {/* Guiding Principles */}
-      <section className="bg-hbm-cream">
-        <BubbleContainer bgColor="white">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-hbm-dark mb-8">{t(about.guidingPrinciples.title, lang)}</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {about.guidingPrinciples.items.map((item, i) => (
-                <div key={i} className="bg-hbm-cream rounded-xl p-6 text-left">
-                  <p className="text-hbm-dark font-semibold">{t(item, lang)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </BubbleContainer>
-      </section>
-
-      {/* Closing Statement */}
-      <section className="bg-hbm-cream">
-        <BubbleContainer bgColor="#FAF9F5">
-          <div className="max-w-3xl mx-auto text-center">
-            <p className="text-xl md:text-2xl text-hbm-dark leading-relaxed whitespace-pre-line">{t(about.closingStatement, lang)}</p>
           </div>
         </BubbleContainer>
       </section>

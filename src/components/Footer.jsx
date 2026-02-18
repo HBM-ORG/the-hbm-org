@@ -13,6 +13,7 @@ export default function Footer() {
   const [legalModalOpen, setLegalModalOpen] = useState(false)
   const [legalKey, setLegalKey] = useState(null)
   
+  // Get social items (excluding YouTube based on design)
   const socialItems = global.footer.socialCards.filter(c => c.platform !== 'YouTube')
 
   const openLegal = (key) => {
@@ -20,95 +21,75 @@ export default function Footer() {
     setLegalModalOpen(true)
   }
 
-  const getSocialIcon = (platform) => {
-    switch (platform) {
-      case 'Instagram': return <Instagram size={20} />
-      case 'Facebook': return <Facebook size={20} />
-      case 'LinkedIn': return <Linkedin size={20} />
-      case 'WhatsApp': return <MessageCircle size={20} />
-      default: return <Send size={20} />
-    }
-  }
-
-  const getBrandColor = (platform) => {
-    switch (platform) {
-      case 'WhatsApp': return 'hover:bg-[#25D366] hover:text-white hover:border-[#25D366]'
-      case 'LinkedIn': return 'hover:bg-[#0077B5] hover:text-white hover:border-[#0077B5]'
-      case 'Instagram': return 'hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] hover:text-white hover:border-transparent' // Instagram gradient approx
-      case 'Facebook': return 'hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2]'
-      default: return 'hover:bg-hbm-orange hover:text-white hover:border-hbm-orange'
-    }
-  }
-
   const currentLegal = legalKey ? legalContent[legalKey] : null
 
   return (
-    <footer className="bg-gradient-purple text-white py-12 relative overflow-hidden">
+    <footer className="bg-hbm-cream pb-8 px-2 md:px-4 relative overflow-hidden pt-12">
       
-      <div className="container mx-auto px-6 relative z-10">
+      {/* The Refined Bubble Container - Lavender Background with Central Glow */}
+      <div className="w-[96%] max-w-[1800px] mx-auto rounded-[40px] md:rounded-[60px] relative overflow-hidden text-white px-6 py-12 md:py-20 md:px-16 shadow-xl
+                      bg-[#9D99E5] bg-[radial-gradient(circle_at_50%_40%,_rgba(255,255,255,0.4)_0%,_rgba(255,255,255,0.1)_50%,_transparent_100%)]">
         
-        {/* Main Footer Content: Menu & Socials */}
-        <div className="flex flex-col md:flex-row justify-center md:justify-between items-center md:items-start gap-12 mb-24 border-b border-white/10 pb-12">
-             
-             {/* Menu */}
-             <div className="text-center md:text-left">
-               <h4 className="font-bold text-sm mb-6 opacity-60 uppercase tracking-widest font-sofia">Menu</h4>
-               <ul className="flex flex-col md:block space-y-3 text-base font-medium font-sofia opacity-90">
-                 <li><Link to="/" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">Home</Link></li>
-                 <li><Link to="/meeter/what" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">Meeter</Link></li>
-                 <li><Link to="/events" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">Events</Link></li>
-                 <li><Link to="/about" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">About</Link></li>
-                 <li><Link to="/knowledge" className="hover:text-hbm-orange transition-colors inline-block hover:translate-x-1 duration-300">Knowledge</Link></li>
-               </ul>
-             </div>
-
-             {/* Socials */}
-             <div className="text-center md:text-left">
-                <h4 className="font-bold text-sm mb-6 opacity-60 uppercase tracking-widest font-sofia">Socials</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  {socialItems.map((item, index) => (
-                    <a 
-                      key={index} 
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex items-center gap-3 px-5 py-3 rounded-xl bg-white/5 border border-white/10 transition-all group ${getBrandColor(item.platform)}`}
-                      title={item.platform}
-                    >
-                      <div className="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
-                        {getSocialIcon(item.platform)}
-                      </div>
-                      <span className="font-medium text-sm group-hover:font-bold">{item.platform}</span>
-                    </a>
-                  ))}
-                  {/* Email Button */}
-                  <a 
-                      href="mailto:Office@TheHBM.Org"
-                      className="flex items-center gap-3 px-5 py-3 rounded-xl bg-white/5 border border-white/10 transition-all group hover:bg-hbm-orange hover:border-hbm-orange hover:text-white"
-                  >
-                      <div className="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
-                        <Mail size={20} />
-                      </div>
-                      <span className="font-medium text-sm group-hover:font-bold">Email</span>
-                  </a>
-                </div>
-             </div>
+        {/* Header */}
+        <div className="text-center mb-10 md:mb-16 relative z-20">
+             <h2 className="text-2xl md:text-4xl font-bold tracking-wide drop-shadow-sm opacity-95">
+                One Movement. Many Ways To Reach Us.
+             </h2>
         </div>
 
-        {/* Bottom Section: Watermark & Copyright */}
-        <div className="text-center relative pt-12">
-            {/* Watermark */}
-            <h1 className="text-[18vw] font-bold leading-none opacity-5 tracking-tighter select-none font-sofia mix-blend-overlay pointer-events-none absolute left-1/2 bottom-0 -translate-x-1/2 w-full text-center whitespace-nowrap z-0">
+        {/* 5-Column Grid */}
+        <div className="relative z-20 grid grid-cols-1 md:grid-cols-5 gap-10 md:gap-6 mb-24 md:mb-32 text-center md:text-left">
+           
+           {/* Social Columns */}
+           {socialItems.map((item, index) => (
+             <a 
+               key={index} 
+               href={item.url}
+               target="_blank"
+               rel="noopener noreferrer"
+               className="flex flex-col gap-2 group hover:opacity-100 opacity-90 transition-all hover:-translate-y-1 duration-300 items-center md:items-start"
+             >
+               <h3 className="font-bold text-xl">{item.platform}</h3>
+               <p className="text-[12px] md:text-sm opacity-85 leading-relaxed max-w-[220px] font-medium tracking-wide">
+                 {item.text}
+               </p>
+             </a>
+           ))}
+
+           {/* Office Email Column */}
+           <a 
+               href="mailto:Office@TheHBM.Org"
+               className="flex flex-col gap-2 group hover:opacity-100 opacity-90 transition-all hover:-translate-y-1 duration-300 items-center md:items-start"
+           >
+               <h3 className="font-bold text-xl">Office@TheHBM.Org</h3>
+               <p className="text-[12px] md:text-sm opacity-85 leading-relaxed max-w-[220px] font-medium tracking-wide">
+                 Questions, partnerships, or just to say hi—we're here. We actually read every email and reply. Mostly...
+               </p>
+           </a>
+
+        </div>
+
+        {/* Background Typography - Highly Visible but Elegant */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full text-center pointer-events-none select-none z-10 flex flex-col items-center justify-end pb-4 md:pb-6">
+            <h1 className="text-[25vw] md:text-[18vw] font-bold leading-[0.7] tracking-tighter opacity-25 font-sofia text-white pointer-events-none">
               The HBM
             </h1>
-            <p className="text-sm tracking-[0.3em] uppercase opacity-40 font-sofia mb-8 relative z-10">Bringing People Together</p>
-            
-            <div className="relative z-10 flex flex-col items-center justify-center text-[11px] font-bold tracking-widest opacity-50 uppercase border-t border-white/5 pt-8 gap-6">
-              <div className="flex gap-8">
-                <button onClick={() => openLegal('terms')} className="hover:opacity-100 hover:text-white transition-all underline decoration-white/30 underline-offset-4">Terms of Use</button>
-                <button onClick={() => openLegal('privacy')} className="hover:opacity-100 hover:text-white transition-all underline decoration-white/30 underline-offset-4">Privacy Policy</button>
-              </div>
-              <p>© 2025 THE HBM, INC. ALL RIGHTS RESERVED.</p>
+            <p className="text-[10px] md:text-sm tracking-[0.4em] uppercase opacity-70 font-sofia font-bold">
+              Bringing People Together
+            </p>
+        </div>
+
+        {/* Footer Bottom Bar - No 'Made by' */}
+        <div className="relative z-20 flex flex-col md:flex-row justify-between items-center text-[10px] md:text-xs font-bold tracking-widest opacity-60 uppercase pt-8 gap-6 md:gap-0 mt-8 mb-4 md:mb-0 border-t border-white/10 md:border-none">
+            {/* Left: Copyright */}
+            <div className="text-center md:text-left order-2 md:order-1">
+               <p>© 2026 THE HBM, INC. ALL RIGHTS RESERVED.</p>
+            </div>
+
+            {/* Right: Legal */}
+            <div className="flex gap-6 order-1 md:order-2">
+                 <button onClick={() => openLegal('terms')} className="hover:opacity-100 hover:text-white transition-all">Terms of Use</button>
+                 <button onClick={() => openLegal('privacy')} className="hover:opacity-100 hover:text-white transition-all">Privacy Policy</button>
             </div>
         </div>
 

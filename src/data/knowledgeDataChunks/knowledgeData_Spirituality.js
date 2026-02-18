@@ -1,0 +1,322 @@
+export const spiritualityData = [
+  {
+    id: 'spir-1',
+    type: 'BOOK',
+    title: 'The Power of Now',
+    author: 'Eckhart Tolle',
+    category: 'Spirituality',
+    tags: ['Mindfulness', 'Enlightenment', 'Presence'],
+    description: 'It\'s no wonder that The Power of Now has sold over 2 million copies worldwide and has been translated into over 30 foreign languages.',
+    essence: "All pain comes from resisting the present moment. Surrender to Now.",
+    takeaways: [
+      "You are not your mind.",
+      "The past and future are illusions; only Now exists.",
+      "Acceptance transforms the nature of your experience."
+    ],
+    hbmPerspective: "Presence is the greatest gift you can give another human being.",
+  },
+  {
+    id: 'spir-2',
+    type: 'BOOK',
+    title: 'The Four Agreements',
+    author: 'Don Miguel Ruiz',
+    category: 'Spirituality',
+    tags: ['Wisdom', 'Personal Freedom', 'Toltec'],
+    description: 'Rooted in traditional Toltec wisdom beliefs, four agreements in life are essential steps on the path to personal freedom.',
+    essence: "Four simple vows to break self-limiting beliefs and achieve personal freedom.",
+    takeaways: [
+      "Be impeccable with your word.",
+      "Don't take anything personally.",
+      "Don't make assumptions. Always do your best."
+    ],
+    hbmPerspective: "Not making assumptions is the first step to truly hearing someone.",
+  },
+  {
+    id: 'spir-3',
+    type: 'BOOK',
+    title: 'The Alchemist',
+    author: 'Paulo Coelho',
+    category: 'Spirituality',
+    tags: ['Destiny', 'Fiction', 'Journey'],
+    description: 'A fable about following your dream. masterpiece tells the mystical story of Santiago, an Andalusian shepherd boy who yearns to travel in search of a worldly treasure.',
+    essence: "When you want something, all the universe conspires in helping you to achieve it.",
+    takeaways: [
+      "Listen to your heart.",
+      "Fear of suffering is worse than the suffering itself.",
+      "The treasure you seek is often where you started."
+    ],
+    hbmPerspective: "We are all on a journey; HBM is where paths cross.",
+  },
+  {
+    id: 'spir-4',
+    type: 'BOOK',
+    title: 'The Untethered Soul',
+    author: 'Michael A. Singer',
+    category: 'Spirituality',
+    tags: ['Consciousness', 'Inner Peace', 'Self'],
+    description: 'What would it be like to free yourself from limitations and soar beyond your boundaries?',
+    essence: "You are not the voice in your head; you are the one who hears it.",
+    takeaways: [
+      "Relax and release; don't close your heart.",
+      "Death makes life meaningful.",
+      "Disengage from your inner melodrama."
+    ],
+    hbmPerspective: "An untethered soul can connect without agenda or fear.",
+  },
+  {
+    id: 'spir-5',
+    type: 'BOOK',
+    title: 'Autobiography of a Yogi',
+    author: 'Paramahansa Yogananda',
+    category: 'Spirituality',
+    tags: ['Yoga', 'Mysticism', 'East Meets West'],
+    description: 'This acclaimed autobiography presents a fascinating portrait of one of the great spiritual figures of our time.',
+    essence: "A magical journey introducing the West to the miracles of Yoga and Kriya.",
+    takeaways: [
+      "The mind is the creator of everything.",
+      "Self-realization is the goal of life.",
+      "Miracles are simply operations of higher laws."
+    ],
+    hbmPerspective: "Behind the veil of the ordinary lies the extraordinary potential of connection.",
+  },
+  {
+    id: 'spir-6',
+    type: 'BOOK',
+    title: 'Siddhartha',
+    author: 'Hermann Hesse',
+    category: 'Spirituality',
+    tags: ['Fiction', 'Journey', 'Buddhism'],
+    description: 'Siddhartha is the story of the quest of Siddhartha, a wealthy Indian Brahmin who casts off a life of privilege to seek spiritual fulfillment.',
+    essence: "Wisdom cannot be taught. It must be experienced through one's own journey.",
+    takeaways: [
+      "Knowledge can be communicated, but not wisdom.",
+      "Seeking means having a goal; finding means being free.",
+      "The river teaches that time does not exist."
+    ],
+    hbmPerspective: "We learn from each other not by teaching, but by sharing our experiences.",
+  },
+  {
+    id: 'spir-7',
+    type: 'BOOK',
+    title: 'Be Here Now',
+    author: 'Ram Dass',
+    category: 'Spirituality',
+    tags: ['Transformation', 'Yoga', 'Wisdom'],
+    description: 'This book captures the spiritual journey of Richard Alpert, a Harvard professor who became Ram Dass.',
+    essence: "The psychedelic-inspired guide to dropping out of the ego and into the heart.",
+    takeaways: [
+      "We are all just walking each other home.",
+      "The quieter you become, the more you can hear.",
+      "Love everyone. Serve everyone. Remember God."
+    ],
+    hbmPerspective: "'We are all just walking each other home' is the unofficial motto of HBM.",
+  },
+  {
+    id: 'spir-8',
+    type: 'BOOK',
+    title: 'Inner Engineering',
+    author: 'Sadhguru',
+    category: 'Spirituality',
+    tags: ['Yoga', 'Joy', 'Wellbeing'],
+    description: 'Sadhguru presents Western readers with a time-tested path to achieving absolute well-being.',
+    essence: "Joy is not a goal; it is the natural background of your life when you are in alignment.",
+    takeaways: [
+      "The only way out is in.",
+      "Responsibility is simply 'response-ability'—the ability to respond.",
+      "Your experience of life is 100% determined by you."
+    ],
+    hbmPerspective: "When you are joyful within, your interactions become a celebration.",
+  },
+  {
+    id: 'spir-9',
+    type: 'BOOK',
+    title: 'The Prophet',
+    author: 'Kahlil Gibran',
+    category: 'Spirituality',
+    tags: ['Poetry', 'Life', 'Wisdom'],
+    description: 'A collection of poetic essays that are philosophical, spiritual, and, above all, inspirational.',
+    essence: "Poetic wisdom on the human condition—love, work, joy, and sorrow.",
+    takeaways: [
+      "Work is love made visible.",
+      "Your children are not your children.",
+      "Love one another, but make not a bond of love."
+    ],
+    hbmPerspective: "Let there be spaces in your togetherness.",
+  },
+  {
+    id: 'spir-10',
+    type: 'BOOK',
+    title: 'A New Earth',
+    author: 'Eckhart Tolle',
+    category: 'Spirituality',
+    tags: ['Ego', 'Purpose', 'Awakening'],
+    description: 'Awakening to your life\'s purpose.',
+    essence: "The primary cause of unhappiness is not the situation, but your thoughts about it.",
+    takeaways: [
+      "The ego feeds on conflict.",
+      "You are the awareness behind the thoughts.",
+      "Accept the present moment as if you had chosen it."
+    ],
+    hbmPerspective: "Creating a new earth starts with creating new kinds of relationships.",
+  },
+  {
+    id: 'spir-11',
+    type: 'BOOK',
+    title: 'The Seven Spiritual Laws of Success',
+    author: 'Deepak Chopra',
+    category: 'Spirituality',
+    tags: ['Success', 'Karma', 'Law'],
+    description: 'A practical guide to the fulfillment of your dreams.',
+    essence: "Success comes from alignment with the harmonics of nature, not struggle.",
+    takeaways: [
+      "The Law of Giving and Receiving.",
+      "The Law of Least Effort.",
+      "The Law of Dharma (Purpose)."
+    ],
+    hbmPerspective: "Give what you seek. If you seek connection, give connection.",
+  },
+  {
+    id: 'spir-12',
+    type: 'BOOK',
+    title: 'The Seat of the Soul',
+    author: 'Gary Zukav',
+    category: 'Spirituality',
+    tags: ['Soul', 'Evolution', 'Power'],
+    description: 'An anniversary edition of the #1 New York Times bestseller.',
+    essence: "Moving from external power (manipulation) to authentic power (alignment of personality with soul).",
+    takeaways: [
+      "Authentic power is the alignment of your personality with your soul.",
+      "Intention creates reality.",
+      "Reverence is the nature of the soul."
+    ],
+    hbmPerspective: "Authentic power draws people together.",
+  },
+  {
+    id: 'spir-13',
+    type: 'BOOK',
+    title: 'Many Lives, Many Masters',
+    author: 'Brian L. Weiss',
+    category: 'Spirituality',
+    tags: ['Reincarnation', 'Healing', 'Therapy'],
+    description: 'The true story of a prominent psychiatrist, his young patient, and the past-life therapy that changed both their lives.',
+    essence: "Love is the ultimate reality and we are all eternal souls sharing a journey.",
+    takeaways: [
+      "Death is not the end.",
+      "We return to learn lessons of love and forgiveness.",
+      "Fear is an illusion."
+    ],
+    hbmPerspective: "Seeing others as eternal souls changes how we treat them.",
+  },
+  {
+    id: 'spir-14',
+    type: 'BOOK',
+    title: 'The Book of Awakening',
+    author: 'Mark Nepo',
+    category: 'Spirituality',
+    tags: ['Daily', 'Healing', 'Presence'],
+    description: 'Having the life you want by being present to the life you have.',
+    essence: "A daily guide to living with an open heart in the midst of life's pain.",
+    takeaways: [
+      "To listen is to lean in, softly.",
+      "The flower doesn't dream of the bee. It blossoms and the bee comes.",
+      "We are all broken, that's how the light gets in."
+    ],
+    hbmPerspective: "Authenticity attracts.",
+  },
+  {
+    id: 'spir-15',
+    type: 'BOOK',
+    title: 'Conversations with God',
+    author: 'Neale Donald Walsch',
+    category: 'Spirituality',
+    tags: ['Divinity', 'Dialogue', 'Truth'],
+    description: 'An uncommon dialogue.',
+    essence: "God is not a judge but a loving creator, and we are all one with Him.",
+    takeaways: [
+      "There is no 'right' or 'wrong', only what works.",
+      "Fear is the opposite of love.",
+      "You are the creator of your reality."
+    ],
+    hbmPerspective: "Conversation is a divine act.",
+  },
+  {
+    id: 'spir-16',
+    type: 'BOOK',
+    title: 'Zen Mind, Beginner\'s Mind',
+    author: 'Shunryu Suzuki',
+    category: 'Spirituality',
+    tags: ['Zen', 'Meditation', 'Mindset'],
+    description: 'Informal talks on Zen meditation and practice.',
+    essence: "In the beginner's mind there are many possibilities, but in the expert's there are few.",
+    takeaways: [
+      "Keep a beginner's mind (Shoshin).",
+      "Sit just to sit.",
+      "Enlightenment is not a state, but a practice."
+    ],
+    hbmPerspective: "Approach every person with a beginner's mind—without judgment.",
+  },
+  {
+    id: 'spir-17',
+    type: 'BOOK',
+    title: 'Becoming Supernatural',
+    author: 'Dr. Joe Dispenza',
+    category: 'Spirituality',
+    tags: ['Energy', 'Quantum', 'Healing'],
+    description: 'How common people are doing the uncommon.',
+    essence: "Marrying quantum physics with spirituality to unlock human potential.",
+    takeaways: [
+      "Where attention goes, energy flows.",
+      "The heart generates a magnetic field.",
+      "You can recondition your body to a new mind."
+    ],
+    hbmPerspective: "Our energy introduces us before we even speak.",
+  },
+  {
+    id: 'spir-18',
+    type: 'BOOK',
+    title: 'The Way of the Superior Man',
+    author: 'David Deida',
+    category: 'Spirituality',
+    tags: ['Masculinity', 'Relationships', 'Polarity'],
+    description: 'A spiritual guide to mastering the challenges of women, work, and sexual desire.',
+    essence: "Embrace your masculine or feminine core to create polarity and passion.",
+    takeaways: [
+      "Lean into your edge.",
+      "Your purpose must come before your relationship.",
+      "Live as if your father were dead."
+    ],
+    hbmPerspective: "Understanding polarity creates dynamic connections.",
+  },
+  {
+    id: 'spir-19',
+    type: 'BOOK',
+    title: 'Freedom from the Known',
+    author: 'J. Krishnamurti',
+    category: 'Spirituality',
+    tags: ['Freedom', 'Mind', 'Observation'],
+    description: 'Krishnamurti shows how people can liberate themselves radically and immediately from the urge to condition themselves.',
+    essence: "Truth is a pathless land; no guru can lead you there.",
+    takeaways: [
+      "Observe without judgment.",
+      "You are the world.",
+      "Freedom is found in the now."
+    ],
+    hbmPerspective: "Dropping labels allows us to meet the real person.",
+  },
+  {
+    id: 'spir-20',
+    type: 'BOOK',
+    title: 'Whatever Arises, Love That',
+    author: 'Matt Kahn',
+    category: 'Spirituality',
+    tags: ['Love', 'Healing', 'Emotion'],
+    description: 'A love revolution that begins with you.',
+    essence: "Love is not a reward for good behavior; it is the medicine for all pain.",
+    takeaways: [
+      "Love what arises.",
+      "You deserve more love, not less.",
+      "The heart is the portal."
+    ],
+    hbmPerspective: "Love is the universal language.",
+  }
+];

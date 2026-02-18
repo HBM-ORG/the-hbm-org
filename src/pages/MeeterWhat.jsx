@@ -125,14 +125,14 @@ export default function MeeterWhat() {
         </div>
       </section>
 
-      {/* ── S3: DID YOU KNOW — 95% Sticky Section ── */}
-      <DidYouKnowSection />
-
-      {/* ── S4: OLD vs NEW ── */}
+      {/* ── S3: OLD vs NEW ── */}
       <ComparisonSection />
 
-      {/* ── S5: WHY 8 MINUTES — Psychology ── */}
+      {/* ── S4: WHY 8 MINUTES — Psychology ── */}
       <Why8MinutesTimer compact={true} />
+
+      {/* ── S5: DID YOU KNOW — 95% Sticky Section ── */}
+      <DidYouKnowSection />
 
 
 

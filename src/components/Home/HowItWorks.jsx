@@ -35,7 +35,7 @@ const MagicCard = ({ image }) => {
 
   return (
     <motion.div
-      className="absolute inset-0 flex items-center justify-center p-4 bg-[#F5F5F7] perspective-1000"
+      className="absolute inset-0 flex items-center justify-center perspective-1000"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       initial={{ opacity: 0 }}
@@ -43,7 +43,7 @@ const MagicCard = ({ image }) => {
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="relative w-full h-full rounded-[32px] overflow-hidden shadow-2xl"
+        className="relative w-full h-full"
         style={{
           rotateX: mouseX,
           rotateY: mouseY,
@@ -53,7 +53,7 @@ const MagicCard = ({ image }) => {
         <img 
           src={image} 
           alt="Connection Card" 
-          className="w-full h-full object-cover"
+          className="w-full h-auto object-contain drop-shadow-2xl"
         />
         {/* Shine Effect */}
         <motion.div 
@@ -118,7 +118,7 @@ export default function HowItWorks() {
           {/* Floating Toggle */}
           {/* Floating Toggle - Resized 2x */}
           <motion.div 
-            className="inline-flex bg-gray-100/50 backdrop-blur-sm p-2 rounded-full shadow-inner border border-white/50"
+            className="inline-flex bg-gray-100/50 backdrop-blur-sm p-1 md:p-2 rounded-full shadow-inner border border-white/50"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -126,7 +126,7 @@ export default function HowItWorks() {
           >
             <button 
               onClick={() => { setMode('video'); setActiveStep(0); }}
-              className={`px-12 md:px-16 py-4 md:py-5 rounded-full font-bold text-lg md:text-xl transition-all duration-300 ${
+              className={`px-6 py-2 md:px-12 md:py-4 rounded-full font-bold text-sm md:text-lg transition-all duration-300 ${
                 mode === 'video' 
                   ? 'bg-white text-hbm-purple shadow-lg scale-105' 
                   : 'text-gray-500 hover:text-hbm-purple/70'
@@ -136,7 +136,7 @@ export default function HowItWorks() {
             </button>
             <button 
               onClick={() => { setMode('physical'); setActiveStep(0); }}
-              className={`px-12 md:px-16 py-4 md:py-5 rounded-full font-bold text-lg md:text-xl transition-all duration-300 ${
+              className={`px-6 py-2 md:px-12 md:py-4 rounded-full font-bold text-sm md:text-lg transition-all duration-300 ${
                 mode === 'physical' 
                   ? 'bg-white text-hbm-orange shadow-lg scale-105' 
                   : 'text-gray-500 hover:text-hbm-orange/70'
@@ -148,10 +148,47 @@ export default function HowItWorks() {
         </div>
 
         {/* Content Area */}
-        <div className="flex flex-col-reverse md:flex-row items-start justify-between gap-12 md:gap-24 relative">
+        <div className="flex flex-col md:flex-row-reverse items-start justify-between gap-8 md:gap-24 relative">
           
+          {/* Right: Sticky Phone Mockup (Floating) - Now First in DOM for Mobile Sticky */}
+          <div className="w-full md:w-5/12 sticky top-24 z-10 self-start flex justify-center md:justify-end mb-8 md:mb-0">
+              <motion.div
+                className="relative w-[180px] md:w-[320px]"
+                animate={{ y: [0, -15, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <div className="relative w-full">
+                    
+                    {/* Dynamic Screen Content */}
+                    <AnimatePresence mode="wait">
+                      {mode === 'physical' && activeStep === 4 ? (
+                        // Step 5 F2F: Connection Card Magic Tilt
+                        <div className="w-full aspect-[9/19] relative">
+                             <MagicCard key="magic-card" image={steps[activeStep].image} />
+                        </div>
+                      ) : (
+                         // Standard Image Fade
+                        <motion.img
+                          key={steps[activeStep].image}
+                          src={steps[activeStep].image}
+                          alt={`Step ${activeStep + 1}`}
+                          className="w-full h-auto object-contain drop-shadow-2xl"
+                          initial={{ opacity: 0, scale: 1.05 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Soft Glow Behind */}
+                <div className="absolute -inset-4 bg-hbm-purple/20 blur-2xl rounded-full -z-10" />
+              </motion.div>
+          </div>
+
           {/* Left: Steps List (Scrollable) */}
-          <div className="w-full md:w-1/2 space-y-4">
+          <div className="w-full md:w-1/2 space-y-3 md:space-y-4">
             {steps.map((step, i) => {
               const isActive = activeStep === i
               const title = t(step.title, lang)
@@ -166,14 +203,14 @@ export default function HowItWorks() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   onViewportEnter={() => setActiveStep(i)} // Update active step on scroll
                   onClick={() => setActiveStep(i)}
-                  className={`cursor-pointer group relative p-6 rounded-2xl transition-all duration-300 ${
+                  className={`cursor-pointer group relative p-4 md:p-6 rounded-2xl transition-all duration-300 ${
                     isActive 
                       ? 'bg-white shadow-xl shadow-purple-900/5 scale-100 border border-purple-100' 
                       : 'bg-transparent hover:bg-white/50 scale-95 opacity-60 hover:opacity-100'
                   }`}
                 >
-                  <div className="flex items-start gap-5">
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors duration-300 ${
+                  <div className="flex items-center md:items-start gap-4 md:gap-5">
+                    <div className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-base md:text-lg transition-colors duration-300 ${
                       isActive 
                         ? (mode === 'video' ? 'bg-hbm-purple text-white' : 'bg-hbm-orange text-white')
                         : 'bg-gray-200 text-gray-500'
@@ -181,12 +218,13 @@ export default function HowItWorks() {
                       {i + 1}
                     </div>
                     <div>
-                      <h3 className={`text-xl font-bold mb-2 transition-colors duration-300 ${
+                      <h3 className={`text-lg md:text-xl font-bold mb-1 md:mb-2 transition-colors duration-300 ${
                         isActive ? 'text-hbm-dark' : 'text-gray-600'
                       }`}>
                         {title}
                       </h3>
-                      <p className="text-gray-500 leading-relaxed">
+                      {/* Description: Hidden on Mobile, Block on Desktop */}
+                      <p className="hidden md:block text-gray-500 leading-relaxed text-sm md:text-base">
                         {formatDesc(desc)}
                       </p>
                     </div>
@@ -204,49 +242,6 @@ export default function HowItWorks() {
                 </motion.div>
               )
             })}
-          </div>
-
-          {/* Right: Sticky Phone Mockup (Floating) */}
-          <div className="w-full md:w-5/12 sticky top-24 self-start">
-              <motion.div
-                className="relative mx-auto w-[280px] md:w-[320px]"
-                animate={{ y: [0, -15, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              >
-                {/* Single Continuous Gradient Border */}
-                <div className="relative rounded-[2.5rem] overflow-hidden p-[4px] shadow-2xl bg-gradient-to-b from-hbm-purple via-[#9F7AEA] to-hbm-orange">
-                  
-                  {/* Inner White Screen */}
-                  <div className="relative bg-white w-full h-full rounded-[2.3rem] overflow-hidden aspect-[9/19]">
-                    
-                    {/* Dynamic Screen Content */}
-                    <AnimatePresence mode="wait">
-                      {mode === 'physical' && activeStep === 4 ? (
-                        // Step 5 F2F: Connection Card Magic Tilt
-                        <MagicCard key="magic-card" image={steps[activeStep].image} />
-                      ) : (
-                         // Standard Image Fade
-                        <motion.img
-                          key={steps[activeStep].image}
-                          src={steps[activeStep].image}
-                          alt={`Step ${activeStep + 1}`}
-                          className="absolute inset-0 w-full h-full object-cover"
-                          initial={{ opacity: 0, scale: 1.05 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                        />
-                      )}
-                    </AnimatePresence>
-  
-                    {/* Minimal Notch - Transparent/Subtle */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-white/90 backdrop-blur-sm rounded-b-2xl z-20 shadow-sm" />
-                  </div>
-                </div>
-
-                {/* Soft Glow Behind */}
-                <div className="absolute -inset-4 bg-hbm-purple/20 blur-2xl rounded-full -z-10" />
-              </motion.div>
           </div>
         </div>
       </BubbleContainer>

@@ -10,8 +10,10 @@ import MeeterFeatures from './pages/MeeterFeatures'
 
 import About from './pages/About'
 import Events from './pages/Events'
+import EventDetails from './pages/EventDetails'
 import Knowledge from './pages/Knowledge'
 import EventRegister from './pages/EventRegister'
+import AdminDashboard from './pages/AdminDashboard'
 
 function SEOWrapper({ children }) {
   const location = useLocation()
@@ -47,9 +49,16 @@ export default function App() {
               <Route path="/meeter/features" element={<MeeterFeatures />} />
 
               <Route path="/events" element={<Events />} />
+              <Route path="/events/:id" element={<EventDetails />} />
               <Route path="/events/register" element={<EventRegister />} />
+              <Route path="/register" element={<EventRegister />} />
               <Route path="/knowledge" element={<Knowledge />} />
               <Route path="/about" element={<About />} />
+              {/* Internal Tools - Dev Only */}
+              {import.meta.env.DEV && (
+                <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              )}
+
               {/* Redirects */}
               <Route path="/b2b" element={<MeeterWho />} />
               <Route path="/faq" element={<MeeterWhat />} />

@@ -35,7 +35,6 @@ export const siteContent = {
         { platform: 'Facebook', text: "Yes, we still use Facebook. And no, we're not here for the drama.", url: 'https://www.facebook.com/people/The-HBM/61573100935457/' },
         { platform: 'LinkedIn', text: 'Our "we\'re professional, promise" face. For updates, partnerships, and synergy.', url: 'https://www.linkedin.com/company/the-human-being-movement/' },
         { platform: 'YouTube', text: "Where we share stories, events, and the magic behind 8-minute connections.", url: 'https://www.youtube.com/@TheHBM' },
-        { platform: 'Email', text: "Old school. Like handwritten letters, but with CCs. We actually read them.", url: 'mailto:office@thehbm.org' },
       ],
     },
     // Client/partner logos - PLACEHOLDER: replace URLs when ready

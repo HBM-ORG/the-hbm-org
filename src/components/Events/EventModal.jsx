@@ -1,15 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MapPin, Users, Calendar, ExternalLink } from 'lucide-react';
-import { useState } from 'react';
+import { X, MapPin, Users, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useI18n, t } from '../../i18n/context';
+import { getEventDateParts } from '../../utils/eventUtils';
 
 const EventModal = ({ event, isOpen, onClose }) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const { lang } = useI18n();
+  
+  // Reset selected image when modal opens or event changes
+  useEffect(() => {
+    if (isOpen) setSelectedImage(0);
+  }, [isOpen, event]);
 
   if (!event) return null;
+
+  // Derive date parts
+  const { month, day, year } = getEventDateParts(event.date);
+
+  // Determine if event is upcoming (for registration vs gallery)
+  // Simple check: if date is today or future
+  const eventDate = new Date(event.date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isUpcoming = eventDate >= today;
 
   return (
     <AnimatePresence>
@@ -47,16 +62,16 @@ const EventModal = ({ event, isOpen, onClose }) => {
                 <div className="mb-8">
                   <div className="flex items-start gap-6 mb-6">
                     <div className="bg-[#6160AB]/10 rounded-2xl px-6 py-4 flex-shrink-0">
-                      <p className="text-sm font-semibold text-[#6160AB] uppercase tracking-wide">{event.month}</p>
-                      <p className="text-4xl font-bold text-gray-900">{event.day}</p>
-                      <p className="text-sm text-gray-600">{event.year}</p>
+                      <p className="text-sm font-semibold text-[#6160AB] uppercase tracking-wide">{month}</p>
+                      <p className="text-4xl font-bold text-gray-900">{day}</p>
+                      <p className="text-sm text-gray-600">{year}</p>
                     </div>
 
                     <div className="flex-1">
                       <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3 font-['Sora']">
-                        {event.title}
+                        {t(event.title, lang)}
                       </h2>
-                      <p className="text-xl text-gray-600 font-['Sofia_Sans']">{event.description}</p>
+                      <p className="text-xl text-gray-600 font-['Sofia_Sans']">{t(event.description, lang)}</p>
                     </div>
                   </div>
 
@@ -97,7 +112,7 @@ const EventModal = ({ event, isOpen, onClose }) => {
                     >
                       <img
                         src={event.gallery[selectedImage]}
-                        alt={`${event.title} - Image ${selectedImage + 1}`}
+                        alt={`${t(event.title, lang)} - Image ${selectedImage + 1}`}
                         className="w-full h-full object-cover"
                       />
 
@@ -141,7 +156,7 @@ const EventModal = ({ event, isOpen, onClose }) => {
                   </div>
                 )}
 
-                {/* No Meeting Message (for April 2025) */}
+                {/* No Meeting Message (e.g. if we skip a month) */}
                 {event.isSkipped && (
                   <div className="text-center p-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl">
                     <p className="text-2xl text-gray-600 font-['Sofia_Sans']">
@@ -154,7 +169,7 @@ const EventModal = ({ event, isOpen, onClose }) => {
                 )}
 
                 {/* Registration CTA (for future events) */}
-                {event.isUpcoming && event.registrationOpen && (
+                {isUpcoming && event.registrationLink && (
                   <div className="text-center p-12 bg-gradient-to-br from-[#6160AB]/10 to-[#F07B3C]/10 rounded-3xl border-2 border-[#6160AB]/20">
                     <h3 className="text-3xl font-bold text-gray-900 mb-4 font-['Sora']">
                       {t({ en: 'Ready to Join Us?', he: 'מוכנים להצטרף אלינו?' }, lang)}

@@ -1,188 +1,127 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-import { Calendar, MapPin, Users, Image as ImageIcon, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Calendar, MapPin, Users, Image as ImageIcon, ChevronRight, Heart } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import EventModal from '../components/Events/EventModal';
-import { events2025, events2026, nextEvent } from '../data/events';
+import { getNextEvent, getEventsByYear, getEventDateParts } from '../utils/eventUtils';
 import { useI18n, t } from '../i18n/context';
 import EyebrowBadge from '../components/EyebrowBadge';
 
-const Events = () => {
-  const [selectedYear, setSelectedYear] = useState('2026');
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { lang } = useI18n();
+import FeaturedEventCard from '../components/Events/FeaturedEventCard';
 
-  const currentEvents = selectedYear === '2025' ? events2025 : events2026;
+const Events = () => {
+  const { lang } = useI18n();
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  // 1. Get Automation Data
+  const eventsByYear = useMemo(() => getEventsByYear(), []);
+  const nextEvent = useMemo(() => getNextEvent(), []);
+  
+  // 2. Dynamic Year Handling
+  const availableYears = Object.keys(eventsByYear).sort((a, b) => b - a);
+  const [selectedYear, setSelectedYear] = useState(availableYears[0] || '2026');
+
+  const currentEvents = eventsByYear[selectedYear] || [];
 
   const openEventModal = (event) => {
-    setSelectedEvent(event);
-    setIsModalOpen(true);
+    // If it's a future event, navigate to details page
+    if (new Date(event.date) >= new Date()) {
+        navigate(`/events/${event.id}`);
+    } else {
+        setSelectedEvent(event);
+        setIsModalOpen(true);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50">
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <motion.div
-          className="absolute top-0 right-0 w-96 h-96 bg-[#6160AB]/20 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-          }}
-        />
-
-        <motion.div
-          className="absolute bottom-0 left-0 w-96 h-96 bg-[#F07B3C]/20 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, -50, 0],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-          }}
-        />
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="mb-6">
-              <EyebrowBadge text="HBM EVENTS - PAST AND FUTURE" />
-            </div>
-            <h1 className="text-6xl md:text-8xl font-bold mb-6 font-['Sora']">
-              <span className="bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent">
-                {t({ en: 'Events', he: 'אירועים' }, lang)}
-              </span>
-            </h1>
-          </motion.div>
-
-          {/* Year Toggle */}
-          <motion.div
-            className="flex justify-center gap-4 mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <button
-              onClick={() => setSelectedYear('2025')}
-              className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 font-['Sora'] ${
-                selectedYear === '2025'
-                  ? 'bg-gradient-to-r from-[#6160AB] to-[#8b7fd9] text-white shadow-2xl scale-105'
-                  : 'bg-white text-gray-600 border-2 border-gray-200 hover:border-[#6160AB]'
-              }`}
-            >
-              2025
-            </button>
-            <button
-              onClick={() => setSelectedYear('2026')}
-              className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 font-['Sora'] ${
-                selectedYear === '2026'
-                  ? 'bg-gradient-to-r from-[#6160AB] to-[#8b7fd9] text-white shadow-2xl scale-105'
-                  : 'bg-white text-gray-600 border-2 border-gray-200 hover:border-[#6160AB]'
-              }`}
-            >
-              2026
-            </button>
-          </motion.div>
-        </div>
+    <div className="min-h-screen bg-white">
+      
+      {/* 1. Header Section (Who We Are Style) */}
+      <section className="bg-white pt-20 pb-16">
+           <div className="max-w-4xl mx-auto text-center px-6">
+               <div className="mb-6">
+                   <EyebrowBadge text={t({en: 'EVENTS', he: 'אירועים'}, lang)} />
+               </div>
+               
+               <h1 className="text-4xl md:text-7xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#6160AB] to-[#F07B3C] leading-tight" style={{letterSpacing:'-2px'}}>
+                   {t({en: 'Our Events', he: 'האירועים שלנו'}, lang)}
+               </h1>
+               
+               <p className="text-xl text-gray-600 font-['Sofia_Sans'] leading-relaxed">
+                   {t({
+                       en: 'Join us for meaningful 8-minute conversations. From intimate dinners to large community events, every gathering is designed to spark real connection.',
+                       he: 'הצטרפו אלינו לשיחות משמעותיות של 8 דקות. מארוחות אינטימיות ועד אירועים קהילתיים גדולים, כל מפגש נועד ליצור חיבור אמיתי.'
+                   }, lang)}
+               </p>
+           </div>
       </section>
 
-      {/* 2026 Featured Registration Card */}
-      {selectedYear === '2026' && (
-        <section className="pb-12">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div
-              className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl overflow-hidden shadow-2xl"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="grid md:grid-cols-2 gap-0">
-                {/* Image Side */}
-                <div className="relative h-80 md:h-auto">
-                  <img
-                    src={nextEvent.image}
-                    alt={nextEvent.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* Content Side */}
-                <div className="p-12 flex flex-col justify-center">
-                  <div className="mb-6">
-                    <span className="text-[#F07B3C] text-sm font-bold uppercase tracking-wider">
-                      {t(nextEvent.month, lang)}
-                    </span>
-                    <h2 className="text-5xl font-bold text-white mt-2 mb-4 font-['Sora']">
-                      {t(nextEvent.title, lang)}
-                    </h2>
-                    <p className="text-gray-300 text-lg mb-6 font-['Sofia_Sans']">
-                      {t(nextEvent.description, lang)}
-                    </p>
-                    <div className="flex items-center gap-2 text-gray-400 mb-8">
-                       {nextEvent.tags.map(tag => (
-                        <span key={tag} className="px-3 py-1 bg-white/10 rounded-full text-sm font-semibold">
-                          {tag}
-                        </span>
-                       ))}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <Link
-                      to={nextEvent.registrationLink}
-                      className="px-8 py-4 bg-gradient-to-r from-[#F07B3C] to-[#ff9b6b] text-white rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all font-['Sora']"
-                    >
-                      {t({ en: 'Register', he: 'הרשמה' }, lang)}
-                    </Link>
-                    <button className="px-8 py-4 border-2 border-white/20 text-white rounded-full font-semibold hover:bg-white/10 transition-all font-['Sora']">
-                      {t({ en: 'Details', he: 'פרטים' }, lang)}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
+      {/* 2. Featured Next Event (Custom Card) */}
+      {nextEvent && (
+        <FeaturedEventCard event={nextEvent} />
       )}
 
-      {/* Events Grid */}
-      <section className="py-20">
+      {/* 3. Archive Events Grid */}
+      <section className="pb-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          <AnimatePresence mode="wait">
+            
+            <h2 className="text-2xl font-bold text-center mb-10 text-gray-400 uppercase tracking-widest font-['Sora']">
+                {t({en: 'Past Events', he: 'אירועי עבר'}, lang)}
+            </h2>
+
+            {/* Dynamic Year Toggle */}
             <motion.div
-              key={selectedYear}
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
+                className="flex justify-center gap-4 mb-12 flex-wrap"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
             >
-              {currentEvents.map((event, index) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  index={index}
-                  onClick={() => openEventModal(event)}
-                  lang={lang}
-                />
-              ))}
+                {availableYears.map(year => (
+                    <button
+                        key={year}
+                        onClick={() => setSelectedYear(year)}
+                        className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 font-['Sora'] ${
+                        selectedYear === year
+                            ? 'bg-black text-white shadow-lg scale-105'
+                            : 'bg-white text-gray-600 border border-gray-200 hover:border-black'
+                        }`}
+                    >
+                        {year}
+                    </button>
+                ))}
             </motion.div>
-          </AnimatePresence>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedYear}
+                className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+              >
+                {currentEvents.length > 0 ? (
+                    currentEvents.map((event, index) => (
+                      <EventCard
+                        key={event.id}
+                        event={event}
+                        index={index}
+                        onClick={() => openEventModal(event)}
+                        lang={lang}
+                      />
+                    ))
+                ) : (
+                    <div className="col-span-full text-center py-20 text-gray-400">
+                        {t({en: 'No events found for this year.', he: 'לא נמצאו אירועים לשנה זו.'}, lang)}
+                    </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
         </div>
       </section>
 
-      {/* Event Modal */}
+      {/* Event Modal (For Past Events / Galleries) */}
       <EventModal
         event={selectedEvent}
         isOpen={isModalOpen}
@@ -192,8 +131,11 @@ const Events = () => {
   );
 };
 
-// Event Card Component
+// Event Card Component (Standardized)
 const EventCard = ({ event, index, onClick, lang }) => {
+  const { month, day } = getEventDateParts(event.date);
+  const isPast = new Date(event.date) < new Date();
+
   return (
     <motion.div
       className="group relative cursor-pointer"
@@ -203,84 +145,49 @@ const EventCard = ({ event, index, onClick, lang }) => {
       onClick={onClick}
       whileHover={{ y: -10 }}
     >
-      <div className="relative h-full bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-gray-100 transition-all duration-300 group-hover:shadow-2xl group-hover:border-[#6160AB]">
+      <div className="relative h-full bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100">
+        
         {/* Image */}
         <div className="relative h-64 overflow-hidden">
           <motion.img
-            src={event.image}
-            alt={event.title}
+            src={event.thumbnail || event.image}
+            alt={t(event.title, lang)}
             className="w-full h-full object-cover"
             whileHover={{ scale: 1.1 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.7 }}
           />
-          
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
 
-          {/* Date badge */}
-          <motion.div
-            className="absolute top-4 left-4 bg-white rounded-2xl px-4 py-3 shadow-lg"
-            whileHover={{ scale: 1.1 }}
-          >
-            <div className="text-center">
-              <p className="text-xs font-semibold text-[#6160AB] uppercase tracking-wide">{event.month}</p>
-              <p className="text-3xl font-bold text-gray-900 font-['Sora']">{event.day}</p>
-            </div>
-          </motion.div>
+          {/* Date Badge */}
+          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-sm text-center min-w-[60px]">
+              <span className="block text-xs font-bold text-gray-500 uppercase tracking-wider">{month}</span>
+              <span className="block text-2xl font-bold text-gray-900 font-['Sora']">{day}</span>
+          </div>
 
-          {/* Face to Face badge */}
-          <div className="absolute top-4 right-4 bg-gradient-to-r from-[#F07B3C] to-[#ff9b6b] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            {event.type}
+          {/* Heart Icon (Visual) */}
+          <div className="absolute top-4 right-4 text-white/80 hover:text-red-500 transition-colors">
+              <Heart className="w-6 h-6 fill-current" />
           </div>
         </div>
 
         {/* Content */}
         <div className="p-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#6160AB] transition-colors font-['Sora']">
-            {event.title}
+          <h3 className="text-xl font-bold text-gray-900 mb-2 font-['Sora'] group-hover:text-[#F07B3C] transition-colors line-clamp-1">
+            {t(event.title, lang)}
           </h3>
           
-          <p className="text-gray-600 mb-4 leading-relaxed font-['Sofia_Sans']">
-            {event.description}
-          </p>
-
-          {/* Meta info */}
           <div className="flex items-center gap-4 text-sm text-gray-500 mb-4 font-['Sofia_Sans']">
-            {event.location && (
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                <span>{event.location}</span>
-              </div>
-            )}
-            
+            <div className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {event.location}</div>
             {event.participants > 0 && (
-              <div className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                <span>{event.participants}</span>
-              </div>
+                <div className="flex items-center gap-1"><Users className="w-4 h-4" /> {event.participants}</div>
             )}
           </div>
 
-          {/* CTA - Always "View Gallery" */}
-          <div className="flex items-center justify-between">
-            <button className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-semibold hover:bg-gray-200 transition-all font-['Sofia_Sans']">
-              <ImageIcon className="w-5 h-5" />
-              {t({ en: 'View Gallery', he: 'צפה בגלריה' }, lang)}
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
+          <button className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+              <ImageIcon className="w-4 h-4" />
+              {isPast ? t({en: 'View Gallery', he: 'צפו בגלריה'}, lang) : t({en: 'View Details', he: 'פרטים נוספים'}, lang)}
+          </button>
         </div>
-
-        {/* Hover shine effect */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 pointer-events-none"
-          initial={{ x: '-100%' }}
-          whileHover={{
-            x: '100%',
-            transition: { duration: 0.8 }
-          }}
-        />
       </div>
     </motion.div>
   );

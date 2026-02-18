@@ -69,7 +69,7 @@ export default function Why8Minutes() {
             transition={{ delay: 0.1 }}
             className="text-3xl md:text-5xl font-bold text-hbm-purple mb-2 leading-tight"
           >
-            Why 8 Minutes?
+            Join The Movement
           </motion.h2>
 
           <motion.p

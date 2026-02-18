@@ -66,17 +66,14 @@ export default function Home() {
           </p>
           
           <div className="relative w-full overflow-hidden mask-gradient-x">
-            <div 
-              className="flex gap-20 items-center w-max animate-scroll-fast"
-              style={{ paddingLeft: '2rem' }}
-            >
-              {/* 5 Sets of logos to ensure smooth infinite loop */}
-              {[...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos].map((partner, i) => (
-                <div key={i} className="flex-shrink-0 h-16 md:h-24 flex items-center justify-center opacity-70 hover:opacity-100 transition-all duration-500 transform hover:scale-110">
+            <div className="flex gap-20 items-center w-max animate-marquee" style={{ paddingLeft: '2rem' }}>
+              {/* Duplicate sets for infinite loop - adjusted for animate-marquee (2 sets logic, but we can put more to be safe with width) */}
+              {[...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos].map((partner, i) => (
+                <div key={i} className="flex-shrink-0 h-16 md:h-24 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300">
                   <img 
                     src={partner.src} 
                     alt={partner.name}
-                    className="h-full w-auto object-contain"
+                    className="h-full w-auto object-contain filter grayscale hover:grayscale-0 transition-all duration-300"
                     onError={(e) => { e.target.style.display = 'none' }}
                   />
                 </div>

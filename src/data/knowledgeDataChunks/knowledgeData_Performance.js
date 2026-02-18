@@ -1,0 +1,322 @@
+export const performanceData = [
+  {
+    id: 'perf-1',
+    type: 'BOOK',
+    title: 'Atomic Habits',
+    author: 'James Clear',
+    category: 'Performance',
+    tags: ['Habits', 'Productivity', 'Psychology'],
+    description: 'An easy and proven way to build good habits and break bad ones. Clear reveals exactly how these small changes can grow into life-altering outcomes.',
+    essence: "The definitive guide to breaking bad habits and building good ones through small, incremental changes.",
+    takeaways: [
+      "You do not rise to the level of your goals. You fall to the level of your systems.",
+      "Every action you take is a vote for the type of person you wish to become.",
+      "1% better every day for a year results in 37x improvement."
+    ],
+    hbmPerspective: "Consistently showing up for small interactions builds the 'habit' of connection.",
+  },
+  {
+    id: 'perf-2',
+    type: 'BOOK',
+    title: 'The 7 Habits of Highly Effective People',
+    author: 'Stephen R. Covey',
+    category: 'Performance',
+    tags: ['Effectiveness', 'Principles', 'Growth'],
+    description: 'One of the most inspiring and impactful books ever written, The 7 Habits of Highly Effective People has captivated readers for nearly three decades.',
+    essence: "A principle-centered approach for solving personal and professional problems.",
+    takeaways: [
+      "Be Release-oriented, not Task-oriented.",
+      "Seek first to understand, then to be understood.",
+      "Sharpen the saw: preserve and enhance the greatest asset you have—you."
+    ],
+    hbmPerspective: "Listening to understand is the cornerstone of HBM's methodology.",
+  },
+  {
+    id: 'perf-3',
+    type: 'BOOK',
+    title: 'Can\'t Hurt Me',
+    author: 'David Goggins',
+    category: 'Performance',
+    tags: ['Resilience', 'Mental Toughness', 'Biography'],
+    description: 'David Goggins shares his astonishing life story and reveals that most of us tap into only 40% of our capabilities.',
+    essence: "The raw, unfiltered story of callusing the mind to overcome any obstacle.",
+    takeaways: [
+      "When your mind tells you you're done, you're only 40% done.",
+      "The tickle of pain is the sign of growth.",
+      "Don't stop when you're tired. Stop when you're done."
+    ],
+    hbmPerspective: "Sometimes connection requires pushing past the comfort zone of social anxiety.",
+  },
+  {
+    id: 'perf-4',
+    type: 'BOOK',
+    title: 'Peak: Secrets from the New Science of Expertise',
+    author: 'Anders Ericsson',
+    category: 'Performance',
+    tags: ['Mastery', 'Practice', 'Skill'],
+    description: 'Anders Ericsson has made a career studying chess champions, violin virtuosos, star athletes, and memory mavens.',
+    essence: "Talent is a myth; deliberate practice is the key to mastering any skill.",
+    takeaways: [
+      "Deliberate practice requires stepping outside your comfort zone.",
+      "Meaningful feedback is essential for improvement.",
+      "Mental representations distinguish experts from novices."
+    ],
+    hbmPerspective: "Social skills are not innate traits but skills that can be mastered through practice.",
+  },
+  {
+    id: 'perf-5',
+    type: 'BOOK',
+    title: 'Grit',
+    author: 'Angela Duckworth',
+    category: 'Performance',
+    tags: ['Perseverance', 'Passion', 'Psychology'],
+    description: 'Angela Duckworth shows anyone striving to succeed that the secret to outstanding achievement is not talent, but a special blend of passion and persistence.',
+    essence: "Effort counts twice: Talent x Effort = Skill. Skill x Effort = Achievement.",
+    takeaways: [
+      "Grit is passion and perseverance for long-term goals.",
+      "Enthusiasm is common. Endurance is rare.",
+      "You can grow your grit."
+    ],
+    hbmPerspective: "Building a community requires the grit to keep showing up.",
+  },
+  {
+    id: 'perf-6',
+    type: 'BOOK',
+    title: 'Mindset',
+    author: 'Carol S. Dweck',
+    category: 'Performance',
+    tags: ['Growth', 'Learning', 'Success'],
+    description: 'Dweck explains why it’s not just our abilities and talent that bring us success—but whether we approach them with a fixed or growth mindset.',
+    essence: "The belief that your abilities can be improved is the single most important factor in success.",
+    takeaways: [
+      "In a fixed mindset, challenges are avoided. In a growth mindset, challenges are embraced.",
+      "Failure is an opportunity to grow.",
+      "The view you adopt for yourself profoundly affects the way you lead your life."
+    ],
+    hbmPerspective: "Approaching every interaction with a growth mindset transforms strangers into teachers.",
+  },
+  {
+    id: 'perf-7',
+    type: 'BOOK',
+    title: 'Mastery',
+    author: 'Robert Greene',
+    category: 'Performance',
+    tags: ['History', 'Power', 'Skill'],
+    description: 'Robert Greene has created the ultimate guide to reclaiming the essential power within us all.',
+    essence: "A historical analysis of the lives of great masters, revealing the path to greatness.",
+    takeaways: [
+      "The future belongs to those who learn more skills and combine them in creative ways.",
+      "Trust the process. Mastery takes time.",
+      "Value learning over money in your early years."
+    ],
+    hbmPerspective: "Mastering the art of human connection is a lifelong journey.",
+  },
+  {
+    id: 'perf-8',
+    type: 'BOOK',
+    title: 'The Art of Learning',
+    author: 'Josh Waitzkin',
+    category: 'Performance',
+    tags: ['Learning', 'Chess', 'Martial Arts'],
+    description: 'Josh Waitzkin’s story of winning the National Chess Championship and becoming a Tai Chi World Champion.',
+    essence: "A look into the internal process of learning and performing at the highest levels.",
+    takeaways: [
+      "Growth comes at the point of resistance.",
+      "Invest in loss. Use defeat to sharpen your skills.",
+      "The key to excellence is depth over breadth."
+    ],
+    hbmPerspective: "We learn about ourselves through the mirror of others.",
+  },
+  {
+    id: 'perf-9',
+    type: 'BOOK',
+    title: 'High Performance Habits',
+    author: 'Brendon Burchard',
+    category: 'Performance',
+    tags: ['Habits', 'Success', 'Action'],
+    description: 'These six habits make the difference between becoming a high performer or staying average.',
+    essence: "High performance is not an accident—it is the result of specific, consistent habits.",
+    takeaways: [
+      "Seek clarity: Know who you are and what you want.",
+      "Generate energy: Manage your physical and mental stamina.",
+      "Raise necessity: Attach a 'why' to your performance."
+    ],
+    hbmPerspective: "High performance in relationships means bringing energy and presence.",
+  },
+  {
+    id: 'perf-10',
+    type: 'BOOK',
+    title: 'Talent Is Overrated',
+    author: 'Geoff Colvin',
+    category: 'Performance',
+    tags: ['Talent', 'Practice', 'Business'],
+    description: 'What if everything you know about raw talent, hard work, and great performance is wrong?',
+    essence: "Greatness is not born, it is made through deliberate practice.",
+    takeaways: [
+      "The specific kind of practice matters more than the amount.",
+      "Feedback is critical for improvement.",
+      "Anyone can improve with the right approach."
+    ],
+    hbmPerspective: "Everyone has the talent to connect; they just need the practice.",
+  },
+  {
+    id: 'perf-11',
+    type: 'BOOK',
+    title: 'Outliers',
+    author: 'Malcolm Gladwell',
+    category: 'Performance',
+    tags: ['Success', 'Culture', 'Storytelling'],
+    description: 'In this stunning new book, Malcolm Gladwell takes us on an intellectual journey through the world of "outliers".',
+    essence: "Success is a product of timing, culture, and 10,000 hours of practice, not just individual merit.",
+    takeaways: [
+      "The 10,000 Hour Rule: Mastery requires enormous time.",
+      "Cultural legacy shapes our success.",
+      "Opportunity plays a massive role in outcome."
+    ],
+    hbmPerspective: "We are all products of our communities. HBM strives to create a community of opportunity.",
+  },
+  {
+    id: 'perf-12',
+    type: 'BOOK',
+    title: 'Manage Your Day-to-Day',
+    author: 'Jocelyn K. Glei',
+    category: 'Performance',
+    tags: ['Creativity', 'Work', 'Routine'],
+    description: 'Stop doing busywork. Start doing your best work.',
+    essence: "A compilation of advice from creative minds on how to build a routine that fosters creativity.",
+    takeaways: [
+      "Create a routine to free up mental space.",
+      "Prioritize proactive work over reactive work.",
+      "Unplug to recharge."
+    ],
+    hbmPerspective: "Managing your energy allows you to be present for others.",
+  },
+  {
+    id: 'perf-13',
+    type: 'BOOK',
+    title: 'Smarter Faster Better',
+    author: 'Charles Duhigg',
+    category: 'Performance',
+    tags: ['Productivity', 'Psychology', 'Business'],
+    description: 'The secrets of being productive in life and business.',
+    essence: "Productivity is about managing how you think, not just what you do.",
+    takeaways: [
+      "Motivation comes from a sense of control.",
+      "Focus is a muscle that can be trained.",
+      "Teams succeed when they have psychological safety."
+    ],
+    hbmPerspective: "Psychological safety is the bedrock of the HBM community.",
+  },
+  {
+    id: 'perf-14',
+    type: 'BOOK',
+    title: 'Limitless',
+    author: 'Jim Kwik',
+    category: 'Performance',
+    tags: ['Brain', 'Memory', 'Learning'],
+    description: 'Upgrade your brain, learn anything faster, and unlock your exceptional life.',
+    essence: "A manual for unlearning limitations and upgrading your brain's hardware.",
+    takeaways: [
+      "Your brain is like a muscle; use it or lose it.",
+      "Information + Emotion = Long-term Memory.",
+      "Questions are the answer."
+    ],
+    hbmPerspective: "Asking better questions leads to deeper connections.",
+  },
+  {
+    id: 'perf-15',
+    type: 'BOOK',
+    title: 'Make It Stick',
+    author: 'Peter C. Brown',
+    category: 'Performance',
+    tags: ['Learning', 'Memory', 'Science'],
+    description: 'To most of us, learning something "the hard way" implies wasted time and effort. Good teaching, we believe, should be creatively tailored to the different learning styles.',
+    essence: "The science of successful learning: why easy learning is forgettable and effortful learning is durable.",
+    takeaways: [
+      "Retrieval practice is more effective than re-reading.",
+      "Interleaving different topics improves mastery.",
+      "Embrace difficulties; they strengthen memory."
+    ],
+    hbmPerspective: "The effort we put into understanding others makes the connection last.",
+  },
+  {
+    id: 'perf-16',
+    type: 'BOOK',
+    title: 'The Compound Effect',
+    author: 'Darren Hardy',
+    category: 'Performance',
+    tags: ['Success', 'Habits', 'Growth'],
+    description: 'No gimmicks. No Hyperbole. No Magic Bullet. The Compound Effect is based on the principle that decisions shape your destiny.',
+    essence: "Small actions, executed consistently over time, yield massive results.",
+    takeaways: [
+      "You are the sum of your choices.",
+      "Consistency is the ultimate key to success.",
+      "Take 100% responsibility for your life."
+    ],
+    hbmPerspective: "Every conversation is a small action that compounds into a relationship.",
+  },
+  {
+    id: 'perf-17',
+    type: 'BOOK',
+    title: 'Drive',
+    author: 'Daniel H. Pink',
+    category: 'Performance',
+    tags: ['Motivation', 'Psychology', 'Work'],
+    description: 'The surprising truth about what motivates us.',
+    essence: "True motivation comes from Autonomy, Mastery, and Purpose, not carrots and sticks.",
+    takeaways: [
+      "Autonomy: The desire to direct our own lives.",
+      "Mastery: The urge to get better and better at something that matters.",
+      "Purpose: The yearning to do what we do in the service of something larger than ourselves."
+    ],
+    hbmPerspective: "HBM is fueled by the shared purpose of connection.",
+  },
+  {
+    id: 'perf-18',
+    type: 'BOOK',
+    title: 'So Good They Can\'t Ignore You',
+    author: 'Cal Newport',
+    category: 'Performance',
+    tags: ['Career', 'Skills', 'Passion'],
+    description: 'Why skills trump passion in the quest for work you love.',
+    essence: "Don't follow your passion; cultivate rare and valuable skills, and passion will follow.",
+    takeaways: [
+      "Passion comes after you get good at something.",
+      "Adopt a craftsman mindset, not a passion mindset.",
+      "Control and autonomy are the rewards of skill."
+    ],
+    hbmPerspective: "Become so good at listening that people can't ignore your presence.",
+  },
+  {
+    id: 'perf-19',
+    type: 'BOOK',
+    title: 'Getting Things Done',
+    author: 'David Allen',
+    category: 'Performance',
+    tags: ['Productivity', 'Organization', 'System'],
+    description: 'The art of stress-free productivity.',
+    essence: "The bible of productivity: get ideas out of your head and into a trusted system.",
+    takeaways: [
+      "Your mind is for having ideas, not holding them.",
+      "If it takes less than 2 minutes, do it now.",
+      "Capture everything to reduce mental load."
+    ],
+    hbmPerspective: "Clear your mind of clutter so you can fill it with meaningful interaction.",
+  },
+  {
+    id: 'perf-20',
+    type: 'BOOK',
+    title: 'Quiet',
+    author: 'Susan Cain',
+    category: 'Performance',
+    tags: ['Introversion', 'Psychology', 'Society'],
+    description: 'The power of introverts in a world that can\'t stop talking.',
+    essence: "A validation of the introvert's power in a noisy world.",
+    takeaways: [
+      "There is zero correlation between being the best talker and having the best ideas.",
+      "Solitude matters, and for some people, it's the air they breathe.",
+      "Don't think of introversion as something that needs to be cured."
+    ],
+    hbmPerspective: "HBM celebrates both the loud and the quiet; everyone has a story.",
+  }
+];

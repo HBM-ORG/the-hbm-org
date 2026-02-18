@@ -23,6 +23,7 @@
 
 body {
   font-family: var(--font-body);
+  background-color: var(--color-hbm-cream);
   color: var(--color-hbm-dark);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -182,6 +183,15 @@ html { scroll-behavior: smooth; }
 @keyframes scrollLogos {
   0% { transform: translateX(0); }
   100% { transform: translateX(-20%); } /* Move 1/5th for 5 sets */
+}
+
+/* Generic Marquee (for 2 sets) */
+.animate-marquee {
+  animation: scrollMarquee 120s linear infinite;
+}
+@keyframes scrollMarquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 /* Gradient Mask for fading edges */

@@ -53,22 +53,11 @@ const ManifestoSection = () => {
             
             {/* Quote */}
             <p className="text-xl md:text-3xl text-gray-600 italic font-light max-w-4xl mx-auto leading-relaxed">
-              "We turn strangers into friends, and moments into memories."
+              "TO HELP PEOPLE CONNECT."
             </p>
           </motion.div>
 
-          {/* New Component-based Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 mt-12 px-2 md:px-6">
-            {connections.map((connection, i) => (
-              <ManifestoCard 
-                key={i}
-                index={i}
-                text={connection.text}
-                color={connection.color}
-                Icon={connection.icon}
-              />
-            ))}
-          </div>
+
 
           {/* Bottom statement */}
           <motion.div
