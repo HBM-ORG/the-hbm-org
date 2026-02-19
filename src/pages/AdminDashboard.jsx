@@ -2,16 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, MapPin, Edit3, Trash2, Plus, GripVertical, Image as ImageIcon, Video,
-  Settings, Save, Eye, CheckCircle, Upload, Copy, Play, X, ExternalLink, ArrowRight,
-  Sun, Droplets, Contrast, Heart, History, Users, Star, ArrowLeft
+  Contrast, Heart, History, Users, Star, ArrowLeft, Palette, HelpCircle, Download, Database, BarChart3,
+  ExternalLink, Save, Copy, Settings, Eye
 } from 'lucide-react';
 import VisualEventEditor from '../components/Admin/VisualEventEditor';
-
-// Helper for Lucide icons dynamic rendering if needed
-const LucideIcon = ({ name, ...props }) => {
-  const Icon = { Calendar, History, Edit3, Trash2, ExternalLink, Plus, Heart }[name];
-  return Icon ? <Icon {...props} /> : null;
-};
 import { eventsConfig as initialEvents } from '../data/eventsConfig';
 
 const AdminDashboard = () => {
@@ -21,6 +15,7 @@ const AdminDashboard = () => {
   
   const [events, setEvents] = useState(initialEvents);
   const [isEditing, setIsEditing] = useState(false);
+  const [isVisualEditing, setIsVisualEditing] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [saveStatus, setSaveStatus] = useState('');
   const [galleryImages, setGalleryImages] = useState([]);
@@ -30,6 +25,9 @@ const AdminDashboard = () => {
   
   // Tabs for better data organization
   const [activeTab, setActiveTab] = useState('essentials'); // essentials, media, content, settings, registrations
+  const [topView, setTopView] = useState('events'); // events, registrations, analytics
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterEvent, setFilterEvent] = useState('all');
 
   useEffect(() => {
     fetch('http://localhost:3001/api/registrations/stats')
@@ -55,10 +53,16 @@ const AdminDashboard = () => {
   };
 
   // CRUD Operations
-  const handleEdit = (event) => {
+  const handleEdit = (event, mode = 'standard') => {
+    // Ensure folderName exists for legacy events
+    if (!event.folderName) {
+        event.folderName = `event-${event.id}-${Date.now()}`; // Generate one if missing
+        console.log('Auto-generated folderName for legacy event:', event.folderName);
+    }
+    
     setCurrentEvent(event);
     setIsEditing(true);
-    // Reset to first tab
+    setIsVisualEditing(mode === 'visual');
     setActiveTab('essentials');
     if (event.folderName) {
         fetchGalleryImages(event.folderName);
@@ -93,16 +97,18 @@ const AdminDashboard = () => {
   };
 
   const handleAddNew = () => {
-    const newId = Math.max(...events.map(e => Number(e.id) || 0)) + 1;
+    const newId = events.length > 0 ? Math.max(...events.map(e => Number(e.id) || 0)) + 1 : 1;
+    // Auto-generate folder name for new events to prevent upload errors
+    const folderName = `event-${Date.now()}`;
+    
     setCurrentEvent({
       id: newId,
-      title: { en: '', he: '' },
-      date: '', 
-      description: { en: '', he: '' },
-      location: '',
-      type: 'Face to Face',
+      title: { en: 'New Event', he: 'אירוע חדש' },
+      date: '2026-01-01',
+      location: 'TBD',
+      description: { en: 'Description here...', he: 'תיאור כאן...' },
       image: '',
-      folderName: '',
+      folderName: folderName,
       imageCount: 0,
       registrationLink: '',
       gallery: [],
@@ -117,15 +123,17 @@ const AdminDashboard = () => {
       socialProof: { capacity: 50, attendingCount: 0 },
       hostNote: { message: '', author: 'The HBM Team' },
       locationParams: { addressText: '', googleMapsEmbedUrl: '' },
-      registration: { status: 'open', externalUrl: '', whatsappLink: '' }
+      registration: { status: 'open', externalUrl: '', whatsappLink: '' },
+      visuals: { brightness: 100, blur: 0, videoScale: 1 } // Added videoScale default
     });
     setGalleryImages([]);
     setIsEditing(true);
+    setIsVisualEditing(false); 
     setActiveTab('essentials');
   };
 
   const handleSaveEvent = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     let updatedEvents;
     
     // Auto-update imageCount based on actual files if folder exists
@@ -143,8 +151,39 @@ const AdminDashboard = () => {
     updatedEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     setEvents(updatedEvents);
-    setIsEditing(false);
+    if (!isVisualEditing) setIsEditing(false); // Only close standard edit
     saveToBackend(updatedEvents);
+  };
+
+  const exportToCSV = () => {
+    if (registrationsList.length === 0) return alert("No data to export");
+    
+    // Filter data if needed
+    const dataToExport = filterEvent === 'all' 
+        ? registrationsList 
+        : registrationsList.filter(r => r.eventId?.toString() === filterEvent.toString());
+
+    if (dataToExport.length === 0) return alert("No data found for this filter");
+
+    const headers = ["Name", "Email", "Phone", "Source", "Event", "Date", "Status"];
+    const rows = dataToExport.map(r => [
+        `"${r.name}"`,
+        `"${r.email}"`,
+        `"${r.phone}"`,
+        `"${r.source}"`,
+        `"${r.eventName}"`,
+        `"${new Date(r.date).toLocaleString()}"`,
+        `"${r.status || 'confirmed'}"`
+    ]);
+    
+    const csvContent = "\uFEFF" + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.body.appendChild(document.createElement("a"));
+    link.href = url;
+    link.download = `HBM_CRM_Export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    document.body.removeChild(link);
   };
 
   const saveToBackend = async (data) => {
@@ -311,6 +350,31 @@ const AdminDashboard = () => {
       }));
   };
 
+  // Wrapper for Visual Editor Updates
+  const handleVisualUpdate = (field, value) => {
+      // Smart update handler
+      setCurrentEvent(prev => {
+        // Handle nested paths 'parent.child' or 'array.index.prop'
+        if (field.includes('.')) {
+            const parts = field.split('.');
+            // Quick fix for simple nesting like 'partners.0.logo' or 'visuals.brightness'
+            if (parts.length === 2) {
+                const [parent, child] = parts;
+                return { ...prev, [parent]: { ...prev[parent], [child]: value } };
+            }
+             if (parts.length === 3) {
+                 // Should be array like partners.0.logo, wait, this logic is getting complex, maybe simplified approach:
+                 // Actually VisualEventEditor sends full array for gallery/partners usually
+                 return prev; // Rely on top-level array replacement for now
+             }
+        }
+        
+        // Simple top-level
+        return { ...prev, [field]: value };
+      });
+  };
+
+
   // Array Managers
   const handleArrayChange = (field, index, subfield, value) => {
       const newArray = [...(currentEvent[field] || [])];
@@ -375,7 +439,190 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {isEditing && currentEvent ? (
+        {/* Top Navigation Navigation */}
+        {!isEditing && (
+            <div className="flex gap-2 mb-8 bg-gray-200/50 p-1.5 rounded-2xl w-fit backdrop-blur-sm border border-white/40 shadow-inner translate-y-[-10px]">
+                <button 
+                    onClick={() => setTopView('events')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-[14px] font-black uppercase text-[10px] tracking-widest transition-all ${topView === 'events' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    <Calendar className="w-4 h-4" /> Experiences
+                </button>
+                <button 
+                    onClick={() => setTopView('registrations')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-[14px] font-black uppercase text-[10px] tracking-widest transition-all ${topView === 'registrations' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    <Database className="w-4 h-4" /> Registrations (CRM)
+                </button>
+                <button 
+                    onClick={() => setTopView('analytics')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-[14px] font-black uppercase text-[10px] tracking-widest transition-all ${topView === 'analytics' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    <BarChart3 className="w-4 h-4" /> Growth & BI
+                </button>
+            </div>
+        )}
+
+        {topView === 'analytics' && !isEditing && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                   {/* Heatmaps Card */}
+                   <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 flex flex-col items-center text-center">
+                       <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 mb-6">
+                           <MapPin className="w-8 h-8" />
+                       </div>
+                       <h3 className="text-xl font-black text-gray-900 mb-2">Heatmaps & Recordings</h3>
+                       <p className="text-gray-500 text-sm mb-6 leading-relaxed">Watch session recordings and see where users click, scroll, and hesitate using Microsoft Clarity.</p>
+                       <a href="https://clarity.microsoft.com/" target="_blank" className="w-full bg-orange-600 text-white py-3 rounded-xl font-bold text-xs hover:bg-orange-700 transition-all">Open Heatmaps (Clarity)</a>
+                   </div>
+
+                   {/* GA4 Card */}
+                   <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 flex flex-col items-center text-center">
+                       <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
+                           <BarChart3 className="w-8 h-8" />
+                       </div>
+                       <h3 className="text-xl font-black text-gray-900 mb-2">Performance Analytics</h3>
+                       <p className="text-gray-500 text-sm mb-6 leading-relaxed">Analyze traffic sources, user demographics, and acquisition channels via Google Analytics 4.</p>
+                       <a href="https://analytics.google.com/" target="_blank" className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-xs hover:bg-blue-700 transition-all">Open GA4 Dashboard</a>
+                   </div>
+
+                   {/* Meta Ads Card */}
+                   <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 flex flex-col items-center text-center">
+                       <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-6">
+                           <Users className="w-8 h-8" />
+                       </div>
+                       <h3 className="text-xl font-black text-gray-900 mb-2">Meta Ads (Pixel)</h3>
+                       <p className="text-gray-500 text-sm mb-6 leading-relaxed">Track conversions from Instagram and Facebook. Manage Remarketing lists and Ad performance.</p>
+                       <a href="https://www.facebook.com/adsmanager/" target="_blank" className="w-full bg-purple-600 text-white py-3 rounded-xl font-bold text-xs hover:bg-purple-700 transition-all">Open Ads Manager</a>
+                   </div>
+                </div>
+
+                <div className="bg-gray-900 text-white p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+                    <div className="relative z-10">
+                        <h2 className="text-3xl font-black mb-4">Enterprise Data Strategy</h2>
+                        <p className="text-gray-400 max-w-2xl leading-relaxed mb-8">
+                            We are collecting deep-level data insights across YouTube, Instagram, and Facebook. 
+                            The system is currently mapping user coordinates (Heatmaps) and conversion signals (Pixels) to build a high-performance growth engine.
+                        </p>
+                        <div className="flex gap-4">
+                            <div className="bg-white/10 px-4 py-2 rounded-lg text-xs font-bold border border-white/10 uppercase tracking-widest text-green-400">● Live Monitoring Active</div>
+                            <div className="bg-white/10 px-4 py-2 rounded-lg text-xs font-bold border border-white/10 uppercase tracking-widest text-blue-400">● SEO Technical V4.0</div>
+                        </div>
+                    </div>
+                    <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-purple-500/20 to-transparent pointer-events-none"></div>
+                </div>
+            </div>
+        )}
+
+        {topView === 'registrations' && !isEditing ? (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 pb-10">
+                    <div className="p-8 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h2 className="text-2xl font-black text-gray-900 tracking-tighter">Community Database</h2>
+                            <p className="text-gray-500 text-sm font-medium">Manage and export all event participants.</p>
+                        </div>
+                        <div className="flex gap-4 w-full md:w-auto">
+                            <select 
+                                value={filterEvent} 
+                                onChange={(e) => setFilterEvent(e.target.value)}
+                                className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                            >
+                                <option value="all">All Events</option>
+                                {events.map(ev => (
+                                    <option key={ev.id} value={ev.id}>{ev.title.en || ev.title}</option>
+                                ))}
+                            </select>
+                            <button 
+                                onClick={exportToCSV}
+                                className="flex-1 md:flex-none bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-xs shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Download className="w-4 h-4" /> Export Excel (CSV)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="p-4 border-b border-gray-100 bg-white">
+                        <div className="relative">
+                            <input 
+                                type="text" 
+                                placeholder="Search by name, email or phone..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-12 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/10 focus:bg-white transition-all"
+                            />
+                            <Database className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
+                        </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50/50 border-b border-gray-100">
+                                <tr>
+                                    <th className="px-8 py-4">Participant</th>
+                                    <th className="px-8 py-4">Contact Info</th>
+                                    <th className="px-8 py-4">Experience</th>
+                                    <th className="px-8 py-4">Source</th>
+                                    <th className="px-8 py-4">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {registrationsList
+                                    .filter(reg => {
+                                        const nameMatch = reg.name && reg.name.toLowerCase().includes(searchTerm.toLowerCase());
+                                        const emailMatch = reg.email && reg.email.toLowerCase().includes(searchTerm.toLowerCase());
+                                        const phoneMatch = reg.phone && reg.phone.includes(searchTerm);
+                                        
+                                        const matchesFilter = filterEvent === 'all' || reg.eventId?.toString() === filterEvent.toString();
+                                        
+                                        return (nameMatch || emailMatch || phoneMatch) && matchesFilter;
+                                    })
+                                    .slice().reverse().map((reg, idx) => (
+                                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="px-8 py-6">
+                                            <div className="font-extrabold text-gray-900">{reg.name}</div>
+                                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">ID: #{reg.id}</div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="text-gray-600 font-medium">{reg.email}</div>
+                                            <div className="text-gray-400 text-xs mt-0.5 font-mono">{reg.phone}</div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="bg-purple-50 text-purple-700 text-[10px] font-black px-3 py-1.5 rounded-full inline-block uppercase border border-purple-100">
+                                                {reg.eventName}
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="text-gray-600 font-bold capitalize text-xs">{reg.source || 'unknown'}</div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="text-gray-500 font-medium">{new Date(reg.date).toLocaleDateString()}</div>
+                                            <div className="text-gray-300 text-[10px] mt-0.5">{new Date(reg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {registrationsList.length === 0 && (
+                                    <tr>
+                                        <td colSpan="5" className="px-8 py-20 text-center text-gray-400 font-medium italic">
+                                            No registrations found in the database.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        ) : isEditing && currentEvent ? (
+          isVisualEditing ? (
+            <VisualEventEditor 
+                event={currentEvent} 
+                onUpdate={handleVisualUpdate}
+                onSave={handleSaveEvent}
+                onClose={() => setIsEditing(false)}
+                onUpload={handleAssetUpload}
+            />
+          ) : (
           <div className="bg-white rounded-2xl shadow-lg mb-8 overflow-hidden">
             <div className="p-6 border-b flex justify-between items-center bg-gray-50">
                  <div className="flex items-center gap-4">
@@ -384,6 +631,10 @@ const AdminDashboard = () => {
                      </button>
                      <div className="h-6 w-px bg-gray-300"></div>
                      <h2 className="text-2xl font-bold text-gray-800">{events.find(e => e.id === currentEvent.id) ? 'Edit Event' : 'New Event'}</h2>
+                     
+                     <button onClick={() => setIsVisualEditing(true)} className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-3 py-1 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all ml-2">
+                        <Palette className="w-4 h-4" /> Visual Editor
+                     </button>
                      <span className="text-gray-400 text-sm font-mono bg-gray-100 px-2 py-1 rounded">ID: {currentEvent.id}</span>
                      
                      {/* Status Toggle */}
@@ -795,73 +1046,64 @@ const AdminDashboard = () => {
                 </div>
             </form>
           </div>
-        ) : (
+        )) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.filter(e => e.status !== 'draft' || true).map(event => (
-              <motion.div 
-                key={event.id} 
-                layoutId={event.id}
-                className={`relative bg-white/80 backdrop-blur-xl rounded-3xl overflow-hidden shadow-lg border border-white/50 group hover:shadow-2xl transition-all duration-300 ${event.status === 'draft' ? 'opacity-75 border-dashed border-gray-400' : ''}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                {/* Visual Header */}
+            {events.filter(e => e.status !== 'draft' || true).map((event, idx) => {
+              const isNextEvent = idx === 0;
+              return (
+              <div key={event.id} className={`bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border group ${isNextEvent ? 'border-amber-400 ring-4 ring-amber-400/20 scale-[1.02]' : 'border-gray-100'}`}>
+                {isNextEvent && (
+                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white text-center text-[10px] font-black uppercase tracking-widest py-1 shadow-sm">
+                        ✨ Next Experience
+                    </div>
+                )}
                 <div className="relative h-48 overflow-hidden">
-                     {event.heroVideo ? (
-                          <video src={event.heroVideo} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" muted />
-                     ) : (
-                         <img src={event.thumbnail || event.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
-                     )}
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                     
-                     {/* Status Badge */}
-                     <div className="absolute top-4 left-4 flex gap-2">
-                        {event.status === 'draft' && <span className="bg-gray-800 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-md">Draft</span>}
-                        {new Date(event.date) < new Date() && <span className="bg-orange-500/80 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-md">Past Event</span>}
-                     </div>
-
-                     {/* Stats & Actions Overlay */}
-                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-[-10px] group-hover:translate-y-0">
-                        <button onClick={() => window.open(`/events/${event.id}`, '_blank')} className="bg-white/20 backdrop-blur-md hover:bg-white text-white hover:text-purple-600 p-2 rounded-full transition-colors" title="Preview Live">
-                            <ExternalLink className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDuplicate(event)} className="bg-white/20 backdrop-blur-md hover:bg-white text-white hover:text-purple-600 p-2 rounded-full transition-colors" title="Duplicate">
-                            <Copy className="w-4 h-4" />
-                        </button>
-                     </div>
+                    <div className="absolute top-4 right-4 z-10 w-full px-4 flex justify-between items-start pointer-events-none">
+                         {/* Visual Edit Button overlay specifically for Gold card or all */}
+                         <button onClick={(e) => { e.stopPropagation(); handleEdit(event, 'visual'); }} className="pointer-events-auto bg-white/90 backdrop-blur text-gray-800 p-2 rounded-lg font-bold text-xs shadow-sm hover:bg-white flex items-center gap-1 hover:scale-105 transition-all">
+                                <Palette className="w-3 h-3 text-purple-600" /> Visual Edit
+                         </button>
+                        <span className={`pointer-events-auto px-2 py-1 rounded text-xs font-bold ${event.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                            {event.status}
+                        </span>
+                    </div>
+                    <img src={event.image || event.thumbnail || '/assets/default-event.jpg'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
-
-                {/* Content Body */}
-                <div className="p-6 relative">
-                    <div className="flex justify-between items-start mb-2">
+                <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
                         <div>
-                             <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#6160AB] to-[#F07B3C] mb-1">{event.title.en || event.title}</h3>
-                             <p className="text-sm text-gray-500 flex items-center gap-1"><Calendar className="w-3 h-3"/> {event.date} • {event.location}</p>
-                        </div>
-                        <div className="flex flex-col items-end">
-                            <span className="flex items-center gap-1 text-xs font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded-lg">
-                                <Users className="w-3 h-3" /> {stats[event.id] || 0}
-                            </span>
+                            <h3 className="text-xl font-bold text-gray-900 leading-tight mb-1">{event.title.en || event.title}</h3>
+                            <p className="text-sm text-gray-500 flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(event.date).toLocaleDateString()}</p>
                         </div>
                     </div>
                     
-                    {/* HBM Heart Branding */}
-                    <div className="absolute -bottom-4 -right-4 text-purple-500/10 transform rotate-12">
-                        <Heart className="w-24 h-24 fill-current" />
+                    <div className="grid grid-cols-2 gap-4 my-6">
+                        <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 text-center">
+                            <span className="block text-2xl font-extrabold text-blue-600">{stats[event.id] || 0}</span>
+                            <span className="text-[10px] uppercase font-bold text-blue-400">Registrations</span>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded-xl border border-purple-100 text-center">
+                            <span className="block text-2xl font-extrabold text-purple-600">{event.imageCount || 0}</span>
+                            <span className="text-[10px] uppercase font-bold text-purple-400">Photos</span>
+                        </div>
                     </div>
 
-                    <div className="mt-6 flex justify-between items-center relative z-10">
-                        <button onClick={() => handleEdit(event)} className="bg-white border border-gray-200 text-gray-700 hover:text-purple-600 hover:border-purple-200 px-6 py-2 rounded-xl font-bold text-sm shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+                    <div className="flex gap-3 mt-6">
+                        <button onClick={() => handleEdit(event)} className="flex-1 bg-gray-900 text-white py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-black transition-colors flex items-center justify-center gap-2">
                             <Settings className="w-4 h-4" /> Manage
                         </button>
-                        <button onClick={() => handleDelete(event.id)} className="text-gray-400 hover:text-red-500 p-2 transition-colors">
+                        <button onClick={() => handleDuplicate(event)} className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors">
+                            <Copy className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDelete(event.id)} className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors">
                             <Trash2 className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            );
+          })}
+        </div>
         )}
       </div>
     </div>

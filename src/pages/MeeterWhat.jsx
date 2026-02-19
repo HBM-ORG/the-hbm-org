@@ -9,33 +9,13 @@ import EyebrowBadge from '../components/EyebrowBadge'
 import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
 import DidYouKnowSection from '../components/Meeter/DidYouKnowSection'
-
-
-const words = [
-  'Partner', 'Deal', 'Friend', 'Mentor', 'Study Buddy', 
-  'Coffee Mate', 'Venture', 'Community', 'Job', 'Date', 'Opportunity'
-];
-
-const wordsHe = [
-  'שותף', 'עסקה', 'חבר', 'מנטור', 'שותף ללימודים', 
-  'שותף לקפה', 'מיזם', 'קהילה', 'עבודה', 'דייט', 'הזדמנות'
-];
-
-const opportunities = [
-]
+import { HowItWorks } from '../components/Home'
 
 export default function MeeterWhat() {
   const { lang } = useI18n()
   const isHe = lang === 'he' || lang === 'ar'
   const [mode, setMode] = useState('virtual')
   const [isPlaying, setIsPlaying] = useState(false)
-  const [wordIdx, setWordIdx] = useState(0)
-  const wList = isHe ? wordsHe : words
-
-  useEffect(() => {
-    const i = setInterval(() => setWordIdx(p => (p + 1) % wList.length), 1800)
-    return () => clearInterval(i)
-  }, [wList.length])
 
   // Reset play state when mode changes
   useEffect(() => {
@@ -101,29 +81,8 @@ export default function MeeterWhat() {
           </div>
       </section>
 
-      {/* ── S2: OPPORTUNITY — Word Rotator ── */}
-      <section className="bg-hbm-cream section-padding">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="max-w-4xl mx-auto text-center w-full">
-            <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark mb-2">
-              {t({ en: 'Find your next...', he: '...מצאו את ה' }, lang)}
-            </h2>
-            <p className="text-5xl md:text-7xl font-bold text-hbm-orange mb-10 word-rotate" key={wordIdx}>
-              {wList[wordIdx]}
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-              {opportunities.map((o, i) => (
-                <div key={i} className="bg-hbm-cream rounded-xl p-5 card-hover text-center" style={{animation:`fadeIn 0.5s ease-out ${i*0.08}s both`}}>
-                  <div className="w-12 h-12 rounded-full bg-hbm-purple/10 flex items-center justify-center mx-auto mb-2">
-                    <o.icon size={24} className="text-hbm-purple" />
-                  </div>
-                  <p className="font-bold text-hbm-dark text-sm">{t(o.label, lang)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── S1.5: HOW IT WORKS — THE MEETER - WHAT IS IT? ── */}
+      <HowItWorks />
 
       {/* ── S3: OLD vs NEW ── */}
       <ComparisonSection />
@@ -133,8 +92,6 @@ export default function MeeterWhat() {
 
       {/* ── S5: DID YOU KNOW — 95% Sticky Section ── */}
       <DidYouKnowSection />
-
-
 
       {/* Bridge to Who */}
       <NextPageBridge 

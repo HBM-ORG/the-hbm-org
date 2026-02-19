@@ -67,9 +67,6 @@ const ManifestoSection = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.8 }}
           >
-            <p className="text-xl md:text-2xl text-gray-500 font-light">
-              Because this is what we do best.
-            </p>
             <motion.p
               className="text-3xl md:text-5xl font-bold text-gray-900"
               initial={{ opacity: 0, scale: 0.95 }}

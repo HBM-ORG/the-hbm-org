@@ -4,11 +4,18 @@ const CountdownTimer = ({ targetDate }) => {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
   function calculateTimeLeft() {
-    // Ensure consistent parsing: targetDate is YYYY-MM-DD
-    // Treat it as midnight local time for the event day
-    const difference = new Date(targetDate + 'T00:00:00') - new Date();
+    let difference;
+    if (!targetDate) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     
-    if (difference <= 0) {
+    // Handle ISO strings (from datetime-local) vs simple dates
+    if (targetDate.includes('T')) {
+        difference = new Date(targetDate) - new Date();
+    } else {
+        // Assume midnight if only date provided
+        difference = new Date(targetDate + 'T00:00:00') - new Date();
+    }
+    
+    if (isNaN(difference) || difference <= 0) {
       return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
 

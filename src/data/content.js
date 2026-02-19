@@ -174,7 +174,7 @@ export const siteContent = {
         },
         {
           title: { en: 'Flip To Find', he: '8 דקות מונחות' },
-          desc: { en: 'Flip your card to see your match’s interests and start a conversation.', he: 'הפכו את הכרטיס כדי לראות את תחומי העניין של ההתאמה שלכם ולהתחיל שיחה.' },
+          desc: { en: 'Hold your phone up like an airport sign to instantly spot your match.', he: 'החזיקו את הטלפון כמו שלט בשדה תעופה כדי לזהות מיד את ההתאמה שלכם.' },
           image: '/how-it-works/f2f-step-4.png'
         },
         {
@@ -313,15 +313,111 @@ export const siteContent = {
     team: {
       title: { en: 'Meet The Team', he: 'הכירו את הצוות' },
       members: [
-        { name: 'Elad Maor Hefets', role: { en: 'Founder & CEO', he: 'מייסד ומנכ"ל' }, image: `${WP}/2025/06/1e6deea839ca22490e8568efb155ac2e1e7a58c0.png`, nickname: 'The Visionary', bio: { en: "The heart behind it all. Elad is the one who saw the possibility before anyone else did—and then made it happen.", he: 'הלב מאחורי הכל. אלעד הוא זה שראה את האפשרות לפני כולם — ואז הפך אותה למציאות.' } },
-        { name: 'Tal Zohar', role: { en: 'CFO', he: 'סמנכ"לית כספים' }, image: `${WP}/2025/06/c40261069a4f345058760204cefee4e2725ed872-min-1.png`, nickname: "The Real CEO", bio: { en: "Tal's the force that keeps everything grounded, on track, and somehow still smiling.", he: 'טל היא הכוח שמחזיק הכל על הקרקע, במסלול, ואיכשהו עדיין מחייך.' } },
-        { name: 'Michal Merjan', role: { en: 'Office Manager', he: 'מנהלת משרד' }, image: `${WP}/2025/06/43dd6118559ee6899554fedf7bf4f0bc3d456d40-min.png`, nickname: 'Team Cat Whisperer', bio: { en: "More than just our office manager—Michal is the pulse, the hug, the one who remembers your birthday.", he: 'יותר ממנהלת משרד — מיכל היא הדופק, החיבוק, זו שזוכרת את יום ההולדת שלכם.' } },
-        // PLACEHOLDER: Update Michal's photo when ready
-        { name: 'Yuval Hefets', role: { en: 'Data Analyst', he: 'מנתח נתונים' }, image: `${WP}/2025/06/3c7a7591d92ab7c875b7c10f685c255e3f7abd31-min.png`, nickname: 'Turbo #1', bio: { en: "The older twin (by 17 minutes), Yuval brings sharp focus and fresh curiosity into data analysis.", he: 'התאום הבכור (ב-17 דקות), יובל מביא מיקוד חד וסקרנות רעננה לניתוח נתונים.' } },
-        { name: 'Liad Hefets', role: { en: 'Marketing Manager', he: 'מנהל שיווק' }, image: `${WP}/2025/11/PHOTO-2025-11-24-14-47-49.jpg`, nickname: 'Turbo #2', bio: { en: "Bold, warm, and always two steps ahead with a gift for opening doors—and conversations.", he: 'נועז, חם, ותמיד שני צעדים קדימה עם כישרון לפתוח דלתות — ושיחות.' } },
-        { name: 'Shon Hazan', role: { en: 'Head of Business Development', he: 'ראש פיתוח עסקי' }, image: `${WP}/2025/11/PHOTO-2025-11-24-14-45-26.jpg`, nickname: 'The Connector', bio: { en: "Came from Canada with a warm smile and a network that spans half the planet.", he: 'הגיע מקנדה עם חיוך חם ורשת קשרים שמשתרעת על חצי כדור הארץ.' } },
-        // PLACEHOLDER: Add Alex when photo is ready
-        { name: 'Alex', role: { en: 'Team Member', he: 'חבר צוות' }, image: '', nickname: '', bio: { en: '', he: '' } },
+        { 
+          name: 'Elad Maor Hefets', 
+          role: { en: 'Founder & CEO', he: 'מייסד ומנכ"ל' }, 
+          image: `${WP}/2025/06/1e6deea839ca22490e8568efb155ac2e1e7a58c0.png`, 
+          nickname: { en: 'The Visionary', he: 'החזון' }, 
+          linkedin: 'https://www.linkedin.com/in/elad-hefets/',
+          bio: { 
+            en: "The heart behind it all. Elad is the one who saw the possibility before anyone else did—and then made it happen. A family-first kind of guy with a mind full of ideas and a whiteboard always nearby. He's the glue, the dreamer, and the reason we're all here.",
+            he: 'הלב מאחורי הכל. אלעד הוא זה שראה את האפשרות לפני כולם — ואז הפך אותה למציאות. איש משפחה עם ראש מלא ברעיונות ולוח מחיק תמיד בקרבת מקום. הוא הדבק, החולם, והסיבה שכולנו כאן.'
+          },
+          funFact: {
+            en: "Came up with HBM's entire vision during a long meditation. We're not saying he's a prophet, but we're not not saying it either.",
+            he: 'הגה את כל החזון של HBM במהלך מדיטציה ארוכה. אנחנו לא אומרים שהוא נביא, אבל אנחנו גם לא לא אומרים את זה.'
+          }
+        },
+        { 
+          name: 'Alex Shraibman', 
+          role: { en: 'CTO', he: 'סמנכ"ל טכנולוגיות' }, 
+          image: '/assets/team/alex.jpg', 
+          nickname: { en: 'The Architect', he: 'האדריכל' }, 
+          linkedin: 'https://www.linkedin.com/in/shraalex/',
+          bio: { 
+            en: "The technical mastermind behind The HBM. Alex transforms complex visions into seamless, scalable reality. With a razor-sharp focus on architecture and user experience, he's the one making sure the magic happens reliably and beautifully.",
+            he: 'המוח הטכנולוגי מאחורי HBM. אלכס הופך חזון מורכב למציאות חלקה וניתנת להרחבה. עם מיקוד חד בארכיטקטורה וחווית משתמש, הוא מוודא שהקסם קורה בצורה אמינה ויפה.'
+          },
+          funFact: {
+            en: "Can debug code in his sleep, and probably builds servers as a hobby. If it's technical, Alex has the answer.",
+            he: 'יכול לדבג קוד מתוך שינה, וכנראה בונה שרתים כתחביב. אם זה טכני, לאלכס יש את התשובה.'
+          }
+        },
+        { 
+          name: 'Tal Zohar', 
+          role: { en: 'CFO', he: 'סמנכ"לית כספים' }, 
+          image: `${WP}/2025/06/c40261069a4f345058760204cefee4e2725ed872-min-1.png`, 
+          nickname: { en: "The Real CEO (Don’t tell Elad)", he: "המנכ\"לית האמיתית (אל תגלו לאלעד)" }, 
+          linkedin: 'https://www.linkedin.com/in/tal-zohar-1807311ab/',
+          bio: { 
+            en: "Tal’s the force that keeps everything grounded, on track, and somehow still smiling. While we joke that she’s the CEO in practice, no one’s arguing. With a calm presence and sharp instincts, she quietly (but powerfully) makes sure things actually get done.",
+            he: 'טל היא הכוח שמחזיק הכל על הקרקע, במסלול, ואיכשהו עדיין מחייכת. בזמן שאנחנו מתבדחים שהיא המנכ"לית בפועל, אף אחד לא מתווכח. עם נוכחות רגועה ואינסטינקטים חדים, היא דואגת (בשקט אך בעוצמה) שהדברים באמת יקרו.'
+          },
+          funFact: {
+            en: "Technically CFO. Spiritually? CEO, HR, and probably building maintenance too.",
+            he: 'טכנית CFO. רוחנית? מנכ"לית, HR, וכנראה גם תחזוקת מבנים.'
+          }
+        },
+        { 
+          name: 'Michal Merjan', 
+          role: { en: 'Office Manager', he: 'מנהלת משרד' }, 
+          image: `${WP}/2025/06/43dd6118559ee6899554fedf7bf4f0bc3d456d40-min.png`, 
+          nickname: { en: 'Office Manager & Team Cat Whisperer', he: 'מנהלת המשרד והלוחשת לחתולים' }, 
+          linkedin: 'https://www.linkedin.com/in/michal-merjan-996004352/',
+          bio: { 
+            en: "More than just our office manager—Michal is the pulse, the hug, the one who remembers your birthday and your caffeine preference. Her love for cats is legendary, and honestly, we suspect they help her run the place behind the scenes.",
+            he: 'יותר ממנהלת משרד — מיכל היא הדופק, החיבוק, זו שזוכרת את יום ההולדת שלכם ואת העדפת הקפאין שלכם. האהבה שלה לחתולים היא אגדית, ובכנות, אנחנו חושדים שהם עוזרים לה לנהל את המקום מאחורי הקלעים.'
+          },
+          funFact: {
+            en: "Knows something’s up before you do. It’s kind of spooky, but in a comforting way.",
+            he: 'יודעת שמשהו קורה לפניכם. זה קצת מפחיד, אבל בצורה מנחמת.'
+          }
+        },
+        { 
+          name: 'Yuval Hefets', 
+          role: { en: 'Data Analyst', he: 'מנתח נתונים' }, 
+          image: `${WP}/2025/06/3c7a7591d92ab7c875b7c10f685c255e3f7abd31-min.png`, 
+          nickname: { en: 'Turbo #1 (by 17 minutes and proud of it)', he: 'טורבו מס\' 1 (ב-17 דקות וגאה בזה)' }, 
+          linkedin: 'https://www.linkedin.com/in/yuval-meir-hefetz/',
+          bio: { 
+            en: "The older twin (by technicality, not by maturity), Yuval brings sharp focus and fresh curiosity into everything he does. Recently diving into data analysis, he's all about finding the hidden patterns behind how people connect. Equal parts thoughtful and turbocharged, he's proof that energy and insight make a powerful combo.",
+            he: 'התאום הבכור (טכנית, לא מבחינת בגרות), יובל מביא מיקוד חד וסקרנות רעננה לכל מה שהוא עושה. לאחרונה צלל לניתוח נתונים, והוא כולו מציאת התבניות הנסתרות שמאחורי איך שאנשים מתחברים. שילוב של מחשבה וטורבו.'
+          },
+          funFact: {
+            en: "Born 17 minutes before Liad, which he brings up exactly every 17 days.",
+            he: 'נולד 17 דקות לפני ליעד, מה שהוא מזכיר בדיוק כל 17 ימים.'
+          }
+        },
+        { 
+          name: 'Liad Hefets', 
+          role: { en: 'Marketing Manager', he: 'מנהל שיווק' }, 
+          image: `${WP}/2025/11/PHOTO-2025-11-24-14-47-49.jpg`, 
+          nickname: { en: 'Turbo #2 (but definitely the louder one)', he: 'טורבו מס\' 2 (אבל בהחלט היותר רועש)' }, 
+          linkedin: 'https://www.linkedin.com/in/liad-hefets/',
+          bio: { 
+            en: "If marketing had a hype squad, Liad would lead it. Bold, warm, and always two steps ahead, he's got a gift for opening doors—and conversations. While Yuval dives into data, Liad dives into people. Together, they’re a force. Separately? Still unstoppable.",
+            he: 'אם לשיווק הייתה יחידת עידוד, ליעד היה מוביל אותה. נועז, חם ותמיד שני צעדים קדימה, יש לו כישרון לפתוח דלתות — ושיחות. בזמן שיובל צולל לנתונים, ליעד צולל לאנשים. יחד הם כוח.'
+          },
+          funFact: {
+            en: "Once pitched HBM to a stranger in an elevator. It wasn’t a short building.",
+            he: 'פעם הציג את HBM לזר במעלית. זה לא היה בניין קצר.'
+          }
+        },
+        { 
+          name: 'Shon Hazan', 
+          role: { en: 'Head of Business Development', he: 'ראש פיתוח עסקי' }, 
+          image: `${WP}/2025/11/PHOTO-2025-11-24-14-45-26.jpg`, 
+          nickname: { en: 'The Connector From the North', he: 'המחבר מהצפון' }, 
+          linkedin: 'https://www.linkedin.com/in/shon-hazan-8b2046270/',
+          bio: { 
+            en: "Shon came to us from Canada with a smile that feels like a warm welcome and a network that seems to span half the planet. After years in clean energy and international business, he randomly showed up at one of our Friday events and walked out with a job offer from Elad. Since then, he has been our door opener, deal starter, and the person who can turn any conversation into an opportunity.",
+            he: 'שון הגיע אלינו מקנדה עם חיוך שמרגיש כמו קבלת פנים חמה ורשת קשרים שנראה שמשתרעת על חצי כדור הארץ. אחרי שנים באנרגיה נקייה ועסקים בינלאומיים, הוא הופיע במקרה באחד מאירועי יום השישי שלנו ויצא עם הצעת עבודה מאלעד. מאז, הוא פותח הדלתות שלנו, מתניע עסקאות, והאדם שיכול להפוך כל שיחה להזדמנות.'
+          },
+          funFact: {
+            en: "He got hired before he figured out where the snacks were. Rumor has it he is still not sure how it happened.",
+            he: 'הוא הועסק לפני שהספיק להבין איפה נמצאים החטיפים. השמועה אומרת שהוא עדיין לא בטוח איך זה קרה.'
+          }
+        },
       ],
     },
     values: {

@@ -80,22 +80,25 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
           </span>
         </motion.div>
 
-        {/* Avatar pairs with videos */}
-        <div className="flex items-center justify-center gap-4 md:gap-6 mb-8 flex-wrap">
-          {imagePairs.map((pair, i) => (
-            <div key={i} className="flex items-center -space-x-3">
-              <div className="video-circle" style={{ borderColor: '#bbc0ff' }}>
-                {pair.left?.endsWith('.mp4') ? (
-                  <video src={pair.left} autoPlay muted loop playsInline poster={pair.poster} />
-                ) : <img src={pair.poster} alt="" />}
+        {/* Infinite Marquee for Video Circles */}
+        <div className="relative w-full overflow-hidden mask-gradient-x mb-12">
+          <div className="flex gap-8 items-center w-max animate-marquee hover:[animation-play-state:paused]">
+            {/* Duplicate sets for infinite loop */}
+            {[...imagePairs, ...imagePairs, ...imagePairs].map((pair, i) => (
+              <div key={i} className="flex items-center -space-x-4 shrink-0 transform hover:scale-105 transition-transform duration-300">
+                <div className="video-circle w-20 h-20 md:w-28 md:h-28 border-4" style={{ borderColor: '#bbc0ff' }}>
+                  {pair.left?.endsWith('.mp4') ? (
+                    <video src={pair.left} autoPlay muted loop playsInline poster={pair.poster} className="w-full h-full object-cover" />
+                  ) : <img src={pair.poster} alt="" className="w-full h-full object-cover" />}
+                </div>
+                <div className="video-circle w-20 h-20 md:w-28 md:h-28 border-4" style={{ borderColor: '#fdb586' }}>
+                  {pair.right?.endsWith('.mp4') ? (
+                    <video src={pair.right} autoPlay muted loop playsInline poster={pair.poster} className="w-full h-full object-cover" />
+                  ) : <img src={pair.poster} alt="" className="w-full h-full object-cover" />}
+                </div>
               </div>
-              <div className="video-circle" style={{ borderColor: '#fdb586' }}>
-                {pair.right?.endsWith('.mp4') ? (
-                  <video src={pair.right} autoPlay muted loop playsInline poster={pair.poster} />
-                ) : <img src={pair.poster} alt="" />}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Main headline - Grid layout for strict 2 lines */}
@@ -153,45 +156,13 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
         >
-          {/* Primary CTA */}
+          {/* WHAT IS IT? Button */}
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
             <Link
               to="/meeter"
-              className="group relative px-10 py-4 bg-[#F07B3C] text-white rounded-full text-lg font-semibold shadow-2xl overflow-hidden inline-flex items-center gap-3"
+              className="group px-10 py-4 bg-white border-2 border-[#6160AB] text-[#6160AB] rounded-full text-lg font-bold shadow-lg hover:bg-[#6160AB] hover:text-white transition-all duration-300 inline-flex items-center justify-center min-w-[200px]"
             >
-              {/* Shimmer effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                initial={{ x: '-100%' }}
-                whileHover={{ x: '100%' }}
-                transition={{ duration: 0.6 }}
-              />
-              <span className="relative z-10">
-                {t({ en: 'Start Your 8 Min', he: 'התחילו 8 דקות' }, lang)}
-              </span>
-              <motion.svg 
-                className="relative z-10 w-5 h-5"
-                animate={{ x: [0, 5, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </motion.svg>
-            </Link>
-          </motion.div>
-
-          {/* Secondary CTA */}
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-            <Link
-              to="/b2b"
-              className="group px-10 py-4 bg-white border-2 border-[#6160AB] text-[#6160AB] rounded-full text-lg font-semibold shadow-lg hover:bg-[#6160AB] hover:text-white transition-all duration-300 inline-flex items-center gap-3"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              {t({ en: 'Book Enterprise Demo', he: 'הזמינו הדגמה לארגון' }, lang)}
+              {t({ en: 'WHAT IS IT ?', he: 'מה זה?' }, lang)}
             </Link>
           </motion.div>
         </motion.div>

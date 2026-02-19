@@ -1,18 +1,27 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, CheckCircle, MapPin, ChevronDown, Edit3, Settings } from 'lucide-react';
+import { ArrowRight, CheckCircle, MapPin, ChevronDown, Edit3, Settings, Star } from 'lucide-react';
 import { useI18n, t } from '../../i18n/context';
 import { MagicCard } from '../ui/MagicCard';
 import BubbleContainer from '../BubbleContainer';
 import CountdownTimer from './CountdownTimer';
+import { hbmAnalytics } from '../../utils/analytics';
 
-const NextEventHero = ({ event }) => {
+const NextEventHero = ({ event, isEditable = false, onUpdate = () => {}, onUpload = () => {}, visuals = {} }) => {
   const { lang } = useI18n();
+  // ... existing state ...
   const [activeFaq, setActiveFaq] = useState(null);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [formState, setFormState] = useState({ name: '', email: '', phone: '' });
   const [submitStatus, setSubmitStatus] = useState('idle');
 
+  // Visuals from props or defaults
+  const brightness = visuals.brightness || 100;
+  const blur = visuals.blur || 0;
+  const videoScale = visuals.videoScale || 1.0;
+  const overlayOpacity = visuals.overlayOpacity ?? 40;
+
+  // ... rest of logic ...
   // Normalize dates to midnight to check if strictly past
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -26,31 +35,71 @@ const NextEventHero = ({ event }) => {
   const handleRegister = async (e) => {
       e.preventDefault();
       setSubmitStatus('submitting');
-      setTimeout(() => setSubmitStatus('success'), 1500);
+      
+      try {
+          const res = await fetch('http://localhost:3001/api/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  ...formState,
+                  eventId: event.id,
+                  eventName: event.title.en || event.title
+              })
+          });
+          
+          if (res.ok) {
+              hbmAnalytics.recordRegComplete(event.id, event.title.en || event.title, formState.source);
+              setSubmitStatus('success');
+          } else {
+              alert('Registration failed. Please try again.');
+              setSubmitStatus('idle');
+          }
+      } catch (err) {
+          console.error(err);
+          alert('Connection error. Is the server running?');
+          setSubmitStatus('idle');
+      }
   };
 
   return (
     <div className="min-h-screen bg-hbm-cream font-['Sora'] pb-20">
       
       {/* 1. HERO SECTION (Constrained Height) */}
-      <div className="relative w-full flex flex-col items-center justify-center text-center overflow-hidden" style={{ minHeight: '600px', maxHeight: '80vh' }}>
+      <div className="relative w-full flex flex-col items-center justify-center text-center overflow-hidden" style={{ minHeight: '900px' }}>
         
         {/* Background Media */}
-        <div className="absolute inset-0 z-0 h-full w-full">
-            {event.heroStyle?.type === 'video' && event.heroVideo ? (
-                <video src={event.heroVideo} autoPlay loop muted className="w-full h-full object-cover"
-                    style={{ filter: `brightness(${event.heroStyle?.brightness || 60}%) blur(${event.heroStyle?.blur || 0}px)` }} />
+        <div className="absolute inset-0 z-0 h-full w-full bg-gray-900">
+            {event.heroVideo ? (
+                <video src={event.heroVideo} autoPlay loop muted className="w-full h-full object-cover transition-all duration-300"
+                    style={{ filter: `brightness(${brightness}%) blur(${blur}px)`, transform: `scale(${videoScale})` }} />
             ) : (
-                <img src={event.image || '/assets/default-hero.jpg'} alt="Event Background" className="w-full h-full object-cover"
-                    style={{ filter: `brightness(${event.heroStyle?.brightness || 60}%) blur(${event.heroStyle?.blur || 0}px)` }} />
+                <img src={event.heroImage || '/assets/default-hero.jpg'} alt="Event Background" className="w-full h-full object-cover transition-all duration-300"
+                    style={{ filter: `brightness(${brightness}%) blur(${blur}px)`, transform: `scale(${videoScale})` }} />
             )}
-            <div className="absolute inset-0 bg-black/40" />
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-hbm-cream to-transparent" />
+            <div className="absolute inset-0 bg-black transition-opacity duration-300" style={{ opacity: overlayOpacity / 100 }} />
+            <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-hbm-cream via-hbm-cream/80 to-transparent" />
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 max-w-4xl px-6 w-full flex flex-col items-center h-full justify-center pt-20">
+        <div className="relative z-20 max-w-4xl px-6 w-full flex flex-col items-center h-full justify-center pt-40 pb-40">
             
+            {/* Status Badges & Admin Controls */}
+            <div className="absolute top-10 left-10 z-50 flex items-center gap-3">
+                {event.status === 'draft' && (
+                    <div className="bg-amber-400 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-200/50 flex items-center gap-2 animate-pulse">
+                        <div className="w-2 h-2 bg-white rounded-full" /> Draft Mode
+                    </div>
+                )}
+                {isEditable && (
+                    <button 
+                        onClick={() => onUpdate('openSettings', true)}
+                        className="bg-white/90 backdrop-blur-xl text-gray-900 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border border-white hover:bg-[#6160AB] hover:text-white transition-all flex items-center gap-2 group"
+                    >
+                        <Settings className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform" /> Visual Edit
+                    </button>
+                )}
+            </div>
+
             {/* Pill Badge - Fixed Logic */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
                 <div className="px-5 py-2 rounded-full border border-white/30 bg-white/10 backdrop-blur-md text-white text-xs font-bold tracking-widest uppercase shadow-lg">
@@ -142,7 +191,10 @@ const NextEventHero = ({ event }) => {
 
                         {/* Registration Form / Action */}
                         {!isRegisterOpen ? (
-                            <button onClick={() => setIsRegisterOpen(true)}
+                            <button onClick={() => {
+                                setIsRegisterOpen(true);
+                                hbmAnalytics.recordRegStart(event.id, event.title.en || event.title);
+                            }}
                                 className="w-full py-4 rounded-2xl font-bold text-white text-lg shadow-xl shadow-[#6160AB]/30 border border-white/10 flex items-center justify-center gap-3 group transition-all hover:scale-[1.02] active:scale-95 bg-white/5 hover:bg-white/10 backdrop-blur-md">
                                 {t({ en: 'Reserve My Spot', he: 'שריין מקום' }, lang)}
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -252,17 +304,28 @@ const NextEventHero = ({ event }) => {
 
                 {/* Partners Section */}
                 {event.partners && event.partners.length > 0 && (
-                     <div className="mb-20 text-center">
-                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-8">In Partnership With</h3>
-                         <div className="flex flex-wrap justify-center items-center gap-12 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+                     <div className="mb-24 text-center">
+                         <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-10">In Partnership With</h3>
+                         <div className="flex flex-wrap justify-center items-center gap-16 lg:gap-24 px-10">
                              {event.partners.map((partner, idx) => (
-                                 <div key={idx} className="flex flex-col items-center gap-2 group">
+                                 <a 
+                                    key={idx} 
+                                    href={partner.website || partner.link || '#'} 
+                                    target={(partner.website || partner.link) ? "_blank" : "_self"}
+                                    rel="noopener noreferrer"
+                                    className={`group transition-all duration-500 hover:scale-110 ${(partner.website || partner.link) ? 'cursor-pointer' : 'cursor-default'}`}
+                                 >
                                     {partner.logo ? (
-                                        <img src={partner.logo} alt={partner.name} className="h-16 object-contain" />
+                                        <div className="relative">
+                                            <img src={partner.logo} alt={partner.name} className="h-10 lg:h-12 object-contain filter grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" />
+                                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-widest text-[#F07B3C] opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {partner.name}
+                                            </div>
+                                        </div>
                                     ) : (
-                                        <span className="text-xl font-bold text-gray-300 group-hover:text-gray-500">{partner.name}</span>
+                                        <span className="text-xl font-black text-gray-300 group-hover:text-[#6160AB] transition-colors tracking-tighter">{partner.name}</span>
                                     )}
-                                 </div>
+                                 </a>
                              ))}
                          </div>
                      </div>
@@ -270,15 +333,78 @@ const NextEventHero = ({ event }) => {
 
                 {/* Map Embed */}
                 {event.locationParams?.googleMapsEmbedUrl && (
-                     <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-200 h-96 mb-20 relative group">
+                    <div className="mb-24">
+                        {event.locationParams.addressText && (
+                            <div className="text-center mb-8">
+                                <h4 className="text-[10px] font-black text-[#F07B3C] uppercase tracking-[0.4em] mb-3">Finding Us</h4>
+                                <h3 className="text-3xl font-black text-hbm-dark tracking-tighter">{event.locationParams.addressText}</h3>
+                            </div>
+                        )}
+                        <div className="rounded-[2.5rem] overflow-hidden shadow-2xl border border-gray-100 h-96 relative group">
                          <iframe 
-                             src={event.locationParams.googleMapsEmbedUrl} 
+                             src={(() => {
+                                 const url = event.locationParams.googleMapsEmbedUrl;
+                                 if (!url) return '';
+                                 if (url.includes('<iframe')) {
+                                     const match = url.match(/src=["']([^"']+)["']/);
+                                     return match ? match[1] : url;
+                                 }
+                                 return url;
+                             })()} 
                              className="w-full h-full grayscale group-hover:grayscale-0 transition-all duration-700"
                              loading="lazy"
                              allowFullScreen
                          ></iframe>
-                         <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-4 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center gap-2">
+                         <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-4 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center gap-2 pointer-events-none">
                              <MapPin className="w-3 h-3 text-[#F07B3C]"/> {event.location}
+                         </div>
+                     </div>
+                    </div>
+                )}
+
+                {/* Host Note */}
+                {event.hostNote?.message && (
+                    <div className="max-w-3xl mx-auto mb-24 relative">
+                        <div className="absolute -top-12 -left-4 text-9xl font-black text-[#F07B3C]/5 font-serif select-none">"</div>
+                        <div className="bg-white/40 backdrop-blur-xl p-12 rounded-[3rem] border border-white shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-8 opacity-10">
+                                <Star className="w-24 h-24 text-[#6160AB]" />
+                            </div>
+                            <p className="text-2xl font-medium text-hbm-dark leading-relaxed mb-8 relative z-10">
+                                {event.hostNote.message}
+                            </p>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 overflow-hidden shadow-lg border-2 border-white">
+                                    {event.hostNote.avatar ? <img src={event.hostNote.avatar} className="w-full h-full object-cover" /> : null}
+                                </div>
+                                <div>
+                                    <div className="font-black text-hbm-dark text-sm uppercase tracking-wide">{event.hostNote.author}</div>
+                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Event Host</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Gallery Grid */}
+                {event.gallery && event.gallery.length > 0 && (
+                     <div className="mb-24">
+                         <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-10 text-center">Event Moments</h3>
+                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                             {event.gallery.map((img, idx) => (
+                                 <motion.div 
+                                    key={idx}
+                                    whileHover={{ scale: 1.02, rotation: idx % 2 === 0 ? 1 : -1 }}
+                                    className={`relative aspect-square rounded-3xl overflow-hidden shadow-md transform transition-all duration-500 ${idx % 3 === 0 ? 'md:col-span-2 md:row-span-2' : ''}`}
+                                 >
+                                     <img 
+                                        src={img.startsWith('http') || img.startsWith('/assets') ? img : `/assets/events/${event.folderName || 'general'}/${img}`} 
+                                        className="w-full h-full object-cover" 
+                                        alt="" 
+                                     />
+                                     <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                 </motion.div>
+                             ))}
                          </div>
                      </div>
                 )}
@@ -286,16 +412,21 @@ const NextEventHero = ({ event }) => {
                 {/* FAQs */}
                 {event.faqs && event.faqs.length > 0 && (
                     <div className="max-w-2xl mx-auto">
-                        <h2 className="text-3xl font-bold text-center text-hbm-dark mb-10">Common Questions</h2>
-                        <div className="space-y-4">
+                         <div className="text-center mb-12">
+                             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Support</h3>
+                             <h2 className="text-4xl font-black text-hbm-dark tracking-tighter">Common Questions</h2>
+                         </div>
+                        <div className="space-y-4 text-right" dir={lang === 'he' ? 'rtl' : 'ltr'}>
                             {event.faqs.map((faq, idx) => (
-                                <div key={idx} className="bg-hbm-cream rounded-2xl overflow-hidden border border-gray-100">
+                                <div key={idx} className="bg-white/40 backdrop-blur-sm rounded-[2rem] overflow-hidden border border-white hover:border-[#6160AB]/20 transition-all hover:shadow-lg">
                                     <button 
                                         onClick={() => toggleFaq(idx)}
-                                        className="w-full p-6 flex justify-between items-center text-left hover:bg-white transition-colors"
+                                        className="w-full p-8 flex justify-between items-center text-left hover:bg-white transition-colors"
                                     >
-                                        <span className="font-bold text-hbm-dark">{faq.question}</span>
-                                        <ChevronDown className={`w-5 h-5 text-hbm-gray transition-transform ${activeFaq === idx ? 'rotate-180' : ''}`} />
+                                        <span className="font-extrabold text-hbm-dark tracking-tight">{faq.question}</span>
+                                        <div className={`w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center transition-all ${activeFaq === idx ? 'bg-[#6160AB] text-white rotate-180' : 'text-gray-400'}`}>
+                                            <ChevronDown className="w-4 h-4" />
+                                        </div>
                                     </button>
                                     <AnimatePresence>
                                         {activeFaq === idx && (
@@ -304,7 +435,7 @@ const NextEventHero = ({ event }) => {
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
                                             >
-                                                <div className="p-6 pt-0 text-hbm-gray text-sm leading-relaxed border-t border-gray-200/50">
+                                                <div className="p-8 pt-0 text-hbm-gray font-medium leading-relaxed border-t border-gray-100/50">
                                                     {faq.answer}
                                                 </div>
                                             </motion.div>

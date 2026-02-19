@@ -111,7 +111,11 @@ const EventModal = ({ event, isOpen, onClose }) => {
                       layoutId={`image-${selectedImage}`}
                     >
                       <img
-                        src={event.gallery[selectedImage]}
+                        src={(() => {
+                            const img = event.gallery[selectedImage];
+                            if (!img) return '';
+                            return img.startsWith('http') || img.startsWith('/assets') ? img : `/assets/events/${event.folderName || 'general'}/${img}`;
+                        })()}
                         alt={`${t(event.title, lang)} - Image ${selectedImage + 1}`}
                         className="w-full h-full object-cover"
                       />
@@ -146,7 +150,7 @@ const EventModal = ({ event, isOpen, onClose }) => {
                           whileHover={{ scale: index === selectedImage ? 1.05 : 1.1 }}
                         >
                           <img
-                            src={img}
+                            src={img.startsWith('http') || img.startsWith('/assets') ? img : `/assets/events/${event.folderName || 'general'}/${img}`}
                             alt={`Thumbnail ${index + 1}`}
                             className="w-full h-full object-cover"
                           />

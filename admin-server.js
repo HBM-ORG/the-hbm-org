@@ -27,10 +27,14 @@ import multer from 'multer';
 // Configure storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const folderName = req.body.folderName;
+    let folderName = req.body.folderName;
+    
+    // Fallback logic if client hasn't sent folderName yet (Multer field order issue)
     if (!folderName) {
-      return cb(new Error('No folderName provided'));
+        console.warn('Multer: No folderName in body yet. This usually means field order is wrong or field is missing. Defaulting to "general".');
+        folderName = 'general';
     }
+    
     const uploadPath = path.join(ASSETS_DIR, folderName);
     
     // Create folder if it doesn't exist
@@ -41,9 +45,9 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    // Keep original filename to support "explicit list" logic better than 1..N
-    // or we can sanitize it.
-    cb(null, file.originalname);
+    // Sanitize filename: remove spaces and special chars to avoid URL issues
+    const sanitized = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    cb(null, Date.now() + '_' + sanitized); // Add timestamp to avoid collisions
   }
 });
 
@@ -99,10 +103,10 @@ app.post('/api/upload-asset', upload.single('asset'), (req, res) => {
         if (!fs.existsSync(subfolderDir)) {
              fs.mkdirSync(subfolderDir, { recursive: true });
         }
-        const newFilename = req.file.originalname;
-        const newPath = path.join(subfolderDir, newFilename);
+        const savedFilename = req.file.filename; // Use the version with timestamp
+        const newPath = path.join(subfolderDir, savedFilename);
         
-        // If file exists, overwrite or rename? Overwrite for now as it makes asset replacement easier
+        // If file exists, overwrite (unlikely with timestamp but safe)
         if (fs.existsSync(newPath)) {
             fs.unlinkSync(newPath);
         }
@@ -110,8 +114,7 @@ app.post('/api/upload-asset', upload.single('asset'), (req, res) => {
         fs.renameSync(currentPath, newPath);
         
         // Return relative path for frontend to use
-        // Return posix style path for web
-        res.json({ success: true, path: `${subfolder}/${newFilename}`, filename: newFilename });
+        res.json({ success: true, path: `${subfolder}/${savedFilename}`, filename: savedFilename });
     } else {
         res.json({ success: true, filename: req.file.filename });
     }

@@ -164,10 +164,7 @@ const EventCard = ({ event, index, onClick, lang }) => {
               <span className="block text-2xl font-bold text-gray-900 font-['Sora']">{day}</span>
           </div>
 
-          {/* Heart Icon (Visual) */}
-          <div className="absolute top-4 right-4 text-white/80 hover:text-red-500 transition-colors">
-              <Heart className="w-6 h-6 fill-current" />
-          </div>
+
         </div>
 
         {/* Content */}

@@ -1,66 +1,100 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n, t } from '../i18n/context'
 import { 
   Building2, Hotel, GraduationCap, Users, CalendarDays, ArrowRight, Star, 
   MessageCircle, Zap, BarChart3, Heart, TrendingUp, Smile, Globe, Coffee, 
-  Briefcase, Layout, Award, Shield, UserPlus, Sparkles 
+  Briefcase, Layout, Award, Shield, UserPlus, Sparkles, Handshake, BarChart, School
 } from 'lucide-react'
 import EyebrowBadge from '../components/EyebrowBadge'
 import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
+import { WobbleCard } from '../components/ui/wobble-card'
+import { motion, AnimatePresence } from 'framer-motion'
 
 
 const tabs = [
-  { id:'events', icon:CalendarDays, label:{en:'Events',he:'אירועים'},
-    headline:{en:'The Engine for Human-Centered Events.',he:'המנוע לאירועים אנושיים.'},
-    subtitle:{en:'Turn any gathering into meaningful one-on-one connections that guests actually remember.',he:'הפכו כל התכנסות לחיבורים אישיים שמשתתפים באמת זוכרים.'},
-    items:[
-      {icon:MessageCircle, title:{en:'Transform Networking',he:'הפכו נטוורקינג לשיחה'},text:{en:'From business-card exchanges to real conversations people talk about.',he:'מהחלפת כרטיסי ביקור לשיחות אמיתיות שאנשים מדברים עליהן.'}},
-      {icon:Sparkles, title:{en:'Elevate Your Brand',he:'שדרגו את המותג'},text:{en:'Host events that feel different, thoughtful, and human.',he:'ארחו אירועים שמרגישים אחרת, מחושבים ואנושיים.'}},
-      {icon:BarChart3, title:{en:'Measure Real Impact',he:'מדדו השפעה אמיתית'},text:{en:'Track matches, conversations, and relationships created.',he:'עקבו אחרי התאמות, שיחות ומערכות יחסים שנוצרו.'}},
-      {icon:Smile, title:{en:'Delight Participants',he:'רגשו את המשתתפים'},text:{en:'No awkward small talk, just guided, safe, 8‑minute flows.',he:'בלי סמול טוק מביך, רק זרימה מונחית ובטוחה של 8 דקות.'}},
-      {icon:TrendingUp, title:{en:'Scale Effortlessly',he:'הגדילו ללא מאמץ'},text:{en:'Run 50 or 500 conversations with the same level of care.',he:'הריצו 50 או 500 שיחות באותה רמת תשומת לב.'}},
-    ]},
-  { id:'companies', icon:Building2, label:{en:'Companies',he:'חברות'},
-    headline:{en:'The Engine for Company Culture.',he:'המנוע לתרבות ארגונית.'},
-    items:[
-      {icon:Layout, title:{en:'Break Silos',he:'שברו סילוסים'},text:{en:'Connect employees across departments who never interact.',he:'חברו עובדים בין מחלקות שלעולם לא נפגשים.'}},
-      {icon:Heart, title:{en:'Prevent Burnout',he:'מנעו שחיקה'},text:{en:'Social connection reduces stress and increases resilience.',he:'חיבור חברתי מפחית לחץ ומגביר חוסן.'}},
-      {icon:UserPlus, title:{en:'Boost Retention',he:'שפרו שימור'},text:{en:'Employees who feel connected are far less likely to leave.',he:'עובדים שמרגישים מחוברים נוטים הרבה פחות לעזוב.'}},
-      {icon:Zap, title:{en:'Spark Innovation',he:'הציתו חדשנות'},text:{en:'Cross-pollination of ideas starts with a conversation.',he:'הפרייה הדדית של רעיונות מתחילה בשיחה.'}},
-      {icon:Globe, title:{en:'Inclusive Culture',he:'תרבות מכילה'},text:{en:'Give every voice a seat at the table.',he:'תנו לכל קול מקום בשולחן.'}},
-    ]},
-  { id:'hotels', icon:Hotel, label:{en:'Hotels',he:'מלונות'},
-    headline:{en:'The Engine for Guest Experience.',he:'המנוע לחוויית אורח.'},
-    items:[
-      {icon:Coffee, title:{en:'Beyond Amenities',he:'מעבר לנוחיות'},text:{en:'Offer meaningful human moments, not just facilities.',he:'הציעו רגעים אנושיים משמעותיים, לא רק מתקנים.'}},
-      {icon:Heart, title:{en:'Stronger Loyalty',he:'נאמנות חזקה יותר'},text:{en:'Guests return to places where they feel seen and welcomed.',he:'אורחים חוזרים למקומות שבהם הם מרגישים רצויים.'}},
-      {icon:MessageCircle, title:{en:'Community Nights',he:'ערבי קהילה'},text:{en:'Turn quiet evenings into curated connection experiences.',he:'הפכו ערבים שקטים לחוויות חיבור מותאמות.'}},
-      {icon:Award, title:{en:'Upsell Experiences',he:'חוויות פרימיום'},text:{en:'Bundle HBM sessions into premium stay packages.',he:'שלבו מפגשי HBM בחבילות אירוח יוקרתיות.'}},
-      {icon:Globe, title:{en:'Local Connections',he:'חיבורים מקומיים'},text:{en:'Connect guests with locals, not just with your lobby.',he:'חברו אורחים עם מקומיים, לא רק עם הלובי.'}},
-    ]},
-  { id:'universities', icon:GraduationCap, label:{en:'Universities',he:'אוניברסיטאות'},
-    headline:{en:'The Engine for Campus Belonging.',he:'המנוע לתחושת שייכות בקמפוס.'},
-    items:[
-      {icon:UserPlus, title:{en:'Support First‑Years',he:'תמיכה בשנה א\''},text:{en:'Ease the transition with guided one-on-one matches.',he:'הקלו על המעבר עם התאמות אישיות מונחות.'}},
-      {icon:Briefcase, title:{en:'Cross‑Faculty Bridges',he:'גשרים בין פקולטות'},text:{en:'Help students meet beyond their program or major.',he:'עזרו לסטודנטים להיפגש מעבר לתוכנית הלימודים.'}},
-      {icon:Heart, title:{en:'Wellbeing Tool',he:'כלי לרווחה אישית'},text:{en:'Reduce loneliness and isolation with structured connection.',he:'הפחיתו בדידות ובידוד בעזרת חיבור מובנה.'}},
-      {icon:GraduationCap, title:{en:'Alumni Engagement',he:'מעורבות בוגרים'},text:{en:'Reconnect graduates with each other and with campus.',he:'חברו מחדש בוגרים אחד לשני ולקמפוס.'}},
-      {icon:Globe, title:{en:'Diverse Perspectives',he:'פרספקטיבות מגוונות'},text:{en:'Safe spaces to meet people outside your bubble.',he:'מרחבים בטוחים לפגוש אנשים מחוץ לבועה.'}},
-    ]},
-  { id:'communities', icon:Users, label:{en:'Communities',he:'קהילות'},
-    headline:{en:'The Engine for Human Circles.',he:'המנוע למעגלים אנושיים.'},
-    items:[
-      {icon:MessageCircle, title:{en:'Deeper Community Nights',he:'ערבי קהילה עמוקים'},text:{en:'Move beyond lectures to real shared stories.',he:'עברו מעבר להרצאות לסיפורים משותפים אמיתיים.'}},
-      {icon:Shield, title:{en:'Lower Social Anxiety',he:'הפחתת חרדה חברתית'},text:{en:'8 minutes, clear rules, no pressure to “perform”.',he:'8 דקות, כללים ברורים, בלי לחץ "להופיע".'}},
-      {icon:TrendingUp, title:{en:'Keep People Coming Back',he:'החזירו אנשים שוב ושוב'},text:{en:'When connections are real, attendance grows.',he:'כשחיבורים הם אמיתיים, הנוכחות גדלה.'}},
-      {icon:Users, title:{en:'Bridge Differences',he:'גשור על פערים'},text:{en:'Create conversations across age, background, and beliefs.',he:'צרו שיחות מעבר לגיל, רקע ואמונות.'}},
-      {icon:Layout, title:{en:'Simple to Run',he:'פשוט להפעלה'},text:{en:'Templates, flows, and guidelines built in.',he:'תבניות, זרימות והנחיות מובנות בפנים.'}},
-    ]},
+  { 
+    id:'events', 
+    icon: CalendarDays, 
+    label: {en:'Events',he:'אירועים'},
+    headline: {en:'Turn Every Event Into An Human Experience  .',he:'המנוע לאירועים אנושיים.'},
+    subtitle: {en:'We all know the truth: Networking is awkward. We fixed it.',he:'כולנו יודעים את האמת: נטוורקינג זה מביך. אנחנו תיקנו את זה.'},
+    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop", // Large tech crowd
+    points:[
+      {icon:MessageCircle, bold:{en:'Transform Networking Into Real Conversations.',he:'הפכו נטוורקינג לשיחות אמיתיות.'}, text:{en:'At every event, people hide behind their screens because they\'re scared to approach someone new. Meeter gives guests the invitation to meet someone new for 8-minute encounters that are actually fun and natural!',he:'בכל אירוע, אנשים מתחבאים מאחורי המסכים שלהם כי הם מפחדים לגשת למישהו חדש. Meeter נותנת לאורחים את ההזמנה לפגוש מישהו חדש למפגשים של 8 דקות שהם באמת מהנים וטבעיים!'}},
+      {icon:Heart, bold:{en:'Turn Positive Experiences Into Brand Memory.',he:'הפכו חוויות חיוביות לזיכרון מותג.'}, text:{en:'When people feel genuinely connected at your event, they don\'t just remember the content—they remember YOUR brand. Meeter turns great connections into lasting memories that stick with attendees long after they leave.',he:'כשאנשים מרגישים מחוברים באמת באירוע שלכם, הם לא רק זוכרים את התוכן—הם זוכרים את המותג שלכם. Meeter הופכת חיבורים נהדרים לזיכרונות מתמשכים שנשארים עם המשתתפים הרבה אחרי שהם עוזבים.'}},
+      {icon:UserPlus, bold:{en:'Increased "Word-of-Mouth" Marketing.',he:'שיווק "פה לאוזן" מוגבר.'}, text:{en:'When guests make real connections, they don\'t just come back, they bring others. Meeter creates word-of-mouth that money can\'t buy.',he:'כשאורחים יוצרים חיבורים אמיתיים, הם לא רק חוזרים, הם מביאים אחרים. Meeter יוצרת שיווק פה לאוזן שאי אפשר לקנות בכסף.'}},
+    ]
+  },
+  { 
+    id:'companies', 
+    icon: Building2, 
+    label: {en:'Companies',he:'חברות'},
+    headline: {en:'Your Team Works Together. But Do They Actually Know Each Other?',he:'הצוות שלך עובד יחד. אבל האם הם באמת מכירים אחד את השני?'},
+    subtitle: {en:'Many employees feel disconnected from their organizations. This disconnect hurts culture, teamwork, and overall productivity.',he:'עובדים רבים מרגישים מנותקים מהארגונים שלהם. הניתוק הזה פוגע בתרבות, בעבודת הצוות ובפרודוקטיביות הכללית.'},
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop", // Collaborative Modern Team
+    points:[
+      {icon:Layout, bold:{en:'Break Down Silos Across Departments.',he:'שברו את המחיצות בין המחלקות.'}, text:{en:'Marketing doesn\'t talk to engineering. Sales doesn\'t know finance. Meeter connects employees across departments who never interact—sparking collaboration, innovation, and cross-pollination of ideas that change everything.',he:'השיווק לא מדבר עם ההנדסה. המכירות לא מכירות את הכספים. Meeter מחברת עובדים בין מחלקות שלעולם לא מתקשרים—מציתה שיתוף פעולה, חדשנות והפריה הדדית של רעיונות שמשנים הכל.'}},
+      {icon:Heart, bold:{en:'Prevent Burnout and Boost Retention.',he:'מנעו שחיקה ושפרו שימור.'}, text:{en:'Employees who feel connected are far less likely to leave. Meeter reduces stress, increases resilience, and creates genuine social bonds that make people actually want to come to work.',he:'עובדים שמרגישים מחוברים נוטים הרבה פחות לעזוב. Meeter מפחיתה לחץ, מגבירה חוסן ויוצרת קשרים חברתיים אותנטיים שגורמים לאנשים באמת לרצות לבוא לעבודה.'}},
+      {icon:Zap, bold:{en:'We\'re Not Operational, We\'re Fun!',he:'אנחנו לא תפעוליים, אנחנו כיפיים!'}, text:{en:'People don\'t bond over spreadsheets, they bond over shared laughs, stories, and human moments. Meeter gives your team permission to connect as people, not just colleagues. When work conversations become real conversations, culture comes alive.',he:'אנשים לא מתחברים סביב גיליונות אלקטרוניים, הם מתחברים סביב צחוק משותף, סיפורים ורגעים אנושיים. Meeter נותנת לצוות שלכם רשות להתחבר כאנשים, לא רק כקולגות. כששיחות עבודה הופכות לשיחות אמיתיות, התרבות מתעוררת לחיים.'}},
+    ]
+  },
+  { 
+    id:'hotels', 
+    icon: Hotel, 
+    label: {en:'Hotels',he:'מלונות'},
+    headline: {en:'Your Hotel Is More Than a Place to Sleep. Make It the Place Where Opportunities Begin.',he:'המלון שלך הוא יותר ממקום לישון בו. הפוך אותו למקום שבו הזדמנויות מתחילות.'},
+    subtitle: {en:'Your rooms are booked, but your public spaces are still waiting to come alive.',he:'החדרים שלכם מלאים, אבל המרחבים הציבוריים שלכם עדיין מחכים להתעורר לחיים.'},
+    image: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=2070&auto=format&fit=crop", // Luxury Hotel Lobby
+    points:[
+      {icon:Sparkles, bold:{en:'Offer Meaningful Moments in your hotel.',he:'הציעו רגעים משמעותיים במלון שלכם.'}, text:{en:'Every hotel has a nice lobby and good Wi-Fi. But how many offer real human connection? Meeter transforms your public spaces into living, breathing hubs where solo travelers become friends, business partners, and drinking buddies.',he:'לכל מלון יש לובי יפה ו-Wi-Fi טוב. אבל כמה מציעים חיבור אנושי אמיתי? Meeter הופכת את המרחבים הציבוריים שלכם למוקדים חיים ונושמים שבהם מטיילים בודדים הופכים לחברים, שותפים עסקיים ושותפים לשתייה.'}},
+      {icon:Coffee, bold:{en:'Fill Your Bar and Boost F&B Revenue.',he:'מלאו את הבר שלכם והגדילו הכנסות F&B.'}, text:{en:'Empty seats at happy hour mean lost revenue. Meeter brings guests out of their rooms and into your bar, restaurant, and lobby. Creating a scheduled social experience that drives real spending and keeps your spaces buzzing with life.',he:'כיסאות ריקים ב-happy hour משמעותם הפסד הכנסה. Meeter מוציאה את האורחים מהחדרים שלהם אל הבר, המסעדה והלובי שלכם. יוצרת חוויה חברתית מתוזמנת שמניעה הוצאות אמיתיות ושומרת על המרחבים שלכם שוקקים חיים.'}},
+      {icon:TrendingUp, bold:{en:'Become a Magnet for Business Travelers.',he:'הפכו למגנט לנוסעים עסקיים.'}, text:{en:'When business travelers know they can network, meet locals, or find a workout partner at YOUR hotel, you become their first choice. Meeter turns one-time guests into loyal advocates who book direct and tell everyone about the experience.',he:'כשנוסעים עסקיים יודעים שהם יכולים לעשות נטוורקינג, לפגוש מקומיים או למצוא שותף לאימון במלון שלכם, אתם הופכים לבחירה הראשונה שלהם. Meeter הופכת אורחים חד-פעמיים לממליצים נאמנים שמזמינים ישירות ומספרים לכולם על החוויה.'}},
+    ]
+  },
+  { 
+    id:'universities', 
+    icon: GraduationCap, 
+    label: {en:'Universities',he:'אוניברסיטאות'},
+    headline: {en:'Your Campus Has Thousands of Students. How Many Feel Alone?',he:'בקמפוס שלך יש אלפי סטודנטים. כמה מהם מרגישים לבד?'},
+    subtitle: {en:'Transform your campus into a place where everyone can meet, connect, and belong.',he:'הפכו את הקמפוס שלכם למקום שבו כולם יכולים להיפגש, להתחבר ולהרגיש שייכים.'},
+    image: "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1986&auto=format&fit=crop", // Modern Library Hub
+    points:[
+      {icon:Users, bold:{en:'Combat Campus Loneliness From Day One.',he:'הילחמו בבדידות בקמפוס מהיום הראשון.'}, text:{en:'Students are surrounded by thousands of peers but feel completely isolated. Meeter gives them a simple, fun way to meet new people in just 8 minutes. No awkward "how do I make friends?" stress. Just real human connection.',he:'סטודנטים מוקפים באלפי עמיתים אך מרגישים מבודדים לחלוטין. Meeter נותנת להם דרך פשוטה ומהנה לפגוש אנשים חדשים תוך 8 דקות בלבד. בלי לחץ מביך של "איך אני מכיר חברים?". פשוט חיבור אנושי אמיתי.'}},
+      {icon:School, bold:{en:'Build Community Across Majors and Years.',he:'בנו קהילה בין חוגים ושנתונים.'}, text:{en:'Engineering students never meet art students. Freshmen don\'t connect with seniors. Meeter breaks down barriers and creates cross-campus friendships that enrich the entire university experience and last beyond graduation.',he:'סטודנטים להנדסה לא פוגשים סטודנטים לאמנות. שנה א\' לא מתחברים עם בוגרים. Meeter שוברת מחסומים ויוצרת חברויות חוצות קמפוס שמעשירות את חווית האוניברסיטה כולה ונמשכות גם אחרי הסיום.'}},
+      {icon:GraduationCap, bold:{en:'Boost Student Well-Being and Retention.',he:'שפרו את רווחת הסטודנטים ואת אחוזי השימור.'}, text:{en:'Students who feel connected stay enrolled, perform better, and become proud alumni. Meeter reduces mental health struggles, increases engagement, and turns your campus into a place students actually want to be.',he:'סטודנטים שמרגישים מחוברים נשארים רשומים, מצליחים יותר והופכים לבוגרים גאים. Meeter מפחיתה קשיים נפשיים, מגבירה מעורבות והופכת את הקמפוס שלכם למקום שסטודנטים באמת רוצים להיות בו.'}},
+    ]
+  },
+  { 
+    id:'communities', 
+    icon: Users, 
+    label: {en:'Communities',he:'קהילות'},
+    headline: {en:'Strong Communities Are Measured By The Strength Of Their Connections.',he:'קהילות חזקות נמדדות בחוזק החיבורים שלהן.'},
+    subtitle: {en:'Build a community where members truly know each other—not just share the same WhatsApp group.',he:'בנו קהילה שבה החברים באמת מכירים אחד את השני—לא רק חולקים אותה קבוצת וואטסאפ.'},
+    image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=2070&auto=format&fit=crop", // High-energy Social Lounge
+    points:[
+      {icon:MessageCircle, bold:{en:'Create Deeper Community Engagement.',he:'צרו מעורבות קהילתית עמוקה יותר.'}, text:{en:'Move beyond lectures and presentations. Meeter transforms community events into genuine human experiences where members share real stories, build authentic friendships, and feel like they truly belong.',he:'עברו מעבר להרצאות ומצגות. Meeter הופכת אירועים קהילתיים לחוויות אנושיות אמיתיות שבהן חברים משתפים סיפורים אמיתיים, בונים חברויות אותנטיות ומרגישים שהם באמת שייכים.'}},
+      {icon:Shield, bold:{en:'Lower Social Anxiety and Increase Participation.',he:'הפחיתו חרדה חברתית והגדילו השתתפות.'}, text:{en:'8 minutes, clear structure, no pressure to perform. Meeter removes the awkwardness of "who do I talk to?" and gives every member, introverts included, a safe, easy way to connect.',he:'8 דקות, מבנה ברור, בלי לחץ להופיע. Meeter מסירה את המבוכה של "עם מי אני מדבר?" ונותנת לכל חבר, כולל מופנמים, דרך בטוחה וקלה להתחבר.'}},
+      {icon:Heart, bold:{en:'Keep People Coming Back.',he:'גרמו לאנשים לחזור.'}, text:{en:'When connections are real, attendance grows. Members don\'t come back for content—they come back for the people they\'ve met. Meeter turns one-time attendees into loyal community members.',he:'כשחיבורים הם אמיתיים, הנוכחות גדלה. חברים לא חוזרים בשביל התוכן—הם חוזרים בשביל האנשים שפגשו. Meeter הופכת משתתפים חד-פעמיים לחברי קהילה נאמנים.'}},
+    ]
+  },
+  {
+    id: 'office',
+    icon: Building2,
+    label: { en: 'Office Buildings', he: 'בנייני משרדים' },
+    headline: { en: 'One Building. Many Companies. Thousands of Employees. Zero Connection.', he: 'בניין אחד. הרבה חברות. אלפי עובדים. אפס חיבור.' },
+    subtitle: { en: 'Turn your public office spaces into a business ecosystem where deals, friendships, and opportunities happen.', he: 'הפכו את החללים הציבוריים שלכם לאקו-סיסטם עסקי שבו עסקאות, חברויות והזדמנויות קורות.' },
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
+    points: [
+      { icon: Layout, bold: { en: 'Transform Isolation Into Community.', he: 'הפכו בידוד לקהילה.' }, text: { en: 'Floor 22 doesn\'t know Floor 20 exists. Employees share the same building but live in separate worlds. Meeter breaks down the invisible walls and creates real connections between companies, turning your tower into a connected business community.', he: 'קומה 22 לא יודעת שקומה 20 קיימת. עובדים חולקים את אותו בניין אבל חיים בעולמות נפרדים. Meeter שוברת את הקירות הבלתי נראים ויוצרת חיבורים אמיתיים בין חברות, הופכת את המגדל שלכם לקהילה עסקית מחוברת.' } },
+      { icon: Handshake, bold: { en: 'Unlock Business Opportunities in Your Own Building.', he: 'פתחו הזדמנויות עסקיות בבניין שלכם.' }, text: { en: 'The next deal, partnership, or mentor your tenants are looking for might be working two floors up. Meeter creates serendipitous encounters that spark collaborations, investments, and business relationships—all within your building.', he: 'העסקה הבאה, השותפות או המנטור שהדיירים שלכם מחפשים עשויים לעבוד שתי קומות למעלה. Meeter יוצרת מפגשים אקראיים שמציתים שיתופי פעולה, השקעות ומערכות יחסים עסקיות—הכל בתוך הבניין שלכם.' } },
+      { icon: BarChart, bold: { en: 'Become THE Destination for Business Professionals.', he: 'הפכו ליעד העיקרי למקצוענים עסקיים.' }, text: { en: 'When tenants know they can network, find partners, and build relationships without leaving the building, your tower becomes more than office space—it becomes THE place to do business.', he: 'כשדיירים יודעים שהם יכולים לעשות נטוורקינג, למצוא שותפים ולבנות מערכות יחסים בלי לעזוב את הבניין, המגדל שלכם הופך ליותר מסתם שטח משרדי—הוא הופך למקום לעשות בו עסקים.' } }
+    ]
+  }
 ]
 
-const testimonials = [
+const fullTestimonials = [
   { quote:{en:'"Increased our retention by 20% in 6 months."',he:'"העלינו את השימור ב-20% בשישה חודשים."'}, name:'Sarah L.', role:{en:'HR Director',he:'מנהלת משאבי אנוש'} },
   { quote:{en:'"Our guests finally talk to each other. The lobby is alive."',he:'"האורחים שלנו סוף סוף מדברים אחד עם השני. הלובי חי."'}, name:'David K.', role:{en:'Hotel GM',he:'מנכ"ל מלון'} },
   { quote:{en:'"Students found study partners within the first week."',he:'"סטודנטים מצאו שותפי לימוד בתוך השבוע הראשון."'}, name:'Prof. Amit R.', role:{en:'Dean of Students',he:'דיקן סטודנטים'} },
@@ -75,94 +109,230 @@ const testimonials = [
   { quote:{en:'"Authentic connection at scale. Brilliant."',he:'"חיבור אותנטי בקנה מידה רחב. מבריק."'}, name:'Alex W.', role:{en:'VP Innovation',he:'סמנכ"ל חדשנות'} },
 ]
 
+const partnerLogos = [
+  { name: 'IAC', src: '/partner-logos/iac.png' },
+  { name: 'Dale Carnegie', src: '/partner-logos/dale-carnegie.png' },
+  { name: 'Gav Yam', src: '/partner-logos/gav-yam.png' },
+  { name: 'Redler Technologies', src: '/partner-logos/redler.png' },
+  { name: 'Matam Park', src: '/partner-logos/matam-park.png' },
+  { name: 'Haifa', src: '/partner-logos/haifa.png' },
+  { name: 'HaMathana', src: '/partner-logos/hamathana.png' },
+  { name: 'Reichman University', src: '/partner-logos/reichman.png' },
+  { name: 'Herbert Samuel Hotels', src: '/partner-logos/herbert-samuel.png' },
+  { name: 'Points of You', src: '/partner-logos/points-of-you.png' },
+]
+
 export default function MeeterWho() {
   const { lang } = useI18n()
   const [activeTab, setActiveTab] = useState('events')
   const currentTab = tabs.find(t => t.id === activeTab)
 
+  // Load SociableKIT script
+  useEffect(() => {
+    // 1. Script Injection - Using the index.js method for better reliability
+    const scriptUrl = 'https://widgets.sociablekit.com/index.js';
+    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
+    
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.src = scriptUrl;
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    } else {
+      // If script exists, we might need to tell it to re-parse the DOM
+      if (window.sk_instagram_reels) {
+        window.sk_instagram_reels.init();
+      }
+    }
+
+    // Force re-init after a small delay to ensure the div is in the DOM
+    const timer = setTimeout(() => {
+      if (typeof window.SociableKIT === 'object' && window.SociableKIT.init) {
+        window.SociableKIT.init();
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-hbm-cream">
+    <div className="min-h-screen bg-hbm-cream relative transition-colors duration-700">
+      
       {/* Hero */}
-      <section className="bg-hbm-cream pt-20 pb-16">
+      <section className="relative z-10 pt-20 pb-12">
           <div className="max-w-4xl mx-auto text-center px-6">
             <div className="mb-6">
               <EyebrowBadge text="THE MEETER - WHO IS IT FOR?" />
             </div>
-            <h1 className="text-4xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>{t({en:'Where Does It Meet You?',he:'איפה זה פוגש אותנו?'},lang)}</h1>
-            <p className="text-xl text-hbm-gray">{t({en:'Tailored solutions for every sector.',he:'פתרונות מותאמים לכל סקטור.'},lang)}</p>
+            <h1 className="text-4xl md:text-7xl font-bold font-['Sora'] mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#6160AB] to-[#F07B3C]" style={{letterSpacing:'-2px'}}>
+                {t({en:'Where Does It Meet You?',he:'איפה זה פוגש אותנו?'},lang)}
+            </h1>
+            <p className="text-xl text-hbm-gray font-['Sofia_Pro']">
+                {t({en:'Tailored solutions for every sector.',he:'פתרונות מותאמים לכל סקטור.'},lang)}
+            </p>
           </div>
       </section>
 
-      {/* Tabs */}
-      <section className="bg-hbm-cream">
-        <BubbleContainer bgColor="white">
-          <div className="max-w-6xl mx-auto w-full">
-            <div className="flex justify-center gap-2 md:gap-4 mb-16 flex-wrap">
-              {tabs.map(tb => (
-                <button key={tb.id} onClick={() => setActiveTab(tb.id)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 shadow-sm
-                    ${activeTab===tb.id
-                      ? 'bg-gradient-to-r from-[#6160AB] to-[#F07B3C] text-white shadow-lg scale-105'
-                      : 'bg-white text-hbm-gray border border-gray-200 hover:border-[#F07B3C]'
-                    }`}>
-                  <tb.icon size={18}/>{t(tb.label,lang)}
-                </button>
-              ))}
-            </div>
-            {currentTab && (
-              <div key={currentTab.id} style={{animation:'fadeIn 0.4s ease-out'}}>
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl md:text-5xl font-bold text-hbm-dark mb-4">{t(currentTab.headline,lang)}</h2>
-                  {currentTab.subtitle && (
-                    <p className="text-xl text-hbm-gray max-w-3xl mx-auto">{t(currentTab.subtitle,lang)}</p>
-                  )}
-                </div>
-                
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {currentTab.items.map((item,i) => (
-                    <div key={i} 
-                      className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-[#F07B3C]/20 group"
-                      style={{animation:`fadeIn 0.5s ease-out ${i*0.1}s both`, transformOrigin: 'center bottom'}}
-                    >
-                      <div className="w-12 h-12 rounded-2xl bg-[#F07B3C]/10 flex items-center justify-center mb-6 text-[#F07B3C] group-hover:scale-110 transition-transform">
-                        {item.icon && <item.icon size={24} />}
-                      </div>
-                      <h3 className="font-bold text-hbm-dark text-xl mb-3">{t(item.title,lang)}</h3>
-                      <p className="text-hbm-gray leading-relaxed">{t(item.text,lang)}</p>
-                    </div>
-                  ))}
-                </div>
+      {/* Sector Tabs Section */}
+      <section className="relative z-0 min-h-[700px] md:min-h-[850px] py-12 md:py-0 overflow-hidden">
+        
+        {/* LIVE REELS ATMOSPHERE - Subtle background layer */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: window.innerWidth < 768 ? 0.05 : 0.15 }}
+          className="absolute inset-0 z-5 pointer-events-none overflow-hidden"
+          style={{
+            filter: 'blur(60px) grayscale(100%)',
+            WebkitFilter: 'blur(60px) grayscale(100%)',
+          }}
+        >
+          <div 
+            className='sk-ww-instagram-reels w-full h-[150%] -translate-y-[15%]' 
+            data-embed-id='25653662'
+          ></div>
+        </motion.div>
+
+        {/* DYNAMIC IMAGE BACKGROUNDS */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <AnimatePresence mode="popLayout">
+            <motion.img
+              key={currentTab?.id}
+              src={currentTab?.image}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: window.innerWidth < 768 ? 0.25 : 0.65 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="absolute top-1/2 left-1/2 w-full h-full md:w-[98%] md:h-[98%] -translate-x-1/2 -translate-y-1/2 object-cover md:rounded-[3rem] mix-blend-normal blur-[4px] grayscale-[0.2]"
+              style={{
+                maskImage: "radial-gradient(circle, black 65%, transparent 98%)",
+                WebkitMaskImage: "radial-gradient(circle, black 65%, transparent 98%)"
+              }}
+            />
+          </AnimatePresence>
+          <div className="absolute inset-0 bg-hbm-cream/10 md:bg-hbm-cream/20 backdrop-blur-[2px] md:backdrop-blur-[2px]" />
+        </div>
+
+        <BubbleContainer bgColor="transparent" className="!bg-transparent border-none shadow-none !py-0 relative z-20">
+          <div className="max-w-6xl mx-auto w-full px-4">
+            
+            {/* Tab Navigation - STABLE & STICKY */}
+            <div className="sticky top-20 z-[100] pt-6 md:pt-12 mb-8 md:mb-16 pointer-events-auto">
+              <div className="flex flex-nowrap md:justify-center gap-3 md:gap-4 px-6 py-4 bg-white/60 backdrop-blur-2xl rounded-full border border-white/40 shadow-2xl w-full md:w-fit mx-auto ring-1 ring-black/5 overflow-x-auto no-scrollbar snap-x">
+                {tabs.map(tb => (
+                  <button key={tb.id} onClick={() => setActiveTab(tb.id)}
+                    className={`flex items-center justify-center gap-2 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-xs md:text-sm transition-all duration-300 whitespace-nowrap snap-center
+                      ${activeTab===tb.id
+                        ? 'bg-gradient-to-r from-[#8B5CF6] to-[#F07B3C] text-white shadow-xl scale-110 transform border-none z-10'
+                        : 'text-hbm-gray hover:text-[#F07B3C] hover:bg-white/40'
+                      }`}>
+                    <tb.icon size={16} className={activeTab===tb.id ? 'text-white' : ''}/>{t(tb.label,lang)}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
+
+            {/* Content Area - FIXED MIN-HEIGHT TO PREVENT JUMPING */}
+            <div className="min-h-[600px] pt-32 md:pt-0 mb-20 relative z-10">
+              <AnimatePresence mode="wait">
+                {currentTab && (
+                  <motion.div 
+                      key={currentTab.id}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                  >
+                    <div className="text-center mb-10 md:mb-16">
+                      <h2 className="text-3xl md:text-5xl font-bold font-['Sora'] text-hbm-dark mb-4 leading-tight drop-shadow-sm">
+                          {t(currentTab.headline,lang)}
+                      </h2>
+                      {currentTab.subtitle && (
+                        <p className="text-lg md:text-xl text-gray-900 font-['Sofia_Pro'] max-w-3xl mx-auto leading-relaxed font-semibold px-4">
+                          {t(currentTab.subtitle,lang)}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* The 3-Point Grid with Wobble Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch relative z-20">
+                      {currentTab.points.map((item,i) => (
+                        <WobbleCard 
+                          key={i} 
+                          containerClassName="h-full bg-white/95 backdrop-blur-md border border-white/50 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl md:!rounded-3xl !overflow-hidden relative group z-20"
+                          className="p-6 md:p-8 h-full flex flex-col justify-start relative z-20"
+                        >
+                           <div className="mb-4 md:mb-6 flex-shrink-0 relative z-10">
+                              <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-[#F07B3C]/10 flex items-center justify-center text-[#F07B3C] border border-[#F07B3C]/20 backdrop-blur-sm">
+                                  {item.icon && <item.icon size={24} strokeWidth={1.5} />}
+                              </div>
+                           </div>
+                           <h3 className="font-bold font-['Sora'] text-hbm-dark text-lg md:text-xl mb-2 md:mb-3 leading-tight relative z-10 min-h-[3rem] flex items-end pb-1">
+                              {t(item.bold,lang)}
+                           </h3>
+                           <p className="text-gray-900 font-['Sofia_Pro'] leading-relaxed text-sm md:text-base relative z-10 flex-grow font-medium">
+                              {t(item.text,lang)}
+                           </p>
+                        </WobbleCard>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
           </div>
         </BubbleContainer>
       </section>
 
-     {/* Success Stories (Testimonials Marquee) - Without Bubble */}
-     <section className="bg-hbm-cream py-24 overflow-hidden relative">
+      {/* Success Stories (Testimonials Marquee) */}
+      <section className="relative z-10 py-24 overflow-hidden">
         <div className="max-w-5xl mx-auto text-center w-full mb-12 px-6">
-          <h2 className="text-3xl font-bold text-hbm-purple">{t({en:'Real Impact.',he:'השפעה אמיתית.'},lang)}</h2>
+          <h2 className="text-3xl font-bold text-hbm-purple font-['Sora']">{t({en:'Real Impact.',he:'השפעה אמיתית.'},lang)}</h2>
         </div>
 
         {/* Marquee Track */}
         <div className="relative w-full mask-gradient-x">
            <div className="flex gap-6 w-max animate-marquee hover:[animation-play-state:paused]">
-              {/* Duplicate items for infinite effect */}
-              {[...testimonials, ...testimonials].map((tm, i) => (
+              {[...fullTestimonials, ...fullTestimonials].map((tm, i) => (
                  <div key={i} className="w-80 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between shrink-0 hover:shadow-md transition-shadow">
                     <div>
                       <div className="flex gap-1 mb-4 justify-center">{[...Array(5)].map((_,j)=><Star key={j} size={16} className="text-hbm-orange fill-hbm-orange"/>)}</div>
-                      <p className="text-hbm-dark font-medium mb-4 italic text-center leading-relaxed">"{t(tm.quote,lang).replace(/"/g, '')}"</p>
+                      <p className="text-hbm-dark font-medium mb-4 italic text-center leading-relaxed font-['Sofia_Pro']">"{t(tm.quote,lang).replace(/"/g, '')}"</p>
                     </div>
                     <div className="text-center border-t border-gray-100 pt-4 mt-2">
-                       <p className="text-sm font-bold text-hbm-dark">{tm.name}</p>
-                       <p className="text-xs text-hbm-gray uppercase tracking-wider">{t(tm.role,lang)}</p>
+                       <p className="text-sm font-bold text-hbm-dark font-['Sora']">{tm.name}</p>
+                       <p className="text-xs text-hbm-gray uppercase tracking-wider font-['Sofia_Pro']">{t(tm.role,lang)}</p>
                     </div>
                  </div>
               ))}
            </div>
         </div>
-     </section>
+      </section>
+
+      {/* Trusted Partners Section */}
+      <section id="partners-meeter" className="bg-hbm-cream pb-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <p className="text-center text-gray-400 text-xs uppercase tracking-[0.2em] mb-12 font-bold">
+            {t({ en: 'Trusted Partners', he: 'שותפים מהימנים' }, lang)}
+          </p>
+          
+          <div className="relative w-full overflow-hidden mask-gradient-x">
+            <div className="flex gap-16 md:gap-24 items-center w-max animate-marquee">
+              {[...partnerLogos, ...partnerLogos, ...partnerLogos].map((partner, i) => (
+                <div key={i} className="flex-shrink-0 h-12 md:h-16 flex items-center justify-center opacity-90 transition-opacity duration-300">
+                  <img 
+                    src={partner.src} 
+                    alt={partner.name}
+                    className="h-full w-auto object-contain"
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Bridge to Features */}
       <NextPageBridge 
@@ -172,8 +342,6 @@ export default function MeeterWho() {
         description={{ en: 'Understand the features that make genuine connection possible.', he: 'הבינו את הפיצ\'רים שמאפשרים חיבור אמיתי.' }}
         buttonText={{ en: 'Explore Features', he: 'גלו פיצ\'רים' }}
       />
-
-
     </div>
   )
 }

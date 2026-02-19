@@ -29,19 +29,25 @@ export default function Why8Minutes() {
   const { lang } = useI18n()
   // Load SociableKIT script
   useEffect(() => {
-    // Check if script is already there
-    if (document.querySelector('script[src*="sociablekit"]')) return
-
-    const script = document.createElement('script')
-    script.src = "https://widgets.sociablekit.com/instagram-reels/widget.js"
-    script.async = true
-    script.defer = true
-    document.body.appendChild(script)
+    const scriptUrl = "https://widgets.sociablekit.com/instagram-reels/widget.js"
     
-    return () => {
-       const existingScript = document.querySelector('script[src*="sociablekit"]')
-       if (existingScript) existingScript.remove()
+    // If the script is already there, we might need to re-initialize or just wait
+    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`)
+    
+    if (!existingScript) {
+      const script = document.createElement('script')
+      script.src = scriptUrl
+      script.async = true
+      script.defer = true
+      document.body.appendChild(script)
+    } else {
+      // If script exists, sometimes we need to trigger a re-run if the widget didn't load
+      // SociableKIT usually auto-runs, but in React we may need to wait
     }
+
+    // We don't remove the script on cleanup because it's a global dependency 
+    // and removing it then immediately re-adding it (due to React Strict Mode) 
+    // often breaks the widget's initialization logic.
   }, [])
 
   return (

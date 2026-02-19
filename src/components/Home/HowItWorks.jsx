@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSp
 import { useI18n, t } from '../../i18n/context'
 import { siteContent } from '../../data/content'
 import BubbleContainer from '../BubbleContainer'
+import { ChevronDown } from 'lucide-react'
 
 // 3D Tilt Card Component
 const MagicCard = ({ image }) => {
@@ -103,7 +104,7 @@ export default function HowItWorks() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            {t(howItWorks.title, lang)}
+            How It Works
           </motion.h2>
           <motion.p 
             className="text-xl text-hbm-dark/80 mb-10 font-medium"
@@ -210,23 +211,52 @@ export default function HowItWorks() {
                   }`}
                 >
                   <div className="flex items-center md:items-start gap-4 md:gap-5">
-                    <div className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-base md:text-lg transition-colors duration-300 ${
-                      isActive 
-                        ? (mode === 'video' ? 'bg-hbm-purple text-white' : 'bg-hbm-orange text-white')
-                        : 'bg-gray-200 text-gray-500'
-                    }`}>
+                    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-base md:text-lg transition-colors duration-300 relative z-10 shrink-0" style={{
+                      backgroundColor: isActive ? (mode === 'video' ? '#6160AB' : '#F07B3C') : '#e5e7eb',
+                      color: isActive ? 'white' : '#6b7280'
+                    }}>
                       {i + 1}
                     </div>
-                    <div>
-                      <h3 className={`text-lg md:text-xl font-bold mb-1 md:mb-2 transition-colors duration-300 ${
-                        isActive ? 'text-hbm-dark' : 'text-gray-600'
-                      }`}>
-                        {title}
-                      </h3>
-                      {/* Description: Hidden on Mobile, Block on Desktop */}
-                      <p className="hidden md:block text-gray-500 leading-relaxed text-sm md:text-base">
-                        {formatDesc(desc)}
-                      </p>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className={`text-lg md:text-xl font-bold transition-colors duration-300 ${
+                          isActive ? 'text-hbm-dark' : 'text-gray-600'
+                        }`}>
+                          {title}
+                        </h3>
+                        {/* Arrow for mobile visibility hint */}
+                        <motion.div
+                          animate={{ rotate: isActive ? 180 : 0 }}
+                          className="md:hidden transition-colors"
+                          style={{ color: isActive ? (mode === 'video' ? '#6160AB' : '#F07B3C') : '#9ca3af' }}
+                        >
+                          <ChevronDown size={20} strokeWidth={2.5} />
+                        </motion.div>
+                      </div>
+
+                      {/* Desktop: Always Visible | Mobile: Accordion (Active Only) */}
+                      <div className="hidden md:block mt-2">
+                        <p className="text-gray-500 leading-relaxed text-sm md:text-base">
+                          {formatDesc(desc)}
+                        </p>
+                      </div>
+
+                      <AnimatePresence initial={false}>
+                        {isActive && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            className="md:hidden overflow-hidden"
+                          >
+                            <p className="text-gray-500 leading-relaxed text-sm pt-2">
+                              {formatDesc(desc)}
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                   

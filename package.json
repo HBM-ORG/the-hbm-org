@@ -8,7 +8,8 @@
     "dev:admin": "concurrently \"vite --host 0.0.0.0 --port 4200\" \"node admin-server.js\"",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-sitemap": "node scripts/generate-sitemap.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -25,7 +26,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.4.1",
-    "three": "^0.182.0"
+    "three": "^0.182.0",
+    "three-globe": "^2.45.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

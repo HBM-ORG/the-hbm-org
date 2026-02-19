@@ -15,8 +15,15 @@ import Knowledge from './pages/Knowledge'
 import EventRegister from './pages/EventRegister'
 import AdminDashboard from './pages/AdminDashboard'
 
+import { trackPageView } from './utils/analytics'
+ 
 function SEOWrapper({ children }) {
   const location = useLocation()
+ 
+  useEffect(() => {
+    trackPageView(location.pathname)
+  }, [location.pathname])
+ 
   return <><SEO path={location.pathname} />{children}</>
 }
 
@@ -24,12 +31,13 @@ function ScrollToHash() {
   const { hash, pathname } = useLocation()
   useEffect(() => {
     if (hash) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         const el = document.getElementById(hash.replace('#', ''))
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 100)
+      return () => clearTimeout(timer)
     } else {
-      window.scrollTo(0, 0)
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     }
   }, [hash, pathname])
   return null

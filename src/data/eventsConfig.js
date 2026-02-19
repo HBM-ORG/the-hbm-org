@@ -15,22 +15,22 @@ export const eventsConfig = [
   {
     "id": "next-1",
     "title": {
-      "en": "Spring Connections",
-      "he": "קשרי אביב"
+      "en": "HBM event",
+      "he": "אירוע סוף חודש מרץ"
     },
-    "date": "2026-03-21",
+    "date": "2026-03-14T13:32",
     "description": {
       "en": "Join us for meaningful 8-minute conversations that create lasting bonds.",
       "he": "הצטרפו אלינו לשיחות משמעותיות בנות 8 דקות שיוצרות קשרים מתמשכים."
     },
-    "location": "Tel Aviv Hub",
+    "location": "Raanana",
     "locationParams": {
       "addressText": "Rothschild Blvd 10, Tel Aviv",
-      "googleMapsEmbedUrl": "https://www.google.com/maps/embed?pb=..."
+      "googleMapsEmbedUrl": "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\"></iframe><iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3376.1<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\"></iframe>386407308196!2d34.878737876406156!3d32.20049467391002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d398a1c026cf7%3A0x7f6a3c7c8abcaf5c!2sMIXER%20Campus%20Raanana!5e0!3m2!1sen!2sil!4v1771428994376!5m2!1sen!2sil\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade\"></iframe>"
     },
     "type": "Face to Face",
     "image": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop",
-    "heroVideo": "",
+    "heroVideo": "/assets/events/march-26/Meeter_Com_Sub (1).mp4",
     "registration": {
       "status": "open",
       "externalUrl": "/events/register",
@@ -66,26 +66,46 @@ export const eventsConfig = [
         "name": "Community X",
         "logo": "",
         "website": "https://example.com"
+      },
+      {
+        "name": "55",
+        "logo": ""
+      },
+      {
+        "name": "66",
+        "logo": ""
       }
     ],
     "faqs": [
       {
         "question": "Do I need to prepare anything?",
-        "answer": "Just bring yourself and an open mind!"
+        "answer": "Just bring yourself and an open mindgfgfg"
       },
       {
         "question": "What is the dress code?",
-        "answer": "Smart casual. Be comfortable."
+        "answer": "Smart casual. Be comfortable.fgf"
+      },
+      {
+        "question": "",
+        "answer": ""
       }
     ],
     "hostNote": {
-      "message": "Can't wait to see you there!",
-      "author": "Yuval & The HBM Team",
+      "message": "Can't wait to see you there!ggggfgfgfgfgfdg",
+      "author": "fgfg",
       "avatar": ""
     },
     "gallery": [],
-    "folderName": "",
-    "imageCount": 0
+    "folderName": "march-26",
+    "imageCount": 1,
+    "heroStyle": {
+      "overlayOpacity": 14
+    },
+    "visuals": {
+      "brightness": "150",
+      "blur": 0,
+      "videoScale": 1
+    }
   },
   {
     "id": 16,
@@ -161,7 +181,12 @@ export const eventsConfig = [
       "author": "Sarah from HBM",
       "avatar": ""
     },
-    "status": "draft"
+    "status": "draft",
+    "heroStyle": {
+      "overlayOpacity": 16,
+      "brightness": 73
+    },
+    "imageCount": 0
   },
   {
     "id": 14,
@@ -199,7 +224,7 @@ export const eventsConfig = [
     "participants": 52,
     "locationParams": {
       "addressText": "Jerusalem Center, King George St 22",
-      "googleMapsEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13559.8860555987!2d35.21371!3d31.77667!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzHCsDQ2JzM2LjAiTiAzNcKwMTInNDkuNCJF!5e0!3m2!1sen!2sil!4v1625647823456!5m2!1sen!2sil"
+      "googleMapsEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13559.<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%8860555987!2d35.21371!3d31.77667!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzHCsDQ2JzM2LjAiTiAzNcKwMTInNDkuNCJF!5e0!3m2!1sen!2sil!4v1625647823456!5m2!1sen!2sil"
     },
     "registration": {
       "status": "open",
@@ -254,7 +279,11 @@ export const eventsConfig = [
       "author": "Sarah from HBM",
       "avatar": ""
     },
-    "imageCount": 0
+    "imageCount": 0,
+    "folderName": "event-14-1771493558757",
+    "visuals": {
+      "videoScale": 1.8
+    }
   },
   {
     "id": 13,
@@ -356,6 +385,59 @@ export const eventsConfig = [
       "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&h=600&fit=crop"
     ],
     "participants": 48
+  },
+  {
+    "id": 17,
+    "title": {
+      "en": "New Event",
+      "he": "אירוע חדש"
+    },
+    "date": "2026-01-01",
+    "location": "TBD",
+    "description": {
+      "en": "Description here...",
+      "he": "תיאור כאן..."
+    },
+    "image": "",
+    "folderName": "event-1771494140494",
+    "imageCount": 0,
+    "registrationLink": "",
+    "gallery": [],
+    "participants": 0,
+    "tags": [],
+    "status": "draft",
+    "heroVideo": "",
+    "partners": [
+      {
+        "name": "New PartnerTest Partner",
+        "logo": "",
+        "link": ""
+      }
+    ],
+    "faqs": [],
+    "highlights": [],
+    "socialProof": {
+      "capacity": 50,
+      "attendingCount": 0
+    },
+    "hostNote": {
+      "message": "",
+      "author": "The HBM Team"
+    },
+    "locationParams": {
+      "addressText": "",
+      "googleMapsEmbedUrl": ""
+    },
+    "registration": {
+      "status": "open",
+      "externalUrl": "",
+      "whatsappLink": ""
+    },
+    "visuals": {
+      "brightness": 100,
+      "blur": 0,
+      "videoScale": 1
+    }
   },
   {
     "id": 12,

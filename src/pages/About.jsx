@@ -1,12 +1,14 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { siteContent } from '../data/content'
 import { useI18n, t } from '../i18n/context'
 import { getWhatsappUrl } from '../components/Layout'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, X, Linkedin } from 'lucide-react'
 import EyebrowBadge from '../components/EyebrowBadge'
 import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
+import GlobeDemo from '../components/ui/GlobeDemo'
 
 
 const { about, global } = siteContent
@@ -44,6 +46,7 @@ const values = [
 export default function About() {
   const { lang } = useI18n()
   const [flippedCard, setFlippedCard] = useState(null)
+  const [selectedMember, setSelectedMember] = useState(null)
   const whatsappUrl = getWhatsappUrl(lang)
 
   return (
@@ -65,21 +68,26 @@ export default function About() {
 
 
       {/* Vision & Mission */}
-      <section id="mission" className="bg-hbm-cream py-12 px-6">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
+      <section id="mission" className="bg-hbm-cream pt-16 pb-8">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 px-6">
+          <div className="p-4">
             <h3 className="text-sm font-bold text-hbm-purple uppercase tracking-widest mb-4">
               {t({ en: 'Our Vision', he: 'החזון שלנו', es: 'Nuestra Visión', fr: 'Notre Vision', de: 'Unsere Vision', ar: 'رؤيتنا' }, lang)}
             </h3>
             <p className="text-lg text-hbm-dark leading-relaxed font-semibold">{t(vision, lang)}</p>
           </div>
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
+          <div className="p-4">
             <h3 className="text-sm font-bold text-hbm-orange uppercase tracking-widest mb-4">
               {t({ en: 'Our Mission', he: 'המשימה שלנו', es: 'Nuestra Misión', fr: 'Notre Mission', de: 'Unsere Mission', ar: 'مهمتنا' }, lang)}
             </h3>
             <p className="text-lg text-hbm-dark leading-relaxed">{t(mission, lang)}</p>
           </div>
         </div>
+      </section>
+
+      {/* Interactive World Connection Section */}
+      <section className="bg-hbm-cream -mt-8 -mb-12">
+        <GlobeDemo />
       </section>
 
       {/* Values — Click to reveal */}
@@ -109,24 +117,164 @@ export default function About() {
 
       {/* Team */}
       <section id="team" className="bg-hbm-cream">
-        <BubbleContainer bgColor="#FAF9F5">
-          <div className="max-w-6xl mx-auto w-full">
+        <BubbleContainer bgColor="#FAF9F5" className="relative overflow-hidden">
+          {/* Subtle Team Background - Balanced visibility */}
+          <div 
+            className="absolute inset-0 z-0 opacity-[0.12] blur-[2px] pointer-events-none"
+            style={{
+              backgroundImage: 'url(/assets/team/Teampic.jpeg)',
+              backgroundSize: 'crop',
+              backgroundPosition: 'center 20%',
+              maskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)'
+            }}
+          />
+          
+          <div className="max-w-6xl mx-auto w-full relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-12">{t(about.team.title, lang)}</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
               {about.team.members.filter(m => m.name && m.image).map((member, i) => (
-                <div key={i} className="text-center group">
-                  <div className="w-28 h-28 mx-auto rounded-full overflow-hidden mb-3 team-photo border-3 border-hbm-purple/20">
-                    <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                <div 
+                  key={i} 
+                  className="text-center group cursor-pointer"
+                  onClick={() => setSelectedMember(member)}
+                >
+                  <div className="w-28 h-28 md:w-36 md:h-36 mx-auto rounded-full overflow-hidden mb-4 team-photo border-4 border-white shadow-lg group-hover:scale-105 transition-transform duration-300 ring-2 ring-hbm-purple/10 relative flex items-center justify-center bg-gray-100">
+                    {member.image ? (
+                      <img 
+                        src={member.image} 
+                        alt={member.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className={`${member.image ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-hbm-purple to-hbm-orange text-white text-2xl font-bold`}>
+                      {member.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    {member.linkedin && (
+                      <a 
+                        href={member.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute bottom-1 right-1 md:bottom-2 md:right-2 w-7 h-7 md:w-9 md:h-9 bg-white rounded-full flex items-center justify-center text-[#0077B5] shadow-md hover:scale-110 transition-transform z-10"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Linkedin size={16} />
+                      </a>
+                    )}
                   </div>
-                  <h4 className="font-bold text-hbm-dark text-sm">{member.name}</h4>
-                  <p className="text-hbm-purple text-xs font-semibold">{t(member.role, lang)}</p>
-                  {member.nickname && <p className="text-hbm-gray text-xs italic mt-1">"{member.nickname}"</p>}
+                  <h4 className="font-bold text-hbm-dark text-base md:text-lg">{member.name}</h4>
+                  <p className="text-hbm-purple text-xs md:text-sm font-semibold uppercase tracking-wider">{t(member.role, lang)}</p>
+                  {member.nickname && (
+                    <p className="text-hbm-gray text-xs italic mt-1 opacity-70">
+                      "{t(member.nickname, lang)}"
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         </BubbleContainer>
       </section>
+
+      {/* ── Team Bio Modal ── */}
+      <AnimatePresence>
+        {selectedMember && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedMember(null)}
+              className="absolute inset-0 bg-hbm-dark/40 backdrop-blur-md"
+            />
+            
+            {/* Modal Content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setSelectedMember(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Profile Image (Side) */}
+              <div className="w-full md:w-2/5 p-8 bg-hbm-cream flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100">
+                <div className="relative mb-4 group/img">
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white flex items-center justify-center bg-gray-100">
+                    {selectedMember.image ? (
+                      <img 
+                        src={selectedMember.image} 
+                        alt={selectedMember.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className={`${selectedMember.image ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-hbm-purple to-hbm-orange text-white text-3xl font-bold`}>
+                      {selectedMember.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                  </div>
+                  {selectedMember.linkedin && (
+                    <a 
+                      href={selectedMember.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute -bottom-2 -right-2 w-10 h-10 bg-[#0077B5] rounded-xl flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform"
+                    >
+                      <Linkedin size={20} />
+                    </a>
+                  )}
+                </div>
+                <h3 className="text-xl font-bold text-hbm-dark text-center leading-tight">
+                  {selectedMember.name}
+                </h3>
+                <p className="text-hbm-purple font-semibold text-sm uppercase tracking-wider text-center">
+                  {t(selectedMember.role, lang)}
+                </p>
+              </div>
+
+              {/* Bio Content (Main) */}
+              <div className="w-full md:w-3/5 p-8 md:p-10">
+                {selectedMember.nickname && (
+                  <p className="text-hbm-dark font-black italic text-lg mb-4">
+                    {t(selectedMember.nickname, lang)}:
+                  </p>
+                )}
+                
+                <div className="space-y-4">
+                  <p className="text-gray-600 leading-relaxed">
+                    {t(selectedMember.bio, lang)}
+                  </p>
+                  
+                  {selectedMember.funFact && (
+                    <div className="pt-4 border-t border-gray-100">
+                      <p className="text-sm">
+                        <span className="font-bold text-hbm-orange">Fun Fact: </span>
+                        <span className="text-gray-500 italic">
+                          {t(selectedMember.funFact, lang)}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Our Logo */}
       <section id="logo" className="bg-hbm-cream">
@@ -153,6 +301,10 @@ export default function About() {
           </div>
         </BubbleContainer>
       </section>
+
+
+
+
 
       {/* Next Page Bridge — To Knowledge */}
       <NextPageBridge 
