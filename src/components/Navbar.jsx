@@ -207,7 +207,7 @@ export default function Navbar() {
               <nav className="flex flex-col gap-4 w-full">
                 {navStructure.map((item, idx) => (
                   <div key={item.key} className="border-b border-gray-50 last:border-0 py-3">
-                    {item.subs ? (
+                    {item.subs && item.key === 'meeter' ? (
                       <div>
                         <button 
                           onClick={() => toggleExpand(item.key)}
