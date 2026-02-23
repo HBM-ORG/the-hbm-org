@@ -96,11 +96,11 @@ export default function Navbar() {
       <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 w-full ${
         scrolled || mobileOpen ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-white'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between relative">
           
-          {/* Left: Languages (Desktop & Mobile) */}
-          <div className="flex-1 flex items-center justify-start gap-4">
-            <div className="md:hidden">
+          {/* LEFT: Languages Switcher (Global Anchor) */}
+          <div className="flex-1 flex items-center justify-start gap-4 z-[120]">
+             <div className="md:hidden">
               <button 
                 className="p-2 -ml-2 text-hbm-dark focus:outline-none" 
                 onClick={() => setMobileOpen(!mobileOpen)}
@@ -108,28 +108,28 @@ export default function Navbar() {
                 {mobileOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
             </div>
-            <div className={`transition-opacity duration-300 ${mobileOpen ? 'lg:opacity-100 opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <div className="flex items-center">
               <LanguageSwitcher />
             </div>
           </div>
 
-          {/* Center: Logo */}
-          <div className="flex-shrink-0 flex items-center justify-center">
+          {/* CENTER: Logo (Absolute centered on mobile, flex centered on desktop) */}
+          <div className="flex-shrink-0 flex items-center justify-center md:relative absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:translate-y-0 z-[110]">
             <Link to="/" onClick={() => setMobileOpen(false)}>
-              <img src="/assets/logo.png" alt="The HBM" className="h-8 md:h-14 w-auto object-contain" />
+              <img src="/assets/logo.png" alt="The HBM" className="h-10 md:h-14 w-auto object-contain" />
             </Link>
           </div>
 
-          {/* Right: Desktop Nav + CTA / Mobile Empty Space */}
-          <div className="flex-1 flex items-center justify-end gap-2 md:gap-6">
-            {/* Desktop Nav */}
+          {/* RIGHT: Desktop Nav and CTA Button */}
+          <div className="flex-1 flex items-center justify-end gap-2 md:gap-6 z-[120]">
+            {/* Desktop Nav Items */}
             <nav className="hidden lg:flex items-center gap-1" ref={dropdownRef}>
               {navStructure.map((item) => (
                 <div key={item.key} className="relative group">
                   {item.key === 'home' || !item.subs ? (
                     <Link
                       to={item.path}
-                      className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-lg ${
+                      className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-xl ${
                         isActive(item.path)
                           ? 'text-hbm-purple bg-hbm-purple/5'
                           : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
@@ -141,7 +141,7 @@ export default function Navbar() {
                     <>
                       <button
                         onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
-                        className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-lg ${
+                        className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-xl ${
                           isActive(item.path)
                             ? 'text-hbm-purple bg-hbm-purple/5'
                             : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
@@ -157,12 +157,12 @@ export default function Navbar() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-[110] overflow-hidden"
+                            className="absolute top-full right-0 mt-1 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 min-w-[220px] overflow-hidden"
                           >
                             {item.subs.map((sub) => (
                               <Link key={sub.id} to={sub.href || `${item.path}#${sub.id}`}
                                 onClick={() => setOpenDropdown(null)}
-                                className="block px-4 py-2.5 text-sm text-hbm-dark hover:bg-hbm-purple/5 hover:text-hbm-purple transition-colors">
+                                className="block px-5 py-3 text-sm font-medium text-hbm-dark hover:bg-hbm-purple/5 hover:text-hbm-purple transition-all">
                                 {t(sub.label, lang)}
                               </Link>
                             ))}
@@ -175,10 +175,10 @@ export default function Navbar() {
               ))}
             </nav>
 
-            {/* CTA Button */}
+            {/* Main CTA Button - Force High Quality Styles */}
             <Link 
               to={global.ctaUrl} 
-              className="btn-primary text-xs md:text-sm py-2 px-4 md:py-3 md:px-7 rounded-full text-center whitespace-nowrap"
+              className="btn-primary !text-[13px] md:!text-[15px] !py-2.5 !px-5 md:!py-3 md:!px-8 !rounded-full shadow-lg hover:shadow-xl transition-all"
             >
               {t(ui.cta.your8min, lang)}
             </Link>
@@ -186,32 +186,32 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Sliding Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] bg-black/20 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[150] bg-black/40 backdrop-blur-md lg:hidden"
             onClick={() => setMobileOpen(false)}
           >
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: "spring", damping: 25, stiffness: 200, mass: 0.8 }}
-              className="bg-white w-[85%] max-w-sm h-full shadow-2xl flex flex-col pt-20 px-6 overflow-y-auto"
+              transition={{ type: "spring", damping: 28, stiffness: 220, mass: 1 }}
+              className="bg-white w-[85%] max-w-sm h-full shadow-2xl flex flex-col pt-24 px-8 overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <nav className="flex flex-col gap-2 w-full">
+              <nav className="flex flex-col gap-4 w-full">
                 {navStructure.map((item, idx) => (
-                  <div key={item.key} className="border-b border-gray-50 last:border-0 py-2">
+                  <div key={item.key} className="border-b border-gray-50 last:border-0 py-3">
                     {item.subs ? (
                       <div>
                         <button 
                           onClick={() => toggleExpand(item.key)}
-                          className={`flex items-center justify-between w-full text-2xl font-bold py-2 ${
+                          className={`flex items-center justify-between w-full text-2xl font-black py-2 ${
                             isActive(item.path) ? 'text-hbm-purple' : 'text-hbm-dark'
                           }`}
                         >
@@ -224,15 +224,15 @@ export default function Navbar() {
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: 'auto', opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              className="overflow-hidden bg-gray-50 rounded-lg"
+                              className="overflow-hidden bg-hbm-purple/5 rounded-2xl mt-2"
                             >
-                              <div className="flex flex-col py-2">
+                              <div className="flex flex-col p-2">
                                 {item.subs.map(sub => (
                                   <Link
                                     key={sub.id}
                                     to={sub.href || `${item.path}#${sub.id}`}
                                     onClick={() => setMobileOpen(false)}
-                                    className="px-4 py-3 text-lg font-medium text-gray-600 active:bg-hbm-purple/10"
+                                    className="px-4 py-3 text-lg font-bold text-gray-700 active:text-hbm-purple"
                                   >
                                     {t(sub.label, lang)}
                                   </Link>
@@ -246,7 +246,7 @@ export default function Navbar() {
                       <Link 
                         to={item.path} 
                         onClick={() => setMobileOpen(false)}
-                        className={`block text-2xl font-bold py-2 ${
+                        className={`block text-2xl font-black py-2 ${
                           isActive(item.path) ? 'text-hbm-purple' : 'text-hbm-dark'
                         }`}
                       >
@@ -256,8 +256,8 @@ export default function Navbar() {
                   </div>
                 ))}
                 
-                <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col gap-4">
-                  <Link to={global.ctaUrl} className="btn-primary block text-center py-5 text-xl rounded-2xl shadow-lg" onClick={() => setMobileOpen(false)}>
+                <div className="mt-12 pt-8 border-t border-gray-100 flex flex-col">
+                  <Link to={global.ctaUrl} className="btn-primary !text-xl !py-5 !rounded-2xl shadow-xl active:scale-95" onClick={() => setMobileOpen(false)}>
                     {t(ui.cta.your8min, lang)}
                   </Link>
                 </div>
