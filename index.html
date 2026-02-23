@@ -105,8 +105,8 @@
         fbq('track', 'PageView');
       }
     </script>
-    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=YOUR_FB_PIXEL_ID&ev=PageView&noscript=1"/></noscript>
- 
+
+
     <!-- LinkedIn Insight Tag -->
     <script type="text/javascript">
       _linkedin_partner_id = "YOUR_LINKEDIN_ID";
@@ -123,7 +123,7 @@
       b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
       s.parentNode.insertBefore(b, s);})(window.lintrk);
     </script>
-    <noscript><img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=YOUR_LINKEDIN_ID&fmt=gif" /></noscript>
+
 
     <!-- OPTION 3: Hotjar (Heatmaps + Feedback) -->
     <!-- Sign up: https://www.hotjar.com → Add Site → Copy Site ID -->
@@ -141,6 +141,10 @@
     -->
   </head>
   <body>
+    <!-- Facebook Pixel NoScript (must be in body, not head) -->
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=YOUR_FB_PIXEL_ID&ev=PageView&noscript=1"/></noscript>
+    <!-- LinkedIn Insight NoScript -->
+    <noscript><img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=YOUR_LINKEDIN_ID&fmt=gif" /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -45,6 +45,14 @@ const EMAIL_QUEUE_PATH = path.join(__dirname, 'src', 'data', 'emailQueue.json');
 const ENGAGEMENT_LOG_PATH = path.join(__dirname, 'src', 'data', 'engagement.json');
 const VIDEO_EVENT_CONFIG_PATH = path.join(__dirname, 'src', 'data', 'videoEvent.json');
 const ASSETS_DIR = path.join(__dirname, 'public', 'assets', 'events');
+const LOG_FILE = path.join(__dirname, 'src', 'data', 'server-errors.log');
+
+// Safe file-based error logger — never crashes the process
+const logError = (context, err) => {
+  const entry = `[${new Date().toISOString()}] [${context}] ${err?.message || err}\n`;
+  console.error(entry);
+  try { fs.appendFileSync(LOG_FILE, entry); } catch(_) { /* disk full — ignore */ }
+};
 
 const liquidEngine = new Liquid();
 
@@ -388,7 +396,7 @@ const triggerAutomationByEvent = (triggerType, userData) => {
         
         processQueue();
     } catch (err) {
-        console.error("Queue Error:", err);
+        logError('triggerAutomationByEvent', err);
     }
 };
 
@@ -465,7 +473,7 @@ const processQueue = async () => {
                 
                 logEngagement(trackingId, 'sent', item.data.email);
             } catch (err) {
-                console.error("Queue Processing Error:", err);
+                logError('SMTP/Queue', err);
                 item.status = 'failed';
                 item.error = err.message;
             }
