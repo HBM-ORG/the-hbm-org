@@ -81,6 +81,23 @@ export default function MeeterWhat() {
           </div>
       </section>
 
+      {/* ── BRAND STATEMENT ── */}
+      <section className="bg-hbm-cream pb-12 pt-4 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-2xl md:text-5xl font-black font-['Sora'] text-[#6160AB]/20 italic leading-tight tracking-tight"
+          >
+            {t({ 
+              en: '"Digital platform designed to connect people live at the event for 1 on 1 conversations."', 
+              he: '"פלטפורמה דיגיטלית המיועדת לחבר בין אנשים בזמן אמת באירוע לשיחות של אחד על אחד."' 
+            }, lang)}
+          </motion.p>
+        </div>
+      </section>
+
       {/* ── S1.5: HOW IT WORKS — THE MEETER - WHAT IS IT? ── */}
       <HowItWorks />
 
