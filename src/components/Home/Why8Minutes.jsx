@@ -29,40 +29,42 @@ export default function Why8Minutes() {
   const { lang } = useI18n()
   // Load SociableKIT script
   useEffect(() => {
-    const scriptUrl = "https://widgets.sociablekit.com/instagram-reels/widget.js"
-    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`)
+    const scriptUrl = "https://widgets.sociablekit.com/index.js";
+    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
     
     const initWidget = () => {
-      // SociableKIT usually auto-runs on script load, but in React SPAs 
-      // we often need to manually trigger it when navigating back to a page.
-      if (window.sk_instagram_reels && typeof window.sk_instagram_reels.init === 'function') {
-         window.sk_instagram_reels.init();
-      } else if (window.SociableKIT && typeof window.SociableKIT.init === 'function') {
-         window.SociableKIT.init();
+      // Try multiple different initialization methods used by SociableKIT
+      if (window.SociableKIT && typeof window.SociableKIT.init === 'function') {
+        window.SociableKIT.init();
       }
-    }
+      if (window.sk_instagram_reels && typeof window.sk_instagram_reels.init === 'function') {
+        window.sk_instagram_reels.init();
+      }
+    };
 
     if (!existingScript) {
-      const script = document.createElement('script')
-      script.src = scriptUrl
-      script.async = true
-      script.defer = true
-      script.onload = initWidget;
-      document.body.appendChild(script)
+      const script = document.createElement('script');
+      script.src = scriptUrl;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        setTimeout(initWidget, 500);
+      };
+      document.body.appendChild(script);
     } else {
-      // If script exists, just try to re-init
       initWidget();
     }
 
-    // Small delay to ensure the DOM element is actually rendered before init
-    const timer = setTimeout(initWidget, 1000);
-    const backupTimer = setTimeout(initWidget, 3000);
+    // Polling: Attempt to initialize every 2 seconds for the first 10 seconds
+    // This handles cases where React renders after the script has already run.
+    const intervals = [500, 1500, 3000, 6000, 10000].map(delay => 
+      setTimeout(initWidget, delay)
+    );
 
     return () => {
-      clearTimeout(timer);
-      clearTimeout(backupTimer);
-    }
-  }, [])
+      intervals.forEach(clearTimeout);
+    };
+  }, []);
 
   return (
     <section className="section-padding bg-hbm-cream flex flex-col items-center justify-center min-h-[85vh] md:min-h-screen relative overflow-hidden">
