@@ -12,8 +12,18 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+// Load .env in development (Railway injects env vars automatically in production)
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+try {
+  // Only load dotenv if available (dev environment)
+  const dotenv = await import('dotenv').catch(() => null);
+  if (dotenv) dotenv.default.config();
+} catch(e) { /* dotenv not available in production - that's fine */ }
+
 const PORT = process.env.PORT || 3001;
+
+const app = express();
 
 // Middleware — Manual CORS (most reliable with Express 5)
 app.use((req, res, next) => {
@@ -736,6 +746,7 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 HBM Production Server running on port ${PORT}`);
-  console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🚀 HBM Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📁 Serving dist from: ${path.join(__dirname, 'dist')}`);
 });
