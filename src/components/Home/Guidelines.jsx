@@ -2,14 +2,15 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { siteContent } from '../../data/content'
 import { useI18n, t } from '../../i18n/context'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, User, Eye, Zap, Gift, Smile, MessageCircle, Users, Trophy } from 'lucide-react'
+
+const icons = [User, Eye, Zap, Gift, Smile, MessageCircle, Users, Trophy]
 
 const Guidelines = () => {
   const { lang } = useI18n()
   const { home } = siteContent
   
   // Track open state for each accordion item (null = all closed)
-  // Or we can allow multiple open at once. Let's do multiple for an accordion block.
   const [openItems, setOpenItems] = useState([])
 
   const toggleItem = (index) => {
@@ -24,10 +25,8 @@ const Guidelines = () => {
     <section className="py-24 bg-hbm-cream">
       <div className="max-w-6xl mx-auto px-6">
         
-        {/* Container matches the orange/peach background from the user's favorite design */}
         <div className="bg-[#FEF5ED] rounded-[40px] md:rounded-[60px] p-8 md:p-16 shadow-sm border border-[#FBD5C1]/30">
           
-          {/* Header */}
           <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
@@ -50,6 +49,7 @@ const Guidelines = () => {
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
             {home.guidelines.items.map((item, index) => {
               const isOpen = openItems.includes(index)
+              const IconComponent = icons[index % icons.length]
               
               return (
                 <motion.div
@@ -67,11 +67,7 @@ const Guidelines = () => {
                     <div className="flex items-center gap-5">
                       {/* Icon Container with peach/orange bg */}
                       <div className="w-14 h-14 rounded-xl bg-[#FBD5C1]/40 flex items-center justify-center p-2.5 group-hover:scale-105 transition-transform">
-                        <img 
-                          src={item.icon} 
-                          alt={t(item.title, lang)} 
-                          className="w-full h-full object-contain"
-                        />
+                        <IconComponent size={28} className="text-[#F07B3C]" strokeWidth={1.5} />
                       </div>
                       
                       {/* Title */}

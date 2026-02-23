@@ -173,8 +173,8 @@ export default function MeeterWho() {
     <div className="min-h-screen bg-hbm-cream relative transition-colors duration-700">
       
       {/* Hero */}
-      <section className="relative z-10 pt-20 pb-12">
-          <div className="max-w-4xl mx-auto text-center px-6">
+      <section className="relative z-10 pt-20 pb-16 flex flex-col items-center">
+          <div className="max-w-4xl mx-auto text-center px-6 mb-8">
             <div className="mb-6">
               <EyebrowBadge text="THE MEETER - WHO IS IT FOR?" />
             </div>
@@ -185,6 +185,25 @@ export default function MeeterWho() {
                 {t({en:'Tailored solutions for every sector.',he:'פתרונות מותאמים לכל סקטור.'},lang)}
             </p>
           </div>
+          
+          {/* Scroll Down Hint */}
+          <motion.div 
+            initial={{ opacity: 0, y: 0 }}
+            animate={{ opacity: 1, y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="flex flex-col items-center gap-2 cursor-pointer mt-4"
+            onClick={() => {
+              const el = document.getElementById('sector-tabs');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+          >
+            <span className="text-xs font-bold text-hbm-purple/60 tracking-widest uppercase">
+              {t({ en: 'Scroll to explore', he: 'גללו כדי לגלות' }, lang)}
+            </span>
+            <div className="w-6 h-10 border-2 border-hbm-purple/30 rounded-full flex justify-center p-1">
+              <motion.div className="w-1.5 h-1.5 bg-hbm-purple rounded-full" />
+            </div>
+          </motion.div>
       </section>
 
       {/* Sector Tabs Section */}

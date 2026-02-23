@@ -659,23 +659,86 @@ export const siteContent = {
   // CONTACT PAGE
   // ============================================================
   contact: {
-    title: { en: 'Contact Us', he: 'צרו קשר' },
-    subtitle: { en: "We'd love to hear from you", he: 'נשמח לשמוע מכם' },
-    whatsappText: { en: 'Message us on WhatsApp', he: 'שלחו לנו הודעה בוואטסאפ' },
-    emailText: { en: 'Email us', he: 'שלחו לנו מייל' },
+    title: { 
+      en: 'Contact Us', 
+      he: 'צרו קשר',
+      es: 'Contáctanos',
+      fr: 'Contactez-nous',
+      de: 'Kontakt',
+      ar: 'اتصل بنا'
+    },
+    subtitle: { 
+      en: "We'd love to hear from you", 
+      he: 'נשמח לשמוע מכם',
+      es: 'Nos encantaría saber de ti',
+      fr: 'Nous serions ravis de vous entendre',
+      de: 'Wir freuen uns von euch zu hören',
+      ar: 'يسعدنا الاستماع إليك'
+    },
+    whatsappText: { 
+      en: 'Message us on WhatsApp', 
+      he: 'שלחו לנו הודעה בוואטסאפ',
+      es: 'Escríbenos por WhatsApp',
+      fr: 'Écrivez-nous sur WhatsApp',
+      de: 'Schreib uns auf WhatsApp',
+      ar: 'راسلنا على واتساب'
+    },
+    emailText: { 
+      en: 'Email us', 
+      he: 'שלחו לנו מייל',
+      es: 'Envíanos un correo',
+      fr: 'Envoyez-nous un e-mail',
+      de: 'Schreib uns eine E-Mail',
+      ar: 'راسلنا بالبريد الإلكتروني'
+    },
     formLabels: {
-      name: { en: 'Name', he: 'שם' },
-      email: { en: 'Email', he: 'אימייל' },
-      message: { en: 'Message', he: 'הודעה' },
-      send: { en: 'Send Message', he: 'שלחו הודעה' },
-      type: { en: "What describes you best?", he: 'מה מתאר אתכם הכי טוב?' },
+      name: { 
+        en: 'Name', 
+        he: 'שם',
+        es: 'Nombre',
+        fr: 'Nom',
+        de: 'Name',
+        ar: 'الاسم'
+      },
+      email: { 
+        en: 'Email', 
+        he: 'אימייל',
+        es: 'Correo electrónico',
+        fr: 'E-mail',
+        de: 'E-Mail',
+        ar: 'البريد الإلكتروني'
+      },
+      message: { 
+        en: 'Message', 
+        he: 'הודעה',
+        es: 'Mensaje',
+        fr: 'Message',
+        de: 'Nachricht',
+        ar: 'الرسالة'
+      },
+      send: { 
+        en: 'Send Message', 
+        he: 'שלחו הודעה',
+        es: 'Enviar mensaje',
+        fr: 'Envoyer le message',
+        de: 'Nachricht senden',
+        ar: 'إرسال الرسالة'
+      },
+      type: { 
+        en: "What describes you best?", 
+        he: 'מה מתאר אתכם הכי טוב?',
+        es: '¿Qué te describe mejor?',
+        fr: 'Qu’est-ce qui vous décrit le mieux ?',
+        de: 'Was beschreibt dich am besten?',
+        ar: 'ما الذي يصفك بشكل أفضل؟'
+      },
       typeOptions: [
-        { en: 'Hotel', he: 'מלון' },
-        { en: 'Company', he: 'חברה' },
-        { en: 'Non-profit', he: 'עמותה' },
-        { en: 'University', he: 'אוניברסיטה' },
-        { en: 'Community', he: 'קהילה' },
-        { en: 'Other', he: 'אחר' },
+        { en: 'Hotel', he: 'מלון', es: 'Hotel', fr: 'Hôtel', de: 'Hotel', ar: 'فندق' },
+        { en: 'Company', he: 'חברה', es: 'Empresa', fr: 'Entreprise', de: 'Unternehmen', ar: 'شركة' },
+        { en: 'Non-profit', he: 'עמותה', es: 'Sin fines de lucro', fr: 'Association', de: 'Gemeinnützig', ar: 'منظمة غير ربحية' },
+        { en: 'University', he: 'אוניברסיטה', es: 'Universidad', fr: 'Université', de: 'Universität', ar: 'جامعة' },
+        { en: 'Community', he: 'קהילה', es: 'Comunidad', fr: 'Communauté', de: 'Gemeinschaft', ar: 'مجتمع' },
+        { en: 'Other', he: 'אחר', es: 'Otro', fr: 'Autre', de: 'Sonstiges', ar: 'آخرى' },
       ],
     },
   },
