@@ -722,14 +722,18 @@ app.get('/api/events', (req, res) => {
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Route all other requests to the React app (Client Side Routing)
-// app.get('/:any*', (req, res) => {
-//     const indexPath = path.join(__dirname, 'dist', 'index.html');
-//     if (fs.existsSync(indexPath)) {
-//         res.sendFile(indexPath);
-//     } else {
-//         res.status(404).send('Site build not found. Run npm run build.');
-//     }
-// });
+app.get('*', (req, res) => {
+    // Only serve index.html for non-API routes
+    if (req.path.startsWith('/api/') || req.path.startsWith('/assets/')) {
+        return res.status(404).json({ error: 'Not Found' });
+    }
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send('Site build not found. Run npm run build.');
+    }
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 HBM Production Server running on http://localhost:${PORT}`);
