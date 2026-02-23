@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useI18n, t } from '../i18n/context'
 import { getWhatsappUrl } from '../components/Layout'
