@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Middleware — Manual CORS (most reliable with Express 5)
 app.use((req, res, next) => {
@@ -735,6 +735,7 @@ app.get('*', (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 HBM Production Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 HBM Production Server running on port ${PORT}`);
+  console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
