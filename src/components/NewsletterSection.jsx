@@ -39,10 +39,10 @@ export default function NewsletterSection() {
     <section className="bg-hbm-cream py-24 px-6">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="text-3xl md:text-5xl font-bold mb-6 font-sofia text-hbm-dark tracking-tight">
-          {t({en:'Be a Part', he:'היו חלק'}, lang)}
+          {t({en:'Be a Part', he:'היו חלק', es:'Sé parte', fr:'Faites partie', de:'Sei dabei', ar:'كن جزءًا منا'}, lang)}
         </h2>
         <p className="text-hbm-gray text-lg mb-10 font-sofia max-w-2xl mx-auto">
-          {t({en:'Get updates on events, connection tips, and HBM news.', he:'קבלו עדכונים על אירועים, וטיפים לחיבור.'}, lang)}
+          {t({en:'Get updates on events, connection tips, and HBM news.', he:'קבלו עדכונים על אירועים, טיפים לחיבור וחדשות HBM.', es:'Actualización sobre eventos, consejos de conexión y noticias de HBM.', fr:'Mises à jour sur les événements, astuces de connexion et actualités HBM.', de:'Updates zu Events, Verbindungstipps und HBM-Neuigkeiten.', ar:'تحديثات حول الفعاليات ونصائح التواصل وأخبار HBM.'}, lang)}
         </p>
 
         <form className="flex flex-col md:flex-row gap-4 max-w-lg mx-auto" onSubmit={handleSubmit}>
@@ -51,10 +51,11 @@ export default function NewsletterSection() {
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={t({en:'Your Email', he:'האימייל שלך'}, lang)} 
+              placeholder={t({en:'Your Email', he:'האימייל שלך', es:'Tu email', fr:'Votre e-mail', de:'Deine E-Mail', ar:'بريدك الإلكتروني'}, lang)} 
               className="w-full px-6 py-4 rounded-full bg-gray-50 border border-gray-200 text-hbm-dark placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-hbm-orange/20 focus:border-hbm-orange font-sofia text-base transition-all"
               required
               disabled={status === 'loading'}
+              dir={lang === 'he' || lang === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
           <button 
@@ -62,9 +63,11 @@ export default function NewsletterSection() {
              disabled={status === 'loading'}
              className={`px-10 py-4 rounded-full font-bold shadow-lg text-base transition-transform whitespace-nowrap ${status === 'success' ? 'bg-green-500 text-white' : 'btn-orange text-white hover:scale-105'}`}
           >
-            {status === 'loading' ? t({en: 'Sending...', he: 'שולח...'}, lang) : 
-             status === 'success' ? t({en: 'Welcome!', he: 'ברוכים הבאים!'}, lang) : 
-             t({en:"I'm in", he:'אני פנימה'}, lang)}
+            {status === 'loading'
+              ? t({en:'Sending...', he:'שולח...', es:'Enviando...', fr:'Envoi...', de:'Wird gesendet...', ar:'جارٍ الإرسال...'}, lang)
+              : status === 'success'
+              ? t({en:'Welcome!', he:'ברוכים הבאים!', es:'¡Bienvenido!', fr:'Bienvenue !', de:'Willkommen!', ar:'أهلاً وسهلاً!'}, lang)
+              : t({en:"I'm in", he:'אני פנימה', es:'Me apunto', fr:"Je m'inscris", de:'Ich bin dabei', ar:'أنا داخل'}, lang)}
           </button>
         </form>
       </div>

@@ -7,17 +7,17 @@ const ComparisonSection = () => {
   const { lang } = useI18n()
 
   const oldWay = [
-    { text: t({ en: 'Standing alone checking your phone', he: 'עומדים לבד ובודקים את הטלפון' }, lang) },
-    { text: t({ en: 'Forced small talk with strangers', he: 'שיחת חולין מאולצת עם זרים' }, lang) },
-    { text: t({ en: "Exchanging cards you'll never use", he: 'החלפת כרטיסי ביקור שלעולם לא תשתמשו בהם' }, lang) },
-    { text: t({ en: 'Leaving without real connections', he: 'עוזבים בלי חיבורים אמיתיים' }, lang) },
+    { text: t({ en: 'Standing alone checking your phone', he: 'עומדים לבד ובודקים את הטלפון', es: 'De pie solo mirándote el móvil', fr: 'Seul à fixer son téléphone', de: 'Allein da stehen und aufs Handy starren', ar: 'الوقوف وحيدًا وتصفح هاتفك' }, lang) },
+    { text: t({ en: 'Forced small talk with strangers', he: 'שיחת חולין מאולצת עם זרים', es: 'Charla forzada con desconocidos', fr: 'Conversation forcée avec des inconnus', de: 'Erzwungener Smalltalk mit Fremden', ar: 'حديث متكلف مع غرباء' }, lang) },
+    { text: t({ en: "Exchanging cards you'll never use", he: 'החלפת כרטיסי ביקור שלעולם לא תשתמשו בהם', es: 'Intercambio de tarjetas que nunca usarás', fr: "Échange de cartes qu'on n'utilisera jamais", de: 'Karten austauschen, die man nie nutzt', ar: 'تبادل بطاقات لن تستخدمها أبدًا' }, lang) },
+    { text: t({ en: 'Leaving without real connections', he: 'עוזבים בלי חיבורים אמיתיים', es: 'Irse sin conexiones reales', fr: 'Partir sans connexion réelle', de: 'Gehen ohne echte Kontakte', ar: 'المغادرة دون توصل حقيقي' }, lang) },
   ]
 
   const hbmWay = [
-    { text: t({ en: 'Instant smart matching', he: 'התאמה חכמה מיידית' }, lang) },
-    { text: t({ en: 'Curated ice-breakers', he: 'שוברי קרח מותאמים' }, lang) },
-    { text: t({ en: 'Structured 8-minute deep conversations', he: 'שיחות מעמיקות של 8 דקות' }, lang) },
-    { text: t({ en: 'Real relationships that last', he: 'מערכות יחסים אמיתיות שנשארות' }, lang) },
+    { text: t({ en: 'Instant smart matching', he: 'התאמה חכמה מיידית', es: 'Coincidencia inteligente instantánea', fr: 'Correspondance intelligente instantanée', de: 'Sofortiges intelligentes Matching', ar: 'مطابقة ذكية فورية' }, lang) },
+    { text: t({ en: 'Curated ice-breakers', he: 'שוברי קרח מותאמים', es: 'Rompehielos seleccionados', fr: 'Briseurs de glace soigneusement choisis', de: 'Kuratierte Eisbrecher', ar: 'كواسر جليد مختارة' }, lang) },
+    { text: t({ en: 'Structured 8-minute deep conversations', he: 'שיחות מעמיקות של 8 דקות', es: 'Conversaciones profundas de 8 minutos', fr: 'Conversations profondes de 8 minutes', de: 'Strukturierte 8-Minuten-Tiefengespräche', ar: 'محادثات عميقة مدتها 8 دقائق' }, lang) },
+    { text: t({ en: 'Real relationships that last', he: 'מערכות יחסים אמיתיות שנשארות', es: 'Relaciones reales que perduran', fr: 'Relations authentiques qui durent', de: 'Echte Beziehungen, die halten', ar: 'علاقات حقيقية تدوم' }, lang) },
   ]
 
   return (
@@ -33,10 +33,10 @@ const ComparisonSection = () => {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent mb-4">
-              {t({ en: 'Before and After', he: 'לפני ואחרי ' }, lang)}
+              {t({ en: 'Before and After', he: 'לפני ואחרי', es: 'Antes y después', fr: 'Avant et après', de: 'Vorher und Nachher', ar: 'قبل وبعد' }, lang)}
             </h2>
             <p className="text-xl text-gray-600">
-               {t({ en: 'Stop settling for awkward. Start connecting for real.', he: 'תפסיקו להסתפק במביך. תתחילו להתחבר באמת.' }, lang)}
+               {t({ en: 'Stop settling for awkward. Start connecting for real.', he: 'תפסיקו להסתפק במביך. תתחילו להתחבר באמת.', es: 'Deja de conformarte con lo incómodo. Conecta de verdad.', fr: "Arrêtez l'awkward. Connectez-vous vraiment.", de: 'Schluss mit Peinlichkeit. Fang an, wirklich zu verbinden.', ar: 'توقف عن القبول بالإحراج. ابدأ بالتواصل الحقيقي.' }, lang)}
             </p>
           </motion.div>
 
@@ -59,12 +59,12 @@ const ComparisonSection = () => {
                   whileHover={{ scale: 1.05 }}
                 >
                   <X className="w-4 h-4" />
-                  {t({ en: 'OLD WAY', he: 'הדרך הישנה' }, lang)}
+                  {t({ en: 'OLD WAY', he: 'הדרך הישנה', es: 'EL MÉTODO ANTIGUO', fr: "L'ANCIENNE MÉTHODE", de: 'ALTER WEG', ar: 'الطريقة القديمة' }, lang)}
                 </motion.div>
 
                 {/* Title */}
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                  {t({ en: 'Awkward Networking', he: 'נטוורקינג מביך' }, lang)}
+                  {t({ en: 'Awkward Networking', he: 'נטוורקינג מביך', es: 'Networking incómodo', fr: 'Networking gênant', de: 'Peinliches Networking', ar: 'تواصل محرج' }, lang)}
                 </h3>
 
                 {/* List */}
@@ -167,7 +167,7 @@ const ComparisonSection = () => {
                     {/* Content */}
                     <Check className="w-5 h-5 relative z-10" strokeWidth={3} />
                     <span className="relative z-10 tracking-wide">
-                      {t({ en: 'HBM WAY', he: 'דרך HBM' }, lang)}
+                      {t({ en: 'HBM WAY', he: 'דרך HBM', es: 'EL MÉTODO HBM', fr: 'LA MÉTHODE HBM', de: 'HBM WEG', ar: 'طريقة HBM' }, lang)}
                     </span>
                   </motion.div>
 
@@ -193,7 +193,7 @@ const ComparisonSection = () => {
 
                 {/* Title */}
                 <h3 className="text-2xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent mb-6">
-                  {t({ en: 'Guided Connection', he: 'חיבור מודרך' }, lang)}
+                  {t({ en: 'Guided Connection', he: 'חיבור מודרך', es: 'Conexión guiada', fr: 'Connexion guidée', de: 'Geführte Verbindung', ar: 'توصل موجَّه' }, lang)}
                 </h3>
 
                 {/* List */}
