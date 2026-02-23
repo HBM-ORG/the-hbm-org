@@ -23,62 +23,54 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
 
     // Generic Upload Handler
     const handleFileUpload = async (e, fieldPath, subfolder = null) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
 
         // Safety Check for Folder Name
         const folderName = event.folderName || `event-${event.id}-${Date.now()}`;
-        if (!event.folderName) {
-            console.warn("Missing folderName, assuming auto-generated one for upload:", folderName);
+        
+        const newPaths = [];
+        
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('folderName', folderName);
+            if (subfolder) formData.append('subfolder', subfolder);
+            formData.append('asset', file);
+
+            try {
+                const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
+                const res = await fetch(`${base}/api/upload-asset`, { method: 'POST', body: formData });
+                if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const finalPath = data.path ? `/assets/events/${folderName}/${data.path}` : `/assets/events/${folderName}/${data.filename}`;
+                    newPaths.push(finalPath);
+                    
+                    if (fieldPath === 'heroMedia') {
+                        // Dynamically determine if it's a video or image based on extension
+                        const isVideo = /\.(mp4|mov|webm)$/i.test(finalPath);
+                        if (isVideo) {
+                            onUpdate('heroVideo', finalPath);
+                            onUpdate('heroImage', ''); // Clear image
+                            onUpdate('image', ''); 
+                        } else {
+                            onUpdate('heroImage', finalPath);
+                            onUpdate('image', finalPath); // Set image for thumbnail
+                            onUpdate('heroVideo', ''); // Clear video
+                        }
+                    } else if (fieldPath !== 'gallery') {
+                        onUpdate(fieldPath, finalPath);
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
         }
 
-        const formData = new FormData();
-        // IMPORTANT: Append text fields BEFORE file so Multer can read them in storage engine
-        formData.append('folderName', folderName);
-        if (subfolder) formData.append('subfolder', subfolder);
-        formData.append('asset', file);
 
-        try {
-            // FORCE PORT 3001
-            const res = await fetch('http://localhost:3001/api/upload-asset', { method: 'POST', body: formData });
-            
-            if (!res.ok) {
-                throw new Error(`Server responded with ${res.status}`);
-            }
-            
-            const data = await res.json();
-            
-            if (data.success) {
-               // Base path construction for web
-               let finalPath;
-               if (data.path) {
-                   // Server provided subfolder/filename
-                   finalPath = `/assets/events/${folderName}/${data.path}`;
-               } else {
-                   // Root of event folder
-                   finalPath = `/assets/events/${folderName}/${data.filename}`;
-               }
-
-               if (fieldPath === 'gallery') {
-                   const newGallery = [...(event.gallery || []), finalPath]; // STORE THE FULL PATH
-                   onUpdate('gallery', newGallery);
-               } else if (fieldPath.startsWith('partners')) {
-                   const [_, indexStr, key] = fieldPath.split('.');
-                   const index = parseInt(indexStr);
-                   const newPartners = [...(event.partners || [])];
-                   
-                   if (!newPartners[index]) newPartners[index] = {}; 
-                   newPartners[index] = { ...newPartners[index], [key]: finalPath };
-                   onUpdate('partners', newPartners);
-               } else {
-                   onUpdate(fieldPath, finalPath);
-               }
-            } else {
-                alert('Upload failed: ' + data.error);
-            }
-        } catch (err) {
-            console.error(err);
-            alert(`Upload error: ${err.message}`);
+        if (fieldPath === 'gallery' && newPaths.length > 0) {
+            onUpdate('gallery', [...(event.gallery || []), ...newPaths]);
         }
     };
 
@@ -111,13 +103,9 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
                     
                     {/* Overlay for Hero Upload (if not handled inside component) */}
                     <div className="absolute top-8 right-8 z-40 group flex flex-col gap-2 items-end">
-                         <label className="cursor-pointer bg-black/40 hover:bg-black/80 text-white px-4 py-2 rounded-lg backdrop-blur-md flex items-center gap-2 text-xs font-bold transition-all border border-white/20 hover:border-white/50 shadow-lg">
-                             <Video className="w-4 h-4" /> Change Video
-                             <input type="file" className="hidden" accept="video/*" onChange={(e) => handleFileUpload(e, 'heroVideo')} />
-                         </label>
-                         <label className="cursor-pointer bg-black/40 hover:bg-black/80 text-white px-4 py-2 rounded-lg backdrop-blur-md flex items-center gap-2 text-xs font-bold transition-all border border-white/20 hover:border-white/50 shadow-lg">
-                             <ImageIcon className="w-4 h-4" /> Change Image
-                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'heroImage')} />
+                         <label className="cursor-pointer bg-white/90 hover:bg-white text-gray-900 px-6 py-3 rounded-2xl backdrop-blur-xl flex items-center gap-2 text-xs font-black uppercase tracking-widest transition-all border border-white shadow-2xl hover:scale-105 active:scale-95 group">
+                             <ImageIcon className="w-4 h-4 text-[#F07B3C] group-hover:rotate-12 transition-transform" /> Change Media (Image/Video)
+                             <input type="file" className="hidden" accept="image/*,video/*" onChange={(e) => handleFileUpload(e, 'heroMedia')} />
                          </label>
                     </div>
                 </div>
@@ -383,8 +371,8 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
 
                             <label className="w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 transition-all cursor-pointer mb-6 group">
                                 <Upload className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform" />
-                                <span className="text-xs font-bold uppercase tracking-widest">Upload Photos</span>
-                                <input type="file" multiple className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'gallery', 'gallery')} />
+                                <span className="text-xs font-bold uppercase tracking-widest">Upload Media (Photos/Videos)</span>
+                                <input type="file" multiple className="hidden" accept="image/*,video/*" onChange={(e) => handleFileUpload(e, 'gallery', 'gallery')} />
                             </label>
 
                             {/* REORDERABLE GALLERY GRID */}
@@ -402,11 +390,17 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
                                         className="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-move shadow-sm"
                                         whileDrag={{ scale: 1.1, zIndex: 10, boxShadow: "0px 10px 20px rgba(0,0,0,0.2)" }}
                                     >
-                                        <img 
-                                            src={img.startsWith('http') || img.startsWith('/assets') ? img : `/assets/events/${event.folderName || 'general'}/${img}`} 
-                                            className="w-full h-full object-cover pointer-events-none" 
-                                            alt="" 
-                                        />
+                                        <div className="w-full h-full bg-black flex items-center justify-center">
+                                            {/\.(mp4|mov|webm)$/i.test(img) ? (
+                                                <Video className="w-8 h-8 text-white opacity-40" />
+                                            ) : (
+                                                <img 
+                                                    src={img.startsWith('http') || img.startsWith('/assets') ? img : `/assets/events/${event.folderName || 'general'}/${img}`} 
+                                                    className="w-full h-full object-cover pointer-events-none" 
+                                                    alt="" 
+                                                />
+                                            )}
+                                        </div>
                                         <button 
                                             onClick={(e) => {
                                                 e.stopPropagation(); // Prevent drag start

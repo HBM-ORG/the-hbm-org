@@ -30,7 +30,7 @@ export const eventsConfig = [
     },
     "type": "Face to Face",
     "image": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop",
-    "heroVideo": "/assets/events/march-26/Meeter_Com_Sub (1).mp4",
+    "heroVideo": "/assets/events/march-26/1771755577856_Meeter_Com_Sub__1_.mp4",
     "registration": {
       "status": "open",
       "externalUrl": "/events/register",
@@ -84,15 +84,11 @@ export const eventsConfig = [
       {
         "question": "What is the dress code?",
         "answer": "Smart casual. Be comfortable.fgf"
-      },
-      {
-        "question": "",
-        "answer": ""
       }
     ],
     "hostNote": {
       "message": "Can't wait to see you there!ggggfgfgfgfgfdg",
-      "author": "fgfg",
+      "author": "",
       "avatar": ""
     },
     "gallery": [],
@@ -102,9 +98,10 @@ export const eventsConfig = [
       "overlayOpacity": 14
     },
     "visuals": {
-      "brightness": "150",
-      "blur": 0,
-      "videoScale": 1
+      "brightness": 79,
+      "blur": 7,
+      "videoScale": 1,
+      "overlayOpacity": 0
     }
   },
   {

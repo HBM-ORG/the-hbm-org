@@ -5,10 +5,10 @@ export const siteContent = {
   global: {
     siteName: 'The HBM',
     tagline: { en: 'Bringing People Together', he: 'מחברים אנשים' },
-    logo: `${WP}/2026/02/לוגו-HBM-עדכני.png`,
+    logo: '/assets/how-it-works/theHBM LOGO@3x.png',
     logoTagline: `${WP}/2025/06/Logo-and-Tagline.png`,
     favicon: `${WP}/2025/05/cropped-favicon.png`,
-    ctaUrl: 'mailto:office@thehbm.org',
+    ctaUrl: '/events#register-video',
     whatsappUrl: 'https://wa.me/972587073136?text=%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A7%D7%91%D7%9C%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%D7%A0%D7%95%D7%A1%D7%A4%D7%99%D7%9D%20%D7%A2%D7%9C%20%D7%94%D7%90%D7%A8%D7%92%D7%95%D7%9F',
     socialLinks: {
       instagram: 'https://www.instagram.com/the__hbm/',
@@ -88,33 +88,34 @@ export const siteContent = {
 
     conversationCards: {
       titleLines: {
-        en: ['One on One Conversation', '8 Minutes'],
-        he: ['שיחה אחד על אחד', '8 דקות'],
+        en: ['The Oasis', 'A Human Space in a Noisy World'],
+        he: ['ה-Oasis', 'מרחב אנושי בעולם רועש'],
       },
-      ctaText: { en: 'Join Us', he: 'הצטרפו אלינו' },
+      ctaText: { en: 'See for yourself', he: 'תראו בעצמכם' },
       cards: [
         {
           icon: '💬',
-          title: { en: 'Everyone talks about it, but we actually do it.', he: 'כולם מדברים על זה, אבל אנחנו עושים את זה.' },
-          text: { en: "It's more than a conversation, It's an opportunity.", he: 'זה יותר משיחה, זו הזדמנות.' },
+          title: { en: 'So many good people out there who just want to live and let live.', he: 'יש כל כך הרבה אנשים טובים שרק רוצים לחיות ולתת לאחרים לחיות.' },
+          text: { en: '', he: '' },
           bgColor: '#fbd5c1',
           iconBg: '#F07B3C',
         },
         {
-          icon: '🎉',
-          title: { en: 'Have fun while getting to know new people!', he: 'תהנו בזמן שאתם מכירים אנשים חדשים!' },
-          text: { en: "Because connection doesn't have to be complicated.", he: 'כי חיבור לא חייב להיות מסובך.' },
+          icon: '🌿',
+          title: { en: "If you're tired of the constant pressure of the news, the noise of social media, and the weight of difficult conversations — Meeter is your sanctuary.", he: 'אם אתם עייפים מהלחץ המתמיד של החדשות, הרעש של הרשתות החברתיות ומשקל השיחות הקשות — Meeter הוא המקלט שלכם.' },
+          text: { en: '', he: '' },
           bgColor: '#bbc0ff',
           iconBg: '#6160AB',
         },
         {
           icon: '✨',
-          title: { en: 'Just be yourself.', he: 'פשוט תהיו עצמכם.' },
-          text: { en: 'Everyone is awesome and welcome! Bring whatever version of you shows up today.', he: 'כולם מדהימים ומוזמנים! תביאו את הגרסה שלכם מהיום.' },
+          title: { en: "We're here for the light, genuine, and heart-opening connections that give you the energy to face whatever the day brings. No agendas, no stress. Just 8 minutes of pure human soul.", he: 'אנחנו כאן בשביל החיבורים הקלים, האמיתיים ופותחי הלב שנותנים לכם אנרגיה להתמודד עם כל מה שהיום מביא. ללא אג\'נדות, ללא לחץ. רק 8 דקות של נשמה אנושית טהורה.' },
+          text: { en: '', he: '' },
           bgColor: '#d8eecf',
           iconBg: '#73C154',
         },
       ],
+
     },
 
     banner: {
@@ -138,7 +139,7 @@ export const siteContent = {
 
     howItWorks: {
       title: { en: 'How It Works', he: 'איך זה עובד' },
-      subtitle: { en: 'New Ways to Connect.', he: 'דרכים חדשות ליצור חיבור.' },
+      subtitle: { en: 'It’s a New Way to Connect.', he: 'דרכים חדשות ליצור חיבור.' },
       videoSteps: [
         {
           title: { en: 'Scan & Set Your Vibe', he: 'בחרו את האווירה' },
@@ -229,7 +230,18 @@ export const siteContent = {
           { en: 'What\'s the best advice you\'ve ever received?', he: 'מה העצה הכי טובה שקיבלת?' },
           { en: 'What\'s something you\'re proud of but rarely talk about?', he: 'על מה אתה גאה אבל לא מדבר עליו?' },
           { en: 'If you could time travel, where would you go?', he: 'אם היית יכול לנסוע בזמן, לאן היית הולך?' },
-          { en: 'What\'s a small thing that makes your day better?', he: 'מה דבר קטן שעושה את היום שלך טוב יותר?' }
+          { en: 'What\'s a small thing that makes your day better?', he: 'מה דבר קטן שעושה את היום שלך טוב יותר?' },
+          { en: 'What are you most looking forward to this year?', he: 'למה אתה מחכה הכי הרבה השנה?' }
+        ],
+        tips: [
+          { en: 'Take your time. Listen actively. Let the conversation flow naturally.', he: 'קחו את הזמן שלכם. הקשיבו באופן פעיל. תנו לשיחה לזרום באופן טבעי.' },
+          { en: 'Be genuinely curious about the other person.', he: 'היו סקרנים באמת כלפי האדם השני.' },
+          { en: 'Remember, it’s not an interview. It’s a connection.', he: 'זכרו, זה לא ראיון. זה חיבור אמיתי.' },
+          { en: 'Maintain eye contact and smile. It goes a long way.', he: 'שמרו על קשר עין וחייכו. זה עושה פלאים.' },
+          { en: 'Don’t be afraid of brief pauses. Silence can be comfortable.', he: 'אל תפחדו משניות של שקט. שתיקה יכולה להיות נעימה.' },
+          { en: 'Share a brief personal story to build rapport.', he: 'שתפו סיפור אישי קצר כדי לבנות קרבה.' },
+          { en: 'If you get stuck, simply ask them to elaborate on their last point.', he: 'אם נתקעתם, פשוט בקשו מהם להרחיב על הנקודה הקודמת.' },
+          { en: 'End the conversation on a positive, encouraging note.', he: 'סיימו את השיחה בנימה חיובית ומעודדת.' }
         ]
       },
       
@@ -256,6 +268,19 @@ export const siteContent = {
           { en: 'Interest-based pairing', he: 'התאמה מבוססת תחומי עניין' },
           { en: 'Conversation style matching', he: 'התאמת סגנון שיחה' },
           { en: 'Balanced energy levels', he: 'רמות אנרגיה מאוזנות' }
+        ]
+      },
+
+      emotionMatrix: {
+        title: { en: 'Before & After: The Emotion Matrix', he: 'לפני ואחרי: מטריצת הרגשות' },
+        description: {
+          en: 'Track your emotional shift. Select how you feel before and after your 8-minute session. We use a 36-emotion matrix to visualize the power of human connection, plus easy contact exchange when you click.',
+          he: 'עקבו אחרי שינוי מצב הרוח שלכם. בחרו איך אתם מרגישים לפני ואחרי ה-8 דקות שלכם. אנחנו משתמשים במטריצה של 36 רגשות כדי להמחיש את העוצמה של חיבור אנושי, בנוסף להחלפת פרטי קשר בקליק.'
+        },
+        bullets: [
+          { en: '36 precise emotions mapped by energy and positivity', he: '36 רגשות מדויקים ממופים לפי אנרגיה וחיוביות' },
+          { en: 'Visual proof of how 8 minutes shifts your mindset', he: 'הוכחה חזותית לאיך 8 דקות משנות את מצב הרוח' },
+          { en: 'Seamless contact exchange directly from the platform', he: 'החלפת פרטי קשר חלקה ישירות מהפלטפורמה' }
         ]
       },
 

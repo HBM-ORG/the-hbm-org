@@ -63,22 +63,7 @@ export const philosophyData = [
     ],
     hbmPerspective: "Perfect for building the daily habit of reflection, a core practice for HBM members.",
   },
-  {
-    id: 'phil-5',
-    type: 'BOOK',
-    title: 'Beyond Good and Evil',
-    author: 'Friedrich Nietzsche',
-    category: 'Philosophy',
-    tags: ['Existentialism', 'Morality', 'Truth'],
-    description: 'Nietzsche accuses past philosophers of lacking critical sense and blindly accepting dogmatic premises in their consideration of morality.',
-    essence: "A challenging critique of traditional morality, urging the creation of one's own values.",
-    takeaways: [
-      "He who fights with monsters should look to it that he himself does not become a monster.",
-      "To live is to suffer, to survive is to find some meaning in the suffering.",
-      "The individual has always had to struggle to keep from being overwhelmed by the tribe."
-    ],
-    hbmPerspective: "Encourages deep questioning of societal norms, vital for authentic connection.",
-  },
+
   {
     id: 'phil-6',
     type: 'BOOK',

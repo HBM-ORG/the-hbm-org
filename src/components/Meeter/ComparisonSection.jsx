@@ -33,7 +33,7 @@ const ComparisonSection = () => {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent mb-4">
-              {t({ en: 'The Difference', he: 'ההבדל' }, lang)}
+              {t({ en: 'Before and After', he: 'לפני ואחרי ' }, lang)}
             </h2>
             <p className="text-xl text-gray-600">
                {t({ en: 'Stop settling for awkward. Start connecting for real.', he: 'תפסיקו להסתפק במביך. תתחילו להתחבר באמת.' }, lang)}

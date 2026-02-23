@@ -37,17 +37,19 @@ const NextEventHero = ({ event, isEditable = false, onUpdate = () => {}, onUploa
       setSubmitStatus('submitting');
       
       try {
-          const res = await fetch('http://localhost:3001/api/register', {
+          const bodyData = { 
+            ...formState, 
+            eventId: event.id || 'physical', 
+            eventName: event.title?.en || event.title,
+            language: lang 
+          };
+          const response = await fetch(`${import.meta.env.DEV ? 'http://localhost:3001' : ''}/api/register`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                  ...formState,
-                  eventId: event.id,
-                  eventName: event.title.en || event.title
-              })
+              body: JSON.stringify(bodyData)
           });
           
-          if (res.ok) {
+          if (response.ok) {
               hbmAnalytics.recordRegComplete(event.id, event.title.en || event.title, formState.source);
               setSubmitStatus('success');
           } else {
@@ -174,7 +176,9 @@ const NextEventHero = ({ event, isEditable = false, onUpdate = () => {}, onUploa
                                     className="bg-transparent text-white font-bold text-center border-b border-white/20 hover:border-white focus:outline-none focus:border-purple-500 w-full"
                                 />
                             ) : (
-                                <h3 className="text-xl font-bold text-white tracking-wide drop-shadow-md cursor-pointer hover:text-gray-200 transition-colors" title={isEditable ? "Click to Edit Date" : ""}>{event.date}</h3>
+                                <h3 className="text-xl font-bold text-white tracking-wide drop-shadow-md cursor-pointer hover:text-gray-200 transition-colors" title={isEditable ? "Click to Edit Date" : ""}>
+                                    {new Date(event.date).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </h3>
                             )}
                             
                             <div className="flex items-center gap-2 text-white/80 text-sm font-medium">
@@ -341,20 +345,27 @@ const NextEventHero = ({ event, isEditable = false, onUpdate = () => {}, onUploa
                             </div>
                         )}
                         <div className="rounded-[2.5rem] overflow-hidden shadow-2xl border border-gray-100 h-96 relative group">
-                         <iframe 
-                             src={(() => {
-                                 const url = event.locationParams.googleMapsEmbedUrl;
-                                 if (!url) return '';
-                                 if (url.includes('<iframe')) {
-                                     const match = url.match(/src=["']([^"']+)["']/);
-                                     return match ? match[1] : url;
-                                 }
-                                 return url;
-                             })()} 
-                             className="w-full h-full grayscale group-hover:grayscale-0 transition-all duration-700"
-                             loading="lazy"
-                             allowFullScreen
-                         ></iframe>
+                          <iframe 
+                              src={(() => {
+                                  const url = event.locationParams?.googleMapsEmbedUrl;
+                                  if (!url) return '';
+                                  // 1. Full iframe tag
+                                  if (url.includes('<iframe')) {
+                                      const match = url.match(/src=["']([^"']+)["']/);
+                                      return match ? match[1] : '';
+                                  }
+                                  // 2. Direct embed link
+                                  if (url.includes('google.com/maps/embed')) {
+                                      return url;
+                                  }
+                                  // Invalid or unsupported format - just return the raw string in hopes it works (it won't, but limits damage)
+                                  return url;
+                              })()} 
+                              className="w-full h-full grayscale group-hover:grayscale-0 transition-all duration-700"
+                              loading="lazy"
+                              allowFullScreen
+                              title="Event Location"
+                          ></iframe>
                          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-4 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center gap-2 pointer-events-none">
                              <MapPin className="w-3 h-3 text-[#F07B3C]"/> {event.location}
                          </div>
@@ -392,18 +403,29 @@ const NextEventHero = ({ event, isEditable = false, onUpdate = () => {}, onUploa
                          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-10 text-center">Event Moments</h3>
                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                              {event.gallery.map((img, idx) => (
-                                 <motion.div 
-                                    key={idx}
+                                                  <motion.div 
+                                    key={idx} 
                                     whileHover={{ scale: 1.02, rotation: idx % 2 === 0 ? 1 : -1 }}
-                                    className={`relative aspect-square rounded-3xl overflow-hidden shadow-md transform transition-all duration-500 ${idx % 3 === 0 ? 'md:col-span-2 md:row-span-2' : ''}`}
-                                 >
-                                     <img 
-                                        src={img.startsWith('http') || img.startsWith('/assets') ? img : `/assets/events/${event.folderName || 'general'}/${img}`} 
-                                        className="w-full h-full object-cover" 
-                                        alt="" 
-                                     />
-                                     <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                 </motion.div>
+                                    className={`relative aspect-square rounded-3xl overflow-hidden shadow-lg group/img transform transition-all duration-500 ${idx % 3 === 0 ? 'md:col-span-2 md:row-span-2' : ''}`}
+                                >
+                                    {/\.(mp4|mov|webm)$/i.test(img) ? (
+                                        <video 
+                                            src={img.startsWith('http') || img.startsWith('/assets') ? img : `/assets/events/${event.folderName || 'general'}/${img}`}
+                                            className="w-full h-full object-cover"
+                                            muted
+                                            loop
+                                            onMouseEnter={e => e.target.play()}
+                                            onMouseLeave={e => e.target.pause()}
+                                        />
+                                    ) : (
+                                        <img 
+                                            src={img.startsWith('http') || img.startsWith('/assets') ? img : `/assets/events/${event.folderName || 'general'}/${img}`} 
+                                            className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-700" 
+                                            alt="" 
+                                        />
+                                    )}
+                                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity" />
+                                </motion.div>
                              ))}
                          </div>
                      </div>

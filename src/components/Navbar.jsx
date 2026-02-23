@@ -51,12 +51,24 @@ export default function Navbar() {
   const dropdownRef = useRef(null)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', onScroll)
+    const onScroll = () => setScrolled(window.scrollY > 10)
+    window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => { setMobileOpen(false); setOpenDropdown(null) }, [location.pathname, location.hash])
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+  }, [mobileOpen])
+
+  useEffect(() => { 
+    setMobileOpen(false)
+    setOpenDropdown(null) 
+  }, [location.pathname, location.hash])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -70,115 +82,190 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path || (path !== "/" && location.pathname.startsWith(path))
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
-    }`}>
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16 md:h-20 relative">
-        
-        {/* Left Side (Mobile): Hamburger + Language */}
-        <div className="flex md:hidden items-center gap-2 relative z-50">
-           <button 
-            className="p-1 text-hbm-dark" 
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
+    <>
+      {/* Spacer to prevent content jump due to fixed header */}
+      <div className="h-16 md:h-20" />
+      
+      <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 w-full ${
+        scrolled || mobileOpen ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-white'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 h-16 md:h-20 flex items-center justify-between relative z-[101]">
+          
+          {/* Mobile Logo - Absolutely positioned on the entire container for guaranteed centering */}
+          <Link 
+            to="/" 
+            className="md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] flex items-center group" 
+            onClick={() => setMobileOpen(false)}
           >
-            {mobileOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-          <LanguageSwitcher />
-        </div>
+            <img src={global.logo} alt="The HBM" className="h-10 w-auto object-contain" />
+          </Link>
 
-        {/* Logo (Center on mobile, Left on Desktop) */}
-        <Link to="/" className="flex items-center gap-2 group md:static absolute left-1/2 -translate-x-1/2 md:translate-x-0">
-          <img src={global.logo} alt="The HBM" className="h-8 md:h-11 w-auto" />
-          <span className="text-lg md:text-xl font-bold font-[var(--font-display)]">
-            <span className="text-hbm-dark">The</span>{' '}
-            <span className="text-hbm-purple">HBM</span>
-          </span>
-        </Link>
-
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-1" ref={dropdownRef}>
-          {navStructure.map((item) => (
-            <div key={item.key} className="relative group">
-              {item.key === 'home' || !item.subs ? (
-                <Link
-                  to={item.path}
-                  className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
-                    isActive(item.path)
-                      ? 'text-hbm-purple bg-hbm-purple/5'
-                      : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
-                  }`}
-                >
-                  {t(ui.nav[item.key], lang)}
-                </Link>
-              ) : (
-                <>
-                  <button
-                    onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
-                    className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
-                      isActive(item.path)
-                        ? 'text-hbm-purple bg-hbm-purple/5'
-                        : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
-                    }`}
-                  >
-                    {t(ui.nav[item.key], lang)}
-                    <ChevronDown size={14} className={`transition-transform ${openDropdown === item.key ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {/* Dropdown */}
-                  {openDropdown === item.key && (
-                    <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-50 animate-in fade-in">
-                      {item.subs.map((sub) => (
-                        <Link key={sub.id} to={sub.href || `${item.path}#${sub.id}`}
-                          onClick={() => setOpenDropdown(null)}
-                          className="block px-4 py-2.5 text-sm text-hbm-dark hover:bg-hbm-purple/5 hover:text-hbm-purple transition-colors">
-                          {t(sub.label, lang)}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
+          {/* Left Wing */}
+          <div className="flex-1 flex items-center justify-start z-30">
+            {/* Mobile Hamburger */}
+            <div className="flex md:hidden mr-3">
+               <button 
+                className="p-2 -ml-2 text-hbm-dark focus:outline-none" 
+                onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label="Toggle menu"
+              >
+                <div className="relative w-7 h-7">
+                  <AnimatePresence mode="wait">
+                    {mobileOpen ? (
+                      <motion.div
+                        key="close"
+                        initial={{ opacity: 0, rotate: -90 }}
+                        animate={{ opacity: 1, rotate: 0 }}
+                        exit={{ opacity: 0, rotate: 90 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0"
+                      >
+                        <X size={28} />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="menu"
+                        initial={{ opacity: 0, rotate: 90 }}
+                        animate={{ opacity: 1, rotate: 0 }}
+                        exit={{ opacity: 0, rotate: -90 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0"
+                      >
+                        <Menu size={28} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </button>
             </div>
-          ))}
-        </nav>
+            
+            {/* Desktop Logo */}
+            <Link to="/" className="hidden md:flex items-center group">
+              <img src={global.logo} alt="The HBM" className="h-14 w-auto object-contain" />
+            </Link>
+          </div>
 
-        {/* Right side (Desktop: Lang + CTA, Mobile: Empty/Hidden) */}
-        <div className="hidden md:flex items-center gap-3">
-          <LanguageSwitcher />
-          <a href={global.ctaUrl} className="btn-primary text-sm py-3 px-7">
-            {t(ui.cta.your8min, lang)}
-          </a>
+          {/* Center Area (Desktop only layout) */}
+          <div className="flex-shrink-0 flex items-center justify-center pointer-events-none md:pointer-events-auto">
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex items-center gap-1" ref={dropdownRef}>
+              {navStructure.map((item) => (
+                <div key={item.key} className="relative group">
+                  {item.key === 'home' || !item.subs ? (
+                    <Link
+                      to={item.path}
+                      className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
+                        isActive(item.path)
+                          ? 'text-hbm-purple bg-hbm-purple/5'
+                          : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
+                      }`}
+                    >
+                      {t(ui.nav[item.key], lang)}
+                    </Link>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
+                        className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
+                          isActive(item.path)
+                            ? 'text-hbm-purple bg-hbm-purple/5'
+                            : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
+                        }`}
+                      >
+                        {t(ui.nav[item.key], lang)}
+                        <ChevronDown size={14} className={`transition-transform ${openDropdown === item.key ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {openDropdown === item.key && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-[110] overflow-hidden"
+                          >
+                            {item.subs.map((sub) => (
+                              <Link key={sub.id} to={sub.href || `${item.path}#${sub.id}`}
+                                onClick={() => setOpenDropdown(null)}
+                                className="block px-4 py-2.5 text-sm text-hbm-dark hover:bg-hbm-purple/5 hover:text-hbm-purple transition-colors">
+                                {t(sub.label, lang)}
+                              </Link>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  )}
+                </div>
+              ))}
+            </nav>
+          </div>
+
+          {/* Right Wing */}
+          <div className="flex-1 flex items-center justify-end gap-3 z-30">
+            <LanguageSwitcher />
+            <Link to={global.ctaUrl} className="hidden md:inline-flex btn-primary text-sm py-3 px-7">
+              {t(ui.cta.your8min, lang)}
+            </Link>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile menu - Slide from Left - Full Screen - No Scroll */}
+      {/* Mobile menu - Fixed at top, sibling to header to ensure correct layering */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: "tween", duration: 0.3, ease: "circOut" }}
-            className="fixed inset-0 z-40 bg-white flex flex-col items-center justify-center overflow-hidden touch-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[90] bg-black/20 backdrop-blur-sm md:hidden"
+            onClick={() => setMobileOpen(false)}
           >
-            <div className="flex flex-col items-center gap-10 text-center w-full">
-              {navStructure.map((item) => (
-                <Link 
-                  key={item.key}
-                  to={item.path} 
-                  onClick={() => setMobileOpen(false)}
-                  className={`block text-3xl font-bold font-[var(--font-display)] ${
-                    isActive(item.path) ? 'text-hbm-purple' : 'text-hbm-dark'
-                  }`}
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200, mass: 0.8 }}
+              className="bg-white w-[85%] max-w-sm h-full shadow-2xl flex flex-col pt-24 px-8 overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <nav className="flex flex-col gap-6 w-full">
+                {navStructure.map((item, idx) => (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + idx * 0.05 }}
+                    key={item.key}
+                  >
+                    <Link 
+                      to={item.path} 
+                      onClick={() => setMobileOpen(false)}
+                      className={`block text-3xl font-bold border-b border-gray-50 pb-4 ${
+                        isActive(item.path) ? 'text-hbm-purple' : 'text-hbm-dark'
+                      }`}
+                    >
+                      {t(ui.nav[item.key], lang)}
+                    </Link>
+                  </motion.div>
+                ))}
+                
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="mt-8 pt-8 border-t border-gray-100 flex flex-col gap-4"
                 >
-                  {t(ui.nav[item.key], lang)}
-                </Link>
-              ))}
-            </div>
+                  <Link to={global.ctaUrl} className="btn-primary text-center py-4 text-lg" onClick={() => setMobileOpen(false)}>
+                    {t(ui.cta.your8min, lang)}
+                  </Link>
+                </motion.div>
+              </nav>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   )
 }
+
+

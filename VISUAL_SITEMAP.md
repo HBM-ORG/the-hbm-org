@@ -2,62 +2,62 @@
 
 This document visualizes the structure of the new HBM website, showing how users navigate through the experience.
 
-## 🗺️ Site Architecture Diagram
+## 🗺️ Strategic Architecture Map (v8.0)
 
 ```mermaid
 graph TD
-    %% Main Nodes
-    Home["🏠 Home<br/>(Landing Page)"]
+    %% Main Entry
+    Home["🏠 HOME PAGE"]
     
-    %% Core Sections
-    Meeter["🧩 The Meeter<br/>(Product Core)"]
-    Events["📅 Events<br/>(Community)"]
-    Knowledge["🧠 Knowledge<br/>(Wisdom Base)"]
-    About["👋 About Us<br/>(Manifesto & Mission)"]
-    
-    %% Sub-Sections: Meeter
-    MeeterWhat["What is it?<br/>/meeter"]
-    MeeterWho["Who is it for?<br/>/meeter/who"]
-    MeeterFeatures["Features<br/>/meeter/features"]
-    
-    %% Sub-Sections: Events
-    EventList["Events List<br/>/events"]
-    EventDetail["Event Details<br/>/events/:id"]
-    EventReg["Registration<br/>/events/register"]
-    
-    %% Sub-Sections: Misc
-    B2B["🏢 B2B / Corporate<br/>(Redirects to Who)"]
-    Gallery["📷 Gallery<br/>(Redirects to Events)"]
-    FAQ["❓ FAQ<br/>(Redirects to Meeter)"]
+    %% Product Discovery Box
+    subgraph Discovery ["🔍 PRODUCT DISCOVERY"]
+        Meeter["THE MEETER"]
+        Who["WHO IS IT FOR"]
+        Features["FEATURES"]
+        
+        Meeter --> Who
+        Who --> Features
+    end
 
-    %% Connections
-    Home --> Meeter
+    %% The Backstage Box
+    subgraph Backstage ["✨ THE BACKSTAGE"]
+        ContentManager["CONTENT MANAGER"]
+        AdminDashboard["ADMIN DASHBOARD"]
+        VisualEditor["VISUAL EVENT EDITOR"]
+    end
+
+    %% Brand & Authority Box
+    subgraph Brand ["💡 BRAND & AUTHORITY"]
+        Knowledge["KNOWLEDGE"]
+        About["ABOUT US"]
+    end
+
+    %% Conversion Engine Box
+    subgraph Conversion ["🔥 CONVERSION ENGINE"]
+        Events["EVENTS CALENDAR"]
+        Checkout["CHECKOUT"]
+        
+        Events --> Checkout
+    end
+
+    %% Strategic Flows
+    Home --> Discovery
     Home --> Events
-    Home --> Knowledge
-    Home --> About
     
-    %% Meeter Flow
-    Meeter --> MeeterWhat
-    MeeterWhat --> MeeterWho
-    MeeterWho --> MeeterFeatures
+    Discovery --> Events
     
-    %% Event Flow
-    Events --> EventList
-    EventList --> EventDetail
-    EventDetail --> EventReg
+    ContentManager -- "Manages" --> Brand
+    AdminDashboard -- "Controls" --> Conversion
+    VisualEditor -- "Creates" --> Events
     
-    %% Cross-Links
-    B2B -.-> MeeterWho
-    Gallery -.-> EventList
-    FAQ -.-> MeeterWhat
+    Brand -.-> Events
     
-    %% Call to Actions (CTAs)
-    RegisterCTA("🚀 Register Now")
-    style RegisterCTA fill:#F07B3C,stroke:#F07B3C,color:white
-    
-    EventList --> RegisterCTA
-    EventDetail --> RegisterCTA
-    Home --> RegisterCTA
+    %% Styling
+    style Discovery fill:#f0f7ff,stroke:#007bff,stroke-width:2px
+    style Backstage fill:#f8f9fe,stroke:#6160AB,stroke-width:2px
+    style Brand fill:#fdfaff,stroke:#a855f7,stroke-width:2px
+    style Conversion fill:#fff9f5,stroke:#f97316,stroke-width:2px
+    style Home fill:#fff,stroke:#333,stroke-width:3px
 ```
 
 ## 📑 Page Breakdown

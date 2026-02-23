@@ -1,0 +1,100 @@
+[
+  {
+    "id": "22344256-f07c-4c54-bd4b-461f3c05465f",
+    "sequenceId": "welcome_journey",
+    "stepIndex": 0,
+    "status": "pending",
+    "scheduledFor": 1771843969016,
+    "data": {
+      "id": 1771843969015,
+      "name": "יובל",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "source": "other",
+      "eventId": "video-event",
+      "eventName": "Next Video Event",
+      "date": "2026-02-23T10:52:49.015Z",
+      "status": "confirmed"
+    },
+    "stepType": "email",
+    "flowId": "registration_confirmed"
+  },
+  {
+    "id": "970d8c39-d8dc-4fa5-8c2e-10cff69967e8",
+    "sequenceId": "welcome_journey",
+    "stepIndex": 1,
+    "status": "pending",
+    "scheduledFor": 1771930369016,
+    "data": {
+      "id": 1771843969015,
+      "name": "יובל",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "source": "other",
+      "eventId": "video-event",
+      "eventName": "Next Video Event",
+      "date": "2026-02-23T10:52:49.015Z",
+      "status": "confirmed"
+    },
+    "stepType": "wait"
+  },
+  {
+    "id": "1014ad45-632c-4247-aef0-b488eb66dd4f",
+    "sequenceId": "welcome_journey",
+    "stepIndex": 2,
+    "status": "pending",
+    "scheduledFor": 1771930369016,
+    "data": {
+      "id": 1771843969015,
+      "name": "יובל",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "source": "other",
+      "eventId": "video-event",
+      "eventName": "Next Video Event",
+      "date": "2026-02-23T10:52:49.015Z",
+      "status": "confirmed"
+    },
+    "stepType": "email",
+    "flowId": "check_in_curiosity"
+  },
+  {
+    "id": "d694f99e-d6c3-489f-9c68-210858722806",
+    "sequenceId": "welcome_journey",
+    "stepIndex": 3,
+    "status": "pending",
+    "scheduledFor": 1772016769016,
+    "data": {
+      "id": 1771843969015,
+      "name": "יובל",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "source": "other",
+      "eventId": "video-event",
+      "eventName": "Next Video Event",
+      "date": "2026-02-23T10:52:49.015Z",
+      "status": "confirmed"
+    },
+    "stepType": "wait"
+  },
+  {
+    "id": "f4fdb3a6-86e6-4e81-ade8-b58956575d7a",
+    "sequenceId": "welcome_journey",
+    "stepIndex": 4,
+    "status": "pending",
+    "scheduledFor": 1772016769016,
+    "data": {
+      "id": 1771843969015,
+      "name": "יובל",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "source": "other",
+      "eventId": "video-event",
+      "eventName": "Next Video Event",
+      "date": "2026-02-23T10:52:49.015Z",
+      "status": "confirmed"
+    },
+    "stepType": "email",
+    "flowId": "post_event_warmth"
+  }
+]

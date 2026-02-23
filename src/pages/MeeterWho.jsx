@@ -20,7 +20,8 @@ const tabs = [
     label: {en:'Events',he:'אירועים'},
     headline: {en:'Turn Every Event Into An Human Experience  .',he:'המנוע לאירועים אנושיים.'},
     subtitle: {en:'We all know the truth: Networking is awkward. We fixed it.',he:'כולנו יודעים את האמת: נטוורקינג זה מביך. אנחנו תיקנו את זה.'},
-    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop", // Large tech crowd
+    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=75&w=1200&auto=format&fit=crop", 
+    color: "#6160AB",
     points:[
       {icon:MessageCircle, bold:{en:'Transform Networking Into Real Conversations.',he:'הפכו נטוורקינג לשיחות אמיתיות.'}, text:{en:'At every event, people hide behind their screens because they\'re scared to approach someone new. Meeter gives guests the invitation to meet someone new for 8-minute encounters that are actually fun and natural!',he:'בכל אירוע, אנשים מתחבאים מאחורי המסכים שלהם כי הם מפחדים לגשת למישהו חדש. Meeter נותנת לאורחים את ההזמנה לפגוש מישהו חדש למפגשים של 8 דקות שהם באמת מהנים וטבעיים!'}},
       {icon:Heart, bold:{en:'Turn Positive Experiences Into Brand Memory.',he:'הפכו חוויות חיוביות לזיכרון מותג.'}, text:{en:'When people feel genuinely connected at your event, they don\'t just remember the content—they remember YOUR brand. Meeter turns great connections into lasting memories that stick with attendees long after they leave.',he:'כשאנשים מרגישים מחוברים באמת באירוע שלכם, הם לא רק זוכרים את התוכן—הם זוכרים את המותג שלכם. Meeter הופכת חיבורים נהדרים לזיכרונות מתמשכים שנשארים עם המשתתפים הרבה אחרי שהם עוזבים.'}},
@@ -33,7 +34,8 @@ const tabs = [
     label: {en:'Companies',he:'חברות'},
     headline: {en:'Your Team Works Together. But Do They Actually Know Each Other?',he:'הצוות שלך עובד יחד. אבל האם הם באמת מכירים אחד את השני?'},
     subtitle: {en:'Many employees feel disconnected from their organizations. This disconnect hurts culture, teamwork, and overall productivity.',he:'עובדים רבים מרגישים מנותקים מהארגונים שלהם. הניתוק הזה פוגע בתרבות, בעבודת הצוות ובפרודוקטיביות הכללית.'},
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop", // Collaborative Modern Team
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=75&w=1200&auto=format&fit=crop",
+    color: "#F07B3C",
     points:[
       {icon:Layout, bold:{en:'Break Down Silos Across Departments.',he:'שברו את המחיצות בין המחלקות.'}, text:{en:'Marketing doesn\'t talk to engineering. Sales doesn\'t know finance. Meeter connects employees across departments who never interact—sparking collaboration, innovation, and cross-pollination of ideas that change everything.',he:'השיווק לא מדבר עם ההנדסה. המכירות לא מכירות את הכספים. Meeter מחברת עובדים בין מחלקות שלעולם לא מתקשרים—מציתה שיתוף פעולה, חדשנות והפריה הדדית של רעיונות שמשנים הכל.'}},
       {icon:Heart, bold:{en:'Prevent Burnout and Boost Retention.',he:'מנעו שחיקה ושפרו שימור.'}, text:{en:'Employees who feel connected are far less likely to leave. Meeter reduces stress, increases resilience, and creates genuine social bonds that make people actually want to come to work.',he:'עובדים שמרגישים מחוברים נוטים הרבה פחות לעזוב. Meeter מפחיתה לחץ, מגבירה חוסן ויוצרת קשרים חברתיים אותנטיים שגורמים לאנשים באמת לרצות לבוא לעבודה.'}},
@@ -46,7 +48,8 @@ const tabs = [
     label: {en:'Hotels',he:'מלונות'},
     headline: {en:'Your Hotel Is More Than a Place to Sleep. Make It the Place Where Opportunities Begin.',he:'המלון שלך הוא יותר ממקום לישון בו. הפוך אותו למקום שבו הזדמנויות מתחילות.'},
     subtitle: {en:'Your rooms are booked, but your public spaces are still waiting to come alive.',he:'החדרים שלכם מלאים, אבל המרחבים הציבוריים שלכם עדיין מחכים להתעורר לחיים.'},
-    image: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=2070&auto=format&fit=crop", // Luxury Hotel Lobby
+    image: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=75&w=1200&auto=format&fit=crop",
+    color: "#73C154",
     points:[
       {icon:Sparkles, bold:{en:'Offer Meaningful Moments in your hotel.',he:'הציעו רגעים משמעותיים במלון שלכם.'}, text:{en:'Every hotel has a nice lobby and good Wi-Fi. But how many offer real human connection? Meeter transforms your public spaces into living, breathing hubs where solo travelers become friends, business partners, and drinking buddies.',he:'לכל מלון יש לובי יפה ו-Wi-Fi טוב. אבל כמה מציעים חיבור אנושי אמיתי? Meeter הופכת את המרחבים הציבוריים שלכם למוקדים חיים ונושמים שבהם מטיילים בודדים הופכים לחברים, שותפים עסקיים ושותפים לשתייה.'}},
       {icon:Coffee, bold:{en:'Fill Your Bar and Boost F&B Revenue.',he:'מלאו את הבר שלכם והגדילו הכנסות F&B.'}, text:{en:'Empty seats at happy hour mean lost revenue. Meeter brings guests out of their rooms and into your bar, restaurant, and lobby. Creating a scheduled social experience that drives real spending and keeps your spaces buzzing with life.',he:'כיסאות ריקים ב-happy hour משמעותם הפסד הכנסה. Meeter מוציאה את האורחים מהחדרים שלהם אל הבר, המסעדה והלובי שלכם. יוצרת חוויה חברתית מתוזמנת שמניעה הוצאות אמיתיות ושומרת על המרחבים שלכם שוקקים חיים.'}},
@@ -59,7 +62,8 @@ const tabs = [
     label: {en:'Universities',he:'אוניברסיטאות'},
     headline: {en:'Your Campus Has Thousands of Students. How Many Feel Alone?',he:'בקמפוס שלך יש אלפי סטודנטים. כמה מהם מרגישים לבד?'},
     subtitle: {en:'Transform your campus into a place where everyone can meet, connect, and belong.',he:'הפכו את הקמפוס שלכם למקום שבו כולם יכולים להיפגש, להתחבר ולהרגיש שייכים.'},
-    image: "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1986&auto=format&fit=crop", // Modern Library Hub
+    image: "https://images.unsplash.com/photo-1562774053-701939374585?q=75&w=1200&auto=format&fit=crop",
+    color: "#6160AB",
     points:[
       {icon:Users, bold:{en:'Combat Campus Loneliness From Day One.',he:'הילחמו בבדידות בקמפוס מהיום הראשון.'}, text:{en:'Students are surrounded by thousands of peers but feel completely isolated. Meeter gives them a simple, fun way to meet new people in just 8 minutes. No awkward "how do I make friends?" stress. Just real human connection.',he:'סטודנטים מוקפים באלפי עמיתים אך מרגישים מבודדים לחלוטין. Meeter נותנת להם דרך פשוטה ומהנה לפגוש אנשים חדשים תוך 8 דקות בלבד. בלי לחץ מביך של "איך אני מכיר חברים?". פשוט חיבור אנושי אמיתי.'}},
       {icon:School, bold:{en:'Build Community Across Majors and Years.',he:'בנו קהילה בין חוגים ושנתונים.'}, text:{en:'Engineering students never meet art students. Freshmen don\'t connect with seniors. Meeter breaks down barriers and creates cross-campus friendships that enrich the entire university experience and last beyond graduation.',he:'סטודנטים להנדסה לא פוגשים סטודנטים לאמנות. שנה א\' לא מתחברים עם בוגרים. Meeter שוברת מחסומים ויוצרת חברויות חוצות קמפוס שמעשירות את חווית האוניברסיטה כולה ונמשכות גם אחרי הסיום.'}},
@@ -72,10 +76,11 @@ const tabs = [
     label: {en:'Communities',he:'קהילות'},
     headline: {en:'Strong Communities Are Measured By The Strength Of Their Connections.',he:'קהילות חזקות נמדדות בחוזק החיבורים שלהן.'},
     subtitle: {en:'Build a community where members truly know each other—not just share the same WhatsApp group.',he:'בנו קהילה שבה החברים באמת מכירים אחד את השני—לא רק חולקים אותה קבוצת וואטסאפ.'},
-    image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=2070&auto=format&fit=crop", // High-energy Social Lounge
+    image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=75&w=1200&auto=format&fit=crop",
+    color: "#F07B3C",
     points:[
       {icon:MessageCircle, bold:{en:'Create Deeper Community Engagement.',he:'צרו מעורבות קהילתית עמוקה יותר.'}, text:{en:'Move beyond lectures and presentations. Meeter transforms community events into genuine human experiences where members share real stories, build authentic friendships, and feel like they truly belong.',he:'עברו מעבר להרצאות ומצגות. Meeter הופכת אירועים קהילתיים לחוויות אנושיות אמיתיות שבהן חברים משתפים סיפורים אמיתיים, בונים חברויות אותנטיות ומרגישים שהם באמת שייכים.'}},
-      {icon:Shield, bold:{en:'Lower Social Anxiety and Increase Participation.',he:'הפחיתו חרדה חברתית והגדילו השתתפות.'}, text:{en:'8 minutes, clear structure, no pressure to perform. Meeter removes the awkwardness of "who do I talk to?" and gives every member, introverts included, a safe, easy way to connect.',he:'8 דקות, מבנה ברור, בלי לחץ להופיע. Meeter מסירה את המבוכה של "עם מי אני מדבר?" ונותנת לכל חבר, כולל מופנמים, דרך בטוחה וקלה להתחבר.'}},
+      {icon:Shield, bold:{en:'Lower Social Anxiety and Increase Participation.',he:'הפחיתו חרדה חברתית והגדילו השתתפות.'}, text:{en:'8 minutes, clear structure, no pressure to perform. Meeter removes the awkwardness of "who do I talk to?" and gives every member, introverts included, a safe, easy way to connect.',he:'8 דקות, מבנה ברור, בלי לחץ להופיע. Meeter מסירה את המבוכה של "עם מי אני מדבר?" ונותנת לכל חבר, כולל מופנמים, דרך בטובה וקלה להתחבר.'}},
       {icon:Heart, bold:{en:'Keep People Coming Back.',he:'גרמו לאנשים לחזור.'}, text:{en:'When connections are real, attendance grows. Members don\'t come back for content—they come back for the people they\'ve met. Meeter turns one-time attendees into loyal community members.',he:'כשחיבורים הם אמיתיים, הנוכחות גדלה. חברים לא חוזרים בשביל התוכן—הם חוזרים בשביל האנשים שפגשו. Meeter הופכת משתתפים חד-פעמיים לחברי קהילה נאמנים.'}},
     ]
   },
@@ -85,7 +90,8 @@ const tabs = [
     label: { en: 'Office Buildings', he: 'בנייני משרדים' },
     headline: { en: 'One Building. Many Companies. Thousands of Employees. Zero Connection.', he: 'בניין אחד. הרבה חברות. אלפי עובדים. אפס חיבור.' },
     subtitle: { en: 'Turn your public office spaces into a business ecosystem where deals, friendships, and opportunities happen.', he: 'הפכו את החללים הציבוריים שלכם לאקו-סיסטם עסקי שבו עסקאות, חברויות והזדמנויות קורות.' },
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=75&w=1200&auto=format&fit=crop",
+    color: "#bbc0ff",
     points: [
       { icon: Layout, bold: { en: 'Transform Isolation Into Community.', he: 'הפכו בידוד לקהילה.' }, text: { en: 'Floor 22 doesn\'t know Floor 20 exists. Employees share the same building but live in separate worlds. Meeter breaks down the invisible walls and creates real connections between companies, turning your tower into a connected business community.', he: 'קומה 22 לא יודעת שקומה 20 קיימת. עובדים חולקים את אותו בניין אבל חיים בעולמות נפרדים. Meeter שוברת את הקירות הבלתי נראים ויוצרת חיבורים אמיתיים בין חברות, הופכת את המגדל שלכם לקהילה עסקית מחוברת.' } },
       { icon: Handshake, bold: { en: 'Unlock Business Opportunities in Your Own Building.', he: 'פתחו הזדמנויות עסקיות בבניין שלכם.' }, text: { en: 'The next deal, partnership, or mentor your tenants are looking for might be working two floors up. Meeter creates serendipitous encounters that spark collaborations, investments, and business relationships—all within your building.', he: 'העסקה הבאה, השותפות או המנטור שהדיירים שלכם מחפשים עשויים לעבוד שתי קומות למעלה. Meeter יוצרת מפגשים אקראיים שמציתים שיתופי פעולה, השקעות ומערכות יחסים עסקיות—הכל בתוך הבניין שלכם.' } },
@@ -110,16 +116,19 @@ const fullTestimonials = [
 ]
 
 const partnerLogos = [
-  { name: 'IAC', src: '/partner-logos/iac.png' },
-  { name: 'Dale Carnegie', src: '/partner-logos/dale-carnegie.png' },
-  { name: 'Gav Yam', src: '/partner-logos/gav-yam.png' },
-  { name: 'Redler Technologies', src: '/partner-logos/redler.png' },
-  { name: 'Matam Park', src: '/partner-logos/matam-park.png' },
-  { name: 'Haifa', src: '/partner-logos/haifa.png' },
-  { name: 'HaMathana', src: '/partner-logos/hamathana.png' },
-  { name: 'Reichman University', src: '/partner-logos/reichman.png' },
-  { name: 'Herbert Samuel Hotels', src: '/partner-logos/herbert-samuel.png' },
-  { name: 'Points of You', src: '/partner-logos/points-of-you.png' },
+  { name: 'Partner 1', src: '/partner-logos/44.png' },
+  { name: 'Partner 2', src: '/partner-logos/45.png' },
+  { name: 'Partner 3', src: '/partner-logos/46.png' },
+  { name: 'Partner 4', src: '/partner-logos/47.png' },
+  { name: 'Partner 5', src: '/partner-logos/48.png' },
+  { name: 'Partner 6', src: '/partner-logos/49.png' },
+  { name: 'Partner 7', src: '/partner-logos/50.png' },
+  { name: 'Partner 8', src: '/partner-logos/51.png' },
+  { name: 'Partner 9', src: '/partner-logos/52.png' },
+  { name: 'Partner 10', src: '/partner-logos/53.png' },
+  { name: 'Partner 11', src: '/partner-logos/54.png' },
+  { name: 'Partner 12', src: '/partner-logos/55.png' },
+  { name: 'Partner 13', src: '/partner-logos/56.png' },
 ]
 
 export default function MeeterWho() {
@@ -129,31 +138,35 @@ export default function MeeterWho() {
 
   // Load SociableKIT script
   useEffect(() => {
-    // 1. Script Injection - Using the index.js method for better reliability
-    const scriptUrl = 'https://widgets.sociablekit.com/index.js';
+    const scriptUrl = 'https://widgets.sociablekit.com/instagram-reels/widget.js';
     const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
     
+    const initWidget = () => {
+      if (window.sk_instagram_reels && typeof window.sk_instagram_reels.init === 'function') {
+         window.sk_instagram_reels.init();
+      } else if (window.SociableKIT && typeof window.SociableKIT.init === 'function') {
+         window.SociableKIT.init();
+      }
+    }
+
     if (!existingScript) {
       const script = document.createElement('script');
       script.src = scriptUrl;
       script.async = true;
       script.defer = true;
+      script.onload = initWidget;
       document.body.appendChild(script);
     } else {
-      // If script exists, we might need to tell it to re-parse the DOM
-      if (window.sk_instagram_reels) {
-        window.sk_instagram_reels.init();
-      }
+      initWidget();
     }
 
-    // Force re-init after a small delay to ensure the div is in the DOM
-    const timer = setTimeout(() => {
-      if (typeof window.SociableKIT === 'object' && window.SociableKIT.init) {
-        window.SociableKIT.init();
-      }
-    }, 1000);
+    const timer = setTimeout(initWidget, 1500);
+    const backupTimer = setTimeout(initWidget, 4000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(backupTimer);
+    };
   }, []);
 
   return (
@@ -196,21 +209,34 @@ export default function MeeterWho() {
         {/* DYNAMIC IMAGE BACKGROUNDS */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <AnimatePresence mode="popLayout">
-            <motion.img
-              key={currentTab?.id}
-              src={currentTab?.image}
+            <motion.div
+              key={activeTab}
               initial={{ opacity: 0 }}
-              animate={{ opacity: window.innerWidth < 768 ? 0.25 : 0.65 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="absolute top-1/2 left-1/2 w-full h-full md:w-[98%] md:h-[98%] -translate-x-1/2 -translate-y-1/2 object-cover md:rounded-[3rem] mix-blend-normal blur-[4px] grayscale-[0.2]"
-              style={{
-                maskImage: "radial-gradient(circle, black 65%, transparent 98%)",
-                WebkitMaskImage: "radial-gradient(circle, black 65%, transparent 98%)"
-              }}
-            />
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              className="absolute inset-0 flex items-center justify-center bg-hbm-cream"
+            >
+              {/* Solid color placeholder matching the image theme while loading */}
+              <div 
+                className="absolute inset-0 opacity-20"
+                style={{ backgroundColor: currentTab?.color }}
+               />
+              
+              <img
+                src={currentTab?.image}
+                alt=""
+                className="w-full h-full object-cover grayscale-[0.2] blur-[2px] md:blur-[2px] opacity-40 md:opacity-60 transition-opacity duration-1000"
+                style={{
+                  objectPosition: 'center',
+                  maskImage: "radial-gradient(circle, black 50%, transparent 98%)",
+                  WebkitMaskImage: "radial-gradient(circle, black 50%, transparent 98%)"
+                }}
+              />
+            </motion.div>
           </AnimatePresence>
-          <div className="absolute inset-0 bg-hbm-cream/10 md:bg-hbm-cream/20 backdrop-blur-[2px] md:backdrop-blur-[2px]" />
+          {/* Enhanced glass overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-hbm-cream/60 via-transparent to-hbm-cream/60 md:bg-hbm-cream/20 backdrop-blur-[1px]" />
         </div>
 
         <BubbleContainer bgColor="transparent" className="!bg-transparent border-none shadow-none !py-0 relative z-20">
@@ -233,7 +259,7 @@ export default function MeeterWho() {
             </div>
 
             {/* Content Area - FIXED MIN-HEIGHT TO PREVENT JUMPING */}
-            <div className="min-h-[600px] pt-32 md:pt-0 mb-20 relative z-10">
+            <div className="min-h-[600px] pt-20 md:pt-0 mb-20 relative z-10">
               <AnimatePresence mode="wait">
                 {currentTab && (
                   <motion.div 

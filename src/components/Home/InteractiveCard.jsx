@@ -115,12 +115,14 @@ export default function InteractiveCard({ card, index, lang, t }) {
       <div className="relative z-10">
         <div className="flex flex-col gap-3 mb-3">
           <div>
-            <h3 className="text-xl font-bold text-hbm-dark mb-1">
+            <h3 className="text-lg font-bold text-hbm-dark leading-snug">
               {t(card.title, lang)}
             </h3>
-            <p className="text-sm text-hbm-gray leading-relaxed">
-              {t(card.text, lang)}
-            </p>
+            {t(card.text, lang) && (
+              <p className="text-sm text-hbm-gray leading-relaxed mt-2">
+                {t(card.text, lang)}
+              </p>
+            )}
           </div>
         </div>
       </div>

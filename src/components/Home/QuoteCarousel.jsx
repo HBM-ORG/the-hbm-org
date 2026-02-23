@@ -12,26 +12,37 @@ const quotes = [
   { text: "What you think, you become.", author: "Buddha" },
   { text: "The best way to predict the future is to create it.", author: "Abraham Lincoln" },
   { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
+  { text: "The only way to have a friend is to be one.", author: "Ralph Waldo Emerson" },
+  { text: "Social connection is a fundamental human need.", author: "Matthew Lieberman" },
+  { text: "Loneliness is the poverty of self; solitude is the richness of self.", author: "May Sarton" },
+  { text: "We are like islands in the sea, separate on the surface but connected in the deep.", author: "William James" },
+  { text: "The greatness of a community is most accurately measured by the compassionate actions of its members.", author: "Coretta Scott King" },
+  { text: "Happiness is only real when shared.", author: "Christopher McCandless" },
+  { text: "A single conversation across the table with a wise man is better than ten years mere study of books.", author: "Henry Wadsworth Longfellow" },
+  { text: "Communication leads to community, that is, to understanding, intimacy and mutual valuing.", author: "Rollo May" },
+  { text: "The most important thing in communication is hearing what isn't said.", author: "Peter Drucker" },
+  { text: "Unity is strength... when there is teamwork and collaboration, wonderful things can be achieved.", author: "Mattie Stepanek" },
+  { text: "Individually, we are one drop. Together, we are an ocean.", author: "Ryunosuke Satoro" },
+  { text: "There is no power for change greater than a community discovering what it cares about.", author: "Margaret J. Wheatley" },
+  { text: "Be the change that you wish to see in the world.", author: "Mahatma Gandhi" },
+  { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
+  { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+  { text: "The quality of your life is the quality of your relationships.", author: "Tony Robbins" },
+  { text: "Vulnerability is the birthplace of innovation, creativity and change.", author: "Brené Brown" },
+  { text: "Deep human connection is the purpose and the result of a meaningful life.", author: "HBM Philosophy" },
 ]
 
 export default function QuoteCarousel() {
   const { lang } = useI18n()
-  const [currentQuote, setCurrentQuote] = useState(0)
-
-  // Auto-rotate quotes every 6 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentQuote((prev) => (prev + 1) % quotes.length)
-    }, 6000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const handleDotClick = (index) => {
-    setCurrentQuote(index)
-  }
-
-  const quote = quotes[currentQuote]
+  
+  // Daily logic: Seed based on date to ensure the same quote for everyone today, but different tomorrow
+  const today = new Date()
+  const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`
+  
+  // Create a day-based index that won't repeat monthly (using total days since epoch)
+  const totalDays = Math.floor(today.getTime() / (1000 * 60 * 60 * 24))
+  const quoteIndex = totalDays % quotes.length
+  const quote = quotes[quoteIndex]
 
   return (
     <section id="daily-inspiration" className="section-padding bg-hbm-cream relative overflow-hidden">
@@ -71,71 +82,66 @@ export default function QuoteCarousel() {
           />
 
           {/* Main quote card */}
-          <div className="relative bg-white rounded-3xl p-12 md:p-16 shadow-2xl">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentQuote}
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -30, scale: 0.95 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="text-center"
+          <div className="relative bg-white rounded-3xl p-12 md:p-16 shadow-2xl overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="text-center flex flex-col items-center"
+            >
+              {/* Date Display - Centered above the quote icon */}
+              <div className="mb-6 flex flex-col items-center gap-1.5">
+                <span className="text-[10px] md:text-xs font-bold text-gray-400 tracking-[0.3em] uppercase">
+                  {t({ en: 'Today', he: 'היום' }, lang)}
+                </span>
+                <span className="text-sm md:text-base font-bold text-hbm-dark/60 tracking-tight">
+                  {dateStr}
+                </span>
+                <div className="w-8 h-0.5 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] mt-1 opacity-40 rounded-full" />
+              </div>
+
+              {/* Decorative quote icon */}
+              <div
+                className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#6160AB] to-[#8b7fd9] rounded-full mb-8 shadow-lg shadow-purple-200"
               >
-                {/* Decorative quote icon */}
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
-                  className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#6160AB] to-[#8b7fd9] rounded-full mb-6"
-                >
-                  <Quote className="w-8 h-8 text-white" />
-                </motion.div>
+                <Quote className="w-8 h-8 text-white" />
+              </div>
 
-                {/* Quote text */}
-                <p className="text-3xl md:text-4xl font-bold text-hbm-dark leading-relaxed mb-8">
-                  "{quote.text}"
+              {/* Quote text */}
+              <p className="text-3xl md:text-5xl font-bold text-hbm-dark leading-tight md:leading-relaxed mb-10 max-w-2xl">
+                "{quote.text}"
+              </p>
+
+              {/* Author */}
+              <div className="flex items-center justify-center gap-4">
+                <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#F07B3C]" />
+                <p className="text-xl md:text-2xl text-[#F07B3C] font-semibold italic">
+                  {quote.author}
                 </p>
+                <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#F07B3C]" />
+              </div>
 
-                {/* Author */}
-                <div className="flex items-center justify-center gap-3">
-                  <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#F07B3C]" />
-                  <p className="text-xl text-[#F07B3C] font-semibold">
-                    {quote.author}
-                  </p>
-                  <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#F07B3C]" />
-                </div>
-              </motion.div>
-            </AnimatePresence>
+              {/* Daily return nudge */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.6, duration: 0.8 }}
+                className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400"
+              >
+                {t({
+                  en: 'Every day brings a new story. See you tomorrow?',
+                  he: 'כל יום מביא סיפור חדש. נתראה מחר?'
+                }, lang)}
+              </motion.p>
+            </motion.div>
           </div>
         </div>
-
-        {/* Navigation Dots */}
-        <div className="flex justify-center gap-3 mt-8">
-          {quotes.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => handleDotClick(index)}
-              className={`transition-all duration-300 rounded-full ${
-                index === currentQuote
-                  ? 'w-12 h-3 bg-gradient-to-r from-[#6160AB] to-[#F07B3C]'
-                  : 'w-3 h-3 bg-gray-300 hover:bg-gray-400'
-              }`}
-              aria-label={`Go to quote ${index + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Quote counter */}
-        <motion.p
-          key={currentQuote}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center mt-6 text-sm text-gray-400 font-medium"
-        >
-          {currentQuote + 1} / {quotes.length}
-        </motion.p>
       </div>
       </div>
     </section>
   )
 }
+
+

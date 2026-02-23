@@ -30,24 +30,38 @@ export default function Why8Minutes() {
   // Load SociableKIT script
   useEffect(() => {
     const scriptUrl = "https://widgets.sociablekit.com/instagram-reels/widget.js"
-    
-    // If the script is already there, we might need to re-initialize or just wait
     const existingScript = document.querySelector(`script[src="${scriptUrl}"]`)
     
+    const initWidget = () => {
+      // SociableKIT usually auto-runs on script load, but in React SPAs 
+      // we often need to manually trigger it when navigating back to a page.
+      if (window.sk_instagram_reels && typeof window.sk_instagram_reels.init === 'function') {
+         window.sk_instagram_reels.init();
+      } else if (window.SociableKIT && typeof window.SociableKIT.init === 'function') {
+         window.SociableKIT.init();
+      }
+    }
+
     if (!existingScript) {
       const script = document.createElement('script')
       script.src = scriptUrl
       script.async = true
       script.defer = true
+      script.onload = initWidget;
       document.body.appendChild(script)
     } else {
-      // If script exists, sometimes we need to trigger a re-run if the widget didn't load
-      // SociableKIT usually auto-runs, but in React we may need to wait
+      // If script exists, just try to re-init
+      initWidget();
     }
 
-    // We don't remove the script on cleanup because it's a global dependency 
-    // and removing it then immediately re-adding it (due to React Strict Mode) 
-    // often breaks the widget's initialization logic.
+    // Small delay to ensure the DOM element is actually rendered before init
+    const timer = setTimeout(initWidget, 1000);
+    const backupTimer = setTimeout(initWidget, 3000);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(backupTimer);
+    }
   }, [])
 
   return (
@@ -64,7 +78,7 @@ export default function Why8Minutes() {
           >
             <Instagram className="w-4 h-4 text-[#F07B3C]" />
             <span className="text-xs font-semibold text-[#F07B3C] uppercase tracking-wide">
-              {t({ en: 'From Our Instagram', he: 'מהאינסטגרם שלנו' }, lang)}
+              {t({ en: 'REAL STORIES', he: 'סיפורים אמיתיים' }, lang)}
             </span>
           </motion.div>
 
@@ -75,7 +89,7 @@ export default function Why8Minutes() {
             transition={{ delay: 0.1 }}
             className="text-3xl md:text-5xl font-bold text-hbm-purple mb-2 leading-tight"
           >
-            Join The Movement
+            See the Connections Waiting for You
           </motion.h2>
 
           <motion.p
@@ -86,8 +100,8 @@ export default function Why8Minutes() {
             className="text-lg md:text-xl text-hbm-gray max-w-lg mx-auto leading-relaxed"
           >
             {t({
-              en: 'Discover the perfect balance between meaningful connection and your busy schedule',
-              he: 'גלו את האיזון המושלם בין חיבור משמעותי ללוח הזמנים העמוס שלכם'
+              en: 'Real stories, real people, real connections. Dive in.',
+              he: 'סיפורים אמיתיים, אנשים אמיתיים, חיבורים אמיתיים. צללו פנימה.'
             }, lang)}
           </motion.p>
         </div>
@@ -103,12 +117,28 @@ export default function Why8Minutes() {
             className="relative w-full max-w-[280px] md:max-w-[320px] mx-auto z-10"
           >
             <div className="relative aspect-[9/16] bg-black rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] md:border-[8px] border-gray-900">
-               {/* SociableKIT Widget */}
-               <div 
-                 className='sk-ww-instagram-reels w-full h-full' 
-                 data-embed-id='25653662'
-                 dangerouslySetInnerHTML={{ __html: `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;flex-direction:column;gap:10px"><svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="4" fill="none" stroke-opacity="0.3"></circle><path fill="#fff" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><p style="font-family:sans-serif;font-size:14px;opacity:0.7">Loading Reels...</p><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style></div>` }} 
-               ></div>
+                <div 
+                  className='sk-ww-instagram-reels h-full w-full' 
+                  data-embed-id='25653662'
+                >
+                  {/* Fallback loader - standard SociableKIT pattern */}
+                  <div style={{
+                    width: '100%', 
+                    height: '100%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    background: '#0a0a0a', 
+                    color: '#fff', 
+                    flexDirection: 'column', 
+                    gap: '12px'
+                  }}>
+                    <div className="w-10 h-10 border-4 border-hbm-orange/30 border-t-hbm-orange rounded-full animate-spin"></div>
+                    <p style={{ fontFamily: 'Sora, sans-serif', fontSize: '14px', fontWeight: 'bold' }}>
+                      {t({ en: 'Loading Reels...', he: 'טוען רהילים...' }, lang)}
+                    </p>
+                  </div>
+                </div>
             </div>
           </motion.div>
 

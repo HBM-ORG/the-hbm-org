@@ -7,20 +7,26 @@ export default function MeasureTheMagic() {
   const stats = [
     {
       icon: Users,
-      value: '127',
-      label: { en: 'Connections', he: 'חיבורים' },
+      value: '142',
+      label: { en: 'Registrations', he: 'נרשמו' },
       color: 'hbm-purple',
     },
     {
       icon: TrendingUp,
-      value: '4.8',
-      label: { en: 'Avg Rating', he: 'דירוג ממוצע' },
+      value: '228',
+      label: { en: 'Total Matches', he: 'התאמות שבוצעו' },
       color: 'hbm-orange',
     },
     {
+      icon: Users,
+      value: '189',
+      label: { en: 'Contact Exchanges', he: 'החליפו פרטים' },
+      color: 'hbm-purple',
+    },
+    {
       icon: BarChart3,
-      value: '89%',
-      label: { en: 'Follow-ups', he: 'המשכים' },
+      value: '3.4',
+      label: { en: 'Avg. Convos / User', he: 'ממוצע שיחות למשתמש' },
       color: 'hbm-green',
     },
   ]
@@ -43,7 +49,7 @@ export default function MeasureTheMagic() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-6">
           {stats.map((stat, idx) => (
             <div
               key={idx}

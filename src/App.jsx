@@ -14,6 +14,7 @@ import EventDetails from './pages/EventDetails'
 import Knowledge from './pages/Knowledge'
 import EventRegister from './pages/EventRegister'
 import AdminDashboard from './pages/AdminDashboard'
+import { EventsProvider } from './context/EventsContext'
 
 import { trackPageView } from './utils/analytics'
  
@@ -46,8 +47,9 @@ function ScrollToHash() {
 export default function App() {
   return (
     <I18nProvider>
-      <BrowserRouter>
-        <ScrollToHash />
+      <EventsProvider>
+        <BrowserRouter>
+          <ScrollToHash />
         <SEOWrapper>
           <Routes>
             <Route element={<Layout />}>
@@ -75,7 +77,8 @@ export default function App() {
             </Route>
           </Routes>
         </SEOWrapper>
-      </BrowserRouter>
+        </BrowserRouter>
+      </EventsProvider>
     </I18nProvider>
   )
 }

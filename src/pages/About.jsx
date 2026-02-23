@@ -117,19 +117,7 @@ export default function About() {
 
       {/* Team */}
       <section id="team" className="bg-hbm-cream">
-        <BubbleContainer bgColor="#FAF9F5" className="relative overflow-hidden">
-          {/* Subtle Team Background - Balanced visibility */}
-          <div 
-            className="absolute inset-0 z-0 opacity-[0.12] blur-[2px] pointer-events-none"
-            style={{
-              backgroundImage: 'url(/assets/team/Teampic.jpeg)',
-              backgroundSize: 'crop',
-              backgroundPosition: 'center 20%',
-              maskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%)'
-            }}
-          />
-          
+        <BubbleContainer bgColor="white">
           <div className="max-w-6xl mx-auto w-full relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-12">{t(about.team.title, lang)}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">

@@ -97,9 +97,9 @@ export default function MeeterWhat() {
       <NextPageBridge 
         to="/meeter/who"
         eyebrow={{ en: 'Next Step', he: 'השלב הבא' }}
-        title={{ en: 'Find Your Place', he: 'מצאו את המקום שלכם' }}
+        title={{ en: 'Bring Meeter to your community', he: 'מצאו את המקום שלכם' }}
         description={{ en: 'Discover who the Meeter is designed for and where you seek connection.', he: 'גלו עבור מי המיטר מיועד ואיפה אתם מחפשים חיבור.' }}
-        buttonText={{ en: 'Find Your Place', he: 'מצאו את המקום שלכם' }}
+        buttonText={{ en: 'Choose Your Experience', he: 'מצאו את המקום שלכם' }}
       />
 
     </div>

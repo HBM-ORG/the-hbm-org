@@ -1,0 +1,94 @@
+[
+  {
+    "id": "next-1",
+    "title": {
+      "en": "HBM event",
+      "he": "אירוע סוף חודש מרץ"
+    },
+    "date": "2026-03-14T13:32",
+    "description": {
+      "en": "Join us for meaningful 8-minute conversations that create lasting bonds.",
+      "he": "הצטרפו אלינו לשיחות משמעותיות בנות 8 דקות שיוצרות קשרים מתמשכים."
+    },
+    "location": "Raanana",
+    "locationParams": {
+      "addressText": "Rothschild Blvd 10, Tel Aviv",
+      "googleMapsEmbedUrl": "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\"></iframe><iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3376.1<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\"></iframe>386407308196!2d34.878737876406156!3d32.20049467391002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d398a1c026cf7%3A0x7f6a3c7c8abcaf5c!2sMIXER%20Campus%20Raanana!5e0!3m2!1sen!2sil!4v1771428994376!5m2!1sen!2sil\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade\"></iframe>"
+    },
+    "type": "Face to Face",
+    "image": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop",
+    "heroVideo": "/assets/events/march-26/1771755577856_Meeter_Com_Sub__1_.mp4",
+    "registration": {
+      "status": "open",
+      "externalUrl": "/events/register",
+      "whatsappLink": "https://wa.me/1234567890"
+    },
+    "socialProof": {
+      "capacity": 50,
+      "attendingCount": 32
+    },
+    "tags": [
+      "#Offline",
+      "#Networking"
+    ],
+    "highlights": [
+      {
+        "title": "8-Minute Rounds",
+        "description": "Perfect timing to go deep without getting stuck.",
+        "icon": "Clock"
+      },
+      {
+        "title": "Curated Matches",
+        "description": "Meet people who share your values.",
+        "icon": "Users"
+      },
+      {
+        "title": "Guided Prompts",
+        "description": "Skip the small talk with our question cards.",
+        "icon": "MessageCircle"
+      }
+    ],
+    "partners": [
+      {
+        "name": "Community X",
+        "logo": "",
+        "website": "https://example.com"
+      },
+      {
+        "name": "55",
+        "logo": ""
+      },
+      {
+        "name": "66",
+        "logo": ""
+      }
+    ],
+    "faqs": [
+      {
+        "question": "Do I need to prepare anything?",
+        "answer": "Just bring yourself and an open mindgfgfg"
+      },
+      {
+        "question": "What is the dress code?",
+        "answer": "Smart casual. Be comfortable.fgf"
+      }
+    ],
+    "hostNote": {
+      "message": "Can't wait to see you there!ggggfgfgfgfgfdg",
+      "author": "",
+      "avatar": ""
+    },
+    "gallery": [],
+    "folderName": "march-26",
+    "imageCount": 1,
+    "heroStyle": {
+      "overlayOpacity": 14
+    },
+    "visuals": {
+      "brightness": 79,
+      "blur": 7,
+      "videoScale": 1,
+      "overlayOpacity": 0
+    }
+  }
+]

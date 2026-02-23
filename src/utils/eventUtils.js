@@ -13,9 +13,9 @@ const getToday = () => {
 /**
  * Returns all upcoming events (including today), sorted by closest date first.
  */
-export const getUpcomingEvents = () => {
+export const getUpcomingEvents = (data = eventsConfig) => {
     const today = getToday();
-    return eventsConfig
+    return data
         .filter(event => parseDate(event.date) >= today)
         .sort((a, b) => parseDate(a.date) - parseDate(b.date));
 };
@@ -24,17 +24,17 @@ export const getUpcomingEvents = () => {
  * Returns the single next upcoming event.
  * If no future events exist, returns null.
  */
-export const getNextEvent = () => {
-    const upcoming = getUpcomingEvents();
+export const getNextEvent = (data = eventsConfig) => {
+    const upcoming = getUpcomingEvents(data);
     return upcoming.length > 0 ? upcoming[0] : null;
 };
 
 /**
  * Returns all past events, sorted by most recent first.
  */
-export const getPastEvents = () => {
+export const getPastEvents = (data = eventsConfig) => {
     const today = getToday();
-    return eventsConfig
+    return data
         .filter(event => parseDate(event.date) < today)
         .sort((a, b) => parseDate(b.date) - parseDate(a.date)); // Newest first
 };
@@ -43,8 +43,8 @@ export const getPastEvents = () => {
  * Groups past events by year.
  * Returns an object like: { '2025': [...], '2026': [...] }
  */
-export const getEventsByYear = () => {
-    const pastEvents = getPastEvents();
+export const getEventsByYear = (data = eventsConfig) => {
+    const pastEvents = getPastEvents(data);
     const grouped = {};
 
     pastEvents.forEach(event => {

@@ -19,8 +19,7 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
   const opacity = useTransform(scrollY, [0, 200], [1, 0])
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-start justify-center overflow-hidden bg-gradient-to-br from-[#f8f9fa] to-[#fef5ed] pt- md:pt-1
-    ">
+    <section id="hero" className="relative h-[90vh] min-h-[700px] flex items-start justify-center overflow-hidden bg-gradient-to-b from-[#f8f9fa] to-hbm-cream pt-24 md:pt-32">
       {/* Animated background blobs */}
       <motion.div
         className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-[#6160AB]/20 to-[#8b7fd9]/20 rounded-full blur-3xl"
@@ -76,7 +75,7 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
           className="mb-3 -translate-y-[60px]"
         >
           <span className="inline-block px-6 py-2 bg-[#6160AB]/10 text-[#6160AB] rounded-full text-sm font-semibold tracking-wide uppercase">
-            {t({ en: 'The Human Being Movement', he: 'תנועת vb' }, lang)}
+            {t({ en: 'The Human Being Movement', he: 'תנועת בני האדם' }, lang)}
           </span>
         </motion.div>
 
@@ -167,20 +166,18 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
+        {/* Scroll indicator directly below CTA in main flow */}
         <motion.div
-          className="absolute bottom-12 left-1/2 transform -translate-x-1/2"
+          className="mt-12 md:mt-16 flex flex-col items-center gap-1 text-[#6160AB]/60"
           animate={{ y: [0, 15, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="flex flex-col items-center gap text-gray-400">
-            <span className="text-sm font-medium tracking-wide">
-              {t({ en: 'Scroll to explore', he: 'גללו למטה' }, lang)}
-            </span>
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
+          <span className="text-sm font-medium tracking-wide">
+            {t({ en: 'Scroll to explore', he: 'גללו למטה' }, lang)}
+          </span>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
         </motion.div>
       </motion.div>
     </section>

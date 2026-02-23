@@ -55,7 +55,7 @@ const FeaturedEventCard = ({ event }) => {
                 <div className="flex flex-wrap gap-6 text-gray-500 font-medium mb-8 font-['Sofia_Sans']">
                     <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg">
                         <Calendar className="w-5 h-5 text-[#6160AB]" />
-                        <span>{event.date}</span>
+                        <span>{new Date(event.date).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                     </div>
                     <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg">
                         <MapPin className="w-5 h-5 text-[#F07B3C]" />

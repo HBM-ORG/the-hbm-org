@@ -1,24 +1,52 @@
-# The HBM - Website v2
+# 👑 The HBM - Professional Development Flow
 
-React + Vite + Tailwind CSS v4
+This guide outlines the standard operating procedures for developing, testing, and deploying The HBM platform.
 
-## Setup
+## 🛠 1. Environment Setup
+Always ensure your local environment is synchronized with the latest dependencies.
 ```bash
+# Clean install (if you encounter strange bugs)
+rm -rf node_modules
 npm install
+
+# Standard update
+npm install
+```
+
+## 🚀 2. Development Execution
+Depending on your focus area, use one of the following commands:
+
+### A. Full Stack (Client + Admin Server) - PREFERRED
+This runs the React frontend AND the Express backend (for emails, event saving, and image uploads).
+```bash
+npm run dev:admin
+```
+- **UI**: `http://localhost:4200`
+- **Admin Server**: `http://localhost:3001`
+
+### B. Client Only
+If you are only editing styling or UI logic and don't need the database/upload services.
+```bash
 npm run dev
 ```
 
-## Structure
-- `src/data/content.js` - ALL site text and image URLs (edit this to change content)
-- `src/pages/` - Page components (Home, FAQ, About, B2B)
-- `src/components/` - Shared components (Navbar, Footer, Layout)
-
-## Content Editing
-All text content is centralized in `src/data/content.js`. 
-Images currently load from the WordPress site URLs.
-
-## Build
+## 🏗 3. Production Readiness
+Before deploying, always verify the production bundle.
 ```bash
+# 1. Generate optimized assets
 npm run build
+
+# 2. Preview the build locally
+npm run preview
 ```
-Output goes to `dist/` folder.
+
+## 📊 4. Admin Protocol
+- **Admin Dashboard**: Accessible via `/admin`
+- **Access Key**: Distributed via internal secure channels (`hbm2026`)
+- **Intelligence Sync**: Ensure `node admin-server.js` is running (automatic in `dev:admin`)
+
+## 🚢 5. Deployment Flow
+1. **Lint**: `npm run lint` (Ensure code quality)
+2. **Build**: `npm run build`
+3. **Commit**: `git add . && git commit -m "feat: description"`
+4. **Push**: `git push origin main`

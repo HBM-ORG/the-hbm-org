@@ -6,6 +6,7 @@ import { siteContent } from '../data/content'
 export default function IceBreakerCard() {
   const { lang } = useI18n()
   const questions = siteContent.home.features.iceBreakers.questions
+  const tips = siteContent.home.features.iceBreakers.tips
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(0)
   const [activeTab, setActiveTab] = useState('icebreaker')
@@ -14,13 +15,13 @@ export default function IceBreakerCard() {
     const swipeThreshold = 100
     if (Math.abs(info.offset.x) > swipeThreshold) {
       if (info.offset.x > 0) {
-        // Swiped right - go to previous
-        setDirection(-1)
-        setCurrentIndex((prev) => (prev - 1 + questions.length) % questions.length)
-      } else {
-        // Swiped left - go to next
+        // Swiped right - go to next
         setDirection(1)
         setCurrentIndex((prev) => (prev + 1) % questions.length)
+      } else {
+        // Swiped left - go to previous
+        setDirection(-1)
+        setCurrentIndex((prev) => (prev - 1 + questions.length) % questions.length)
       }
     }
   }
@@ -96,18 +97,12 @@ export default function IceBreakerCard() {
               {/* Question Content */}
               <div className="min-h-[120px] flex items-center justify-center">
                 {activeTab === 'icebreaker' ? (
-                  <p className="text-2xl font-medium text-hbm-dark italic text-center leading-relaxed">
+                  <p className="text-xl md:text-2xl font-medium text-hbm-dark italic text-center leading-relaxed">
                     "{t(questions[currentIndex], lang)}"
                   </p>
                 ) : (
-                  <p className="text-lg text-hbm-gray text-center leading-relaxed">
-                    {t(
-                      {
-                        en: 'Take your time. Listen actively. Let the conversation flow naturally.',
-                        he: 'קחו את הזמן שלכם. הקשיבו באופן פעיל. תנו לשיחה לזרום באופן טבעי.',
-                      },
-                      lang
-                    )}
+                  <p className="text-xl md:text-2xl font-medium text-hbm-dark text-center leading-relaxed">
+                    {t(tips[currentIndex], lang)}
                   </p>
                 )}
               </div>

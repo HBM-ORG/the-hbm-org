@@ -206,46 +206,54 @@
             classDef action fill:#FFF7ED,stroke:#ea580c,stroke-width:2px;
             classDef content fill:#FAF5FF,stroke:#9333EA,stroke-width:1px;
             classDef admin fill:#1e1b4b,stroke:#a5b4fc,stroke-width:2px,color:white;
+            classDef cta fill:#F07B3C,stroke:#ea580c,stroke-width:2px,color:white,font-weight:bold;
 
             %% NODES
-            Home["🏠 HOME PAGE"]:::landing
+            Home["🏠 HOME PAGE<br><small>Visual hero, Explainer, Testimonials</small>"]:::landing
+            NavCTA["Nav CTA: 'Your 8 Min'"]:::cta
             
-            subgraph DISCOVERY ["🔍 PRODUCT DISCOVERY"]
-                Meeter["THE MEETER"]:::product
-                Who["WHO IS IT FOR"]:::product
-                Features["FEATURES"]:::product
+            subgraph DISCOVERY ["🔍 PRODUCT DISCOVERY (THE MEETER)"]
+                Meeter["1. WHAT IS IT?<br><small>Concept & Value</small>"]:::product
+                Who["2. WHO IS IT FOR?<br><small>Universities, Companies, Hotels</small>"]:::product
+                Features["3. FEATURES & UX<br><small>App Mockups, Interactive Demos</small>"]:::product
+                DiscoveryCTA["CTA: Start Your 8 Minutes"]:::cta
             end
             
             subgraph TRUST ["🌟 BRAND & AUTHORITY"]
-                Knowledge["KNOWLEDGE"]:::content
-                About["ABOUT US"]:::content
+                Knowledge["KNOWLEDGE<br><small>Books, Podcasts, Videos</small>"]:::content
+                About["ABOUT US<br><small>Team & Manifesto</small>"]:::content
+                ExtBook["External Full Book / PDF"]:::content
             end
 
             subgraph CONVERSION ["🔥 CONVERSION ENGINE"]
-                Events["EVENTS CALENDAR"]:::action
-                Register["CHECKOUT"]:::action
+                Events["EVENTS CALENDAR<br><small>Past Galleries & Future Dates</small>"]:::action
+                NextVideo["NEXT VIDEO EVENT<br><small>The HBM Flagship Form</small>"]:::action
+                Form["Registration Form / WhatsApp"]:::action
             end
 
             subgraph MAGIC ["✨ THE BACKSTAGE (Admin)"]
-                Dashboard["ADMIN DASHBOARD"]:::admin
-                Editor["VISUAL EVENT EDITOR"]:::admin
-                CMS["CONTENT MANAGER"]:::admin
+                Dashboard["ADMIN DASHBOARD<br><small>Analytics, Settings</small>"]:::admin
+                CMS["CONTENT MANAGER<br><small>Events, Video Config</small>"]:::admin
             end
 
-
             %% FLOWS
-            Home --> Meeter
-            Home --> Events
+            Home --> NavCTA
+            Home -->|"Scrolls down"| Meeter
             
-            Meeter --> Who --> Features --> Events
+            Meeter -->|"Click Next"| Who 
+            Who -->|"Click Next"| Features
+            Features --> DiscoveryCTA
 
-            Events --> Register
+            DiscoveryCTA --> Events
+            NavCTA --> NextVideo
+            Events --> NextVideo
+            NextVideo --> Form
+            Events -->|"View Past"| PastGallery["Event Gallery Modal"]:::action
             
-            Knowledge -.-> Events
+            Knowledge -.->|"Click 'Read Full'"| ExtBook
             
-            Dashboard -.->|Controls| Events
-            Editor -.->|Creates| Events
-            CMS -.->|Manages| Knowledge
+            Dashboard -.->|Controls Config| NextVideo
+            CMS -.->|Updates| Knowledge
 
             %% LINKS
             click Dashboard "/admin-dashboard" "View Admin"
@@ -267,7 +275,7 @@
         
         <!-- STEP 1: HOME -->
         <div class="flow-step">
-            <div class="phone-frame"><div class="notch"></div><iframe src="/?noheader=true"></iframe></div>
+            <div class="phone-frame"><div class="notch"></div><iframe data-src="/?noheader=true"></iframe></div>
             <div class="annotation-panel">
                 <div class="panel-header"><div class="panel-title">Home Page</div></div>
                 <!-- UX 1 -->
@@ -286,7 +294,7 @@
 
         <!-- STEP 2: MEETER (WHAT) -->
         <div class="flow-step">
-            <div class="phone-frame"><div class="notch"></div><iframe src="/meeter"></iframe></div>
+            <div class="phone-frame"><div class="notch"></div><iframe data-src="/meeter"></iframe></div>
             <div class="annotation-panel">
                 <div class="panel-header"><div class="panel-title">The Meeter</div></div>
                 <div class="ux-item">
@@ -303,7 +311,7 @@
 
         <!-- STEP 3: MEETER (WHO) -->
         <div class="flow-step">
-            <div class="phone-frame"><div class="notch"></div><iframe src="/meeter/who"></iframe></div>
+            <div class="phone-frame"><div class="notch"></div><iframe data-src="/meeter/who"></iframe></div>
             <div class="annotation-panel">
                 <div class="panel-header"><div class="panel-title">Who Is It For?</div></div>
                 <div class="ux-item">
@@ -320,7 +328,7 @@
 
         <!-- STEP 4: FEATURES -->
         <div class="flow-step">
-            <div class="phone-frame"><div class="notch"></div><iframe src="/meeter/features"></iframe></div>
+            <div class="phone-frame"><div class="notch"></div><iframe data-src="/meeter/features"></iframe></div>
             <div class="annotation-panel">
                  <div class="panel-header"><div class="panel-title">Features</div></div>
                 <div class="ux-item">
@@ -337,7 +345,7 @@
 
         <!-- STEP 5: KNOWLEDGE -->
         <div class="flow-step">
-            <div class="phone-frame"><div class="notch"></div><iframe src="/knowledge"></iframe></div>
+            <div class="phone-frame"><div class="notch"></div><iframe data-src="/knowledge"></iframe></div>
             <div class="annotation-panel">
                 <div class="panel-header"><div class="panel-title">Wisdom Base</div></div>
                 <div class="ux-item">
@@ -354,7 +362,7 @@
 
         <!-- STEP 6: ABOUT -->
         <div class="flow-step">
-            <div class="phone-frame"><div class="notch"></div><iframe src="/about"></iframe></div>
+            <div class="phone-frame"><div class="notch"></div><iframe data-src="/about"></iframe></div>
             <div class="annotation-panel">
                 <div class="panel-header"><div class="panel-title">About Us</div></div>
                 <div class="ux-item">
@@ -382,7 +390,7 @@
 
     <div class="flow-wrapper">
         <div class="flow-step">
-            <div class="phone-frame"><div class="notch"></div><iframe src="/events"></iframe></div>
+            <div class="phone-frame"><div class="notch"></div><iframe data-src="/events"></iframe></div>
             <div class="annotation-panel">
                 <div class="panel-header"><div class="panel-title">Events List</div></div>
                 <div class="ux-item"><div class="ux-icon warn">🔥</div><div class="ux-content"><h4>Urgency</h4><p>'3 spots left' banner.</p></div></div>
@@ -391,7 +399,7 @@
         </div>
         <div class="step-arrow">→</div>
         <div class="flow-step">
-            <div class="phone-frame"><div class="notch"></div><iframe src="/events/next-1"></iframe></div>
+            <div class="phone-frame"><div class="notch"></div><iframe data-src="/events/next-1"></iframe></div>
             <div class="annotation-panel">
                 <div class="panel-header"><div class="panel-title">Single Event</div></div>
                 <div class="ux-item"><div class="ux-icon idea">📍</div><div class="ux-content"><h4>Logistics</h4><p>'Add to Cal' button.</p></div></div>
@@ -400,7 +408,7 @@
         </div>
         <div class="step-arrow">→</div>
         <div class="flow-step">
-            <div class="phone-frame"><div class="notch"></div><iframe src="/events/register"></iframe></div>
+            <div class="phone-frame"><div class="notch"></div><iframe data-src="/events/register"></iframe></div>
             <div class="annotation-panel">
                 <div class="panel-header"><div class="panel-title">Checkout</div></div>
                 <div class="ux-item"><div class="ux-icon">✅</div><div class="ux-content"><h4>Friction</h4><p>Enable Guest Checkout.</p></div></div>
@@ -423,7 +431,7 @@
     <div class="flow-wrapper">
          <div class="flow-step">
             <div class="phone-frame" style="width: 800px; flex: 0 0 800px; border-radius: 12px; height: 500px;">
-                <iframe src="/admin-dashboard" style="border-radius: 0;"></iframe>
+                <iframe data-src="/admin-dashboard" style="border-radius: 0;"></iframe>
             </div>
             <div class="annotation-panel">
                  <div class="panel-header"><div class="panel-title">Admin Dashboard</div></div>
@@ -474,6 +482,20 @@
 
 <script>
     mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { fontFamily: 'Inter' } });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Fix iframe paths resolving locally when visual-sitemap is opened via Double Click (file:///)
+        // or just ensure they run correctly off localhost:4201 if file:///
+        const isFile = window.location.protocol === 'file:';
+        const baseUrl = isFile ? 'http://localhost:4201' : window.location.origin;
+
+        document.querySelectorAll('iframe[data-src]').forEach(iframe => {
+            const rawSrc = iframe.getAttribute('data-src');
+            if (rawSrc) {
+                iframe.src = baseUrl + rawSrc;
+            }
+        });
+    });
 </script>
 
 </body>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { eventsConfig } from '../data/eventsConfig';
+import { motion } from 'framer-motion';
+import { useEvents } from '../context/EventsContext';
 import NextEventHero from '../components/Events/NextEventHero';
 import { ArrowLeft } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -9,28 +9,53 @@ import SEO from '../components/SEO';
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { events, loading } = useEvents();
   const [event, setEvent] = useState(null);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    // Find event by ID
-    // ID in URL might be string or number, check both
-    const foundEvent = eventsConfig.find(e => String(e.id) === id);
+    const foundEvent = events.find(e => String(e.id) === String(id));
     if (foundEvent) {
       setEvent(foundEvent);
-    } else {
-      // Setup redirect or not found
-      // For now just back to events
-      navigate('/events');
+      setNotFound(false);
+    } else if (!loading) {
+      // Only mark as not found once loading is complete
+      setNotFound(true);
     }
-  }, [id, navigate]);
+  }, [id, events, loading]);
 
-  if (!event) return <div className="min-h-screen bg-black" />;
+  // Still loading — show skeleton
+  if (loading || (!event && !notFound)) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+          <p className="text-white/50 text-sm font-bold uppercase tracking-widest">Loading Event...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Event not found
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-hbm-cream flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-8xl font-black text-gray-200 mb-4">404</div>
+          <h1 className="text-2xl font-black text-gray-700 mb-6">Event Not Found</h1>
+          <button onClick={() => navigate('/events')} className="bg-[#6160AB] text-white px-8 py-3 rounded-full font-bold hover:bg-[#5150aa] transition-all">
+            Back to Events
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
       <SEO 
-        title={`${event.title.en || event.title} | The HBM`} 
-        description={event.description.en || event.description} 
+        title={`${event.title?.en || event.title} | The HBM`} 
+        description={event.description?.en || event.description} 
       />
       {/* Back Button Overlay */}
       <div className="fixed top-24 left-6 z-50">
@@ -48,3 +73,4 @@ const EventDetails = () => {
 };
 
 export default EventDetails;
+

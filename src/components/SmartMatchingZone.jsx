@@ -1,18 +1,25 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useI18n, t } from '../i18n/context'
 import { Sparkles } from 'lucide-react'
+import { siteContent } from '../data/content'
 
 export default function SmartMatchingZone() {
+  const navigate = useNavigate()
   const { lang } = useI18n()
-  const [selectedInterests, setSelectedInterests] = useState(['Fitness', 'Tech'])
-
+  const [selectedInterests, setSelectedInterests] = useState([])
   const interests = [
-    { en: 'Fitness', he: 'כושר', color: 'bg-green-100 text-green-700 border-green-300' },
-    { en: 'Tech', he: 'טכנולוגיה', color: 'bg-blue-100 text-blue-700 border-blue-300' },
-    { en: 'Travel', he: 'טיולים', color: 'bg-purple-100 text-purple-700 border-purple-300' },
-    { en: 'Food', he: 'אוכל', color: 'bg-orange-100 text-orange-700 border-orange-300' },
+    { en: 'Art', he: 'אמנות', color: 'bg-red-100 text-red-700 border-red-300' },
     { en: 'Music', he: 'מוזיקה', color: 'bg-pink-100 text-pink-700 border-pink-300' },
-    { en: 'Art', he: 'אמנות', color: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
+    { en: 'Sport', he: 'ספורט', color: 'bg-green-100 text-green-700 border-green-300' },
+    { en: 'Travel', he: 'טיולים', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+    { en: 'Food & Cooking', he: 'אוכל ובישול', color: 'bg-orange-100 text-orange-700 border-orange-300' },
+    { en: 'Entrepreneurship', he: 'יזמות', color: 'bg-purple-100 text-purple-700 border-purple-300' },
+    { en: 'Movies & TV', he: 'סרטים וטלוויזיה', color: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
+    { en: 'Books', he: 'ספרים', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
+    { en: 'Gaming', he: 'גיימינג', color: 'bg-teal-100 text-teal-700 border-teal-300' },
+    { en: 'Fashion', he: 'אופנה', color: 'bg-rose-100 text-rose-700 border-rose-300' },
+    { en: 'Family', he: 'משפחה', color: 'bg-cyan-100 text-cyan-700 border-cyan-300' },
   ]
 
   const toggleInterest = (interest) => {
@@ -66,7 +73,9 @@ export default function SmartMatchingZone() {
         </div>
 
         {/* CTA Button */}
-        <button className="w-full bg-gradient-to-r from-hbm-purple to-hbm-orange text-white font-bold py-4 px-6 rounded-2xl hover:shadow-xl transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2 group">
+        <button 
+          onClick={() => navigate(siteContent.global.ctaUrl)}
+          className="w-full bg-gradient-to-r from-hbm-purple to-hbm-orange text-white font-bold py-4 px-6 rounded-2xl hover:shadow-xl transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2 group">
           <span className="text-lg">
             {t({ en: 'Start Your 8 Minutes', he: 'התחילו את 8 הדקות שלכם' }, lang)}
           </span>
@@ -74,15 +83,19 @@ export default function SmartMatchingZone() {
         </button>
 
         {/* Match Count */}
-        <p className="text-center text-sm text-gray-500 mt-4">
-          {t(
-            {
-              en: `${selectedInterests.length} interests selected • Finding your perfect match...`,
-              he: `${selectedInterests.length} תחומי עניין נבחרו • מחפשים את ההתאמה המושלמת...`,
-            },
-            lang
+        <div className="h-6 mt-4">
+          {selectedInterests.length > 0 && (
+            <p className="text-center text-sm text-gray-500 animate-fade-in">
+              {t(
+                {
+                  en: `${selectedInterests.length} interests selected • Finding your perfect match...`,
+                  he: `${selectedInterests.length} תחומי עניין נבחרו • מחפשים את ההתאמה המושלמת...`,
+                },
+                lang
+              )}
+            </p>
           )}
-        </p>
+        </div>
       </div>
     </div>
   )

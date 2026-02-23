@@ -1,13 +1,15 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Users, Image as ImageIcon, ChevronRight, Heart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import EventModal from '../components/Events/EventModal';
 import { getNextEvent, getEventsByYear, getEventDateParts } from '../utils/eventUtils';
+import { useEvents } from '../context/EventsContext';
 import { useI18n, t } from '../i18n/context';
 import EyebrowBadge from '../components/EyebrowBadge';
 
 import FeaturedEventCard from '../components/Events/FeaturedEventCard';
+import NextVideoEvent from '../components/Home/NextVideoEvent';
 
 const Events = () => {
   const { lang } = useI18n();
@@ -15,15 +17,31 @@ const Events = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
+  const { events } = useEvents();
+  
   // 1. Get Automation Data
-  const eventsByYear = useMemo(() => getEventsByYear(), []);
-  const nextEvent = useMemo(() => getNextEvent(), []);
+  const eventsByYear = useMemo(() => getEventsByYear(events), [events]);
+  const nextEvent = useMemo(() => getNextEvent(events), [events]);
   
   // 2. Dynamic Year Handling
   const availableYears = Object.keys(eventsByYear).sort((a, b) => b - a);
   const [selectedYear, setSelectedYear] = useState(availableYears[0] || '2026');
 
   const currentEvents = eventsByYear[selectedYear] || [];
+  
+  const [videoEventConfig, setVideoEventConfig] = useState(null)
+
+  useEffect(() => {
+    const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
+    fetch(`${base}/api/video-event`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.title && (data.title.en || data.title.he)) {
+          setVideoEventConfig(data);
+        }
+      })
+      .catch(err => console.error("Video Event config fetch error:", err));
+  }, []);
 
   const openEventModal = (event) => {
     // If it's a future event, navigate to details page
@@ -36,10 +54,10 @@ const Events = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAF9F5]">
       
       {/* 1. Header Section (Who We Are Style) */}
-      <section className="bg-white pt-20 pb-16">
+      <section className="bg-[#FAF9F5] pt-20 pb-16">
            <div className="max-w-4xl mx-auto text-center px-6">
                <div className="mb-6">
                    <EyebrowBadge text={t({en: 'EVENTS', he: 'אירועים'}, lang)} />
@@ -63,8 +81,15 @@ const Events = () => {
         <FeaturedEventCard event={nextEvent} />
       )}
 
+      {/* Next Video Event (Dynamic via CMS) */}
+      {videoEventConfig && (
+        <div className="-mt-10">
+            <NextVideoEvent config={videoEventConfig} />
+        </div>
+      )}
+
       {/* 3. Archive Events Grid */}
-      <section className="pb-20 bg-white">
+      <section className="pb-20 bg-[#FAF9F5]">
         <div className="max-w-7xl mx-auto px-6">
             
             <h2 className="text-2xl font-bold text-center mb-10 text-gray-400 uppercase tracking-widest font-['Sora']">
