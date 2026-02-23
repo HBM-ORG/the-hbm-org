@@ -23,26 +23,28 @@ export const knowledgeCategories = [
   'Modern Science'
 ];
 
-// Combine all data chunks
-// Combine all data chunks with BALANCED SLICING
-// Strategy: Core (10) + Figures (8) + ~8 per category = ~88 Total
-// This ensures no category is empty while respecting the strict limit.
+/**
+ * CURATION STRATEGY: 
+ * To prevent overwhelming the user and ensure high-quality discovery,
+ * we strictly limit each category to the 8 most iconic/well-known titles.
+ * The source chunks are already ordered by "Big 8" importance.
+ */
 
 const rawData = [
-  ...coreData, // Keep all Core (High Quality) - Pinned at Top
-  ...philosophyData,
-  ...performanceData,
-  ...biohackingData,
-  ...spiritualityData,
-  ...psychologyData,
-  ...wealthData,
-  ...leadershipData,
-  ...focusData,
-  ...modernScienceData,
-  ...figuresData
-]; // Total candidates: ~160+. Strict Cover Logic will filter this down to a robust ~100.
+  ...coreData, // Essential Pinned Books (Atomic Habits, Sapiens, etc.)
+  ...philosophyData.slice(0, 8),
+  ...performanceData.slice(0, 8),
+  ...biohackingData.slice(0, 8),
+  ...spiritualityData.slice(0, 8),
+  ...psychologyData.slice(0, 8),
+  ...wealthData.slice(0, 8),
+  ...leadershipData.slice(0, 8),
+  ...focusData.slice(0, 8),
+  ...modernScienceData.slice(0, 8),
+  ...figuresData.slice(0, 10) // Key Figures
+];
 
-// Deduplicate by ID just in case
+// Deduplicate by Title (normalized) to ensure clean listing
 const uniqueDataMap = new Map();
 rawData.forEach(item => {
   const key = item.title.toLowerCase().trim(); 
