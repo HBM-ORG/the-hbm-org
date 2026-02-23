@@ -16,22 +16,6 @@ export const psychologyData = [
     hbmPerspective: "Understanding biases helps us navigate misunderstandings in relationships.",
   },
   {
-    id: 'psych-2',
-    type: 'BOOK',
-    title: 'Influence: The Psychology of Persuasion',
-    author: 'Robert B. Cialdini',
-    category: 'Psychology',
-    tags: ['Persuasion', 'Marketing', 'Behavior'],
-    description: 'The classic book on persuasion, explaining the psychology of why people say "yes"—and how to apply these understandings.',
-    essence: "The six universal principles of persuasion that guide human behavior.",
-    takeaways: [
-      "Reciprocity: Give to receive.",
-      "Social Proof: We look to others to determine correct behavior.",
-      "Scarcity: We want what is rare."
-    ],
-    hbmPerspective: "Authentic influence is about understanding needs, not manipulation.",
-  },
-  {
     id: 'psych-3',
     type: 'BOOK',
     title: 'Flow: The Psychology of Optimal Experience',

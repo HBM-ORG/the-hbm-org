@@ -89,12 +89,21 @@ export default function MeeterWhat() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-2xl md:text-5xl font-black font-['Sora'] text-[#6160AB]/20 italic leading-tight tracking-tight"
+            className="text-2xl md:text-5xl font-black font-['Sora'] text-hbm-purple italic leading-tight tracking-tight"
           >
-            {t({ 
-              en: '"Digital platform designed to connect people live at the event for 1 on 1 conversations."', 
-              he: '"פלטפורמה דיגיטלית המיועדת לחבר בין אנשים בזמן אמת באירוע לשיחות של אחד על אחד."' 
-            }, lang)}
+            {lang === 'he' ? (
+              <>
+                "פלטפורמה דיגיטלית המיועדת לחבר בין אנשים בזמן אמת באירוע
+                <br />
+                לשיחות של אחד על אחד."
+              </>
+            ) : (
+              <>
+                "Digital platform designed to connect people live at the event
+                <br />
+                for 1 on 1 conversations."
+              </>
+            )}
           </motion.p>
         </div>
       </section>
@@ -108,7 +117,7 @@ export default function MeeterWhat() {
       {/* ── S4: WHY 8 MINUTES — Psychology ── */}
       <Why8MinutesTimer compact={true} />
 
-      {/* ── S5: DID YOU KNOW — 95% Sticky Section ── */}
+      {/* ── S5: DID YOU KNOW — 95% Sticky Section — Fixed and Restored ── */}
       <DidYouKnowSection />
 
       {/* Bridge to Who */}

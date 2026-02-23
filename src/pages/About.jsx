@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { siteContent } from '../data/content'
@@ -47,7 +47,18 @@ export default function About() {
   const { lang } = useI18n()
   const [flippedCard, setFlippedCard] = useState(null)
   const [selectedMember, setSelectedMember] = useState(null)
+  const [teamMembers, setTeamMembers] = useState(about.team.members)
   const whatsappUrl = getWhatsappUrl(lang)
+
+  useEffect(() => {
+    const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
+    fetch(`${base}/api/site-content`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.team && data.team.length > 0) setTeamMembers(data.team);
+      })
+      .catch(err => console.error(err));
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -55,7 +66,8 @@ export default function About() {
       {/* Hero */}
       <section className="bg-hbm-cream pt-20 pb-12">
           <div className="max-w-4xl mx-auto text-center px-6">
-            <div className="mb-6 flex justify-center">
+            <div className="mb-6 flex flex-col items-center">
+              <img src="/logos/theHBM%20LOGO@3x.png" alt="The HBM" className="h-20 w-auto object-contain mb-4" />
               <EyebrowBadge text="ABOUT US" />
             </div>
             <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>
@@ -121,16 +133,16 @@ export default function About() {
           <div className="max-w-6xl mx-auto w-full relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-12">{t(about.team.title, lang)}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-              {about.team.members.filter(m => m.name && m.image).map((member, i) => (
+              {teamMembers.filter(m => m.name && (m.image || m.imageUrl)).map((member, i) => (
                 <div 
                   key={i} 
                   className="text-center group cursor-pointer"
                   onClick={() => setSelectedMember(member)}
                 >
                   <div className="w-28 h-28 md:w-36 md:h-36 mx-auto rounded-full overflow-hidden mb-4 team-photo border-4 border-white shadow-lg group-hover:scale-105 transition-transform duration-300 ring-2 ring-hbm-purple/10 relative flex items-center justify-center bg-gray-100">
-                    {member.image ? (
+                    {(member.image || member.imageUrl) ? (
                       <img 
-                        src={member.image} 
+                        src={member.image || member.imageUrl} 
                         alt={member.name} 
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -139,7 +151,7 @@ export default function About() {
                         }}
                       />
                     ) : null}
-                    <div className={`${member.image ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40`}>
+                    <div className={`${(member.image || member.imageUrl) ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40`}>
                       <User size={40} />
                     </div>
                     {member.linkedin && (
@@ -155,10 +167,10 @@ export default function About() {
                     )}
                   </div>
                   <h4 className="font-bold text-hbm-dark text-base md:text-lg">{member.name}</h4>
-                  <p className="text-hbm-purple text-xs md:text-sm font-semibold uppercase tracking-wider">{t(member.role, lang)}</p>
+                  <p className="text-hbm-purple text-xs md:text-sm font-semibold uppercase tracking-wider">{typeof member.role === 'string' ? member.role : t(member.role, lang)}</p>
                   {member.nickname && (
                     <p className="text-hbm-gray text-xs italic mt-1 opacity-70">
-                      "{t(member.nickname, lang)}"
+                      "{typeof member.nickname === 'string' ? member.nickname : t(member.nickname, lang)}"
                     </p>
                   )}
                 </div>
@@ -197,41 +209,41 @@ export default function About() {
               </button>
 
               {/* Profile Image (Side) */}
-              <div className="w-full md:w-2/5 p-8 bg-hbm-cream flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100">
-                <div className="relative mb-4 group/img">
-                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden shadow-xl border-4 border-white flex items-center justify-center bg-gray-100">
-                    {selectedMember.image ? (
-                      <img 
-                        src={selectedMember.image} 
-                        alt={selectedMember.name} 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div className={`${selectedMember.image ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40`}>
-                      <User size={60} />
-                    </div>
+              <div className="w-full md:w-2/5 md:max-w-sm shrink-0 bg-gray-100 relative">
+                {(selectedMember.image || selectedMember.imageUrl) ? (
+                  <img 
+                    src={selectedMember.image || selectedMember.imageUrl} 
+                    alt={selectedMember.name}
+                    className="w-full h-64 md:h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-64 md:h-full flex items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40">
+                    <User size={80} />
                   </div>
-                  {selectedMember.linkedin && (
-                    <a 
-                      href={selectedMember.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute -bottom-2 -right-2 w-10 h-10 bg-[#0077B5] rounded-xl flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform"
-                    >
-                      <Linkedin size={20} />
-                    </a>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent text-white">
+                  <h3 className="text-3xl font-black text-white tracking-tight mb-1">{selectedMember.name}</h3>
+                  <p className="text-hbm-cream font-bold tracking-widest uppercase text-sm mb-2">
+                    {typeof selectedMember.role === 'string' ? selectedMember.role : t(selectedMember.role, lang)}
+                  </p>
+                  {selectedMember.nickname && (
+                    <p className="text-white text-sm italic opacity-80">
+                      "{typeof selectedMember.nickname === 'string' ? selectedMember.nickname : t(selectedMember.nickname, lang)}"
+                    </p>
                   )}
                 </div>
-                <h3 className="text-xl font-bold text-hbm-dark text-center leading-tight">
-                  {selectedMember.name}
-                </h3>
-                <p className="text-hbm-purple font-semibold text-sm uppercase tracking-wider text-center">
-                  {t(selectedMember.role, lang)}
-                </p>
+
+                {/* LinkedIn Icon - Positioned at top right of image area */}
+                {selectedMember.linkedin && (
+                  <a 
+                    href={selectedMember.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute top-6 right-6 w-10 h-10 bg-[#0077B5] rounded-xl flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform z-20"
+                  >
+                    <Linkedin size={22} />
+                  </a>
+                )}
               </div>
 
               {/* Bio Content (Main) */}
@@ -243,10 +255,15 @@ export default function About() {
                 )}
                 
                 <div className="space-y-4">
-                  <p className="text-gray-600 leading-relaxed">
-                    {t(selectedMember.bio, lang)}
-                  </p>
-                  
+                  <div className="prose prose-sm md:prose-base text-hbm-gray">
+                    {typeof selectedMember.bio === 'string' ? (
+                        <p>{selectedMember.bio}</p>
+                    ) : (
+                        t(selectedMember.bio, lang).map((para, idx) => (
+                          <p key={idx} className="mb-4 leading-relaxed">{para}</p>
+                        ))
+                    )}
+                  </div>
                   {selectedMember.funFact && (
                     <div className="pt-4 border-t border-gray-100">
                       <p className="text-sm">
@@ -273,7 +290,7 @@ export default function About() {
             </h2>
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div className="flex justify-center">
-                <img src="/assets/logo.png" alt="HBM Logo" className="max-w-xs w-full" />
+                <img src="/logos/theHBM%20LOGO@3x.png" alt="HBM Logo" className="max-w-xs w-full" />
               </div>
               <div>
                 <p className="text-hbm-gray leading-relaxed mb-6">

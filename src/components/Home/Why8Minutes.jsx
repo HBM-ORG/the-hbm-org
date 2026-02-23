@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Instagram } from 'lucide-react'
 import { useI18n, t } from '../../i18n/context'
@@ -27,44 +27,6 @@ const featureCards = [
 
 export default function Why8Minutes() {
   const { lang } = useI18n()
-  // Load SociableKIT script
-  useEffect(() => {
-    const scriptUrl = "https://widgets.sociablekit.com/index.js";
-    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
-    
-    const initWidget = () => {
-      // Try multiple different initialization methods used by SociableKIT
-      if (window.SociableKIT && typeof window.SociableKIT.init === 'function') {
-        window.SociableKIT.init();
-      }
-      if (window.sk_instagram_reels && typeof window.sk_instagram_reels.init === 'function') {
-        window.sk_instagram_reels.init();
-      }
-    };
-
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.src = scriptUrl;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setTimeout(initWidget, 500);
-      };
-      document.body.appendChild(script);
-    } else {
-      initWidget();
-    }
-
-    // Polling: Attempt to initialize every 2 seconds for the first 10 seconds
-    // This handles cases where React renders after the script has already run.
-    const intervals = [500, 1500, 3000, 6000, 10000].map(delay => 
-      setTimeout(initWidget, delay)
-    );
-
-    return () => {
-      intervals.forEach(clearTimeout);
-    };
-  }, []);
 
   return (
     <section className="section-padding bg-hbm-cream flex flex-col items-center justify-center min-h-[85vh] md:min-h-screen relative overflow-hidden">
@@ -119,28 +81,14 @@ export default function Why8Minutes() {
             className="relative w-full max-w-[280px] md:max-w-[320px] mx-auto z-10"
           >
             <div className="relative aspect-[9/16] bg-black rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] md:border-[8px] border-gray-900">
-                <div 
-                  className='sk-ww-instagram-reels h-full w-full' 
-                  data-embed-id='25653662'
-                >
-                  {/* Fallback loader - standard SociableKIT pattern */}
-                  <div style={{
-                    width: '100%', 
-                    height: '100%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    background: '#0a0a0a', 
-                    color: '#fff', 
-                    flexDirection: 'column', 
-                    gap: '12px'
-                  }}>
-                    <div className="w-10 h-10 border-4 border-hbm-orange/30 border-t-hbm-orange rounded-full animate-spin"></div>
-                    <p style={{ fontFamily: 'Sora, sans-serif', fontSize: '14px', fontWeight: 'bold' }}>
-                      {t({ en: 'Loading Reels...', he: 'טוען רהילים...' }, lang)}
-                    </p>
-                  </div>
-                </div>
+                <video
+                  src="/meeter-video/Meeter_Com_Reel.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
             </div>
           </motion.div>
 

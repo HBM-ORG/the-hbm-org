@@ -10,6 +10,62 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
   
   const [wordIdx, setWordIdx] = React.useState(0)
   
+  const marqueeContent = React.useMemo(() => {
+    const speed = 70
+    const direction = 1
+    return (
+      <div className="flex gap-4 md:gap-8 w-max animate-marquee hover:[animation-play-state:paused] whitespace-nowrap px-4 h-28 md:h-32 items-center"
+           style={{ animationDuration: `${speed}s`, animationDirection: direction === -1 ? 'reverse' : 'normal' }}>
+        {[...imagePairs, ...imagePairs, ...imagePairs].map((pair, idx) => (
+          <React.Fragment key={idx}>
+            {/* Pair of video circles */}
+            <div className="flex -space-x-4 md:-space-x-6">
+              <motion.div 
+                className="video-circle w-20 h-20 md:w-28 md:h-28 border-4" 
+                style={{ borderColor: pair.leftBorder || '#bbc0ff' }}
+                animate={{ 
+                  scale: [1, 1.02, 1],
+                  rotate: [0, 1, -1, 0]
+                }}
+                transition={{ 
+                  duration: 4, 
+                  repeat: Infinity, 
+                  ease: "easeInOut",
+                  delay: idx * 0.1
+                }}
+              >
+                {pair.left?.endsWith('.mp4') ? (
+                  <video src={pair.left} autoPlay muted loop playsInline poster={pair.leftPoster} className="w-full h-full object-cover" />
+                ) : <img src={pair.leftPoster} alt="" className="w-full h-full object-cover" />}
+              </motion.div>
+              <motion.div 
+                className="video-circle w-20 h-20 md:w-28 md:h-28 border-4 relative z-10" 
+                style={{ borderColor: pair.rightBorder || '#fdb586' }}
+                animate={{ 
+                  scale: [1, 1.03, 1],
+                  rotate: [0, -1, 1, 0]
+                }}
+                transition={{ 
+                  duration: 5, 
+                  repeat: Infinity, 
+                  ease: "easeInOut",
+                  delay: idx * 0.2
+                }}
+              >
+                {pair.right?.endsWith('.mp4') ? (
+                  <video src={pair.right} autoPlay muted loop playsInline poster={pair.rightPoster} className="w-full h-full object-cover" />
+                ) : <img src={pair.rightPoster} alt="" className="w-full h-full object-cover" />}
+              </motion.div>
+            </div>
+            
+            {/* Separator / Decoration */}
+            <div className="w-12 h-[2px] bg-[#bbc0ff]/30 rounded-full" />
+          </React.Fragment>
+        ))}
+      </div>
+    )
+  }, [imagePairs])
+
   React.useEffect(() => {
     const interval = setInterval(() => setWordIdx(i => (i + 1) % words.length), 2000)
     return () => clearInterval(interval)
@@ -19,7 +75,7 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
   const opacity = useTransform(scrollY, [0, 200], [1, 0])
 
   return (
-    <section id="hero" className="relative h-[90vh] min-h-[700px] flex items-start justify-center overflow-hidden bg-gradient-to-b from-[#f8f9fa] to-hbm-cream pt-24 md:pt-32">
+    <section id="hero" className="relative h-[90vh] min-h-[700px] flex items-start justify-center overflow-hidden w-full bg-gradient-to-b from-[#f8f9fa] to-hbm-cream pt-24 md:pt-32">
       {/* Animated background blobs */}
       <motion.div
         className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-[#6160AB]/20 to-[#8b7fd9]/20 rounded-full blur-3xl"
@@ -81,23 +137,8 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
 
         {/* Infinite Marquee for Video Circles */}
         <div className="relative w-full overflow-hidden mask-gradient-x mb-12">
-          <div className="flex gap-8 items-center w-max animate-marquee hover:[animation-play-state:paused]">
-            {/* Duplicate sets for infinite loop */}
-            {[...imagePairs, ...imagePairs, ...imagePairs].map((pair, i) => (
-              <div key={i} className="flex items-center -space-x-4 shrink-0 transform hover:scale-105 transition-transform duration-300">
-                <div className="video-circle w-20 h-20 md:w-28 md:h-28 border-4" style={{ borderColor: '#bbc0ff' }}>
-                  {pair.left?.endsWith('.mp4') ? (
-                    <video src={pair.left} autoPlay muted loop playsInline poster={pair.poster} className="w-full h-full object-cover" />
-                  ) : <img src={pair.poster} alt="" className="w-full h-full object-cover" />}
-                </div>
-                <div className="video-circle w-20 h-20 md:w-28 md:h-28 border-4" style={{ borderColor: '#fdb586' }}>
-                  {pair.right?.endsWith('.mp4') ? (
-                    <video src={pair.right} autoPlay muted loop playsInline poster={pair.poster} className="w-full h-full object-cover" />
-                  ) : <img src={pair.poster} alt="" className="w-full h-full object-cover" />}
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Duplicate sets for infinite loop handled safely inside MarqueeTrack now */}
+          {marqueeContent}
         </div>
 
         {/* Main headline - Grid layout for strict 2 lines */}

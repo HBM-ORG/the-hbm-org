@@ -283,16 +283,14 @@ const LibraryDrawer = ({ item, onClose }) => {
 }
 
 export default function Knowledge() {
-  const [activeCategory, setActiveCategory] = useState('All')
   const [selectedBook, setSelectedBook] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredData = knowledgeData.filter(item => {
     if (!item || !item.title || !item.author) return false;
-    const matchesCategory = activeCategory === 'All' || item.category === activeCategory
     const matchesSearch = (item.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
                           (item.author?.toLowerCase() || '').includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
+    return matchesSearch
   })
 
   // Prevent scrolling when drawer is open
@@ -314,43 +312,24 @@ export default function Knowledge() {
               <EyebrowBadge text="KNOWLEDGE" />
             </div>
             <h1 className="text-4xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>
-               The Wisdom Base
+               HBM Recommended Books
             </h1>
             <p className="text-xl text-hbm-gray max-w-2xl mx-auto">
-               Curated wisdom for the modern human. Explore philosophy, science, and the art of living—powered by real-time data.
+               A carefully curated collection of timeless wisdom for the modern mind. From personal development and entrepreneurship to psychology and philosophy.
             </p>
           </div>
       </section>
-      {/* Sticky Filter Bar */}
-      <div className="sticky top-20 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 mb-12 shadow-sm transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-6">
-           
-           {/* Categories - Bubble Style Badge Wrapper - kept generic but clean */}
-           <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide mask-linear-fade">
-              <LayoutGroup>
-                {knowledgeCategories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`relative px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap border ${
-                      activeCategory === cat 
-                        ? 'text-hbm-purple bg-white border-hbm-purple shadow-md shadow-hbm-purple/10' 
-                        : 'text-gray-500 bg-gray-50 border-transparent hover:bg-white hover:border-gray-200 hover:shadow-sm'
-                    }`}
-                  >
-                    {cat}
-                    {/* Removed underline for pure bubble style */}
-                  </button>
-                ))}
-              </LayoutGroup>
-           </div>
 
+      {/* Sticky Search Bar (No categories as per request) */}
+      <div className="sticky top-20 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 mb-12 shadow-sm transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-center">
+           
            {/* Search */}
-           <div className="relative w-full md:w-72 group">
+           <div className="relative w-full md:w-96 group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-hbm-purple transition-colors" />
-              <input 
+               <input 
                 type="text" 
-                placeholder="Search library..." 
+                placeholder="Search the library..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-white rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-hbm-purple/20 focus:border-hbm-purple/30 text-sm font-bold transition-all shadow-sm group-hover:shadow-md"
@@ -382,8 +361,8 @@ export default function Knowledge() {
               <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
                  <Sparkles className="w-10 h-10 text-gray-400" />
               </div>
-              <h3 className="text-2xl font-black text-hbm-dark mb-2">Keep Seeking Wisdom</h3>
-              <p className="text-gray-500 font-medium">No results found for your search. Try a different term or category.</p>
+               <h3 className="text-2xl font-black text-hbm-dark mb-2">Keep Exploring</h3>
+               <p className="text-gray-500 font-medium">We couldn't find any books matching your search. Try a different term.</p>
            </motion.div>
         )}
       </div>

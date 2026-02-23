@@ -27,19 +27,30 @@ const DEFAULT_FLOWS = [
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-const KpiCard = ({ icon: Icon, label, value, sub, color = 'purple' }) => (
-    <motion.div
-        whileHover={{ y: -2, scale: 1.01 }}
-        className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm cursor-default"
-    >
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-${color}-50`}>
-            <Icon className={`w-5 h-5 text-${color}-600`} />
-        </div>
-        <div className="text-3xl font-black text-gray-900 tracking-tighter leading-none">{String(value).toLocaleString()}</div>
-        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{label}</div>
-        {sub && <div className="text-[9px] text-gray-300 font-mono mt-1">{sub}</div>}
-    </motion.div>
-);
+// ── Sub-components ───────────────────────────────────────────────────────────
+
+const KpiCard = ({ icon: Icon, label, value, sub, color = 'purple' }) => {
+    const colorMap = {
+        purple: 'bg-purple-50 text-purple-600',
+        blue: 'bg-blue-50 text-blue-600',
+        orange: 'bg-orange-50 text-orange-600',
+        green: 'bg-green-50 text-green-600',
+        red: 'bg-red-50 text-red-600'
+    };
+    return (
+        <motion.div
+            whileHover={{ y: -2, scale: 1.01 }}
+            className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm cursor-default"
+        >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${colorMap[color]}`}>
+                <Icon className="w-5 h-5" />
+            </div>
+            <div className="text-3xl font-black text-gray-900 tracking-tighter leading-none">{String(value).toLocaleString()}</div>
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{label}</div>
+            {sub && <div className="text-[9px] text-gray-400 font-bold mt-1">{sub}</div>}
+        </motion.div>
+    );
+};
 
 const Toggle = ({ checked, onChange, label }) => (
     <label className="flex items-center gap-3 cursor-pointer group">
@@ -78,14 +89,14 @@ const SmtpBadge = ({ config }) => {
 
     const map = {
         ok: { dot: 'bg-green-400 shadow-[0_0_8px_#4ade80]', text: 'text-green-400', label: 'SMTP Online' },
-        error: { dot: 'bg-red-500 shadow-[0_0_8px_#ef4444]', text: 'text-red-500', label: msg || 'SMTP Error' },
+        error: { dot: 'bg-red-500 shadow-[0_0_8px_#ef4444]', text: 'text-red-500', label: msg ? (msg.length > 15 ? msg.substring(0,12)+'...' : msg) : 'SMTP Error' },
         checking: { dot: 'bg-yellow-400 animate-pulse', text: 'text-yellow-400', label: 'Checking...' },
         unconfigured: { dot: 'bg-gray-300', text: 'text-gray-400', label: 'Not Configured' },
         idle: { dot: 'bg-gray-300', text: 'text-gray-400', label: '—' },
     }[status];
 
     return (
-        <div className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-xl">
+        <div className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-xl" title={msg}>
             <div className={`w-1.5 h-1.5 rounded-full ${map.dot}`} />
             <span className={`text-[9px] font-black uppercase tracking-widest ${map.text}`}>{map.label}</span>
             {latency && <span className="text-[8px] text-gray-600 font-mono ml-1">{latency}ms</span>}
@@ -114,6 +125,7 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
 
     const primary = config?.globalStyling?.primaryColor || '#6160AB';
     const secondary = config?.globalStyling?.secondaryColor || '#F07B3C';
+    const logoUrl = config?.globalStyling?.logoUrl || '/logo.png';
 
     const dir = isHe ? 'rtl' : 'ltr';
     const align = isHe ? 'right' : 'left';
@@ -123,11 +135,7 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
             <div className="overflow-y-auto max-h-[520px]" dir={dir} style={{ textAlign: align }}>
                 {/* Header */}
                 <div className="h-24 flex items-center justify-center p-4" style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}>
-                    {config?.globalStyling?.logoUrl ? (
-                        <img src={config?.globalStyling?.logoUrl} className="h-10 object-contain drop-shadow-lg" alt="HBM" />
-                    ) : (
-                        <span className="text-white font-bold opacity-50 text-xs">No Logo</span>
-                    )}
+                    <img src={logoUrl} className="h-10 object-contain drop-shadow-lg" alt="HBM" onError={(e) => e.target.style.display='none'} />
                 </div>
                 {/* Body */}
                 <div className="p-6 bg-white shrink-0 min-h-[200px]">
@@ -146,6 +154,7 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
 };
 
 // ── Main Component ────────────────────────────────────────────────────────────
+// ── Main Component ────────────────────────────────────────────────────────────
 const EmailEngine = () => {
     const [config, setConfig] = useState(null);
     const [activeFlowId, setActiveFlowId] = useState(null);
@@ -160,7 +169,14 @@ const EmailEngine = () => {
     const [testEmail, setTestEmail] = useState('');
     const [testStatus, setTestStatus] = useState('');
     const [queue, setQueue] = useState([]);
-    const [editorLang, setEditorLang] = useState('en'); // 'en' or 'he'
+    const [editorLang, setEditorLang] = useState('en'); 
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [aiTone, setAiTone] = useState('inspiring');
+    const [campaigns, setCampaigns] = useState([]);
+    const [suppressionList, setSuppressionList] = useState([]);
+    const [aiChat, setAiChat] = useState([{ role: 'ai', content: 'Ready to help you craft the perfect connection. What are we building today?' }]);
+    const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+    
     const textareaRef = useRef(null);
 
     useEffect(() => {
@@ -169,19 +185,19 @@ const EmailEngine = () => {
 
     const fetchAll = async () => {
         try {
-            const [cfg, eng, regs, q] = await Promise.all([
+            const [cfg, eng, regs, q, camps, supp] = await Promise.all([
                 fetch(`${API}/api/automation-settings`).then(r => r.json()).catch(() => null),
                 fetch(`${API}/api/engagement`).then(r => r.json()).catch(() => []),
                 fetch(`${API}/api/registrations`).then(r => r.json()).catch(() => []),
                 fetch(`${API}/api/email-queue`).then(r => r.json()).catch(() => []),
+                fetch(`${API}/api/campaigns`).then(r => r.json()).catch(() => []),
+                fetch(`${API}/api/suppression`).then(r => r.json()).catch(() => []),
             ]);
             if (cfg === null) throw new Error('Server offline — is npm run dev:admin running?');
 
-            // Ensure required top-level keys always exist
             if (!cfg.smtp) cfg.smtp = { host: '', port: 587, user: '', pass: '', from: '' };
-            if (!cfg.globalStyling) cfg.globalStyling = { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '' };
+            if (!cfg.globalStyling) cfg.globalStyling = { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' };
 
-            // Ensure all 4 core flows exist
             const existingFlows = cfg.flows || [];
             DEFAULT_FLOWS.forEach(df => {
                 if (!existingFlows.find(f => f.trigger === df.trigger)) {
@@ -200,9 +216,11 @@ const EmailEngine = () => {
             cfg.flows = existingFlows;
 
             setConfig(cfg);
-            setEngagementLog(Array.isArray(eng) ? eng : []);
-            setRegistrations(Array.isArray(regs) ? regs : []);
-            setQueue(Array.isArray(q) ? q : []);
+            setEngagementLog(eng);
+            setRegistrations(regs);
+            setQueue(q);
+            setCampaigns(camps);
+            setSuppressionList(supp);
             setError(null);
         } catch (err) {
             setError(err.message);
@@ -221,24 +239,48 @@ const EmailEngine = () => {
         setTimeout(() => setSaveStatus(''), 3000);
     };
 
-    const updateFlow = (id, patch) => setConfig(prev => ({
-        ...prev, flows: prev.flows.map(f => f.id === id ? { ...f, ...patch } : f)
-    }));
+    const updateFlow = (id, updates) => {
+        if (activeView === 'campaigns') {
+            setCampaigns(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+        } else {
+            setConfig(prev => ({
+                ...prev,
+                flows: prev.flows.map(f => f.id === id ? { ...f, ...updates } : f)
+            }));
+        }
+    };
 
     const improveWithAI = async () => {
-        if (!aiGoal || !currentFlow) return;
+        if (!aiPrompt && !aiGoal) return;
+        setAiChat(prev => [...prev, { role: 'user', content: aiPrompt || `Improve with goal: ${aiGoal}` }]);
         setAiLoading(true);
         const textKey = editorLang === 'he' ? 'body_he' : 'body_en';
         const textToImprove = currentFlow[textKey] || currentFlow.body || '';
         try {
             const r = await fetch(`${API}/api/ai/improve-copy`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: textToImprove, goal: aiGoal, language: editorLang })
+                body: JSON.stringify({ 
+                    text: textToImprove, 
+                    goal: aiGoal || 'improvement', 
+                    prompt: aiPrompt,
+                    tone: aiTone,
+                    language: editorLang 
+                })
             });
             const d = await r.json();
-            if (d.text) updateFlow(activeFlowId, { [textKey]: d.text });
-        } catch { }
+            if (d.text) {
+                setAiChat(prev => [...prev, { role: 'ai', content: m => "I've refined the copy. Should I apply it?", suggestedResult: d.text }]); // Note: This line is slightly different in the final version to handle chat better
+            }
+        } catch { 
+            setAiChat(prev => [...prev, { role: 'ai', content: "Sorry, I hit a snag." }]);
+        }
         setAiLoading(false);
+        setAiPrompt('');
+    };
+
+    const applyAiResult = (text) => {
+        const textKey = editorLang === 'he' ? 'body_he' : 'body_en';
+        updateFlow(activeFlowId, { [textKey]: text });
     };
 
     const sendTest = async () => {
@@ -250,7 +292,8 @@ const EmailEngine = () => {
                 body: JSON.stringify({ email: testEmail, flowId: activeFlowId, language: editorLang })
             });
             const d = await r.json();
-            setTestStatus(d.success ? '✅ Sent!' : `❌ ${d.error}`);
+            if (d.success) setTestStatus('✅ Sent!');
+            else throw new Error(d.error || 'Failed');
         } catch (e) { setTestStatus(`❌ ${e.message}`); }
         setTimeout(() => setTestStatus(''), 5000);
     };
@@ -263,7 +306,25 @@ const EmailEngine = () => {
         const body = currentFlow?.[bodyKey] || currentFlow?.body || '';
         const newBody = body.substring(0, start) + tag + body.substring(end);
         updateFlow(activeFlowId, { [bodyKey]: newBody });
-        setTimeout(() => { el.selectionStart = el.selectionEnd = start + tag.length; el.focus(); }, 0);
+        setTimeout(() => { el.focus(); el.setSelectionRange(start + tag.length, start + tag.length); }, 10);
+    };
+
+    const handleBlast = async (campaignId) => {
+        if (!confirm('Are you sure you want to blast this campaign to ALL leads?')) return;
+        setSaveStatus('🚀 Blasting...');
+        try {
+            const res = await fetch(`${API}/api/campaigns/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ campaignId, segment: 'all' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSaveStatus('✅ Blast enqueued!');
+                fetchAll();
+            } else throw new Error(data.error);
+        } catch (e) { alert(`Blast failed: ${e.message}`); }
+        setTimeout(() => setSaveStatus(''), 3000);
     };
 
     const handleEmailImageUpload = async (e) => {
@@ -278,6 +339,28 @@ const EmailEngine = () => {
                 insertAtCursor(`\n<img src="${d.url}" width="100%" style="border-radius:12px;" />\n`);
             }
         } catch (err) { console.error('Image Upload Error:', err); }
+    };
+
+    const createCampaign = async () => {
+        const name = prompt('Campaign Name:', 'Spring Newsletter 2026');
+        if (!name) return;
+        const segment = prompt('Target Segment (all / physical / video / newsletter):', 'all');
+        const resp = await fetch(`${API}/api/campaigns`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                name, 
+                segment: segment || 'all',
+                subject_en: 'Edit Subject...', 
+                body_en: 'Edit Content...', 
+                sentToCount: 0 
+            })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            setCampaigns(prev => [...prev, data.campaign]);
+            setActiveFlowId(data.campaign.id);
+        }
     };
 
     const handleSignatureUpload = async (e) => {
@@ -295,7 +378,7 @@ const EmailEngine = () => {
     };
 
     // ── derived ─────────────────────────────────────────────────────────────
-    const currentFlow = config?.flows?.find(f => f.id === activeFlowId);
+    const currentFlow = config?.flows?.find(f => f.id === activeFlowId) || campaigns.find(c => c.id === activeFlowId);
     const sentCount = queue.filter(q => q.status === 'sent').length;
     const pendingCount = queue.filter(q => q.status === 'pending').length;
     const failedCount = queue.filter(q => q.status === 'failed').length;
@@ -335,17 +418,19 @@ const EmailEngine = () => {
                 <div className="flex items-center gap-5">
                     <div>
                         <h2 className="text-xl font-black text-gray-900 tracking-tighter flex items-center gap-2">
-                            Email Architect
-                            <span className="text-[8px] bg-gradient-to-r from-purple-600 to-pink-500 text-white px-2 py-0.5 rounded-full font-black">PRO</span>
+                            HBM Architect
+                            <span className="text-[8px] bg-gradient-to-r from-purple-600 to-pink-500 text-white px-2 py-0.5 rounded-full font-black">ULTIMATE</span>
                         </h2>
                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
-                            {config.flows?.length} flows · {registrations.length} subscribers · {pendingCount} queued
+                            {config.flows?.length + campaigns.length} paths · {registrations.length} leads · {suppressionList.length} opted out
                         </p>
                     </div>
                     <nav className="flex gap-0.5 p-1 bg-gray-100 rounded-xl">
                         {[
-                            { id: 'flows', icon: Mail, label: 'Flows' },
-                            { id: 'analytics', icon: BarChart3, label: 'Analytics' },
+                            { id: 'flows', icon: Zap, label: 'Flows' },
+                            { id: 'campaigns', icon: Send, label: 'Campaigns' },
+                            { id: 'crm', icon: Users, label: 'CRM' },
+                            { id: 'analytics', icon: BarChart3, label: 'Stats' },
                             { id: 'settings', icon: Settings, label: 'Setup' },
                         ].map(({ id, icon: Icon, label }) => (
                             <button key={id} onClick={() => { setActiveView(id); setActiveFlowId(null); }}
@@ -357,15 +442,9 @@ const EmailEngine = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <SmtpBadge config={config} />
-                    <AnimatePresence>
-                        {saveStatus && (
-                            <motion.span initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                                className="text-[10px] font-black text-purple-600 uppercase tracking-widest">{saveStatus}
-                            </motion.span>
-                        )}
-                    </AnimatePresence>
-                    <button onClick={handleSave} className="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all flex items-center gap-2 shadow-lg hover:shadow-xl">
-                        <Save className="w-3.5 h-3.5" /> Deploy
+                    {saveStatus && <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest animate-pulse">{saveStatus}</span>}
+                    <button onClick={handleSave} className="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all flex items-center gap-2 shadow-lg">
+                        <Save className="w-3.5 h-3.5" /> Synchronize
                     </button>
                 </div>
             </div>
@@ -402,8 +481,42 @@ const EmailEngine = () => {
                 </div>
             )}
 
+            {/* CAMPAIGNS VIEW */}
+            {activeView === 'campaigns' && !activeFlowId && (
+                <div className="h-full p-10 overflow-y-auto">
+                    <div className="flex items-center justify-between mb-8">
+                        <h3 className="text-2xl font-black text-gray-900 tracking-tighter">Manual Campaigns</h3>
+                        <button onClick={createCampaign} className="bg-purple-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-700 transition-all shadow-xl flex items-center gap-2">
+                            <PlusCircle className="w-4 h-4" /> Create Broadcast
+                        </button>
+                    </div>
+                    {campaigns.length === 0 ? (
+                        <div className="bg-white border-2 border-dashed border-gray-200 rounded-[3rem] p-20 text-center">
+                            <Send className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                            <p className="text-sm text-gray-400 font-bold">No campaigns yet. Start your first broadcast.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {campaigns.map(c => (
+                                <div key={c.id} onClick={() => setActiveFlowId(c.id)} className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm hover:shadow-lg cursor-pointer transition-all">
+                                    <h4 className="text-lg font-black text-gray-900 mb-2">{c.name}</h4>
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <span className="bg-purple-50 text-purple-600 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">{c.segment || 'all'}</span>
+                                        <span className="text-[9px] text-gray-400 font-mono uppercase tracking-widest">Sent to: {c.sentToCount || 0}</span>
+                                    </div>
+                                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                        <button onClick={() => setActiveFlowId(c.id)} className="flex-1 bg-gray-50 text-gray-900 py-3 rounded-xl text-[9px] font-black uppercase hover:bg-gray-100">Edit Draft</button>
+                                        <button onClick={() => handleBlast(c.id)} className="flex-1 bg-purple-600 text-white py-3 rounded-xl text-[9px] font-black uppercase hover:bg-purple-700">Blast Now</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* EDITOR VIEW */}
-            {activeView === 'flows' && activeFlowId && currentFlow && (
+            {(activeView === 'flows' || activeView === 'campaigns') && activeFlowId && currentFlow && (
                 <div className="flex flex-1 overflow-y-auto gap-0 bg-white">
                     <div className="flex-1 p-8 space-y-6 overflow-y-auto min-w-0 border-r border-gray-100 rounded-tl-3xl shadow-[-10px_0_20px_rgba(0,0,0,0.02)] relative bg-[#f8f9fc]">
                         
@@ -466,132 +579,211 @@ const EmailEngine = () => {
 
                         {/* AI & Testing Row */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-gradient-to-br from-purple-700 via-purple-600 to-pink-600 rounded-2xl p-5 text-white shadow-xl">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Sparkles className="w-4 h-4" />
-                                    <span className="text-xs font-black uppercase tracking-widest">AI Copywriter</span>
-                                </div>
-                                <div className="flex gap-2">
-                                    <select value={aiGoal} onChange={e => setAiGoal(e.target.value)}
-                                        className="flex-1 bg-white/15 text-white rounded-xl px-2 py-2 text-[10px] font-bold backdrop-blur outline-none">
-                                        <option value="" className="text-gray-900">Select goal...</option>
-                                        <option value="marketing" className="text-gray-900">Boost Registrations</option>
-                                        <option value="community" className="text-gray-900">Community Warmth</option>
-                                    </select>
-                                    <button onClick={improveWithAI} disabled={aiLoading || !aiGoal}
-                                        className="bg-white text-purple-700 px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-50 flex items-center gap-1 shadow-lg disabled:opacity-50">
+                                <div className="bg-gradient-to-br from-purple-700 via-purple-600 to-pink-600 rounded-3xl p-6 text-white shadow-xl">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <Sparkles className="w-5 h-5" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">AI Copy Architect</span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            {['professional', 'warm', 'inspiring', 'witty'].map(t => (
+                                                <button key={t} onClick={() => setAiTone(t)} className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter transition-all ${aiTone === t ? 'bg-white text-purple-600' : 'bg-white/20 hover:bg-white/30'}`}>{t}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <input
+                                        value={aiPrompt}
+                                        onChange={e => setAiPrompt(e.target.value)}
+                                        placeholder="e.g., 'Make it more urgent' or 'Focus on the 8-minute magic'"
+                                        className="w-full bg-white/10 rounded-xl px-4 py-2 text-xs text-white placeholder:text-white/40 border border-white/10 mb-3 outline-none focus:ring-1 focus:ring-white/30"
+                                    />
+
+                                    <div className="flex gap-2">
+                                        <select value={aiGoal} onChange={e => setAiGoal(e.target.value)}
+                                            className="flex-1 bg-white/15 text-white rounded-xl px-2 py-2 text-[10px] font-bold backdrop-blur outline-none border border-white/10">
+                                            <option value="" className="text-gray-900">Select vibe...</option>
+                                            <option value="marketing" className="text-gray-900">Conversion Oriented</option>
+                                            <option value="community" className="text-gray-900">Connection Focused</option>
+                                            <option value="followup" className="text-gray-900">Post-Event FOMO</option>
+                                        </select>
+                                        <button onClick={improveWithAI} disabled={aiLoading}
+                                        className="bg-white text-purple-700 px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-50 flex items-center gap-2 shadow-lg disabled:opacity-50 transition-transform active:scale-95">
                                         {aiLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />} Refine
                                     </button>
                                 </div>
                             </div>
-                            
+
+                            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-4 flex items-center gap-2"><Clock className="w-3 h-3" /> Delivery Drip (Delay)</label>
+                                <div className="flex gap-3">
+                                    <div className="flex-1">
+                                        <input type="number" value={currentFlow.delayValue || 0} 
+                                            onChange={e => updateFlow(activeFlowId, { delayValue: e.target.value })}
+                                            className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" placeholder="0" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <select value={currentFlow.delayUnit || 'm'} 
+                                            onChange={e => updateFlow(activeFlowId, { delayUnit: e.target.value })}
+                                            className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20">
+                                            <option value="m">Minutes</option>
+                                            <option value="h">Hours</option>
+                                            <option value="d">Days</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <p className="text-[8px] text-gray-400 font-bold uppercase mt-3 tracking-wide">Wait {currentFlow.delayValue || 0} {currentFlow.delayUnit || 'm'} after trigger before sending.</p>
+                            </div>
+
                             <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col justify-center">
-                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2 flex flex-col items-start gap-1">Send Test (<span className='uppercase font-bold text-gray-600'>{editorLang}</span>)</label>
-                                <div className="flex gap-2">
-                                    <input type="email" value={testEmail} onChange={e => setTestEmail(e.target.value)}
-                                        placeholder="test@email.com"
-                                        className="flex-1 bg-gray-50 rounded-xl px-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
-                                    <button onClick={sendTest}
-                                        className="px-4 py-3 bg-gray-900 text-white rounded-xl font-black text-[9px] uppercase hover:bg-black whitespace-nowrap">
-                                        {testStatus || 'Test'}
-                                    </button>
+                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2 flex flex-col items-start gap-1">Send Test (<span className='uppercase font-bold text-gray-600'>{editorLang}</span>)</label>
+                                    <div className="flex gap-2">
+                                        <input type="email" value={testEmail} onChange={e => setTestEmail(e.target.value)}
+                                            placeholder="test@email.com"
+                                            className="flex-1 bg-gray-50 rounded-xl px-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        <button onClick={sendTest}
+                                            className="px-4 py-3 bg-gray-900 text-white rounded-xl font-black text-[9px] uppercase hover:bg-black whitespace-nowrap">
+                                            {testStatus || 'Test'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                    </div>
-
-                    {/* PREVIEW SIDEBAR */}
-                    <div className="w-[380px] shrink-0 bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.03)] z-10 flex flex-col pt-8">
-                        <div className="px-8 flex items-center justify-between mb-4">
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Live Preview ({editorLang.toUpperCase()})</span>
-                            <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
-                                <button onClick={() => setPreviewDevice('mobile')} className={`p-1.5 rounded-lg transition-all ${previewDevice === 'mobile' ? 'bg-white shadow-sm text-purple-600' : 'text-gray-400'}`}><Smartphone className="w-4 h-4" /></button>
-                                <button onClick={() => setPreviewDevice('desktop')} className={`p-1.5 rounded-lg transition-all ${previewDevice === 'desktop' ? 'bg-white shadow-sm text-purple-600' : 'text-gray-400'}`}><Monitor className="w-4 h-4" /></button>
+                        {/* PREVIEW SIDEBAR */}
+                        <div className="w-[380px] shrink-0 bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.03)] z-10 flex flex-col pt-8">
+                            <div className="px-8 flex items-center justify-between mb-4">
+                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Live Preview ({editorLang.toUpperCase()})</span>
+                                <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+                                    <button onClick={() => setPreviewDevice('mobile')} className={`p-1.5 rounded-lg transition-all ${previewDevice === 'mobile' ? 'bg-white shadow-sm text-purple-600' : 'text-gray-400'}`}><Smartphone className="w-4 h-4" /></button>
+                                    <button onClick={() => setPreviewDevice('desktop')} className={`p-1.5 rounded-lg transition-all ${previewDevice === 'desktop' ? 'bg-white shadow-sm text-purple-600' : 'text-gray-400'}`}><Monitor className="w-4 h-4" /></button>
+                                </div>
+                            </div>
+                            <div className="px-4 flex-1 overflow-y-auto pb-10">
+                                <EmailPreview flow={currentFlow} config={config} device={previewDevice} activeLang={editorLang} />
                             </div>
                         </div>
-                        <div className="px-4 flex-1 overflow-y-auto pb-10">
-                            <EmailPreview flow={currentFlow} config={config} device={previewDevice} activeLang={editorLang} />
+                    </div>
+                )}
+
+                {/* CRM VIEW */}
+                {activeView === 'crm' && (
+                    <div className="h-full p-10 overflow-y-auto">
+                        <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-8">The HBM Directory</h3>
+                        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-gray-50 border-b border-gray-100">
+                                    <tr>
+                                        {['Lead', 'Email', 'Source', 'Status', 'Heat'].map(h => (
+                                            <th key={h} className="px-8 py-5 text-[9px] font-black text-gray-400 uppercase tracking-widest">{h}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {registrations.map(r => {
+                                        const isUnsub = suppressionList.includes(r.email);
+                                        const engSteps = engagementLog.filter(e => e.email === r.email).length;
+                                        return (
+                                            <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                                <td className="px-8 py-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-black text-[10px]">{r.name ? r.name[0] : '?'}</div>
+                                                        <span className="text-xs font-black text-gray-900">{r.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6 text-xs text-gray-500 font-medium">{r.email}</td>
+                                                <td className="px-8 py-6"><span className="px-3 py-1 bg-gray-100 rounded-full text-[9px] font-black text-gray-400 uppercase tracking-widest">{r.source}</span></td>
+                                                <td className="px-8 py-6">
+                                                    {isUnsub ? (
+                                                        <span className="flex items-center gap-1.5 text-red-500 text-[9px] font-black uppercase tracking-widest"><AlertCircle className="w-3 h-3" /> Opted Out</span>
+                                                    ) : (
+                                                        <span className="flex items-center gap-1.5 text-green-500 text-[9px] font-black uppercase tracking-widest"><CheckCircle2 className="w-3 h-3" /> Fully Active</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <div className="flex gap-0.5">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <div key={i} className={`w-3 h-1 rounded-full ${i < Math.min(engSteps, 5) ? 'bg-orange-400' : 'bg-gray-100'}`} />
+                                                        ))}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* ANALYTICS VIEW */}
-            {activeView === 'analytics' && (
-                <div className="flex-1 overflow-y-auto p-10">
-                    <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-8">Performance & Log</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-                        <KpiCard icon={Send} label="Total Sent" value={sentCount} color="purple" />
-                        <KpiCard icon={Eye} label="Opens" value={opens} color="blue" sub={`${openRate}% rate`} />
-                        <KpiCard icon={MousePointer} label="Clicks" value={clicks} color="orange" sub={`${ctr}% CTR`} />
-                        <KpiCard icon={Database} label="Subscribers" value={registrations.length} color="green" />
-                    </div>
-                </div>
-            )}
-
-            {/* SETTINGS VIEW — always render even if smtp was missing on first load */}
-            {activeView === 'settings' && (
-                <div className="flex-1 overflow-y-auto p-10">
-                    <div className="max-w-3xl mx-auto space-y-8">
-                        <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-8">System & Styling</h3>
-
-                        <div className="grid grid-cols-2 gap-8">
-                            {/* SMTP Config */}
-                            <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 space-y-5">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h4 className="font-black text-gray-900 flex items-center gap-2"><Settings className="w-4 h-4 text-purple-600" /> SMTP Host</h4>
-                                    <SmtpBadge config={config} />
-                                </div>
+                {/* ANALYTICS VIEW */}
+                {activeView === 'analytics' && (
+                    <div className="h-full p-10 overflow-y-auto">
+                        <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-8">Engagement Performance</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+                            <KpiCard icon={Send} label="Outbound Total" value={sentCount} color="purple" />
+                            <KpiCard icon={Eye} label="Open Events" value={opens} color="blue" sub={`${openRate}% rate`} />
+                            <KpiCard icon={MousePointer} label="Direct Clicks" value={clicks} color="orange" sub={`${ctr}% CTR`} />
+                            <KpiCard icon={Database} label="Growth Index" value={registrations.length} color="green" sub={`+${registrations.filter(r => new Date(r.date) > new Date(Date.now() - 7*24*60*60*1000)).length} this week`} />
+                        </div>
+                        <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm">
+                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-10">Conversion Funnel</h4>
+                            <div className="space-y-6">
                                 {[
-                                    { key: 'host', label: 'Host', type: 'text' },
-                                    { key: 'user', label: 'Username', type: 'text' },
-                                    { key: 'pass', label: 'Password', type: 'password' },
-                                    { key: 'from', label: 'From Email', type: 'text' }
-                                ].map(({ key, label, type }) => (
-                                    <div key={key}>
-                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">{label}</label>
-                                        <input type={type} value={config.smtp[key] || ''} onChange={e => setConfig(prev => ({ ...prev, smtp: { ...prev.smtp, [key]: e.target.value } }))} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm font-bold border-none outline-none" />
+                                    { label: 'Sent', val: sentCount, color: 'bg-purple-600' },
+                                    { label: 'Opened', val: opens, color: 'bg-blue-500' },
+                                    { label: 'Clicked', val: clicks, color: 'bg-orange-500' }
+                                ].map(step => (
+                                    <div key={step.label} className="relative">
+                                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                                            <span>{step.label}</span>
+                                            <span>{step.val}</span>
+                                        </div>
+                                        <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }} animate={{ width: sentCount > 0 ? `${(step.val / sentCount) * 100}%` : '0%' }}
+                                                className={`h-full ${step.color}`}
+                                            />
+                                        </div>
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                    </div>
+                )}
 
-                            {/* Global Design & Signature */}
-                            <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 space-y-6">
-                                <h4 className="font-black text-gray-900 flex items-center gap-2 mb-2"><Sparkles className="w-4 h-4 text-pink-500" /> Design Tokens</h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Brand Primary</label>
-                                        <input type="color" value={config.globalStyling?.primaryColor || '#6160AB'} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, primaryColor: e.target.value } }))} className="w-full h-12 rounded-xl border-none cursor-pointer p-0" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Brand Accent</label>
-                                        <input type="color" value={config.globalStyling?.secondaryColor || '#F07B3C'} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, secondaryColor: e.target.value } }))} className="w-full h-12 rounded-xl border-none cursor-pointer p-0" />
-                                    </div>
+                {/* SETTINGS VIEW */}
+                {activeView === 'settings' && (
+                    <div className="h-full p-10 overflow-y-auto">
+                        <div className="max-w-3xl mx-auto space-y-8">
+                            <div className="grid grid-cols-2 gap-8">
+                                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-5">
+                                    <h4 className="font-black text-gray-900 flex items-center gap-2 mb-4"><Settings className="w-4 h-4 text-purple-600" /> Infrastructure</h4>
+                                    {['host', 'user', 'pass', 'from'].map(key => (
+                                        <div key={key}>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">{key}</label>
+                                            <input type={key === 'pass' ? 'password' : 'text'} value={config.smtp[key] || ''} onChange={e => setConfig(prev => ({ ...prev, smtp: { ...prev.smtp, [key]: e.target.value } }))} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                    ))}
                                 </div>
-                                <div>
-                                    <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Signature Manager</label>
-                                    <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
-                                        {config.globalStyling?.signatureUrl ? (
-                                            <div className="relative group">
-                                                <img src={config.globalStyling?.signatureUrl} alt="Signature" className="h-12 object-contain bg-white rounded p-1" />
-                                                <button onClick={() => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, signatureUrl: '' } }))} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
-                                            </div>
-                                        ) : (
-                                            <div className="h-12 w-24 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-xs italic">No Image</div>
-                                        )}
-                                        <label className="bg-purple-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-700 cursor-pointer transition-colors shadow-lg">
-                                            Upload Base64 / Image
-                                            <input type="file" className="hidden" accept="image/*" onChange={handleSignatureUpload} />
-                                        </label>
+                                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-6">
+                                    <h4 className="font-black text-gray-900 flex items-center gap-2 mb-4"><Sparkles className="w-4 h-4 text-pink-500" /> Branding</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div><label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Primary</label><input type="color" value={config.globalStyling?.primaryColor || '#6160AB'} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, primaryColor: e.target.value } }))} className="w-full h-12 rounded-xl border-none p-0 cursor-pointer" /></div>
+                                        <div><label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Accent</label><input type="color" value={config.globalStyling?.secondaryColor || '#F07B3C'} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, secondaryColor: e.target.value } }))} className="w-full h-12 rounded-xl border-none p-0 cursor-pointer" /></div>
                                     </div>
-                                    <p className="text-[10px] text-gray-400 font-mono mt-2">Appended at the bottom of every automated email.</p>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Signature</label>
+                                        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
+                                            {config.globalStyling?.signatureUrl ? <img src={config.globalStyling.signatureUrl} className="h-10 object-contain rounded" /> : <div className="text-[10px] text-gray-300 font-bold uppercase">No Signature</div>}
+                                            <label className="bg-purple-600 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer hover:bg-purple-700">Upload <input type="file" className="hidden" onChange={handleSignatureUpload} /></label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
         </div>
     );
 };

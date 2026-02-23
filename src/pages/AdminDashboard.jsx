@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, MapPin, Edit3, Trash2, Plus, GripVertical, Image as ImageIcon, Video,
   Contrast, Heart, History, Users, Star, ArrowLeft, Palette, HelpCircle, Download, Database, BarChart3,
-  ExternalLink, Save, Copy, Settings, Eye, Upload, Mail, Smartphone, Monitor, Sparkles, CheckCircle2, AlertCircle, Wand2, Zap, X, MonitorPlay
+  ExternalLink, Save, Copy, Settings, Eye, Upload, Mail, Smartphone, Monitor, Sparkles, CheckCircle2, AlertCircle, Wand2, Zap, X, MonitorPlay, Lock, Unlock, AlignLeft
 } from 'lucide-react';
 import VisualEventEditor from '../components/Admin/VisualEventEditor';
 import EmailEngine from '../components/Admin/EmailEngine';
+import SiteContentManager from '../components/Admin/SiteContentManager';
 import { useEvents } from '../context/EventsContext';
 
 const AdminDashboard = () => {
@@ -79,6 +80,10 @@ const AdminDashboard = () => {
   };
 
   const handleEdit = (event, mode = 'standard') => {
+    if (event.isLocked && mode !== 'view') {
+        alert("This event is locked. Please unlock it first to edit.");
+        return;
+    }
     if (!event.folderName) {
         event.folderName = `event-${event.id}-${Date.now()}`;
     }
@@ -94,11 +99,27 @@ const AdminDashboard = () => {
   };
 
   const handleDelete = (id) => {
+    const event = events.find(e => e.id === id);
+    if (event?.isLocked) {
+        alert("This event is locked. Please unlock it first before deleting.");
+        return;
+    }
     if (window.confirm('Are you sure you want to delete this event?')) {
       const updatedEvents = events.filter(e => e.id !== id);
       setEvents(updatedEvents);
       saveToBackend(updatedEvents);
     }
+  };
+
+  const handleToggleLock = (event) => {
+      const updatedEvents = events.map(e => {
+          if (e.id === event.id) {
+              return { ...e, isLocked: !e.isLocked };
+          }
+          return e;
+      });
+      setEvents(updatedEvents);
+      saveToBackend(updatedEvents);
   };
 
   const handleDuplicate = (event) => {
@@ -450,10 +471,22 @@ const AdminDashboard = () => {
                 >
                     <MonitorPlay className="w-4 h-4" /> Video Event
                 </button>
+                <div className="w-px h-8 bg-gray-200 mx-2 self-center"></div>
+                <button 
+                    onClick={() => setTopView('content')}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${topView === 'content' ? 'bg-white text-emerald-600 shadow-xl' : 'text-gray-400 hover:text-emerald-500'}`}
+                >
+                    <AlignLeft className="w-4 h-4" /> Site Content
+                </button>
             </div>
         )}
 
         <div className="main-viewport">
+            {topView === 'content' && !isEditing && (
+                <div className="animate-in fade-in duration-500">
+                    <SiteContentManager />
+                </div>
+            )}
             {topView === 'emails' && !isEditing && (
                 <div className="h-[calc(100vh-250px)] animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <EmailEngine />
@@ -475,16 +508,21 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                             <div className="p-6">
-                                <h3 className="text-xl font-bold text-gray-900 mb-1">{event.title.en || event.title}</h3>
+                                <div className="flex justify-between items-start mb-1">
+                                    <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{event.title.en || event.title}</h3>
+                                    <button onClick={() => handleToggleLock(event)} title={event.isLocked ? "Unlock Event" : "Lock Event"} className={`p-1.5 rounded-lg transition-colors ${event.isLocked ? 'bg-red-50 text-red-500' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}>
+                                        {event.isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                                    </button>
+                                </div>
                                 <p className="text-xs text-gray-400 font-bold mb-4 flex items-center gap-1 uppercase tracking-widest"><Calendar className="w-3 h-3 text-purple-400" /> {new Date(event.date).toLocaleDateString('he-IL')}</p>
                                 <div className="grid grid-cols-2 gap-3 mb-6">
                                     <div className="bg-blue-50/50 p-3 rounded-xl text-center"><span className="block text-2xl font-black text-blue-600">{stats[event.id] || 0}</span><span className="text-[8px] font-black text-blue-400 uppercase tracking-widest">Regs</span></div>
                                     <div className="bg-purple-50/50 p-3 rounded-xl text-center"><span className="block text-2xl font-black text-purple-600">{event.imageCount || 0}</span><span className="text-[8px] font-black text-purple-400 uppercase tracking-widest">Photos</span></div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => handleEdit(event)} className="flex-1 bg-gray-900 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-gray-200 hover:bg-black transition-all font-bold tracking-widest"><Settings className="w-4 h-4" /> Manage</button>
+                                    <button onClick={() => handleEdit(event)} className={`flex-1 ${event.isLocked ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-900 hover:bg-black text-white'} py-3 rounded-xl font-black text-[10px] uppercase flex items-center justify-center gap-2 shadow-sm transition-all tracking-widest`}><Settings className="w-4 h-4" /> Manage</button>
                                     <button onClick={() => handleDuplicate(event)} className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-100 transition-all font-bold tracking-widest"><Copy className="w-4 h-4" /></button>
-                                    <button onClick={() => handleDelete(event.id)} className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-all font-bold tracking-widest"><Trash2 className="w-4 h-4" /></button>
+                                    <button onClick={() => handleDelete(event.id)} className={`p-3 rounded-xl transition-all font-bold tracking-widest ${event.isLocked ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}><Trash2 className="w-4 h-4" /></button>
                                 </div>
                             </div>
                         </div>

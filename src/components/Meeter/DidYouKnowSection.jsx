@@ -38,92 +38,107 @@ const MagneticText = ({ children }) => {
   )
 }
 
-const AnimatedWord = ({ word, index, totalWords, scrollYProgress }) => {
-  // Calculate range for each word
-  // Total reveals from 0.1 to 0.5
-  const step = 0.4 / totalWords
-  const start = 0.1 + (index * step)
-  const end = start + 0.15 
-  
-  const opacity = useTransform(scrollYProgress, [start, end], [0.1, 1])
-  const y = useTransform(scrollYProgress, [start, end], [50, 0]) // "Jump" effect
-  
-  return (
-    <motion.span 
-      style={{ opacity, y, color: '#1F1F1F' }} // Dark color for readability on cream
-      className="inline-block mr-2"
-    >
-      {word}
-    </motion.span>
-  )
-}
-
 export default function DidYouKnowSection() {
   const containerRef = useRef(null)
+  const { lang } = useI18n()
+  
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   })
 
-  // 1. Text Reveal Logic: "95% of people hate small talk."
+  // Sequential word disclosure
   const sentenceEn = "95% of people hate small talk.".split(" ")
   const sentenceHe = "95% מהאנשים שונאים סמול טוק.".split(" ")
-
-  const { lang } = useI18n()
   const words = lang === 'he' ? sentenceHe : sentenceEn
 
-  // 2. Punchline
-  const punchlineScale = useTransform(scrollYProgress, [0.6, 0.8], [0, 1])
+  // Professional Animation: Color Reveal + Subtle Slide
+  const AnimatedWord = ({ word, index, totalWords, progress }) => {
+    // Reveal between 0% and 50% scroll
+    const start = (index / totalWords) * 0.4
+    const end = start + 0.1
+    
+    // TRANSFORMS: From faint grey/low-opacity to SOLID BLACK
+    const color = useTransform(progress, [start, end], ["#E2E8F0", "#1A1A2E"])
+    const opacity = useTransform(progress, [start, end], [0.3, 1])
+    const y = useTransform(progress, [start, end], [20, 0])
+    
+    return (
+      <motion.span 
+        style={{ color, opacity, y }}
+        className="inline-block mr-4 md:mr-8 transition-colors duration-200"
+      >
+        {word}
+      </motion.span>
+    )
+  }
+
+  // Punchline Pop-up logic (0.6 to 0.8 range)
+  const punchlineScale = useTransform(scrollYProgress, [0.6, 0.75], [0.8, 1])
   const punchlineOpacity = useTransform(scrollYProgress, [0.6, 0.7], [0, 1])
+  const punchlineY = useTransform(scrollYProgress, [0.6, 0.8], [60, 0])
 
   return (
-    <div 
+    <section 
       ref={containerRef} 
-      className="relative h-[300vh]"
+      className="relative h-[180vh] bg-hbm-cream"
     >
-      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden px-6">
+      <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden px-6">
         
-        <div className="flex flex-col items-center text-center max-w-5xl mx-auto z-10 w-full">
+        <div className="relative flex flex-col items-center text-center max-w-7xl mx-auto z-10 w-full">
           
-          {/* Eyebrow - Fades out as we scroll deep */}
-          <motion.p 
-            style={{ opacity: useTransform(scrollYProgress, [0, 0.2], [1, 0]) }}
-            className="text-hbm-orange font-bold tracking-[0.2em] uppercase mb-8 text-sm md:text-base"
+          {/* Subtle Eyebrow - Small text as requested */}
+          <motion.div 
+            style={{ opacity: useTransform(scrollYProgress, [0, 0.1], [1, 0]) }}
+            className="mb-6"
           >
-            {t({en: 'DID YOU KNOW?', he: 'הידעת?'}, lang)}
-          </motion.p>
+             <p className="text-hbm-gray/60 font-medium tracking-[0.4em] uppercase text-[10px] md:text-xs">
+                {t({en: 'DID YOU KNOW?', he: 'הידעת?'}, lang)}
+             </p>
+          </motion.div>
 
-          {/* Reveal Text */}
-          <h2 className="text-5xl md:text-8xl font-bold leading-tight flex flex-wrap justify-center gap-x-4 gap-y-2 mb-16" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+          {/* Large Bold Reveal Text */}
+          <h2 className="text-5xl md:text-8xl lg:text-[10rem] font-black leading-[1.1] flex flex-wrap justify-center items-center mb-12 tracking-tighter" dir={lang === 'he' ? 'rtl' : 'ltr'}>
             {words.map((word, i) => (
               <AnimatedWord 
                 key={i} 
                 word={word} 
                 index={i} 
                 totalWords={words.length} 
-                scrollYProgress={scrollYProgress} 
+                progress={scrollYProgress} 
               />
             ))}
           </h2>
 
-          {/* Punchline */}
+          {/* We Fixed It Punchline - Professional Pop-up */}
           <motion.div 
             style={{ 
               scale: punchlineScale, 
-              opacity: punchlineOpacity 
+              opacity: punchlineOpacity,
+              y: punchlineY
             }}
-            className="mt-8"
+            className="mt-4"
           >
             <MagneticText>
-              <p className="text-6xl md:text-9xl font-black bg-gradient-to-r from-hbm-orange to-hbm-purple bg-clip-text text-transparent drop-shadow-2xl pb-4">
-                {t({en: "We fixed it.", he: "תיקנו את זה."}, lang)}
-              </p>
+              <div className="relative cursor-pointer">
+                <p className="text-6xl md:text-9xl lg:text-[11rem] font-black bg-gradient-to-r from-hbm-orange to-hbm-purple bg-clip-text text-transparent pb-4 leading-none tracking-tighter drop-shadow-sm">
+                  {t({en: "We fixed it.", he: "אנחנו תיקנו את זה."}, lang)}
+                </p>
+              </div>
             </MagneticText>
           </motion.div>
 
         </div>
 
+        {/* Minimalist Background Aura */}
+        <motion.div 
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{ opacity: useTransform(scrollYProgress, [0.4, 0.7], [0, 0.4]) }}
+        >
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] bg-hbm-purple/5 blur-[120px] rounded-full" />
+        </motion.div>
+
       </div>
-    </div>
+    </section>
   )
 }

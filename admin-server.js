@@ -44,6 +44,8 @@ const REGISTRATIONS_FILE_PATH = path.join(__dirname, 'src', 'data', 'registratio
 const EMAIL_QUEUE_PATH = path.join(__dirname, 'src', 'data', 'emailQueue.json');
 const ENGAGEMENT_LOG_PATH = path.join(__dirname, 'src', 'data', 'engagement.json');
 const VIDEO_EVENT_CONFIG_PATH = path.join(__dirname, 'src', 'data', 'videoEvent.json');
+const SUPPRESSION_LIST_PATH = path.join(__dirname, 'src', 'data', 'suppression.json');
+const CAMPAIGNS_FILE_PATH = path.join(__dirname, 'src', 'data', 'campaigns.json');
 const ASSETS_DIR = path.join(__dirname, 'public', 'assets', 'events');
 const LOG_FILE = path.join(__dirname, 'src', 'data', 'server-errors.log');
 
@@ -266,7 +268,10 @@ app.post('/api/register', (req, res) => {
     fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(registrations, null, 2));
 
     // TRIGGER EVENT SEQUENCE
-    const triggerType = eventId === 'video-event' ? 'onVideoRegistration' : 'onPhysicalRegistration';
+    let triggerType = source;
+    if (!triggerType) {
+        triggerType = eventId === 'video-event' ? 'onVideoRegistration' : 'onPhysicalRegistration';
+    }
     triggerAutomationByEvent(triggerType, newRegistration);
 
     console.log(`New registration: ${name} (${email}) for Event: ${eventName}`);
@@ -321,10 +326,11 @@ app.post('/api/newsletter', (req, res) => {
 // ==========================================
 
 const getEmailTemplate = (body, config, trackingId, email, language) => {
-    const styling = config?.globalStyling || { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '' };
+    const styling = config?.globalStyling || { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' };
     const primary = styling.primaryColor;
     const secondary = styling.secondaryColor;
     const signatureUrl = styling.signatureUrl;
+    const logoUrl = styling.logoUrl || '/logo.png';
     const trackingUrl = `http://localhost:3001/api/track/open/${trackingId}`;
     const unsubscribeUrl = `http://localhost:3001/api/unsubscribe?email=${encodeURIComponent(email)}`;
 
@@ -353,7 +359,7 @@ const getEmailTemplate = (body, config, trackingId, email, language) => {
         <div class="wrapper">
             <div class="container">
                 <div class="header">
-                    <img src="${config.globalStyling.logoUrl}" class="logo" alt="The HBM">
+                    <img src="${logoUrl.startsWith('http') ? logoUrl : 'http://localhost:3001' + logoUrl}" class="logo" alt="The HBM">
                 </div>
                 <div class="content">
                     ${body}
@@ -381,14 +387,21 @@ const triggerAutomationByEvent = (triggerType, userData) => {
         if (activeFlows.length === 0) return;
 
         const now = Date.now();
-        const pendingItems = activeFlows.map(flow => ({
-            id: uuidv4(),
-            status: 'pending',
-            scheduledFor: now,
-            data: userData,
-            stepType: 'email',
-            flowId: flow.id
-        }));
+        const pendingItems = activeFlows.map(flow => {
+            let scheduledFor = now;
+            if (flow.delayValue && flow.delayUnit) {
+                const multiplier = flow.delayUnit === 'h' ? 3600000 : flow.delayUnit === 'd' ? 86400000 : 60000;
+                scheduledFor += (parseInt(flow.delayValue) * multiplier);
+            }
+            return {
+                id: uuidv4(),
+                status: 'pending',
+                scheduledFor: scheduledFor,
+                data: userData,
+                stepType: 'email',
+                flowId: flow.id
+            };
+        });
 
         queue.push(...pendingItems);
         fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
@@ -410,13 +423,14 @@ const parseDelay = (str) => {
     return 0;
 };
 
-const processQueue = async () => {
-    if (!fs.existsSync(EMAIL_QUEUE_PATH)) return;
+const processQueue = async (specificItemId = null) => {
+    if (!fs.existsSync(EMAIL_QUEUE_PATH)) return false;
     const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH));
     const now = Date.now();
     const config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH));
+    const suppressionList = fs.existsSync(SUPPRESSION_LIST_PATH) ? JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH)) : [];
     
-    if (!config?.smtp?.host) return;
+    if (!config?.smtp?.host) return false;
 
     const transporter = nodemailer.createTransport({
         host: config.smtp.host,
@@ -425,15 +439,30 @@ const processQueue = async () => {
         auth: { user: config.smtp.user, pass: config.smtp.pass },
     });
 
+    let success = true;
     for (let item of queue) {
+        if (specificItemId && item.id !== specificItemId) continue;
         if (item.status === 'pending' && item.scheduledFor <= now && item.stepType === 'email') {
+            
+            // Check suppression
+            if (suppressionList.includes(item.data.email)) {
+                item.status = 'suppressed';
+                continue;
+            }
+
             try {
                 const flow = config.flows.find(f => f.id === item.flowId);
-                if (!flow) continue;
+                const campaign = !flow ? (fs.existsSync(CAMPAIGNS_FILE_PATH) ? JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH)).find(c => c.id === item.flowId) : null) : null;
+                
+                if (!flow && !campaign) {
+                    item.status = 'failed';
+                    item.error = 'Source flow/campaign not found';
+                    continue;
+                }
 
+                const source = flow || campaign;
                 const trackingId = item.id;
                 
-                // Liquid Rendering
                 const lang = item.data.language || 'en';
                 const renderData = {
                     ...item.data,
@@ -441,8 +470,8 @@ const processQueue = async () => {
                     year: 2026
                 };
                 
-                const rawSubject = (lang === 'he' && flow.subject_he) ? flow.subject_he : (flow.subject_en || flow.subject);
-                const rawBody = (lang === 'he' && flow.body_he) ? flow.body_he : (flow.body_en || flow.body);
+                const rawSubject = (lang === 'he' && source.subject_he) ? source.subject_he : (source.subject_en || source.subject);
+                const rawBody = (lang === 'he' && source.body_he) ? source.body_he : (source.body_en || source.body);
 
                 let subject = await liquidEngine.parseAndRender(rawSubject, renderData);
                 let body = await liquidEngine.parseAndRender(rawBody.replace(/\n/g, '<br>'), renderData);
@@ -456,13 +485,12 @@ const processQueue = async () => {
                     html: html
                 };
 
-                // ICS calendar logic...
-                if (flow.includeCalendar) {
+                if (source.includeCalendar) {
                     const { value } = ics.createEvent({
                         start: [new Date(item.data.date).getFullYear(), new Date(item.data.date).getMonth()+1, new Date(item.data.date).getDate(), 19, 0],
                         duration: { hours: 3 },
-                        title: item.data.eventName,
-                        location: item.data.location
+                        title: item.data.eventName || 'HBM Event',
+                        location: item.data.location || 'Tel Aviv'
                     });
                     if (value) mailOptions.attachments = [{ filename: 'hbm-invite.ics', content: value }];
                 }
@@ -476,11 +504,13 @@ const processQueue = async () => {
                 logError('SMTP/Queue', err);
                 item.status = 'failed';
                 item.error = err.message;
+                success = false;
             }
         }
     }
 
     fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
+    return success;
 };
 
 const logEngagement = (id, type, email, metadata = {}) => {
@@ -544,7 +574,8 @@ app.post('/api/smtp-check', async (req, res) => {
         await transporter.verify();
         res.json({ success: true, message: 'SMTP connection verified' });
     } catch (err) {
-        res.json({ success: false, message: err.message });
+        console.error('SMTP Check Error:', err);
+        res.json({ success: false, message: `Connection Failed: ${err.code || err.message}` });
     }
 });
 
@@ -558,24 +589,48 @@ app.post('/api/automation/trigger', async (req, res) => {
     }
 });
 
-app.post('/api/ai/improve-copy', (req, res) => {
-    const { text, goal, language } = req.body;
-    
-    // Simulate Gemini Call specifically demanding RTL formatting
-    console.log(`[AI Engine] Sending Prompt to Engine: Generate high-converting email copy. Goal: ${goal}. Language: ${language === 'he' ? 'Hebrew with strict RTL formatting' : 'English with LTR formatting'}. Original text: ${text}`);
+app.post('/api/ai/improve-copy', async (req, res) => {
+    const { text, goal, prompt, tone, language } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
 
-    let improved = text;
-    if (language === 'he') {
-        if (goal === 'marketing') improved = text + "\n\n**הזדמנות מיוחדת:** אל תישארו מאחור — תפסו את מקומכם עכשיו וגלו קישור אנושי אמיתי. המקומות מוגבלים!";
-        else if (goal === 'community') improved = "חבר/ת קהילה יקר/ה! ✨\n" + text + "\n\nהקהילה שלנו חיה נושמת וקיימת בזכותך. אנחנו מחכים לראות אותך בקרוב.";
-        else improved = text + "\n\n(שדרוג מבוסס בינה מלאכותית בקרוב...)";
-    } else {
-        if (goal === 'marketing') improved = text + "\n\n**Exclusive Opportunity:** Don't just watch from the sidelines—be the heartbeat of the connection. Grab your spot before the energy fills up!";
-        else if (goal === 'community') improved = "Hello fellow seeker of connection! ✨\n" + text + "\n\nWe build this space together, and your presence is what makes it bloom. See you soon.";
+    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+        // Fallback simulation if no key
+        console.log("[AI] No API Key found, using simulation");
+        let improved = text;
+        if (language === 'he') {
+            const cta = goal === 'marketing' ? "\n\n**הזדמנות מיוחדת:** אל תישארו מאחור — תפסו את מקומכם עכשיו!" : "";
+            improved = `✨ ${text}\n\n${prompt ? `[שדרוג: ${prompt}]` : ''}${cta}`;
+        } else {
+            const cta = goal === 'marketing' ? "\n\n**Exclusive:** Grab your spot now!" : "";
+            improved = `✨ ${text}\n\n${prompt ? `[Refined: ${prompt}]` : ''}${cta}`;
+        }
+        return res.json({ text: improved });
     }
-    
-    // Simulate slight processing delay
-    setTimeout(() => res.json({ text: improved }), 800);
+
+    try {
+        const hbmContext = "The HBM (Human Being Movement) focus on 8-minute deep human connections. Premium, authentic, psychological depth.";
+        const systemPrompt = `You are the HBM AI Copywriter. Improve the following email text. 
+        Tone: ${tone}. Goal: ${goal}. Language: ${language === 'he' ? 'Hebrew' : 'English'}.
+        Context: ${hbmContext}. User Instruction: ${prompt || 'Make it better'}.
+        Keep placeholders like {{name}}, {{eventName}}, {{eventDate}}, {{location}} intact.
+        Return ONLY the improved text, no intro or outro.`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `${systemPrompt}\n\nText to improve:\n${text}` }] }]
+            })
+        });
+
+        const data = await response.json();
+        console.log("[AI Gemini Response]", JSON.stringify(data, null, 2));
+        const improvedText = data.candidates?.[0]?.content?.parts?.[0]?.text || text;
+        res.json({ text: improvedText.trim() });
+    } catch (err) {
+        console.error("[AI Error]", err);
+        res.status(500).json({ error: "AI Service Timeout" });
+    }
 });
 
 app.get('/api/automation-settings', (req, res) => {
@@ -665,12 +720,13 @@ app.post('/api/test-flow', async (req, res) => {
             eventName: "HBM Live Demo",
             date: new Date().toISOString(),
             location: "Tel Aviv Hub",
-            id: "TEST-123",
+            id: "TEST-" + Math.floor(Math.random() * 1000),
             language: language || 'en'
         };
         const queue = fs.existsSync(EMAIL_QUEUE_PATH) ? JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH)) : [];
+        const itemId = uuidv4();
         queue.push({
-            id: uuidv4(),
+            id: itemId,
             status: 'pending',
             scheduledFor: Date.now(),
             data: testUser,
@@ -678,11 +734,91 @@ app.post('/api/test-flow', async (req, res) => {
             flowId: flowId
         });
         fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
-        await processQueue();
-        res.json({ success: true });
+        
+        // Immediate attempt with feedback
+        const success = await processQueue(itemId);
+        
+        if (success) {
+            res.json({ success: true, message: 'Test email delivered successfully!' });
+        } else {
+            // Re-read queue to find error
+            const updatedQueue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH));
+            const failedItem = updatedQueue.find(i => i.id === itemId);
+            res.status(500).json({ error: failedItem?.error || 'Unknown delivery failure' });
+        }
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+// ==========================================
+// CAMPAIGNS & CRM ENDPOINTS
+// ==========================================
+
+app.get('/api/campaigns', (req, res) => {
+    try {
+        if (!fs.existsSync(CAMPAIGNS_FILE_PATH)) return res.json([]);
+        res.json(JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH, 'utf8')));
+    } catch { res.json([]); }
+});
+
+app.post('/api/campaigns', (req, res) => {
+    try {
+        const campaigns = fs.existsSync(CAMPAIGNS_FILE_PATH) ? JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH)) : [];
+        const newCampaign = { ...req.body, id: uuidv4(), createdAt: new Date().toISOString() };
+        campaigns.push(newCampaign);
+        fs.writeFileSync(CAMPAIGNS_FILE_PATH, JSON.stringify(campaigns, null, 2));
+        res.json({ success: true, campaign: newCampaign });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/campaigns/send', (req, res) => {
+    const { campaignId, segment } = req.body;
+    try {
+        const campaigns = JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH));
+        const campaign = campaigns.find(c => c.id === campaignId);
+        if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+
+        const regs = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH));
+        const targets = segment === 'all' ? regs : regs.filter(r => r.source === segment);
+
+        const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH));
+        targets.forEach(user => {
+            queue.push({
+                id: uuidv4(),
+                status: 'pending',
+                scheduledFor: Date.now(),
+                data: user,
+                stepType: 'email',
+                flowId: campaignId,
+                isCampaign: true
+            });
+        });
+
+        fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
+        res.json({ success: true, count: targets.length });
+        processQueue();
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/unsubscribe', (req, res) => {
+    const { email } = req.query;
+    if (!email) return res.status(400).send('Email missing');
+    try {
+        const suppressionList = fs.existsSync(SUPPRESSION_LIST_PATH) ? JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH)) : [];
+        if (!suppressionList.includes(email)) {
+            suppressionList.push(email);
+            fs.writeFileSync(SUPPRESSION_LIST_PATH, JSON.stringify(suppressionList, null, 2));
+        }
+        res.send(`<h1>Successfully Unsubscribed</h1><p>The email ${email} has been removed from our marketing list.</p>`);
+    } catch (err) { res.status(500).send('Error'); }
+});
+
+app.get('/api/suppression', (req, res) => {
+    try {
+        if (!fs.existsSync(SUPPRESSION_LIST_PATH)) return res.json([]);
+        res.json(JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH, 'utf8')));
+    } catch { res.json([]); }
 });
 
 // GET Registration Stats
@@ -718,6 +854,32 @@ app.get('/api/registrations/stats', (req, res) => {
     } catch (err) {
         console.error('Error calculating stats:', err);
         res.status(500).json({ error: 'Failed to get stats' });
+    }
+});
+
+// ==========================================
+// SITE CONTENT CMS (Team, Impact, Partners)
+// ==========================================
+const SITE_CONFIGS_PATH = path.join(__dirname, 'data', 'site-configs.json');
+
+app.get('/api/site-content', (req, res) => {
+    try {
+        if (!fs.existsSync(SITE_CONFIGS_PATH)) {
+            return res.json({ team: [], testimonials: [], partners: [] });
+        }
+        res.json(JSON.parse(fs.readFileSync(SITE_CONFIGS_PATH, 'utf8')));
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to read site content' });
+    }
+});
+
+app.post('/api/site-content', (req, res) => {
+    try {
+        fs.writeFileSync(SITE_CONFIGS_PATH, JSON.stringify(req.body, null, 2));
+        res.json({ success: true, message: 'Site content saved successfully' });
+    } catch (err) {
+        console.error('Error saving site content:', err);
+        res.status(500).json({ error: 'Failed to save site content' });
     }
 });
 

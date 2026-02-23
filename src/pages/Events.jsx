@@ -32,15 +32,28 @@ const Events = () => {
   const [videoEventConfig, setVideoEventConfig] = useState(null)
 
   useEffect(() => {
+    // Static fallback config in case API fails
+    const fallbackConfig = {
+      title: { en: 'Next Video Connection Event', he: 'אירוע חיבור וידאו הבא' },
+      date: '2026-03-24T18:00:00Z',
+      description: { en: 'Join us for a global video connection session.', he: 'הצטרפו אלינו למפגש חיבור וידאו גלובלי.' },
+      registrationUrl: '/events#register-video'
+    };
+
     const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
     fetch(`${base}/api/video-event`)
       .then(res => res.json())
       .then(data => {
         if (data && data.title && (data.title.en || data.title.he)) {
           setVideoEventConfig(data);
+        } else {
+          setVideoEventConfig(fallbackConfig);
         }
       })
-      .catch(err => console.error("Video Event config fetch error:", err));
+      .catch(err => {
+        console.error("Video Event config fetch error:", err);
+        setVideoEventConfig(fallbackConfig);
+      });
   }, []);
 
   const openEventModal = (event) => {

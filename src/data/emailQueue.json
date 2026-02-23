@@ -96,5 +96,71 @@
     },
     "stepType": "email",
     "flowId": "post_event_warmth"
+  },
+  {
+    "id": "81777772-7ae2-4081-a1ae-d614e2280d27",
+    "status": "pending",
+    "scheduledFor": 1771854850845,
+    "data": {
+      "name": "Test User",
+      "email": "yuval17040@gmail.com",
+      "eventName": "HBM Live Demo",
+      "date": "2026-02-23T13:54:10.845Z",
+      "location": "Tel Aviv Hub",
+      "id": "TEST-123",
+      "language": "en"
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration"
+  },
+  {
+    "id": "873960d2-9b7d-4b8b-b9a7-f0125f7fc498",
+    "status": "pending",
+    "scheduledFor": 1771863982847,
+    "data": {
+      "name": "Test User",
+      "email": "test@example.com",
+      "eventName": "HBM Live Demo",
+      "date": "2026-02-23T16:26:22.847Z",
+      "location": "Tel Aviv Hub",
+      "id": "TEST-123",
+      "language": "en"
+    },
+    "stepType": "email"
+  },
+  {
+    "id": "299e0d5e-4fdb-4b75-acbf-eafdf3e77be5",
+    "status": "pending",
+    "scheduledFor": 1771864411816,
+    "data": {
+      "name": "Test User",
+      "email": "yuval17040@gmail.com",
+      "eventName": "HBM Live Demo",
+      "date": "2026-02-23T16:33:31.816Z",
+      "location": "Tel Aviv Hub",
+      "id": "TEST-123",
+      "language": "en"
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration"
+  },
+  {
+    "id": "193837d2-2596-406d-8840-a499df914f12",
+    "status": "pending",
+    "scheduledFor": 1771868875200,
+    "data": {
+      "id": 1771868875199,
+      "name": "Automation Test",
+      "email": "auto@hbm.org",
+      "phone": "0541112233",
+      "source": "site_signup",
+      "eventId": "general",
+      "eventName": "General Registration",
+      "date": "2026-02-23T17:47:55.199Z",
+      "language": "en",
+      "status": "confirmed"
+    },
+    "stepType": "email",
+    "flowId": "eight_minute_funnel"
   }
 ]

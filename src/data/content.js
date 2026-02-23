@@ -79,10 +79,34 @@ export const siteContent = {
       ],
       ctaText: { en: 'Start Your 8 Min', he: 'התחילו 8 דקות' },
       imagePairs: [
-        { left: `${WP}/2025/07/20250707_1016_Warm-Sunlit-Sharing_simple_compose_01jzhvxbqneh9szxfqj9c3tkrj.mp4`, right: `${WP}/2025/07/20250707_1657_Enthusiastic-Conversation_simple_compose_01jzjjv7fce9z9tjjxebwh5ycr.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/4.png` },
-        { left: `${WP}/2025/07/20250707_1036_Engaging-Kitchen-Conversation_simple_compose_01jzhx0rg4egza4ssgfftr605h.mp4`, right: `${WP}/2025/07/20250707_1608_Warm-Connection_simple_compose_01jzjg0y48fnbvn23bse4n6jcc.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/7.png` },
-        { left: `${WP}/2025/07/20250707_1155_Warm-Video-Connection_simple_compose_01jzj1hmrfexe9v2vzqwyf0f22.mp4`, right: `${WP}/2025/07/20250707_1042_Cozy-Storytime-Glow_simple_compose_01jzhxcvzjfgsspaqekpe9svc8.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/3.png` },
-        { left: `${WP}/2025/07/20250707_1632_Focused-Video-Call_simple_compose_01jzjhd88vfwdtpnxjx387fc1c.mp4`, right: `${WP}/2025/07/20250707_1340_Friendly-Video-Chat_simple_compose_01jzj7hq1vefyva88tyhpsyjer.mp4`, leftBorder: '#bbc0ff', rightBorder: '#ed9f7d', poster: `${WP}/2025/05/7.png` },
+        { 
+          left: `${WP}/2025/07/20250707_1016_Warm-Sunlit-Sharing_simple_compose_01jzhvxbqneh9szxfqj9c3tkrj.mp4`, 
+          right: `${WP}/2025/07/20250707_1657_Enthusiastic-Conversation_simple_compose_01jzjjv7fce9z9tjjxebwh5ycr.mp4`, 
+          leftBorder: '#bbc0ff', rightBorder: '#fdb586', 
+          leftPoster: `${WP}/2025/05/1.png`, 
+          rightPoster: `${WP}/2025/05/2.png` 
+        },
+        { 
+          left: `${WP}/2025/07/20250707_1036_Engaging-Kitchen-Conversation_simple_compose_01jzhx0rg4egza4ssgfftr605h.mp4`, 
+          right: `${WP}/2025/07/20250707_1608_Warm-Connection_simple_compose_01jzjg0y48fnbvn23bse4n6jcc.mp4`, 
+          leftBorder: '#bbc0ff', rightBorder: '#fdb586', 
+          leftPoster: `${WP}/2025/05/3.png`, 
+          rightPoster: `${WP}/2025/05/4.png` 
+        },
+        { 
+          left: `${WP}/2025/07/20250707_1155_Warm-Video-Connection_simple_compose_01jzj1hmrfexe9v2vzqwyf0f22.mp4`, 
+          right: `${WP}/2025/07/20250707_1042_Cozy-Storytime-Glow_simple_compose_01jzhxcvzjfgsspaqekpe9svc8.mp4`, 
+          leftBorder: '#bbc0ff', rightBorder: '#fdb586', 
+          leftPoster: `${WP}/2025/05/5.png`, 
+          rightPoster: `${WP}/2025/05/6.png` 
+        },
+        { 
+          left: `${WP}/2025/07/20250707_1632_Focused-Video-Call_simple_compose_01jzjhd88vfwdtpnxjx387fc1c.mp4`, 
+          right: `${WP}/2025/07/20250707_1340_Friendly-Video-Chat_simple_compose_01jzj7hq1vefyva88tyhpsyjer.mp4`, 
+          leftBorder: '#bbc0ff', rightBorder: '#ed9f7d', 
+          leftPoster: `${WP}/2025/05/7.png`, 
+          rightPoster: `${WP}/2025/05/8.png` 
+        },
       ],
     },
 
@@ -281,6 +305,19 @@ export const siteContent = {
           { en: '36 precise emotions mapped by energy and positivity', he: '36 רגשות מדויקים ממופים לפי אנרגיה וחיוביות' },
           { en: 'Visual proof of how 8 minutes shifts your mindset', he: 'הוכחה חזותית לאיך 8 דקות משנות את מצב הרוח' },
           { en: 'Seamless contact exchange directly from the platform', he: 'החלפת פרטי קשר חלקה ישירות מהפלטפורמה' }
+        ]
+      },
+
+      customLocations: {
+        title: { en: 'Customized Matching Locations', he: 'מיקומי מפגש מותאמים אישית' },
+        description: {
+          en: 'Personalize the matching experience by renaming the physical zones where participants meet. It’s a great way to highlight special spaces, sponsor areas, or distinct vibes for each specific event.',
+          he: 'התאימו אישית את חווית החיבור דרך שינוי השמות של אזורי המפגש. זו דרך מעולה להבליט מקומות מיוחדים לכל אירוע או קהילה, וששם ימצאו את המאצ׳.'
+        },
+        bullets: [
+          { en: 'Easily change location names', he: 'שינוי שמות אזורים בקלות' },
+          { en: 'Highlight special spaces per event', he: 'הדגשת מקומות מיוחדים לכל אירוע' },
+          { en: 'Make the experience feel customized', he: 'הפיכת החוויה לאישית ומותאמת לקהילה' }
         ]
       },
 

@@ -202,7 +202,6 @@ export default function HowItWorks() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{  margin: "-10% 0px -10% 0px" }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  onViewportEnter={() => setActiveStep(i)} // Update active step on scroll
                   onClick={() => setActiveStep(i)}
                   className={`cursor-pointer group relative p-4 md:p-6 rounded-2xl transition-all duration-300 ${
                     isActive 

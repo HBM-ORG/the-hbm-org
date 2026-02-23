@@ -9,5 +9,41 @@
     "eventName": "Next Video Event",
     "date": "2026-02-23T10:52:49.015Z",
     "status": "confirmed"
+  },
+  {
+    "id": 1771868384609,
+    "name": "Tester Bot",
+    "email": "tester@hbm.org",
+    "phone": "0501234567",
+    "source": "onPhysicalRegistration",
+    "eventId": "general",
+    "eventName": "HBM Launch",
+    "date": "2026-02-23T17:39:44.609Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771868788323,
+    "name": "Verification Test",
+    "email": "verify@hbm.org",
+    "phone": "0540000000",
+    "source": "site_signup",
+    "eventId": "general",
+    "eventName": "General Registration",
+    "date": "2026-02-23T17:46:28.323Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771868875199,
+    "name": "Automation Test",
+    "email": "auto@hbm.org",
+    "phone": "0541112233",
+    "source": "site_signup",
+    "eventId": "general",
+    "eventName": "General Registration",
+    "date": "2026-02-23T17:47:55.199Z",
+    "language": "en",
+    "status": "confirmed"
   }
 ]

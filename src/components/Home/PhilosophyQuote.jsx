@@ -85,6 +85,12 @@ const PhilosophyQuote = () => {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
               >
+                <span className="block mb-6 font-bold text-hbm-purple italic">
+                  <AnimatedText>Digital platform designed to connect people live at the event</AnimatedText>
+                  <br />
+                  <AnimatedText>for 1 on 1 conversations.</AnimatedText>
+                </span>
+
                 <span className="block mb-6">
                   <AnimatedText>There are places that highlight the </AnimatedText>
                   <AnimatedText className="font-bold text-gray-900">differences</AnimatedText>

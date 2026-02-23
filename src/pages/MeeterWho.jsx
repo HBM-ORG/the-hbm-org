@@ -4,7 +4,7 @@ import { useI18n, t } from '../i18n/context'
 import { 
   Building2, Hotel, GraduationCap, Users, CalendarDays, ArrowRight, Star, 
   MessageCircle, Zap, BarChart3, Heart, TrendingUp, Smile, Globe, Coffee, 
-  Briefcase, Layout, Award, Shield, UserPlus, Sparkles, Handshake, BarChart, School
+  Briefcase, Layout, Award, Shield, UserPlus, Sparkles, Handshake, BarChart, School, Quote
 } from 'lucide-react'
 import EyebrowBadge from '../components/EyebrowBadge'
 import BubbleContainer from '../components/BubbleContainer'
@@ -18,7 +18,7 @@ const tabs = [
     id:'events', 
     icon: CalendarDays, 
     label: {en:'Events',he:'אירועים'},
-    headline: {en:'Turn Every Event Into An Human Experience  .',he:'המנוע לאירועים אנושיים.'},
+    headline: {en:'Turn Every Event Into A Human Experience.',he:'המנוע לאירועים אנושיים.'},
     subtitle: {en:'We all know the truth: Networking is awkward. We fixed it.',he:'כולנו יודעים את האמת: נטוורקינג זה מביך. אנחנו תיקנו את זה.'},
     image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=75&w=1200&auto=format&fit=crop", 
     color: "#6160AB",
@@ -135,6 +135,19 @@ export default function MeeterWho() {
   const { lang } = useI18n()
   const [activeTab, setActiveTab] = useState('events')
   const currentTab = tabs.find(t => t.id === activeTab)
+  const [testimonialsList, setTestimonialsList] = useState([])
+  const [partnerLogosList, setPartnerLogosList] = useState(partnerLogos)
+
+  useEffect(() => {
+    const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
+    fetch(`${base}/api/site-content`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.testimonials && data.testimonials.length > 0) setTestimonialsList(data.testimonials);
+        if (data.partners && data.partners.length > 0) setPartnerLogosList(data.partners);
+      })
+      .catch(err => console.error(err));
+  }, []);
 
   // Load SociableKIT script
   useEffect(() => {
@@ -186,28 +199,10 @@ export default function MeeterWho() {
             </p>
           </div>
           
-          {/* Scroll Down Hint */}
-          <motion.div 
-            initial={{ opacity: 0, y: 0 }}
-            animate={{ opacity: 1, y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="flex flex-col items-center gap-2 cursor-pointer mt-4"
-            onClick={() => {
-              const el = document.getElementById('sector-tabs');
-              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-          >
-            <span className="text-xs font-bold text-hbm-purple/60 tracking-widest uppercase">
-              {t({ en: 'Scroll to explore', he: 'גללו כדי לגלות' }, lang)}
-            </span>
-            <div className="w-6 h-10 border-2 border-hbm-purple/30 rounded-full flex justify-center p-1">
-              <motion.div className="w-1.5 h-1.5 bg-hbm-purple rounded-full" />
-            </div>
-          </motion.div>
       </section>
 
       {/* Sector Tabs Section */}
-      <section className="relative z-0 min-h-[700px] md:min-h-[850px] py-12 md:py-0 overflow-hidden">
+      <section id="sector-tabs" className="relative z-0 min-h-[700px] md:min-h-[850px] py-12 md:py-0 overflow-hidden">
         
         {/* LIVE REELS ATMOSPHERE - Subtle background layer */}
         <motion.div 
@@ -263,17 +258,26 @@ export default function MeeterWho() {
             
             {/* Tab Navigation - STABLE & STICKY */}
             <div className="sticky top-20 z-[100] pt-6 md:pt-12 mb-8 md:mb-16 pointer-events-auto">
-              <div className="flex flex-nowrap md:justify-center gap-3 md:gap-4 px-6 py-4 bg-white/60 backdrop-blur-2xl rounded-full border border-white/40 shadow-2xl w-full md:w-fit mx-auto ring-1 ring-black/5 overflow-x-auto no-scrollbar snap-x">
-                {tabs.map(tb => (
-                  <button key={tb.id} onClick={() => setActiveTab(tb.id)}
-                    className={`flex items-center justify-center gap-2 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-xs md:text-sm transition-all duration-300 whitespace-nowrap snap-center
-                      ${activeTab===tb.id
-                        ? 'bg-gradient-to-r from-[#8B5CF6] to-[#F07B3C] text-white shadow-xl scale-110 transform border-none z-10'
-                        : 'text-hbm-gray hover:text-[#F07B3C] hover:bg-white/40'
-                      }`}>
-                    <tb.icon size={16} className={activeTab===tb.id ? 'text-white' : ''}/>{t(tb.label,lang)}
-                  </button>
-                ))}
+              {/* Desktop: Centered centered tabs | Mobile: Full-width scrollable tabs */}
+              <div className="md:w-fit md:mx-auto relative">
+                <div className="flex flex-nowrap md:justify-center gap-3 md:gap-4 px-6 md:px-8 py-4 bg-white/60 backdrop-blur-2xl rounded-full border border-white/40 shadow-2xl w-full mx-auto ring-1 ring-black/5 overflow-x-auto no-scrollbar snap-x scroll-smooth">
+                  {tabs.map(tb => (
+                    <button key={tb.id} onClick={() => setActiveTab(tb.id)}
+                      className={`flex items-center justify-center gap-2 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-xs md:text-sm transition-all duration-300 whitespace-nowrap snap-center
+                        ${activeTab===tb.id
+                          ? 'bg-gradient-to-r from-[#8B5CF6] to-[#F07B3C] text-white shadow-xl scale-110 transform border-none z-10'
+                          : 'text-hbm-gray hover:text-[#F07B3C] hover:bg-white/40'
+                        }`}>
+                      <tb.icon size={16} className={activeTab===tb.id ? 'text-white' : ''}/>{t(tb.label,lang)}
+                    </button>
+                  ))}
+                </div>
+                {/* Scroll Indicator for mobile */}
+                <div className="md:hidden flex justify-center mt-4 gap-1.5 opacity-40">
+                   {tabs.map(tb => (
+                     <div key={tb.id} className={`h-1 rounded-full transition-all duration-300 ${activeTab === tb.id ? 'w-6 bg-hbm-purple' : 'w-2 bg-gray-400'}`} />
+                   ))}
+                </div>
               </div>
             </div>
 
@@ -330,30 +334,51 @@ export default function MeeterWho() {
         </BubbleContainer>
       </section>
 
-      {/* Success Stories (Testimonials Marquee) */}
-      <section className="relative z-10 py-24 overflow-hidden">
-        <div className="max-w-5xl mx-auto text-center w-full mb-12 px-6">
-          <h2 className="text-3xl font-bold text-hbm-purple font-['Sora']">{t({en:'Real Impact.',he:'השפעה אמיתית.'},lang)}</h2>
-        </div>
+      {/* Success Stories (Classic Centered Design in Looping Marquee) */}
+      {testimonialsList.length > 0 && (
+        <section className="relative z-10 py-32 bg-hbm-cream overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6 mb-16 text-center">
+            <EyebrowBadge text={lang === 'he' ? 'סיפורי הצלחה' : 'SUCCESS STORIES'} />
+            <h2 className="text-4xl md:text-5xl font-black text-hbm-purple mt-4">{t({en:'Real Impact.',he:'השפעה אמיתית.'},lang)}</h2>
+          </div>
 
-        {/* Marquee Track */}
-        <div className="relative w-full mask-gradient-x">
-           <div className="flex gap-6 w-max animate-marquee hover:[animation-play-state:paused]">
-              {[...fullTestimonials, ...fullTestimonials].map((tm, i) => (
-                 <div key={i} className="w-80 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between shrink-0 hover:shadow-md transition-shadow">
-                    <div>
-                      <div className="flex gap-1 mb-4 justify-center">{[...Array(5)].map((_,j)=><Star key={j} size={16} className="text-hbm-orange fill-hbm-orange"/>)}</div>
-                      <p className="text-hbm-dark font-medium mb-4 italic text-center leading-relaxed font-['Sofia_Pro']">"{t(tm.quote,lang).replace(/"/g, '')}"</p>
+          <div className="relative w-full overflow-hidden mask-gradient-x">
+             <div className="flex gap-8 w-max animate-marquee hover:[animation-play-state:paused]" style={{ animationDuration: '50s' }}>
+                {[...testimonialsList, ...testimonialsList, ...testimonialsList, ...testimonialsList].map((t, i) => (
+                  <div key={i} className="w-[320px] md:w-[400px] bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col items-center text-center shrink-0">
+                    {/* Centered Stars */}
+                    <div className="flex gap-1 mb-6 justify-center">
+                      {[...Array(5)].map((_, idx) => (
+                        <Star key={idx} size={18} className="text-hbm-orange fill-hbm-orange" />
+                      ))}
                     </div>
-                    <div className="text-center border-t border-gray-100 pt-4 mt-2">
-                       <p className="text-sm font-bold text-hbm-dark font-['Sora']">{tm.name}</p>
-                       <p className="text-xs text-hbm-gray uppercase tracking-wider font-['Sofia_Pro']">{t(tm.role,lang)}</p>
+
+                    {/* Centered Quote */}
+                    <p className="text-hbm-dark font-medium italic mb-8 leading-relaxed font-['Sofia_Pro'] text-lg">
+                      "{t.quote}"
+                    </p>
+
+                    {/* Divider */}
+                    <div className="w-full h-px bg-gray-100 mb-6" />
+
+                    {/* Centered Author Info */}
+                    <div className="flex flex-col items-center">
+                      <h4 className="font-bold text-hbm-dark text-lg font-['Sora']">{t.author}</h4>
+                      <p className="text-xs text-hbm-gray uppercase tracking-widest font-['Sofia_Pro'] mt-1">
+                        {t.role}
+                      </p>
                     </div>
-                 </div>
-              ))}
-           </div>
-        </div>
-      </section>
+
+                    {/* Optional Company Logo - Small and discrete at the bottom if exists */}
+                    {t.companyLogo && (
+                      <img src={t.companyLogo} alt="Company" className="h-4 object-contain opacity-20 grayscale mt-4" />
+                    )}
+                  </div>
+                ))}
+             </div>
+          </div>
+        </section>
+      )}
 
       {/* Trusted Partners Section */}
       <section id="partners-meeter" className="bg-hbm-cream pb-24 overflow-hidden">
@@ -363,13 +388,13 @@ export default function MeeterWho() {
           </p>
           
           <div className="relative w-full overflow-hidden mask-gradient-x">
-            <div className="flex gap-16 md:gap-24 items-center w-max animate-marquee">
-              {[...partnerLogos, ...partnerLogos, ...partnerLogos].map((partner, i) => (
-                <div key={i} className="flex-shrink-0 h-12 md:h-16 flex items-center justify-center opacity-90 transition-opacity duration-300">
+            <div className="flex gap-12 md:gap-24 items-center w-max animate-marquee" style={{ paddingLeft: '2rem', animationDuration: '30s' }}>
+              {[...partnerLogosList, ...partnerLogosList, ...partnerLogosList, ...partnerLogosList].map((partner, i) => (
+                <div key={i} className="flex-shrink-0 h-32 md:h-40 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300">
                   <img 
-                    src={partner.src} 
+                    src={partner.logoUrl || partner.src} 
                     alt={partner.name}
-                    className="h-full w-auto object-contain"
+                    className="h-full w-auto object-contain transition-all duration-300 hover:scale-110"
                     onError={(e) => { e.target.style.display = 'none' }}
                   />
                 </div>

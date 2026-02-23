@@ -21,11 +21,17 @@
 
 * { box-sizing: border-box; }
 
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--color-hbm-cream);
   color: var(--color-hbm-dark);
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   font-size: 16px;
   line-height: 1.6;
@@ -211,6 +217,17 @@ html { scroll-behavior: smooth; }
 /* Pulse animation for CTA */
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(240,123,60,0.4); } 50% { box-shadow: 0 0 0 12px rgba(240,123,60,0); } }
 
+/* Gradient Animation */
+@keyframes gradient-slow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient-slow {
+  animation: gradient-slow 8s ease infinite;
+  background-size: 200% auto;
+}
+
 /* Infinite scroll for partner logos */
 .animate-scroll {
   animation: scrollLogos 40s linear infinite;
@@ -223,13 +240,13 @@ html { scroll-behavior: smooth; }
   100% { transform: translateX(-20%); } /* Move 1/5th for 5 sets */
 }
 
-/* Generic Marquee (for 2 sets) */
+/* Generic Marquee (for 3 sets) */
 .animate-marquee {
   animation: scrollMarquee 120s linear infinite;
 }
 @keyframes scrollMarquee {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  100% { transform: translateX(-33.333333%); } /* Move 1/3rd for 3 identical sets */
 }
 
 /* Gradient Mask for fading edges */

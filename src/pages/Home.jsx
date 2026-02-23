@@ -11,6 +11,7 @@ import { AnimatedHero, Why8Minutes, QuoteCarousel, InteractiveCard, PhilosophyQu
 import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
 import EyebrowBadge from '../components/EyebrowBadge'
+import { Quote, Star } from 'lucide-react'
 
 
 const WP = 'https://www.thehbm.org/wp-content/uploads'
@@ -134,6 +135,44 @@ const WhyHBMCards = ({ lang }) => {
   )
 }
 
+const TestimonialsGrid = ({ testimonials, lang }) => {
+  return (
+    <section className="bg-hbm-cream py-16">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark mb-4">{lang === 'he' || lang === 'ar' ? 'השפעה אמיתית' : 'Real Impact'}</h2>
+          <p className="text-hbm-gray">{lang === 'he' || lang === 'ar' ? 'מה אנשים אומרים על החוויות שלנו' : 'What people are saying about our experiences'}</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {testimonials.map((t, i) => (
+            <div key={i} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col h-full card-hover hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group">
+              <div className="flex justify-between items-start mb-6">
+                <Quote className="w-10 h-10 text-hbm-purple/10" />
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex gap-1 text-amber-400">
+                    {[...Array(5)].map((_, idx) => (
+                      <Star key={idx} className="w-4 h-4 fill-current" />
+                    ))}
+                  </div>
+                  {t.companyLogo && (
+                    <img src={t.companyLogo} alt="Company" className="h-6 object-contain opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all" />
+                  )}
+                </div>
+              </div>
+              <p className="text-hbm-dark font-medium italic mb-8 flex-1 text-lg leading-relaxed font-sans">"{t.quote}"</p>
+              <div className="pt-6 border-t border-gray-50 flex items-center justify-between">
+                <div>
+                  <h4 className="font-black text-hbm-purple text-lg tracking-tight leading-none">{t.author}</h4>
+                  <p className="text-[10px] font-black text-hbm-orange uppercase tracking-[0.2em] mt-1.5">{t.role}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
 
 export default function Home() {
 
@@ -142,6 +181,20 @@ export default function Home() {
   const dailyQuote = dailyQuotes[new Date().getDate() % dailyQuotes.length]
 
   const whatsappUrl = getWhatsappUrl(lang)
+  
+  const [partnerLogosList, setPartnerLogosList] = useState(partnerLogos)
+  const [testimonialsList, setTestimonialsList] = useState([])
+
+  useEffect(() => {
+    const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
+    fetch(`${base}/api/site-content`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.partners && data.partners.length > 0) setPartnerLogosList(data.partners);
+        if (data.testimonials && data.testimonials.length > 0) setTestimonialsList(data.testimonials);
+      })
+      .catch(err => console.error(err));
+  }, []);
   
 
 
@@ -224,27 +277,28 @@ export default function Home() {
       <Why8Minutes />
 
 
+      {/* ═══════════════════ REAL IMPACT TESTIMONIALS REMOVED PER USER REQUEST ═══════════════════ */}
       {/* ═══════════════════ DAILY INSPIRATION — QUOTE CAROUSEL ═══════════════════ */}
       <QuoteCarousel />
 
       {/* ═══════════════════ WHAT MAKES THIS WORK — Guidelines ═══════════════════ */}
       <Guidelines />
-
+      
       {/* ═══════════════════ TRUSTED PARTNERS ═══════════════════ */}
-      <section id="partners" className="bg-hbm-cream py-12 overflow-hidden">
+      <section id="partners" className="bg-hbm-cream py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-gray-400 text-xs uppercase tracking-[0.2em] mb-10 font-bold">
+          <p className="text-center text-gray-400 text-xs uppercase tracking-[0.2em] mb-12 font-bold">
             {t({ en: 'Trusted Partners', he: 'שותפים מהימנים' }, lang)}
           </p>
           
           <div className="relative w-full overflow-hidden mask-gradient-x">
-            <div className="flex gap-20 items-center w-max animate-marquee" style={{ paddingLeft: '2rem' }}>
-              {[...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos].map((partner, i) => (
-                <div key={i} className="flex-shrink-0 h-16 md:h-24 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300">
+            <div className="flex gap-12 md:gap-24 items-center w-max animate-marquee" style={{ paddingLeft: '2rem', animationDuration: '30s' }}>
+              {[...partnerLogosList, ...partnerLogosList, ...partnerLogosList, ...partnerLogosList].map((partner, i) => (
+                <div key={i} className="flex-shrink-0 h-32 md:h-40 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300">
                   <img 
-                    src={partner.src} 
+                    src={partner.logoUrl || partner.src} 
                     alt={partner.name}
-                    className="h-full w-auto object-contain transition-all duration-300 hover:scale-105"
+                    className="h-full w-auto object-contain transition-all duration-300 hover:scale-110"
                     onError={(e) => { e.target.style.display = 'none' }}
                   />
                 </div>

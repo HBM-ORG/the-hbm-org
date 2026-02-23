@@ -6,6 +6,7 @@ import IceBreakerCard from '../components/IceBreakerCard'
 import MeasureTheMagic from '../components/MeasureTheMagic'
 import SmartMatchingZone from '../components/SmartMatchingZone'
 import EmotionMatrixMockup from '../components/EmotionMatrixMockup'
+import CustomLocationsMockup from '../components/CustomLocationsMockup'
 import CustomizeMeeter from '../components/CustomizeMeeter'
 import { Palette, Type, Tag, MessageCircle } from 'lucide-react'
 import { siteContent } from '../data/content'
@@ -171,6 +172,38 @@ export default function MeeterFeatures() {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+        </BubbleContainer>
+      </section>
+
+      {/* Section 3.6: Custom Locations (Text Left, Visual Right) */}
+      <section className="bg-hbm-cream py-12">
+        <div className="max-w-6xl mx-auto px-6 mb-8">
+          <h2 className="text-4xl md:text-5xl font-bold text-center text-hbm-dark mb-4">
+            {t(features.customLocations.title, lang)}
+          </h2>
+        </div>
+        <BubbleContainer bgColor="white">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center w-full">
+            {/* Text Content */}
+            <div className="space-y-6">
+              <p className="text-lg text-hbm-gray leading-relaxed">
+                {t(features.customLocations.description, lang)}
+              </p>
+              <ul className="space-y-4">
+                {features.customLocations.bullets.map((bullet, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <span className="text-[#6160AB] text-2xl flex-shrink-0">✓</span>
+                    <span className="text-hbm-dark font-medium">{t(bullet, lang)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Phone Mockup */}
+            <div className="flex justify-center">
+              <CustomLocationsMockup />
             </div>
           </div>
         </BubbleContainer>

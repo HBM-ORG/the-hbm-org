@@ -76,10 +76,10 @@ const Why8MinutesTimer = ({ compact = false }) => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className={`${compact ? 'text-4xl md:text-6xl' : 'text-6xl md:text-8xl'} font-bold mb-6`}>
-              <span className="text-gray-900">{t({ en: 'Why ', he: 'למה ' }, lang)}</span>
+            <h2 className={`${compact ? 'text-4xl md:text-6xl' : 'text-5xl md:text-7xl lg:text-8xl'} font-bold mb-6`}>
+              <span className="text-gray-900">{t({ en: 'Why 8 ', he: 'למה 8 ' }, lang)}</span>
               <span className="bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent">
-                {t({ en: '8 Minutes?', he: '8 דקות?' }, lang)}
+                {t({ en: 'Minutes?', he: 'דקות?' }, lang)}
               </span>
             </h2>
 
@@ -154,9 +154,9 @@ const Why8MinutesTimer = ({ compact = false }) => {
               </svg>
 
               {/* Center content */}
-              <div className="relative text-center">
+              <div className="relative text-center flex flex-col items-center justify-center">
                 <motion.div
-                  className="text-8xl md:text-9xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent"
+                  className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent"
                   animate={{
                     scale: isTimerRunning ? [1, 1.1, 1] : 1,
                   }}
@@ -167,7 +167,7 @@ const Why8MinutesTimer = ({ compact = false }) => {
                 >
                   {displayTime}
                 </motion.div>
-                <p className="text-xl text-gray-600 font-medium mt-2">
+                <p className="text-base sm:text-lg md:text-xl text-gray-600 font-medium md:mt-2">
                   {t({ en: 'minutes', he: 'דקות' }, lang)}
                 </p>
 
@@ -175,14 +175,14 @@ const Why8MinutesTimer = ({ compact = false }) => {
                 {!isTimerRunning && (
                   <motion.button
                     onClick={startTimer}
-                    className="mt-6 px-6 py-3 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] text-white rounded-full font-semibold shadow-xl hover:shadow-2xl transition-all"
+                    className="mt-3 md:mt-6 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-[#6160AB] to-[#F07B3C] text-white rounded-full font-semibold shadow-xl hover:shadow-2xl transition-all flex items-center justify-center whitespace-nowrap"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <Clock className="inline w-5 h-5 mr-2" />
+                    <Clock className="inline w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     {t({ en: 'Watch It Count Down', he: 'צפו בספירה לאחור' }, lang)}
                   </motion.button>
                 )}

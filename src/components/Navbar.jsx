@@ -12,13 +12,7 @@ const { global } = siteContent
 const navStructure = [
   {
     key: 'home', path: '/',
-    subs: [
-      { id: 'hero', label: { en: 'Bringing...', he: 'מחברים...' } },
-      { id: 'partners', label: { en: 'Partnerships & Logos', he: 'שותפויות ולוגואים' } },
-      { id: 'vision', label: { en: 'Vision & Mission', he: 'חזון ומשימה' } },
-      { id: 'meeter-teaser', label: { en: 'The Meeter Experience', he: 'חווית ה-Meeter' } },
-      { id: 'event-cta', label: { en: 'Join the Next Event', he: 'הצטרפו לאירוע הבא' } },
-    ],
+    // subs removed as per simple home link request
   },
   {
     key: 'meeter', path: '/meeter',
@@ -81,7 +75,7 @@ export default function Navbar() {
 
   const isActive = (path) => location.pathname === path || (path !== "/" && location.pathname.startsWith(path))
 
-  const [expandedItems, setExpandedItems] = useState([])
+  const [expandedItems, setExpandedItems] = useState(['meeter']) // Expand meeter by default on mobile
 
   const toggleExpand = (key) => {
     setExpandedItems(prev => 
@@ -96,40 +90,39 @@ export default function Navbar() {
       <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 w-full ${
         scrolled || mobileOpen ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-white'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between relative">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 grid grid-cols-3 items-center">
           
-          {/* LEFT ZONE: Burger + Languages */}
-          <div className="flex z-[120] items-center gap-2 md:gap-4 flex-1 justify-start">
-             <div className="md:hidden">
-              <button 
-                className="p-2 -ml-2 text-hbm-dark focus:outline-none" 
-                onClick={() => setMobileOpen(!mobileOpen)}
-              >
-                {mobileOpen ? <X size={28} /> : <Menu size={28} />}
-              </button>
-            </div>
-            <div className="flex items-center min-w-[40px]">
+          {/* LEFT ZONE: Burger + Lang */}
+          <div className="flex items-center justify-start gap-2 z-[120]">
+            <button 
+              className="lg:hidden p-2 -ml-2 text-hbm-dark focus:outline-none" 
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+            <div className="lg:hidden scale-75 origin-left">
               <LanguageSwitcher />
             </div>
+            <div className="hidden lg:flex items-center gap-6 ml-4">
+               <div className="h-6 w-px bg-gray-200" />
+               <LanguageSwitcher />
+            </div>
           </div>
 
-          {/* CENTER ZONE: Truly Absolute Centered Logo */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] flex items-center justify-center pointer-events-none w-full max-w-[120px] md:max-w-none">
-            <Link to="/" onClick={() => setMobileOpen(false)} className="pointer-events-auto flex items-center justify-center">
-              <img src="/assets/logo.png" alt="The HBM" className="h-9 md:h-14 w-auto object-contain" />
+          {/* CENTER ZONE: Logo */}
+          <div className="flex justify-center z-[110]">
+            <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center">
+              <img src="/logos/theHBM%20LOGO@3x.png" alt="The HBM" className="h-8 md:h-12 w-auto object-contain" />
             </Link>
-          </div>
-
-          {/* RIGHT ZONE: Nav Links + CTA */}
-          <div className="flex z-[120] items-center justify-end gap-2 md:gap-6 flex-1">
-            {/* Desktop Nav Items */}
-            <nav className="hidden lg:flex items-center gap-1" ref={dropdownRef}>
+            
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex items-center gap-1 ml-8" ref={dropdownRef}>
               {navStructure.map((item) => (
                 <div key={item.key} className="relative group">
-                  {item.key === 'home' || !item.subs ? (
+                  {!item.subs ? (
                     <Link
                       to={item.path}
-                      className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-xl whitespace-nowrap ${
+                      className={`flex items-center gap-1 px-3 py-2 text-[15px] font-bold transition-colors rounded-xl whitespace-nowrap ${
                         isActive(item.path)
                           ? 'text-hbm-purple bg-hbm-purple/5'
                           : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
@@ -141,7 +134,7 @@ export default function Navbar() {
                     <>
                       <button
                         onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
-                        className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-xl whitespace-nowrap ${
+                        className={`flex items-center gap-1 px-3 py-2 text-[15px] font-bold transition-colors rounded-xl whitespace-nowrap ${
                           isActive(item.path)
                             ? 'text-hbm-purple bg-hbm-purple/5'
                             : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
@@ -157,12 +150,12 @@ export default function Navbar() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute top-full right-0 mt-1 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 min-w-[220px] overflow-hidden"
+                            className="absolute top-full left-0 mt-1 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 min-w-[220px] z-[200]"
                           >
                             {item.subs.map((sub) => (
                               <Link key={sub.id} to={sub.href || `${item.path}#${sub.id}`}
                                 onClick={() => setOpenDropdown(null)}
-                                className="block px-5 py-3 text-sm font-medium text-hbm-dark hover:bg-hbm-purple/5 hover:text-hbm-purple transition-all">
+                                className="block px-5 py-3 text-sm font-bold text-hbm-dark hover:bg-hbm-purple/5 hover:text-hbm-purple transition-all">
                                 {t(sub.label, lang)}
                               </Link>
                             ))}
@@ -174,11 +167,13 @@ export default function Navbar() {
                 </div>
               ))}
             </nav>
+          </div>
 
-            {/* Main CTA Button */}
+          {/* RIGHT ZONE: CTA */}
+          <div className="hidden lg:flex items-center justify-end z-[120]">
             <Link 
               to={global.ctaUrl} 
-              className="btn-primary !text-[12px] md:!text-[14px] !py-3 !px-4 md:!py-3.5 md:!px-8 !rounded-full whitespace-nowrap shadow-md hover:shadow-lg"
+              className="btn-primary !text-[14px] !py-3.5 !px-8 !rounded-full whitespace-nowrap shadow-md hover:shadow-lg font-bold"
             >
               {t(ui.cta.your8min, lang)}
             </Link>

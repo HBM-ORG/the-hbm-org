@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { siteContent } from '../../data/content'
 import { useI18n, t } from '../../i18n/context'
-import { ChevronDown, User, Eye, Zap, Gift, Smile, MessageCircle, Users, Trophy } from 'lucide-react'
+import { ChevronDown, User, Eye, Zap, Gift, Smile, MessageCircle, Users, Trophy, ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const icons = [User, Eye, Zap, Gift, Smile, MessageCircle, Users, Trophy]
 
@@ -11,7 +12,7 @@ const Guidelines = () => {
   const { home } = siteContent
   
   // Track open state for each accordion item (null = all closed)
-  const [openItems, setOpenItems] = useState([])
+  const [openItems, setOpenItems] = useState([]) // Default all closed
 
   const toggleItem = (index) => {
     setOpenItems((prev) => 
@@ -104,6 +105,22 @@ const Guidelines = () => {
               )
             })}
           </div>
+
+          <motion.div 
+            className="mt-16 flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <Link 
+              to="/about" 
+              className="btn-orange flex items-center gap-3 group px-8 py-4 rounded-full text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+            >
+              {t({ en: 'Learn More About Us', he: 'למדו עוד עלינו' }, lang)}
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
 
         </div>
       </div>
