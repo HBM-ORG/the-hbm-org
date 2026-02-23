@@ -91,81 +91,42 @@ export default function Navbar() {
       }`}>
         <div className="max-w-7xl mx-auto px-6 h-16 md:h-20 flex items-center justify-between relative z-[101]">
           
-          {/* Mobile Logo - Absolutely positioned on the entire container for guaranteed centering */}
-          <Link 
-            to="/" 
-            className="md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] flex items-center group" 
-            onClick={() => setMobileOpen(false)}
-          >
-            <img src={global.logo} alt="The HBM" className="h-10 w-auto object-contain" />
-          </Link>
+          {/* Mobile Layout: Left(Menu), Center(Logo), Right(Lang) */}
+          <div className="flex md:hidden items-center justify-between w-full z-[110]">
+             <button 
+              className="w-12 h-12 flex items-center justify-start text-hbm-dark focus:outline-none" 
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
 
-          {/* Left Wing */}
-          <div className="flex-1 flex items-center justify-start z-30">
-            {/* Mobile Hamburger */}
-            <div className="flex md:hidden mr-3">
-               <button 
-                className="p-2 -ml-2 text-hbm-dark focus:outline-none" 
-                onClick={() => setMobileOpen(!mobileOpen)}
-                aria-label="Toggle menu"
-              >
-                <div className="relative w-7 h-7">
-                  <AnimatePresence mode="wait">
-                    {mobileOpen ? (
-                      <motion.div
-                        key="close"
-                        initial={{ opacity: 0, rotate: -90 }}
-                        animate={{ opacity: 1, rotate: 0 }}
-                        exit={{ opacity: 0, rotate: 90 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute inset-0"
-                      >
-                        <X size={28} />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="menu"
-                        initial={{ opacity: 0, rotate: 90 }}
-                        animate={{ opacity: 1, rotate: 0 }}
-                        exit={{ opacity: 0, rotate: -90 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute inset-0"
-                      >
-                        <Menu size={28} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </button>
-            </div>
-            
-            {/* Desktop Logo */}
-            <Link to="/" className="hidden md:flex items-center group">
-              <img src={global.logo} alt="The HBM" className="h-14 w-auto object-contain" />
+            <Link to="/" onClick={() => setMobileOpen(false)} className="flex-shrink-0">
+              <img src="/assets/logo.png" alt="The HBM" className="h-8 w-auto object-contain" />
             </Link>
+
+            <div className="w-12 flex items-center justify-end">
+              <LanguageSwitcher />
+            </div>
           </div>
 
-          {/* Center Area (Desktop only layout) */}
-          <div className="flex-shrink-0 flex items-center justify-center pointer-events-none md:pointer-events-auto">
-            {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-1" ref={dropdownRef}>
-              {navStructure.map((item) => (
-                <div key={item.key} className="relative group">
-                  {item.key === 'home' || !item.subs ? (
-                    <Link
-                      to={item.path}
-                      className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
-                        isActive(item.path)
-                          ? 'text-hbm-purple bg-hbm-purple/5'
-                          : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
-                      }`}
-                    >
-                      {t(ui.nav[item.key], lang)}
-                    </Link>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
+          {/* Desktop Layout (Hidden on Mobile) */}
+          <div className="hidden md:flex items-center justify-between w-full">
+            <div className="flex-1 flex items-center justify-start">
+              <Link to="/" className="flex items-center group">
+                <img src="/assets/logo.png" alt="The HBM" className="h-14 w-auto object-contain" />
+              </Link>
+            </div>
+
+            {/* Center Area (Desktop only layout) */}
+            <div className="flex-shrink-0 flex items-center justify-center pointer-events-none md:pointer-events-auto">
+              {/* Desktop Nav */}
+              <nav className="hidden md:flex items-center gap-1" ref={dropdownRef}>
+                {navStructure.map((item) => (
+                  <div key={item.key} className="relative group">
+                    {item.key === 'home' || !item.subs ? (
+                      <Link
+                        to={item.path}
                         className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
                           isActive(item.path)
                             ? 'text-hbm-purple bg-hbm-purple/5'
@@ -173,8 +134,20 @@ export default function Navbar() {
                         }`}
                       >
                         {t(ui.nav[item.key], lang)}
-                        <ChevronDown size={14} className={`transition-transform ${openDropdown === item.key ? 'rotate-180' : ''}`} />
-                      </button>
+                      </Link>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
+                          className={`flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg ${
+                            isActive(item.path)
+                              ? 'text-hbm-purple bg-hbm-purple/5'
+                              : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
+                          }`}
+                        >
+                          {t(ui.nav[item.key], lang)}
+                          <ChevronDown size={14} className={`transition-transform ${openDropdown === item.key ? 'rotate-180' : ''}`} />
+                        </button>
 
                       <AnimatePresence>
                         {openDropdown === item.key && (
@@ -201,7 +174,7 @@ export default function Navbar() {
             </nav>
           </div>
 
-          {/* Right Wing */}
+          </div>
           <div className="flex-1 flex items-center justify-end gap-3 z-30">
             <LanguageSwitcher />
             <Link to={global.ctaUrl} className="hidden md:inline-flex btn-primary text-sm py-3 px-7">

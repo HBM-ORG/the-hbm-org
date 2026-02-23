@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { siteContent } from '../../data/content'
 import { useI18n, t } from '../../i18n/context'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, User, Heart, Sparkles, MessageCircle, Shield, Star, Smile, CheckCircle } from 'lucide-react'
 
 const Guidelines = () => {
   const { lang } = useI18n()
@@ -67,11 +67,14 @@ const Guidelines = () => {
                     <div className="flex items-center gap-5">
                       {/* Icon Container with peach/orange bg */}
                       <div className="w-14 h-14 rounded-xl bg-[#FBD5C1]/40 flex items-center justify-center p-2.5 group-hover:scale-105 transition-transform">
-                        <img 
-                          src={item.icon} 
-                          alt={t(item.title, lang)} 
-                          className="w-full h-full object-contain"
-                        />
+                        {index === 0 && <User className="w-7 h-7 text-[#F07B3C]" />}
+                        {index === 1 && <Heart className="w-7 h-7 text-[#F07B3C]" />}
+                        {index === 2 && <Sparkles className="w-7 h-7 text-[#F07B3C]" />}
+                        {index === 3 && <MessageCircle className="w-7 h-7 text-[#F07B3C]" />}
+                        {index === 4 && <Shield className="w-7 h-7 text-[#F07B3C]" />}
+                        {index === 5 && <Star className="w-7 h-7 text-[#F07B3C]" />}
+                        {index === 6 && <Smile className="w-7 h-7 text-[#F07B3C]" />}
+                        {index === 7 && <CheckCircle className="w-7 h-7 text-[#F07B3C]" />}
                       </div>
                       
                       {/* Title */}
