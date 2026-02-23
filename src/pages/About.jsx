@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { siteContent } from '../data/content'
 import { useI18n, t } from '../i18n/context'
 import { getWhatsappUrl } from '../components/Layout'
-import { ArrowRight, X, Linkedin } from 'lucide-react'
+import { ArrowRight, X, Linkedin, User } from 'lucide-react'
 import EyebrowBadge from '../components/EyebrowBadge'
 import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
@@ -139,8 +139,8 @@ export default function About() {
                         }}
                       />
                     ) : null}
-                    <div className={`${member.image ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-hbm-purple to-hbm-orange text-white text-2xl font-bold`}>
-                      {member.name.split(' ').map(n => n[0]).join('')}
+                    <div className={`${member.image ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40`}>
+                      <User size={40} />
                     </div>
                     {member.linkedin && (
                       <a 
@@ -211,8 +211,8 @@ export default function About() {
                         }}
                       />
                     ) : null}
-                    <div className={`${selectedMember.image ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-hbm-purple to-hbm-orange text-white text-3xl font-bold`}>
-                      {selectedMember.name.split(' ').map(n => n[0]).join('')}
+                    <div className={`${selectedMember.image ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40`}>
+                      <User size={60} />
                     </div>
                   </div>
                   {selectedMember.linkedin && (
@@ -273,7 +273,7 @@ export default function About() {
             </h2>
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div className="flex justify-center">
-                <img src="https://www.thehbm.org/wp-content/uploads/2025/06/Logo-and-Tagline.png" alt="HBM Logo" className="max-w-xs w-full" />
+                <img src="/assets/logo.png" alt="HBM Logo" className="max-w-xs w-full" />
               </div>
               <div>
                 <p className="text-hbm-gray leading-relaxed mb-6">

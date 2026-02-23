@@ -91,23 +91,41 @@ export default function Navbar() {
       }`}>
         <div className="max-w-7xl mx-auto px-6 h-16 md:h-20 flex items-center justify-between relative z-[101]">
           
-          {/* Mobile Layout: Left(Menu), Center(Logo), Right(Lang) */}
-          <div className="flex md:hidden items-center justify-between w-full z-[110]">
-             <button 
-              className="w-12 h-12 flex items-center justify-start text-hbm-dark focus:outline-none" 
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle menu"
-            >
-              {mobileOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
+          {/* Mobile Logo - Absolutely positioned on the entire container for guaranteed centering */}
+          <Link 
+            to="/" 
+            className="md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] flex items-center group" 
+            onClick={() => setMobileOpen(false)}
+          >
+            <img src="/assets/logo.png" alt="The HBM" className="h-10 w-auto object-contain" />
+          </Link>
 
-            <Link to="/" onClick={() => setMobileOpen(false)} className="flex-shrink-0">
-              <img src="/assets/logo.png" alt="The HBM" className="h-8 w-auto object-contain" />
-            </Link>
-
-            <div className="w-12 flex items-center justify-end">
-              <LanguageSwitcher />
+          {/* Left Wing */}
+          <div className="flex-1 flex items-center justify-start z-30">
+            {/* Mobile Hamburger */}
+            <div className="flex md:hidden mr-3">
+               <button 
+                className="p-2 -ml-2 text-hbm-dark focus:outline-none z-[120]" 
+                onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label="Toggle menu"
+              >
+                {mobileOpen ? <X size={28} /> : <Menu size={28} />}
+              </button>
             </div>
+            
+            {/* Desktop Logo */}
+            <Link to="/" className="hidden md:flex items-center group">
+              <img src="/assets/logo.png" alt="The HBM" className="h-14 w-auto object-contain" />
+            </Link>
+          </div>
+
+          {/* Right Wing (Mobile Lang) */}
+          <div className="flex-[2] flex items-center justify-center md:hidden pointer-events-none">
+            {/* Logo is absolute, this flex box just provides space if needed, but we use absolute Link above */}
+          </div>
+
+          <div className="flex-1 flex items-center justify-end md:hidden z-[110]">
+            <LanguageSwitcher />
           </div>
 
           {/* Desktop Layout (Hidden on Mobile) */}

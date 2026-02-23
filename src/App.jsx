@@ -9,6 +9,7 @@ import MeeterWho from './pages/MeeterWho'
 import MeeterFeatures from './pages/MeeterFeatures'
 
 import About from './pages/About'
+import Contact from './pages/Contact'
 import Events from './pages/Events'
 import EventDetails from './pages/EventDetails'
 import Knowledge from './pages/Knowledge'
@@ -64,16 +65,20 @@ export default function App() {
               <Route path="/register" element={<EventRegister />} />
               <Route path="/knowledge" element={<Knowledge />} />
               <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+
               {/* Internal Tools - Dev Only */}
               {import.meta.env.DEV && (
-                <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                <>
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                </>
               )}
 
               {/* Redirects */}
               <Route path="/b2b" element={<MeeterWho />} />
               <Route path="/faq" element={<MeeterWhat />} />
               <Route path="/gallery" element={<Events />} />
-              <Route path="/contact" element={<About />} />
             </Route>
           </Routes>
         </SEOWrapper>

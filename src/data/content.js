@@ -6,8 +6,8 @@ export const siteContent = {
     siteName: 'The HBM',
     tagline: { en: 'Bringing People Together', he: 'מחברים אנשים' },
     logo: '/assets/how-it-works/theHBM LOGO@3x.png',
-    logoTagline: `${WP}/2025/06/Logo-and-Tagline.png`,
-    favicon: `${WP}/2025/05/cropped-favicon.png`,
+    logoTagline: '/assets/logo.png',
+    favicon: '/assets/logo.png',
     ctaUrl: '/events#register-video',
     whatsappUrl: 'https://wa.me/972587073136?text=%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A7%D7%91%D7%9C%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%D7%A0%D7%95%D7%A1%D7%A4%D7%99%D7%9D%20%D7%A2%D7%9C%20%D7%94%D7%90%D7%A8%D7%92%D7%95%D7%9F',
     socialLinks: {
@@ -79,10 +79,10 @@ export const siteContent = {
       ],
       ctaText: { en: 'Start Your 8 Min', he: 'התחילו 8 דקות' },
       imagePairs: [
-        { left: `https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&q=80`, right: `https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=400&q=80`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&q=80` },
-        { left: `https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=400&q=80`, right: `https://images.unsplash.com/photo-1531482615713-2afd63097478?auto=format&fit=crop&w=400&q=80`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=400&q=80` },
-        { left: `https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80`, right: `https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&q=80`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80` },
-        { left: `https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=400&q=80`, right: `https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&q=80`, leftBorder: '#bbc0ff', rightBorder: '#ed9f7d', poster: `https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=400&q=80` },
+        { left: `${WP}/2025/07/20250707_1016_Warm-Sunlit-Sharing_simple_compose_01jzhvxbqneh9szxfqj9c3tkrj.mp4`, right: `${WP}/2025/07/20250707_1657_Enthusiastic-Conversation_simple_compose_01jzjjv7fce9z9tjjxebwh5ycr.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/4.png` },
+        { left: `${WP}/2025/07/20250707_1036_Engaging-Kitchen-Conversation_simple_compose_01jzhx0rg4egza4ssgfftr605h.mp4`, right: `${WP}/2025/07/20250707_1608_Warm-Connection_simple_compose_01jzjg0y48fnbvn23bse4n6jcc.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/7.png` },
+        { left: `${WP}/2025/07/20250707_1155_Warm-Video-Connection_simple_compose_01jzj1hmrfexe9v2vzqwyf0f22.mp4`, right: `${WP}/2025/07/20250707_1042_Cozy-Storytime-Glow_simple_compose_01jzhxcvzjfgsspaqekpe9svc8.mp4`, leftBorder: '#bbc0ff', rightBorder: '#fdb586', poster: `${WP}/2025/05/3.png` },
+        { left: `${WP}/2025/07/20250707_1632_Focused-Video-Call_simple_compose_01jzjhd88vfwdtpnxjx387fc1c.mp4`, right: `${WP}/2025/07/20250707_1340_Friendly-Video-Chat_simple_compose_01jzj7hq1vefyva88tyhpsyjer.mp4`, leftBorder: '#bbc0ff', rightBorder: '#ed9f7d', poster: `${WP}/2025/05/7.png` },
       ],
     },
 
