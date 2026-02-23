@@ -98,8 +98,8 @@ export default function Navbar() {
       }`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between relative">
           
-          {/* LEFT: Languages Switcher (Global Anchor) */}
-          <div className="flex-1 flex items-center justify-start gap-4 z-[120]">
+          {/* LEFT ZONE: Burger + Languages */}
+          <div className="flex z-[120] items-center gap-2 md:gap-4 flex-1 justify-start">
              <div className="md:hidden">
               <button 
                 className="p-2 -ml-2 text-hbm-dark focus:outline-none" 
@@ -108,20 +108,20 @@ export default function Navbar() {
                 {mobileOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center min-w-[40px]">
               <LanguageSwitcher />
             </div>
           </div>
 
-          {/* CENTER: Logo (Absolute centered on mobile, flex centered on desktop) */}
-          <div className="flex-shrink-0 flex items-center justify-center md:relative absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:translate-y-0 z-[110]">
-            <Link to="/" onClick={() => setMobileOpen(false)}>
-              <img src="/assets/logo.png" alt="The HBM" className="h-10 md:h-14 w-auto object-contain" />
+          {/* CENTER ZONE: Truly Absolute Centered Logo */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] flex items-center justify-center pointer-events-none w-full max-w-[120px] md:max-w-none">
+            <Link to="/" onClick={() => setMobileOpen(false)} className="pointer-events-auto flex items-center justify-center">
+              <img src="/assets/logo.png" alt="The HBM" className="h-9 md:h-14 w-auto object-contain" />
             </Link>
           </div>
 
-          {/* RIGHT: Desktop Nav and CTA Button */}
-          <div className="flex-1 flex items-center justify-end gap-2 md:gap-6 z-[120]">
+          {/* RIGHT ZONE: Nav Links + CTA */}
+          <div className="flex z-[120] items-center justify-end gap-2 md:gap-6 flex-1">
             {/* Desktop Nav Items */}
             <nav className="hidden lg:flex items-center gap-1" ref={dropdownRef}>
               {navStructure.map((item) => (
@@ -129,7 +129,7 @@ export default function Navbar() {
                   {item.key === 'home' || !item.subs ? (
                     <Link
                       to={item.path}
-                      className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-xl ${
+                      className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-xl whitespace-nowrap ${
                         isActive(item.path)
                           ? 'text-hbm-purple bg-hbm-purple/5'
                           : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
@@ -141,7 +141,7 @@ export default function Navbar() {
                     <>
                       <button
                         onClick={() => setOpenDropdown(openDropdown === item.key ? null : item.key)}
-                        className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-xl ${
+                        className={`flex items-center gap-1 px-3 py-2 text-[15px] font-medium transition-colors rounded-xl whitespace-nowrap ${
                           isActive(item.path)
                             ? 'text-hbm-purple bg-hbm-purple/5'
                             : 'text-hbm-dark hover:text-hbm-purple hover:bg-gray-50'
@@ -175,10 +175,10 @@ export default function Navbar() {
               ))}
             </nav>
 
-            {/* Main CTA Button - Force High Quality Styles */}
+            {/* Main CTA Button */}
             <Link 
               to={global.ctaUrl} 
-              className="btn-primary !text-[13px] md:!text-[15px] !py-2.5 !px-5 md:!py-3 md:!px-8 !rounded-full shadow-lg hover:shadow-xl transition-all"
+              className="btn-primary !text-[12px] md:!text-[14px] !py-3 !px-4 md:!py-3.5 md:!px-8 !rounded-full whitespace-nowrap shadow-md hover:shadow-lg"
             >
               {t(ui.cta.your8min, lang)}
             </Link>
