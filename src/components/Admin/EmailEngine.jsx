@@ -4,7 +4,7 @@ import {
     Mail, Zap, Clock, Smartphone, Monitor, Sparkles, Send, BarChart3,
     Settings, Save, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft,
     Wand2, Activity, Users, MousePointer, Eye, RefreshCw, PlusCircle,
-    Trash2, Database, Layers, Radio, ChevronRight, ChevronDown,
+    Trash2, BellOff, Database, Layers, Radio, ChevronRight, ChevronDown,
     ToggleLeft, ToggleRight, Copy, Play, Pause, FlaskConical, Bell, Image as ImageIcon, Video, Calendar, X
 } from 'lucide-react';
 
@@ -230,10 +230,16 @@ const EmailEngine = () => {
     const handleSave = async () => {
         setSaveStatus('Deploying...');
         try {
-            await fetch(`${API}/api/automation-settings`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config)
-            });
+            await Promise.all([
+                fetch(`${API}/api/automation-settings`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                }),
+                fetch(`${API}/api/campaigns/save-all`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ campaigns })
+                })
+            ]);
             setSaveStatus('✓ Live');
         } catch { setSaveStatus('✗ Failed'); }
         setTimeout(() => setSaveStatus(''), 3000);
@@ -298,6 +304,25 @@ const EmailEngine = () => {
         setTimeout(() => setTestStatus(''), 5000);
     };
 
+    const toggleSuppression = async (email) => {
+        try {
+            const r = await fetch(`${API}/api/suppression/toggle`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const d = await r.json();
+            if (d.success) setSuppressionList(d.list);
+        } catch (e) { console.error(e); }
+    };
+
+    const deleteLead = async (id) => {
+        if (!confirm('Permanently delete this lead?')) return;
+        try {
+            const r = await fetch(`${API}/api/registrations/${id}`, { method: 'DELETE' });
+            if (r.ok) setRegistrations(prev => prev.filter(reg => reg.id !== id));
+        } catch (e) { console.error(e); }
+    };
+
     const insertAtCursor = (tag) => {
         const el = textareaRef.current;
         if (!el) return;
@@ -310,13 +335,15 @@ const EmailEngine = () => {
     };
 
     const handleBlast = async (campaignId) => {
-        if (!confirm('Are you sure you want to blast this campaign to ALL leads?')) return;
+        const camp = campaigns.find(c => c.id === campaignId);
+        const segment = camp?.segment || 'all';
+        if (!confirm(`Are you sure you want to blast this campaign to [${segment}] segment?`)) return;
         setSaveStatus('🚀 Blasting...');
         try {
             const res = await fetch(`${API}/api/campaigns/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ campaignId, segment: 'all' })
+                body: JSON.stringify({ campaignId, segment })
             });
             const data = await res.json();
             if (data.success) {
@@ -674,7 +701,7 @@ const EmailEngine = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-gray-50 border-b border-gray-100">
                                     <tr>
-                                        {['Lead', 'Email', 'Source', 'Status', 'Heat'].map(h => (
+                                        {['Lead', 'Email', 'Source', 'Status', 'Heat', 'Actions'].map(h => (
                                             <th key={h} className="px-8 py-5 text-[9px] font-black text-gray-400 uppercase tracking-widest">{h}</th>
                                         ))}
                                     </tr>
@@ -705,6 +732,16 @@ const EmailEngine = () => {
                                                         {[...Array(5)].map((_, i) => (
                                                             <div key={i} className={`w-3 h-1 rounded-full ${i < Math.min(engSteps, 5) ? 'bg-orange-400' : 'bg-gray-100'}`} />
                                                         ))}
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <div className="flex items-center gap-2">
+                                                        <button onClick={() => toggleSuppression(r.email)} title={isUnsub ? "Re-subscribe" : "Mute Lead"} className={`p-2 rounded-lg transition-all ${isUnsub ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500'}`}>
+                                                            {isUnsub ? <CheckCircle2 className="w-3.5 h-3.5" /> : <BellOff className="w-3.5 h-3.5" />}
+                                                        </button>
+                                                        <button onClick={() => deleteLead(r.id)} title="Delete Forever" className="p-2 bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all">
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>

@@ -73,10 +73,24 @@ export default function HowItWorks() {
   const { lang } = useI18n()
   const [mode, setMode] = useState('video') // 'video' | 'physical'
   const [activeStep, setActiveStep] = useState(0)
+  const [cmsContent, setCmsContent] = useState(null)
   const containerRef = useRef(null)
   
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || ''}/api/cms/how-it-works`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && (data.videoSteps || data.physicalSteps)) {
+          setCmsContent(data);
+        }
+      })
+      .catch(err => console.error('CMS Fetch Error:', err));
+  }, []);
+
   const { howItWorks } = siteContent.home
-  const steps = mode === 'video' ? howItWorks.videoSteps : howItWorks.physicalSteps
+  const steps = cmsContent 
+    ? (mode === 'video' ? cmsContent.videoSteps : cmsContent.physicalSteps)
+    : (mode === 'video' ? howItWorks.videoSteps : howItWorks.physicalSteps)
 
   const formatDesc = (text) => {
     // Highlight keywords logic

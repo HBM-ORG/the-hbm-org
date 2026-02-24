@@ -41,10 +41,10 @@ export default function MeeterWhat() {
             {/* Toggle */}
             <div className="flex justify-center gap-3 mb-10">
               <button onClick={() => setMode('physical')} className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${mode==='physical'?'bg-hbm-orange text-white shadow-lg':'bg-white text-hbm-gray hover:bg-gray-100 border border-transparent hover:border-gray-200'}`}>
-                🤝 {t({ en: 'In-Person', he: 'פיזי' }, lang)}
+                 {t({ en: 'Face2Face', he: 'פיזי' }, lang)}
               </button>
-              <button onClick={() => setMode('virtual')} className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${mode==='virtual'?'bg-hbm-purple text-white shadow-lg':'bg-white text-hbm-gray hover:bg-gray-100 border border-transparent hover:border-gray-200'}`}>
-                🎥 {t({ en: 'Virtual', he: 'וירטואלי' }, lang)}
+              <button onClick={() => setMode('video')} className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${mode==='virtual'?'bg-hbm-purple text-white shadow-lg':'bg-white text-hbm-gray hover:bg-gray-100 border border-transparent hover:border-gray-200'}`}>
+                 {t({ en: 'Video', he: 'וירטואלי' }, lang)}
               </button>
             </div>
             <div className="rounded-2xl overflow-hidden shadow-2xl max-w-3xl mx-auto ring-4 ring-white/50">

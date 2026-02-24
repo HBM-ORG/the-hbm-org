@@ -25,7 +25,6 @@
   {
     "id": 1771868788323,
     "name": "Verification Test",
-    "email": "verify@hbm.org",
     "phone": "0540000000",
     "source": "site_signup",
     "eventId": "general",
@@ -43,6 +42,28 @@
     "eventId": "general",
     "eventName": "General Registration",
     "date": "2026-02-23T17:47:55.199Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771918984623,
+    "name": "Final Launch Test",
+    "phone": "0549998877",
+    "source": "onPhysicalRegistration",
+    "eventId": "general",
+    "eventName": "General Registration",
+    "date": "2026-02-24T07:43:04.623Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771919063341,
+    "name": "Active Flow Test",
+    "phone": "0543332211",
+    "source": "onPhysicalRegistration",
+    "eventId": "general",
+    "eventName": "General Registration",
+    "date": "2026-02-24T07:44:23.341Z",
     "language": "en",
     "status": "confirmed"
   }

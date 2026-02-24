@@ -1,144 +1,119 @@
-import { useRef } from 'react'
-import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion'
+import { useRef, useState } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { useI18n, t } from '../../i18n/context'
 
 const MagneticText = ({ children }) => {
   const ref = useRef(null)
-  const position = { x: useMotionValue(0), y: useMotionValue(0) }
-  const springConfig = { damping: 15, stiffness: 150, mass: 0.1 }
-  const x = useSpring(position.x, springConfig)
-  const y = useSpring(position.y, springConfig)
-
-  const handleMouseMove = (e) => {
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const handleMouse = (e) => {
     const { clientX, clientY } = e
-    const { left, top, width, height } = ref.current.getBoundingClientRect()
-    const centerX = left + width / 2
-    const centerY = top + height / 2
-    const distanceX = clientX - centerX
-    const distanceY = clientY - centerY
-    position.x.set(distanceX * 0.1)
-    position.y.set(distanceY * 0.1)
+    const { height, width, left, top } = ref.current.getBoundingClientRect()
+    const middleX = clientX - (left + width / 2)
+    const middleY = clientY - (top + height / 2)
+    setPosition({ x: middleX * 0.15, y: middleY * 0.15 })
   }
-
-  const handleMouseLeave = () => {
-    position.x.set(0)
-    position.y.set(0)
-  }
-
+  const reset = () => setPosition({ x: 0, y: 0 })
   return (
     <motion.div
       ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ x, y }}
-      className="inline-block cursor-grab active:cursor-grabbing"
+      onMouseMove={handleMouse}
+      onMouseLeave={reset}
+      animate={{ x: position.x, y: position.y }}
+      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
     >
       {children}
     </motion.div>
   )
 }
 
-export default function DidYouKnowSection() {
-  const containerRef = useRef(null)
+const DidYouKnowSection = () => {
   const { lang } = useI18n()
+  const containerRef = useRef(null)
   
+  // Track scroll progress within this sticky area
+  // Reduced height to 135vh to tighten the gap to the next section
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   })
 
-  // Sequential word disclosure
-  const sentenceEn = "95% of people hate small talk.".split(" ")
-  const sentenceHe = "95% מהאנשים שונאים סמול טוק.".split(" ")
-  const words = lang === 'he' ? sentenceHe : sentenceEn
-
-  // Professional Animation: Color Reveal + Subtle Slide
-  const AnimatedWord = ({ word, index, totalWords, progress }) => {
-    // Reveal between 0% and 50% scroll
-    const start = (index / totalWords) * 0.4
-    const end = start + 0.1
-    
-    // TRANSFORMS: From faint grey/low-opacity to SOLID BLACK
-    const color = useTransform(progress, [start, end], ["#E2E8F0", "#1A1A2E"])
-    const opacity = useTransform(progress, [start, end], [0.3, 1])
-    const y = useTransform(progress, [start, end], [20, 0])
-    
-    return (
-      <motion.span 
-        style={{ color, opacity, y }}
-        className="inline-block mr-4 md:mr-8 transition-colors duration-200"
-      >
-        {word}
-      </motion.span>
-    )
-  }
-
-  // Punchline Pop-up logic (0.6 to 0.8 range)
-  const punchlineScale = useTransform(scrollYProgress, [0.6, 0.75], [0.8, 1])
-  const punchlineOpacity = useTransform(scrollYProgress, [0.6, 0.7], [0, 1])
-  const punchlineY = useTransform(scrollYProgress, [0.6, 0.8], [60, 0])
+  // THE SENTENCE
+  const sentence = t({ 
+    en: '95% of people hate small talk.', 
+    he: '95% מהאנשים שונאים סמול טוק.' 
+  }, lang);
+  const words = sentence.split(' ');
 
   return (
-    <section 
-      ref={containerRef} 
-      className="relative h-[180vh] bg-hbm-cream"
-    >
+    <section ref={containerRef} className="relative h-[135vh] bg-hbm-cream">
+      {/* Sticky centered viewport */}
       <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden px-6">
         
-        <div className="relative flex flex-col items-center text-center max-w-7xl mx-auto z-10 w-full">
+        <div className="relative w-full max-w-6xl flex flex-col items-center justify-center text-center">
           
-          {/* Subtle Eyebrow - Small text as requested */}
-          <motion.div 
-            style={{ opacity: useTransform(scrollYProgress, [0, 0.1], [1, 0]) }}
-            className="mb-6"
+          {/* Subtle Eyebrow */}
+          <motion.p 
+            style={{ opacity: useTransform(scrollYProgress, [0, 0.1], [0.6, 0]) }}
+            className="text-hbm-gray font-bold text-[10px] md:text-xs uppercase tracking-[0.4em] mb-12"
           >
-             <p className="text-hbm-gray/60 font-medium tracking-[0.4em] uppercase text-[10px] md:text-xs">
-                {t({en: 'DID YOU KNOW?', he: 'הידעת?'}, lang)}
-             </p>
-          </motion.div>
+            {t({ en: 'DID YOU KNOW?', he: 'הידעת?' }, lang)}
+          </motion.p>
 
-          {/* Large Bold Reveal Text */}
-          <h2 className="text-5xl md:text-8xl lg:text-[10rem] font-black leading-[1.1] flex flex-wrap justify-center items-center mb-12 tracking-tighter" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-            {words.map((word, i) => (
-              <AnimatedWord 
-                key={i} 
-                word={word} 
-                index={i} 
-                totalWords={words.length} 
-                progress={scrollYProgress} 
-              />
-            ))}
-          </h2>
+          {/* Word-by-Word Reveal: 0% to 65% of scroll */}
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 md:gap-x-10 mb-12" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+            {words.map((word, i) => {
+              const step = 0.55 / words.length; 
+              const start = 0.05 + (i * step);
+              const end = start + step;
+              
+              const opacity = useTransform(scrollYProgress, [start, end], [0.1, 1]); 
+              const scale = useTransform(scrollYProgress, [start, end], [0.95, 1.05]);
+              const color = useTransform(scrollYProgress, [start, end], ["#D1D5DB", "#000000"]); 
+              const blur = useTransform(scrollYProgress, [start, end], ["blur(4px)", "blur(0px)"]);
 
-          {/* We Fixed It Punchline - Professional Pop-up */}
-          <motion.div 
-            style={{ 
-              scale: punchlineScale, 
-              opacity: punchlineOpacity,
-              y: punchlineY
-            }}
-            className="mt-4"
-          >
-            <MagneticText>
-              <div className="relative cursor-pointer">
-                <p className="text-6xl md:text-9xl lg:text-[11rem] font-black bg-gradient-to-r from-hbm-orange to-hbm-purple bg-clip-text text-transparent pb-4 leading-none tracking-tighter drop-shadow-sm">
-                  {t({en: "We fixed it.", he: "אנחנו תיקנו את זה."}, lang)}
-                </p>
-              </div>
-            </MagneticText>
-          </motion.div>
+              return (
+                <motion.span 
+                  key={i} 
+                  style={{ opacity, color, scale, filter: blur }} 
+                  className="text-4xl md:text-7xl lg:text-[10rem] font-black leading-[1.05] tracking-tighter inline-block px-2 transition-colors duration-200"
+                >
+                  {word}
+                </motion.span>
+              )
+            })}
+          </div>
+
+          {/* Punchline Pop-up: 70% to 90% of scroll */}
+          {/* We use an Absolute container for the punchline so it overlays perfectly */}
+          <div className="relative h-20 md:h-32 w-full flex items-center justify-center mt-12">
+            <motion.div 
+              style={{ 
+                opacity: useTransform(scrollYProgress, [0.7, 0.8], [0, 1]),
+                scale: useTransform(scrollYProgress, [0.75, 0.85], [0.4, 1.1]),
+                y: useTransform(scrollYProgress, [0.75, 0.85], [100, 0]),
+                rotate: useTransform(scrollYProgress, [0.75, 0.85], [10, 0])
+              }}
+              className="absolute pointer-events-auto"
+            >
+               <MagneticText>
+                  <motion.p 
+                    className="text-6xl md:text-9xl lg:text-[12rem] font-black bg-clip-text text-transparent bg-gradient-to-r from-[#F07B3C] via-[#6160AB] to-[#73C154] leading-none drop-shadow-2xl cursor-pointer p-4 pb-8"
+                    animate={{ 
+                       backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                    }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                    style={{ backgroundSize: '200% auto' }}
+                  >
+                    {t({ en: 'We fixed it.', he: 'אנחנו תיקנו את זה.' }, lang)}
+                  </motion.p>
+               </MagneticText>
+            </motion.div>
+          </div>
 
         </div>
-
-        {/* Minimalist Background Aura */}
-        <motion.div 
-          className="absolute inset-0 z-0 pointer-events-none"
-          style={{ opacity: useTransform(scrollYProgress, [0.4, 0.7], [0, 0.4]) }}
-        >
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] bg-hbm-purple/5 blur-[120px] rounded-full" />
-        </motion.div>
-
       </div>
     </section>
   )
 }
+
+export default DidYouKnowSection;

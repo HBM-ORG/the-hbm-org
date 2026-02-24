@@ -100,23 +100,30 @@ export default function Navbar() {
             >
               {mobileOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
+            
+            {/* Desktop Logo: Moved to far left */}
+            <Link to="/" className="hidden lg:flex items-center mr-4">
+              <img src="/logos/theHBM%20LOGO@3x.png" alt="The HBM" className="h-10 md:h-12 w-auto object-contain" />
+            </Link>
+
             <div className="lg:hidden scale-75 origin-left">
               <LanguageSwitcher />
             </div>
-            <div className="hidden lg:flex items-center gap-6 ml-4">
+            <div className="hidden lg:flex items-center gap-6 ml-2">
                <div className="h-6 w-px bg-gray-200" />
                <LanguageSwitcher />
             </div>
           </div>
 
-          {/* CENTER ZONE: Logo */}
+          {/* CENTER ZONE: Logo (Mobile) + Nav (Desktop) */}
           <div className="flex justify-center z-[110]">
-            <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center">
+            {/* Mobile Logo: Keep it centered for phone */}
+            <Link to="/" onClick={() => setMobileOpen(false)} className="lg:hidden flex items-center">
               <img src="/logos/theHBM%20LOGO@3x.png" alt="The HBM" className="h-8 md:h-12 w-auto object-contain" />
             </Link>
             
             {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-1 ml-8" ref={dropdownRef}>
+            <nav className="hidden lg:flex items-center gap-1" ref={dropdownRef}>
               {navStructure.map((item) => (
                 <div key={item.key} className="relative group">
                   {!item.subs ? (

@@ -1,12 +1,12 @@
 {
   "title": {
-    "en": "Next Video Event",
-    "he": "אירוע וידאו קרוב"
+    "en": "Video Event",
+    "he": "אירוע וידאו "
   },
-  "date": "2026-05-15T00:00:00.000Z",
-  "time": "18:00",
+  "date": "2026-03-03T00:00:00.000Z",
+  "time": "12:00",
   "location": "HBM Platform",
-  "image": "/assets/events/video-event/1771842750166_video3.png",
+  "image": "/assets/events/video-event/1771872417486_1_YouTube.png",
   "registrationFields": {
     "name": true,
     "email": true,

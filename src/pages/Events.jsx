@@ -77,7 +77,7 @@ const Events = () => {
                </div>
                
                <h1 className="text-4xl md:text-7xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#6160AB] to-[#F07B3C] leading-tight" style={{letterSpacing:'-2px'}}>
-                   {t({en: 'Our Events', he: 'האירועים שלנו'}, lang)}
+                   {t({en: 'Next Events', he: 'האירועים הבאים'}, lang)}
                </h1>
                
                <p className="text-xl text-gray-600 font-['Sofia_Sans'] leading-relaxed">

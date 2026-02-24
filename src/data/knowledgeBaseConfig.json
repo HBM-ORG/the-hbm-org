@@ -1,0 +1,111 @@
+{
+  "isLocked": false,
+  "books": [
+    {
+      "id": "per-1",
+      "type": "BOOK",
+      "title": "Atomic Habits",
+      "author": "James Clear",
+      "category": "Personal Development",
+      "description": "An easy & proven way to build good habits & break bad ones."
+    },
+    {
+      "id": "per-2",
+      "type": "BOOK",
+      "title": "The 7 Habits of Highly Effective People",
+      "author": "Stephen Covey",
+      "category": "Personal Development",
+      "description": "A step-by-step pathway for living with fairness, integrity, service, and human dignity."
+    },
+    {
+      "id": "per-3",
+      "type": "BOOK",
+      "title": "Can't Hurt Me",
+      "author": "David Goggins",
+      "category": "Personal Development",
+      "description": "Master your mind and defy the odds."
+    },
+    {
+      "id": "per-4",
+      "type": "BOOK",
+      "title": "Deep Work",
+      "author": "Cal Newport",
+      "category": "Personal Development",
+      "description": "Rules for focused success in a distracted world."
+    },
+    {
+      "id": "ent-1",
+      "type": "BOOK",
+      "title": "Think and Grow Rich",
+      "author": "Napoleon Hill",
+      "category": "Entrepreneurship",
+      "description": "The landmark bestseller upon which all modern success advice is built."
+    },
+    {
+      "id": "ent-2",
+      "type": "BOOK",
+      "title": "Rich Dad Poor Dad",
+      "author": "Robert Kiyosaki",
+      "category": "Entrepreneurship",
+      "description": "What the rich teach their kids about money that the poor and middle class do not!"
+    },
+    {
+      "id": "psy-1",
+      "type": "BOOK",
+      "title": "Thinking, Fast and Slow",
+      "author": "Daniel Kahneman",
+      "category": "Psychology",
+      "description": "The definitive book on how our minds work."
+    },
+    {
+      "id": "psy-2",
+      "type": "BOOK",
+      "title": "Sapiens",
+      "author": "Yuval Noah Harari",
+      "category": "Psychology",
+      "description": "A brief history of humankind."
+    },
+    {
+      "id": "spi-1",
+      "type": "BOOK",
+      "title": "Meditations",
+      "author": "Marcus Aurelius",
+      "category": "Spirituality & Philosophy",
+      "description": "The private thoughts of the Roman Emperor."
+    },
+    {
+      "id": "spi-2",
+      "type": "BOOK",
+      "title": "Man's Search for Meaning",
+      "author": "Viktor Frankl",
+      "category": "Spirituality & Philosophy",
+      "description": "The classic tribute to hope from the Holocaust."
+    },
+    {
+      "id": 1771924210125,
+      "title": "New Book",
+      "author": "",
+      "description": "",
+      "coverUrl": "",
+      "category": "General"
+    }
+  ],
+  "videos": [
+    {
+      "id": "vid-1",
+      "title": "Why 8 Minutes Changes Everything",
+      "author": "Elad Maor Hefets",
+      "description": "Elad explains the philosophy and science behind the 8-minute methodology and why it's the perfect duration for human connection.",
+      "youtubeUrl": "https://www.youtube.com/watch?v=R7smYF02Kjo",
+      "category": "Interviews"
+    },
+    {
+      "id": "vid-2",
+      "title": "Building Real Communities",
+      "author": "The HBM team",
+      "description": "A deep dive into how HBM helps organizations and individuals build genuine, lasting communities through simple interactions.",
+      "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "category": "Education"
+    }
+  ]
+}

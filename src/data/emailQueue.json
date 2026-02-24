@@ -162,5 +162,23 @@
     },
     "stepType": "email",
     "flowId": "eight_minute_funnel"
+  },
+  {
+    "id": "4622ed29-86a3-4a06-8e1b-c03282d8d560",
+    "status": "pending",
+    "scheduledFor": 1771919063341,
+    "data": {
+      "id": 1771919063341,
+      "name": "Active Flow Test",
+      "phone": "0543332211",
+      "source": "onPhysicalRegistration",
+      "eventId": "general",
+      "eventName": "General Registration",
+      "date": "2026-02-24T07:44:23.341Z",
+      "language": "en",
+      "status": "confirmed"
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration"
   }
 ]

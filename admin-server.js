@@ -22,6 +22,7 @@ try {
 } catch(e) { /* dotenv not available in production - that's fine */ }
 
 const PORT = process.env.PORT || 3001;
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 const app = express();
 
@@ -46,7 +47,11 @@ const ENGAGEMENT_LOG_PATH = path.join(__dirname, 'src', 'data', 'engagement.json
 const VIDEO_EVENT_CONFIG_PATH = path.join(__dirname, 'src', 'data', 'videoEvent.json');
 const SUPPRESSION_LIST_PATH = path.join(__dirname, 'src', 'data', 'suppression.json');
 const CAMPAIGNS_FILE_PATH = path.join(__dirname, 'src', 'data', 'campaigns.json');
+const HOW_IT_WORKS_CONFIG_PATH = path.join(__dirname, 'src', 'data', 'howItWorksConfig.json');
+const KNOWLEDGE_BASE_CONFIG_PATH = path.join(__dirname, 'src', 'data', 'knowledgeBaseConfig.json');
 const ASSETS_DIR = path.join(__dirname, 'public', 'assets', 'events');
+const CMS_ASSETS_DIR = path.join(__dirname, 'public', 'assets', 'cms');
+if (!fs.existsSync(CMS_ASSETS_DIR)) fs.mkdirSync(CMS_ASSETS_DIR, { recursive: true });
 const LOG_FILE = path.join(__dirname, 'src', 'data', 'server-errors.log');
 
 // Safe file-based error logger — never crashes the process
@@ -113,6 +118,19 @@ app.post('/api/upload-email-image', uploadEmail.single('image'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const fullUrl = req.protocol + '://' + req.get('host') + '/assets/emails/' + req.file.filename;
     res.json({ success: true, url: fullUrl }); // Return absolute URL for email compatibility
+});
+
+// Dedicated CMS Image Upload
+const cmsStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, CMS_ASSETS_DIR),
+  filename: (req, file, cb) => cb(null, Date.now() + '_' + file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_'))
+});
+const uploadCms = multer({ storage: cmsStorage });
+
+app.post('/api/upload-cms-image', uploadCms.single('image'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const url = '/assets/cms/' + req.file.filename;
+    res.json({ success: true, url });
 });
 
 // 1. List Images in a Folder
@@ -331,8 +349,8 @@ const getEmailTemplate = (body, config, trackingId, email, language) => {
     const secondary = styling.secondaryColor;
     const signatureUrl = styling.signatureUrl;
     const logoUrl = styling.logoUrl || '/logo.png';
-    const trackingUrl = `http://localhost:3001/api/track/open/${trackingId}`;
-    const unsubscribeUrl = `http://localhost:3001/api/unsubscribe?email=${encodeURIComponent(email)}`;
+    const trackingUrl = `${BASE_URL}/api/track/open/${trackingId}`;
+    const unsubscribeUrl = `${BASE_URL}/api/unsubscribe?email=${encodeURIComponent(email)}`;
 
     const dir = language === 'he' ? 'rtl' : 'ltr';
     const align = language === 'he' ? 'right' : 'left';
@@ -359,7 +377,7 @@ const getEmailTemplate = (body, config, trackingId, email, language) => {
         <div class="wrapper">
             <div class="container">
                 <div class="header">
-                    <img src="${logoUrl.startsWith('http') ? logoUrl : 'http://localhost:3001' + logoUrl}" class="logo" alt="The HBM">
+                    <img src="${logoUrl.startsWith('http') ? logoUrl : BASE_URL + logoUrl}" class="logo" alt="The HBM">
                 </div>
                 <div class="content">
                     ${body}
@@ -527,16 +545,31 @@ setInterval(processQueue, 60000); // Process every minute
 // ==========================================
 
 app.get('/api/track/open/:id', (req, res) => {
-    logEngagement(req.params.id, 'open', 'unknown');
+    let email = 'unknown';
+    try {
+        const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH, 'utf8'));
+        const item = queue.find(i => i.id === req.params.id);
+        if (item) email = item.data.email;
+    } catch(e) {}
+    
+    logEngagement(req.params.id, 'open', email);
     const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
     res.writeHead(200, { 'Content-Type': 'image/gif', 'Content-Length': pixel.length }).end(pixel);
 });
 
 app.get('/api/track/click/:id', (req, res) => {
-    const target = req.query.url || 'https://thehbm.org';
-    logEngagement(req.params.id, 'click', 'unknown', { target });
+    let email = 'unknown';
+    try {
+        const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH, 'utf8'));
+        const item = queue.find(i => i.id === req.params.id);
+        if (item) email = item.data.email;
+    } catch(e) {}
+    
+    logEngagement(req.params.id, 'click', email);
+    const target = req.query.url || 'http://thehbm.org';
     res.redirect(target);
 });
+
 
 app.get('/api/unsubscribe', (req, res) => {
     const { email } = req.query;
@@ -593,22 +626,25 @@ app.post('/api/ai/improve-copy', async (req, res) => {
     const { text, goal, prompt, tone, language } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-        // Fallback simulation if no key
-        console.log("[AI] No API Key found, using simulation");
-        let improved = text;
-        if (language === 'he') {
-            const cta = goal === 'marketing' ? "\n\n**הזדמנות מיוחדת:** אל תישארו מאחור — תפסו את מקומכם עכשיו!" : "";
-            improved = `✨ ${text}\n\n${prompt ? `[שדרוג: ${prompt}]` : ''}${cta}`;
+    const hbmContext = "The HBM (Human Being Movement) focus on 8-minute deep human connections. Premium, authentic, psychological depth.";
+    
+    // Improved simulation/fallback function
+    const getSimulation = (txt, t, g, l, p) => {
+        if (l === 'he') {
+            const cta = g === 'marketing' ? "\n\n**הזדמנות מיוחדת:** אל תישארו מאחור — תפסו את מקומכם עכשיו!" : "";
+            return `✨ ${txt}\n\n${p ? `[שדרוג: ${p}]` : ''}${cta}`;
         } else {
-            const cta = goal === 'marketing' ? "\n\n**Exclusive:** Grab your spot now!" : "";
-            improved = `✨ ${text}\n\n${prompt ? `[Refined: ${prompt}]` : ''}${cta}`;
+            const cta = g === 'marketing' ? "\n\n**Exclusive:** Grab your spot now!" : "";
+            return `✨ ${txt}\n\n${p ? `[Refined: ${p}]` : ''}${cta}`;
         }
-        return res.json({ text: improved });
+    };
+
+    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+        console.log("[AI] No API Key found, using simulation");
+        return res.json({ text: getSimulation(text, tone, goal, language, prompt) });
     }
 
     try {
-        const hbmContext = "The HBM (Human Being Movement) focus on 8-minute deep human connections. Premium, authentic, psychological depth.";
         const systemPrompt = `You are the HBM AI Copywriter. Improve the following email text. 
         Tone: ${tone}. Goal: ${goal}. Language: ${language === 'he' ? 'Hebrew' : 'English'}.
         Context: ${hbmContext}. User Instruction: ${prompt || 'Make it better'}.
@@ -624,12 +660,17 @@ app.post('/api/ai/improve-copy', async (req, res) => {
         });
 
         const data = await response.json();
-        console.log("[AI Gemini Response]", JSON.stringify(data, null, 2));
-        const improvedText = data.candidates?.[0]?.content?.parts?.[0]?.text || text;
+        
+        if (data.error) {
+            console.error("[AI Gemini Error]", data.error.message);
+            return res.json({ text: getSimulation(text, tone, goal, language, prompt) });
+        }
+
+        const improvedText = data.candidates?.[0]?.content?.parts?.[0]?.text || getSimulation(text, tone, goal, language, prompt);
         res.json({ text: improvedText.trim() });
     } catch (err) {
-        console.error("[AI Error]", err);
-        res.status(500).json({ error: "AI Service Timeout" });
+        console.error("[AI Exception]", err);
+        res.json({ text: getSimulation(text, tone, goal, language, prompt) });
     }
 });
 
@@ -772,6 +813,14 @@ app.post('/api/campaigns', (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+app.post('/api/campaigns/save-all', (req, res) => {
+    try {
+        const { campaigns } = req.body;
+        fs.writeFileSync(CAMPAIGNS_FILE_PATH, JSON.stringify(campaigns, null, 2));
+        res.json({ success: true, message: 'All campaigns saved' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.post('/api/campaigns/send', (req, res) => {
     const { campaignId, segment } = req.body;
     try {
@@ -819,6 +868,29 @@ app.get('/api/suppression', (req, res) => {
         if (!fs.existsSync(SUPPRESSION_LIST_PATH)) return res.json([]);
         res.json(JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH, 'utf8')));
     } catch { res.json([]); }
+});
+
+app.post('/api/suppression/toggle', (req, res) => {
+    const { email } = req.body;
+    try {
+        let list = fs.existsSync(SUPPRESSION_LIST_PATH) ? JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH)) : [];
+        if (list.includes(email)) {
+            list = list.filter(e => e !== email);
+        } else {
+            list.push(email);
+        }
+        fs.writeFileSync(SUPPRESSION_LIST_PATH, JSON.stringify(list, null, 2));
+        res.json({ success: true, list });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/registrations/:id', (req, res) => {
+    try {
+        let regs = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, 'utf8'));
+        regs = regs.filter(r => r.id.toString() !== req.params.id.toString());
+        fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(regs, null, 2));
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // GET Registration Stats
@@ -883,6 +955,48 @@ app.post('/api/site-content', (req, res) => {
     }
 });
 
+// ==========================================
+// NEW CMS ENDPOINTS (How It Works, Knowledge Base)
+// ==========================================
+app.get('/api/cms/how-it-works', (req, res) => {
+    try {
+        if (!fs.existsSync(HOW_IT_WORKS_CONFIG_PATH)) return res.json({});
+        res.json(JSON.parse(fs.readFileSync(HOW_IT_WORKS_CONFIG_PATH, 'utf8')));
+    } catch { res.json({}); }
+});
+
+app.post('/api/cms/how-it-works', (req, res) => {
+    try {
+        fs.writeFileSync(HOW_IT_WORKS_CONFIG_PATH, JSON.stringify(req.body, null, 2));
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/cms/knowledge-base', (req, res) => {
+    try {
+        if (!fs.existsSync(KNOWLEDGE_BASE_CONFIG_PATH)) return res.json({});
+        res.json(JSON.parse(fs.readFileSync(KNOWLEDGE_BASE_CONFIG_PATH, 'utf8')));
+    } catch { res.json({}); }
+});
+
+app.post('/api/cms/knowledge-base', (req, res) => {
+    try {
+        fs.writeFileSync(KNOWLEDGE_BASE_CONFIG_PATH, JSON.stringify(req.body, null, 2));
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/cms/lock-toggle', (req, res) => {
+    const { path: configPath } = req.body;
+    const targetPath = configPath === 'howItWorks' ? HOW_IT_WORKS_CONFIG_PATH : KNOWLEDGE_BASE_CONFIG_PATH;
+    try {
+        const config = JSON.parse(fs.readFileSync(targetPath, 'utf8'));
+        config.isLocked = !config.isLocked;
+        fs.writeFileSync(targetPath, JSON.stringify(config, null, 2));
+        res.json({ success: true, isLocked: config.isLocked });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // 4. GET Events (Live JSON)
 app.get('/api/events', (req, res) => {
     try {
@@ -902,6 +1016,10 @@ app.get('/api/events', (req, res) => {
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Route all other requests to the React app (Client Side Routing)
+// MOVED AFTER API ROUTES
+
+// END CMS SECTION
+
 app.get('/{*any}', (req, res) => {
     // Only serve index.html for non-API routes
     if (req.path.startsWith('/api/') || req.path.startsWith('/assets/')) {

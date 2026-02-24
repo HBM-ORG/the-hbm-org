@@ -214,10 +214,40 @@ export default function Home() {
 
 
 
+      {/* ═══════════════════ TRUSTED PARTNERS ═══════════════════ */}
+      <section id="partners" className="relative py-20 overflow-hidden bg-transparent">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <p className="text-center text-gray-400 text-[10px] uppercase tracking-[0.3em] mb-12 font-bold opacity-60">
+            {t({ en: 'Trusted Partners', he: 'שותפים מהימנים' }, lang)}
+          </p>
+          <div className="relative w-full overflow-hidden mask-gradient-x">
+            <div className="flex gap-12 md:gap-24 items-center w-max animate-marquee" style={{ animationDuration: '40s' }}>
+              {[...partnerLogosList, ...partnerLogosList, ...partnerLogosList].map((partner, i) => (
+                <div key={i} className="flex-shrink-0 h-32 md:h-40 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-300 px-4">
+                  <img 
+                    src={partner.logoUrl || partner.src} 
+                    alt={partner.name}
+                    className="h-full w-auto object-contain transition-all duration-300 hover:scale-105"
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Subtle background blob for partners */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-r from-transparent via-hbm-purple/5 to-transparent blur-3xl pointer-events-none" />
+      </section>
+
       {/* ═══════════════════ OPPORTUNITY ROTATOR — 2X SIZE ═══════════════════ */}
-      <section className="bg-hbm-cream py-32 overflow-hidden relative">
-        {/* Smooth Transition Blur */}
-        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-[#fef5ed] to-hbm-cream z-0" />
+      <section className="py-32 overflow-hidden relative bg-transparent">
+        {/* Aura blob for opportunity */}
+        <motion.div 
+          className="absolute -bottom-20 -left-20 w-96 h-96 bg-hbm-orange/5 rounded-full blur-[100px] pointer-events-none"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 12, repeat: Infinity }}
+        />
         
         <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
           <motion.div
@@ -284,36 +314,14 @@ export default function Home() {
       {/* ═══════════════════ WHAT MAKES THIS WORK — Guidelines ═══════════════════ */}
       <Guidelines />
       
-      {/* ═══════════════════ TRUSTED PARTNERS ═══════════════════ */}
-      <section id="partners" className="bg-hbm-cream py-24 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-gray-400 text-xs uppercase tracking-[0.2em] mb-12 font-bold">
-            {t({ en: 'Trusted Partners', he: 'שותפים מהימנים' }, lang)}
-          </p>
-          
-          <div className="relative w-full overflow-hidden mask-gradient-x">
-            <div className="flex gap-12 md:gap-24 items-center w-max animate-marquee" style={{ paddingLeft: '2rem', animationDuration: '30s' }}>
-              {[...partnerLogosList, ...partnerLogosList, ...partnerLogosList, ...partnerLogosList].map((partner, i) => (
-                <div key={i} className="flex-shrink-0 h-32 md:h-40 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300">
-                  <img 
-                    src={partner.logoUrl || partner.src} 
-                    alt={partner.name}
-                    className="h-full w-auto object-contain transition-all duration-300 hover:scale-110"
-                    onError={(e) => { e.target.style.display = 'none' }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+
 
 
 
       <NextPageBridge 
         to="/meeter"
         eyebrow={{ en: 'Curious?', he: 'סקרנים?' }}
-        title={{ en: 'More than an App, its a new way to connect.', he: 'יותר מאפליקציה. דרך חדשה להתחבר.' }}
+        title={{ en: 'More than an tool, its a new way to connect.', he: 'יותר מאפליקציה. דרך חדשה להתחבר.' }}
         description={{ en: 'Imagine a social network where you don\'t scroll, you just meet. In real life. 8 minutes at a time.', he: 'תארו לעצמכם רשת חברתית שבה לא גוללים, אלא פשוט נפגשים. במציאות. 8 דקות בכל פעם.' }}
         buttonText={{ en: 'What Is It?', he: 'מה זה?' }}
       />

@@ -11,55 +11,39 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
   const [wordIdx, setWordIdx] = React.useState(0)
   
   const marqueeContent = React.useMemo(() => {
-    const speed = 70
+    const speed = 120 // Slightly faster for more energy
     const direction = 1
     return (
-      <div className="flex gap-4 md:gap-8 w-max animate-marquee hover:[animation-play-state:paused] whitespace-nowrap px-4 h-28 md:h-32 items-center"
+      <div className="flex w-max animate-marquee hover:[animation-play-state:paused] whitespace-nowrap px-0 h-32 md:h-44 items-center"
            style={{ animationDuration: `${speed}s`, animationDirection: direction === -1 ? 'reverse' : 'normal' }}>
         {[...imagePairs, ...imagePairs, ...imagePairs].map((pair, idx) => (
           <React.Fragment key={idx}>
-            {/* Pair of video circles */}
-            <div className="flex -space-x-4 md:-space-x-6">
+            {pair.unit ? (
               <motion.div 
-                className="video-circle w-20 h-20 md:w-28 md:h-28 border-4" 
-                style={{ borderColor: pair.leftBorder || '#bbc0ff' }}
+                className="h-28 md:h-40 flex-shrink-0 px-0 pr-8 md:pr-12"
                 animate={{ 
-                  scale: [1, 1.02, 1],
-                  rotate: [0, 1, -1, 0]
+                  scale: [1, 1.01, 1],
+                  rotate: 0
                 }}
                 transition={{ 
-                  duration: 4, 
+                  duration: 6, 
                   repeat: Infinity, 
                   ease: "easeInOut",
-                  delay: idx * 0.1
+                  delay: idx * 0.5
                 }}
               >
-                {pair.left?.endsWith('.mp4') ? (
-                  <video src={pair.left} autoPlay muted loop playsInline poster={pair.leftPoster} className="w-full h-full object-cover" />
-                ) : <img src={pair.leftPoster} alt="" className="w-full h-full object-cover" />}
+                <img src={pair.unit} alt="" className="h-full w-auto object-contain" />
               </motion.div>
-              <motion.div 
-                className="video-circle w-20 h-20 md:w-28 md:h-28 border-4 relative z-10" 
-                style={{ borderColor: pair.rightBorder || '#fdb586' }}
-                animate={{ 
-                  scale: [1, 1.03, 1],
-                  rotate: [0, -1, 1, 0]
-                }}
-                transition={{ 
-                  duration: 5, 
-                  repeat: Infinity, 
-                  ease: "easeInOut",
-                  delay: idx * 0.2
-                }}
-              >
-                {pair.right?.endsWith('.mp4') ? (
-                  <video src={pair.right} autoPlay muted loop playsInline poster={pair.rightPoster} className="w-full h-full object-cover" />
-                ) : <img src={pair.rightPoster} alt="" className="w-full h-full object-cover" />}
-              </motion.div>
-            </div>
-            
-            {/* Separator / Decoration */}
-            <div className="w-12 h-[2px] bg-[#bbc0ff]/30 rounded-full" />
+            ) : (
+                <div className="flex -space-x-8 md:-space-x-10">
+                  <motion.div className="video-circle w-28 h-28 md:w-36 md:h-36 border-[6px]" style={{ borderColor: pair.leftBorder || '#bbc0ff' }}>
+                    {pair.left?.endsWith('.mp4') ? <video src={pair.left} autoPlay muted loop playsInline poster={pair.leftPoster} className="w-full h-full object-cover" /> : <img src={pair.left} alt="" className="w-full h-full object-cover scale-[1.25] origin-center" />}
+                  </motion.div>
+                  <motion.div className="video-circle w-28 h-28 md:w-36 md:h-36 border-[6px] relative z-10" style={{ borderColor: pair.rightBorder || '#fdb586' }}>
+                    {pair.right?.endsWith('.mp4') ? <video src={pair.right} autoPlay muted loop playsInline poster={pair.rightPoster} className="w-full h-full object-cover" /> : <img src={pair.right} alt="" className="w-full h-full object-cover scale-[1.25] origin-center" />}
+                  </motion.div>
+                </div>
+            )}
           </React.Fragment>
         ))}
       </div>
@@ -75,60 +59,45 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
   const opacity = useTransform(scrollY, [0, 200], [1, 0])
 
   return (
-    <section id="hero" className="relative h-[90vh] min-h-[700px] flex items-start justify-center overflow-hidden w-full bg-gradient-to-b from-[#f8f9fa] to-hbm-cream pt-24 md:pt-32">
-      {/* Animated background blobs */}
-      <motion.div
-        className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-[#6160AB]/20 to-[#8b7fd9]/20 rounded-full blur-3xl"
-        animate={{
-          x: [0, 100, 0],
-          y: [0, -80, 0],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      
-      <motion.div
-        className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-gradient-to-r from-[#F07B3C]/20 to-[#ff9b6b]/20 rounded-full blur-3xl"
-        animate={{
-          x: [0, -120, 0],
-          y: [0, 100, 0],
-          scale: [1, 1.3, 1],
-        }}
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
+    <section id="hero" className="relative min-h-screen flex items-start justify-center overflow-hidden w-full bg-[#FAF9F5] pt-2 md:pt-4">
+      {/* Premium Aura Background Layers */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute -top-[10%] -left-[10%] w-[70%] h-[70%] bg-[#6160AB]/15 rounded-full blur-[120px]"
+          animate={{
+            x: [0, 50, 0],
+            y: [0, 30, 0],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute -bottom-[10%] -right-[10%] w-[70%] h-[70%] bg-[#F07B3C]/10 rounded-full blur-[120px]"
+          animate={{
+            x: [0, -40, 0],
+            y: [0, -20, 0],
+          }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-[20%] right-[10%] w-[40%] h-[40%] bg-[#73C154]/10 rounded-full blur-[100px]"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.5, 0.8, 0.5],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </div>
 
-      <motion.div
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-[#73C154]/15 to-[#9bd986]/15 rounded-full blur-3xl"
-        animate={{
-          scale: [1, 1.4, 1],
-          rotate: [0, 180, 360],
-        }}
-        transition={{
-          duration: 30,
-          repeat: Infinity,
-          ease: "linear"
-        }}
-      />
-
-      {/* Main content */}
       <motion.div 
-        className="relative z-10 max-w-5xl mx-auto px-6 text-center section-padding"
+        className="relative z-10 max-w-5xl mx-auto px-6 text-center pt-16 md:pt-20 pb-12 flex flex-col items-center justify-center min-h-[85vh]"
         style={{ opacity }}
       >
-        {/* Eyebrow text */}
+        {/* Eyebrow text animated down slightly */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-3 -translate-y-[60px]"
+          className="mb-8 md:mb-12"
         >
           <span className="inline-block px-6 py-2 bg-[#6160AB]/10 text-[#6160AB] rounded-full text-sm font-semibold tracking-wide uppercase">
             {t({ en: 'The Human Being Movement', he: 'תנועת בני האדם' }, lang)}
@@ -136,26 +105,26 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
         </motion.div>
 
         {/* Infinite Marquee for Video Circles */}
-        <div className="relative w-full overflow-hidden mask-gradient-x mb-12">
+        <div className="relative w-full overflow-hidden mask-gradient-x mb-12 md:mb-20">
           {/* Duplicate sets for infinite loop handled safely inside MarqueeTrack now */}
           {marqueeContent}
         </div>
 
         {/* Main headline - Grid layout for strict 2 lines */}
         <motion.h1
-          className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-[1.1]"
+          className="text-4xl md:text-6xl lg:text-[7.5rem] font-bold mb-10 md:mb-16 leading-[1.1] tracking-tight"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           dir={isHe ? 'rtl' : 'ltr'}
         >
           {/* Line 1: Prefix + Rotating Word */}
-          <div className="flex flex-wrap justify-center gap-x-4 mb-2">
-            <span className="text-hbm-purple whitespace-nowrap">
+          <div className="flex justify-center items-center gap-x-3 md:gap-x-5 mb-3 md:mb-4 whitespace-nowrap">
+            <span className="text-hbm-purple">
               {t(titlePrefix, lang)}
             </span>
             <motion.span
-              className="bg-gradient-to-r from-[#6160AB] via-[#F07B3C] to-[#73C154] bg-clip-text text-transparent word-rotate whitespace-nowrap"
+              className="bg-gradient-to-r from-[#6160AB] via-[#F07B3C] to-[#73C154] bg-clip-text text-transparent word-rotate"
               key={wordIdx}
               animate={{
                 backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
@@ -174,14 +143,14 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
           </div>
           
           {/* Line 2: Suffix */}
-          <div className="text-hbm-purple">
+          <div className="text-hbm-purple block">
             {t(titleSuffix, lang)}
           </div>
         </motion.h1>
 
         {/* Subheadline */}
         <motion.p
-          className="text-lg md:text-xl text-hbm-gray max-w-2xl mx-auto mb-8"
+          className="text-lg md:text-xl text-hbm-gray max-w-2xl mx-auto mb-14 md:mb-20"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}

@@ -1,32 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import { Save, Users, Quote, Image as ImageIcon, Plus, Trash2, Edit3, X, Lock, Unlock, Star } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Save, Users, Quote, Image as ImageIcon, Plus, Trash2, Edit3, X, Lock, Unlock, Star, Smartphone, BookOpen, Video, Youtube, Upload } from 'lucide-react';
 
 const SiteContentManager = () => {
     const [content, setContent] = useState({ team: [], testimonials: [], partners: [], locks: { team: false, testimonials: false, partners: false } });
+    const [howItWorks, setHowItWorks] = useState({ videoSteps: [], physicalSteps: [], isLocked: false });
+    const [knowledgeBase, setKnowledgeBase] = useState({ books: [], videos: [], isLocked: false });
     const [loading, setLoading] = useState(true);
     const [saveStatus, setSaveStatus] = useState('');
     const [activeSection, setActiveSection] = useState('team');
+    const [activeHowItWorksMode, setActiveHowItWorksMode] = useState('video');
+    const [activeKnowledgeTab, setActiveKnowledgeTab] = useState('books');
+    const fileInputRef = useRef(null);
+
+    const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
 
     useEffect(() => {
-        const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
-        fetch(`${base}/api/site-content`)
-            .then(res => res.json())
-            .then(data => {
-                setContent(data);
+        const fetchAll = async () => {
+            setLoading(true);
+            try {
+                const [siteRes, howRes, knowRes] = await Promise.all([
+                    fetch(`${base}/api/site-content`).then(r => r.json()),
+                    fetch(`${base}/api/cms/how-it-works`).then(r => r.json()),
+                    fetch(`${base}/api/cms/knowledge-base`).then(r => r.json())
+                ]);
+                setContent(siteRes);
+                setHowItWorks(howRes);
+                setKnowledgeBase(knowRes);
+            } catch (err) {
+                console.error("Error fetching content", err);
+            } finally {
                 setLoading(false);
-            })
-            .catch(err => console.error("Error fetching site content", err));
+            }
+        };
+        fetchAll();
     }, []);
 
     const saveChanges = async () => {
         setSaveStatus('Saving...');
         try {
-            const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
-            const res = await fetch(`${base}/api/site-content`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(content)
-            });
+            let res;
+            if (activeSection === 'how-it-works') {
+                res = await fetch(`${base}/api/cms/how-it-works`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(howItWorks)
+                });
+            } else if (activeSection === 'knowledge') {
+                res = await fetch(`${base}/api/cms/knowledge-base`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(knowledgeBase)
+                });
+            } else {
+                res = await fetch(`${base}/api/site-content`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(content)
+                });
+            }
+            
             const data = await res.json();
             if (data.success) {
                 setSaveStatus('Saved successfully!');
@@ -60,9 +92,47 @@ const SiteContentManager = () => {
     };
 
     const toggleLock = (section) => {
+        if (section === 'how-it-works') {
+            setHowItWorks(prev => ({ ...prev, isLocked: !prev.isLocked }));
+            return;
+        }
+        if (section === 'knowledge') {
+            setKnowledgeBase(prev => ({ ...prev, isLocked: !prev.isLocked }));
+            return;
+        }
         const newLocks = { ...(content.locks || { team: false, testimonials: false, partners: false }) };
         newLocks[section] = !newLocks[section];
         setContent({ ...content, locks: newLocks });
+    };
+
+    const handleCmsImageUpload = async (e, section, mode, index) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const res = await fetch(`${base}/api/upload-cms-image`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (section === 'how-it-works') {
+                    const newHow = { ...howItWorks };
+                    const stepsKey = mode === 'video' ? 'videoSteps' : 'physicalSteps';
+                    newHow[stepsKey][index].image = data.url;
+                    setHowItWorks(newHow);
+                } else if (section === 'knowledge') {
+                    const newKnow = { ...knowledgeBase };
+                    newKnow.books[index].coverUrl = data.url;
+                    setKnowledgeBase(newKnow);
+                }
+            }
+        } catch (err) {
+            console.error("Upload failed", err);
+        }
     };
 
     if (loading) return <div className="p-8 font-bold text-gray-400">Loading Content Engine...</div>;
@@ -103,6 +173,19 @@ const SiteContentManager = () => {
                     className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSection === 'partners' ? 'bg-blue-100 text-blue-700' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                 >
                     <ImageIcon className="w-4 h-4" /> Trusted Partners
+                </button>
+                <div className="w-px h-8 bg-gray-200 self-center mx-2"></div>
+                <button 
+                    onClick={() => setActiveSection('how-it-works')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSection === 'how-it-works' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                >
+                    <Smartphone className="w-4 h-4" /> How It Works
+                </button>
+                <button 
+                    onClick={() => setActiveSection('knowledge')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSection === 'knowledge' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                >
+                    <BookOpen className="w-4 h-4" /> Knowledge Base
                 </button>
             </div>
 
@@ -210,7 +293,8 @@ const SiteContentManager = () => {
                 )}
 
                 {activeSection === 'partners' && (
-                    <div className="animate-in fade-in">
+                   // ... existing partners UI ...
+                   <div className="animate-in fade-in">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center gap-3">
                                 <h3 className="text-lg font-bold text-gray-800">Trusted Partners</h3>
@@ -247,6 +331,243 @@ const SiteContentManager = () => {
                                                 <img src={partner.logoUrl} alt="Logo Preview" className="max-h-full max-w-full object-contain" />
                                             </div>
                                         )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {activeSection === 'how-it-works' && (
+                    <div className="animate-in fade-in">
+                        <div className="flex justify-between items-center mb-6">
+                            <div className="flex items-center gap-4">
+                                <h3 className="text-xl font-black text-gray-800">How It Works Protocol</h3>
+                                <button 
+                                    onClick={() => toggleLock('how-it-works')}
+                                    className={`p-2 rounded-xl transition-all ${howItWorks.isLocked ? 'bg-red-50 text-red-500 shadow-inner' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                                >
+                                    {howItWorks.isLocked ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
+                                </button>
+                                <div className="flex bg-gray-100 p-1 rounded-xl ml-4">
+                                    <button 
+                                        onClick={() => setActiveHowItWorksMode('video')}
+                                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeHowItWorksMode === 'video' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}
+                                    >
+                                        Video
+                                    </button>
+                                    <button 
+                                        onClick={() => setActiveHowItWorksMode('physical')}
+                                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeHowItWorksMode === 'physical' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}
+                                    >
+                                        Physical
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {((activeHowItWorksMode === 'video' ? howItWorks?.videoSteps : howItWorks?.physicalSteps) || []).map((step, idx) => (
+                                <div key={idx} className={`p-8 border rounded-[2rem] relative group transition-all ${howItWorks.isLocked ? 'bg-gray-50/50 opacity-90' : 'bg-white shadow-sm hover:shadow-md'}`}>
+                                    <div className="flex gap-6">
+                                        <div className="w-32 aspect-[9/16] bg-gray-100 rounded-xl overflow-hidden shrink-0 border relative group/img">
+                                            {step.image ? (
+                                                <img src={step.image} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-300"><Smartphone /></div>
+                                            )}
+                                            {!howItWorks.isLocked && (
+                                                <label className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                                                    <Upload className="text-white w-6 h-6" />
+                                                    <input type="file" className="hidden" onChange={e => handleCmsImageUpload(e, 'how-it-works', activeHowItWorksMode, idx)} />
+                                                </label>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 space-y-4">
+                                            <div className="bg-gray-900 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black mb-2">{idx + 1}</div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">Title (HE)</label>
+                                                        <input 
+                                                            dir="rtl"
+                                                            disabled={howItWorks.isLocked}
+                                                            value={step.title.he} 
+                                                            onChange={e => {
+                                                                const newHow = {...howItWorks};
+                                                                const key = activeHowItWorksMode === 'video' ? 'videoSteps' : 'physicalSteps';
+                                                                newHow[key][idx].title.he = e.target.value;
+                                                                setHowItWorks(newHow);
+                                                            }}
+                                                            className="w-full bg-gray-50 p-3 rounded-lg border-none font-bold text-sm text-right" 
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">Title (EN)</label>
+                                                        <input 
+                                                            disabled={howItWorks.isLocked}
+                                                            value={step.title.en} 
+                                                            onChange={e => {
+                                                                const newHow = {...howItWorks};
+                                                                const key = activeHowItWorksMode === 'video' ? 'videoSteps' : 'physicalSteps';
+                                                                newHow[key][idx].title.en = e.target.value;
+                                                                setHowItWorks(newHow);
+                                                            }}
+                                                            className="w-full bg-gray-50 p-3 rounded-lg border-none font-bold text-sm" 
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">Description (HE)</label>
+                                                        <textarea 
+                                                            dir="rtl"
+                                                            disabled={howItWorks.isLocked}
+                                                            value={step.desc.he} 
+                                                            onChange={e => {
+                                                                const newHow = {...howItWorks};
+                                                                const key = activeHowItWorksMode === 'video' ? 'videoSteps' : 'physicalSteps';
+                                                                newHow[key][idx].desc.he = e.target.value;
+                                                                setHowItWorks(newHow);
+                                                            }}
+                                                            rows="4"
+                                                            className="w-full bg-gray-50 p-3 rounded-lg border-none font-bold text-xs text-right leading-relaxed h-24" 
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">Description (EN)</label>
+                                                        <textarea 
+                                                            disabled={howItWorks.isLocked}
+                                                            value={step.desc.en} 
+                                                            onChange={e => {
+                                                                const newHow = {...howItWorks};
+                                                                const key = activeHowItWorksMode === 'video' ? 'videoSteps' : 'physicalSteps';
+                                                                newHow[key][idx].desc.en = e.target.value;
+                                                                setHowItWorks(newHow);
+                                                            }}
+                                                            rows="4"
+                                                            className="w-full bg-gray-50 p-3 rounded-lg border-none font-bold text-xs leading-relaxed h-24" 
+                                                        />
+                                                    </div>
+                                                </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {activeSection === 'knowledge' && (
+                    <div className="animate-in fade-in">
+                         <div className="flex justify-between items-center mb-6">
+                            <div className="flex items-center gap-4">
+                                <h3 className="text-xl font-black text-gray-800">Knowledge Intelligence</h3>
+                                <button 
+                                    onClick={() => toggleLock('knowledge')}
+                                    className={`p-2 rounded-xl transition-all ${knowledgeBase.isLocked ? 'bg-red-50 text-red-500' : 'bg-gray-50 text-gray-400'}`}
+                                >
+                                    {knowledgeBase.isLocked ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
+                                </button>
+                                <div className="flex bg-gray-100 p-1 rounded-xl ml-4">
+                                    <button 
+                                        onClick={() => setActiveKnowledgeTab('books')}
+                                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeKnowledgeTab === 'books' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}
+                                    >
+                                        Books
+                                    </button>
+                                    <button 
+                                        onClick={() => setActiveKnowledgeTab('videos')}
+                                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeKnowledgeTab === 'videos' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}
+                                    >
+                                        Videos
+                                    </button>
+                                </div>
+                            </div>
+                            <button 
+                                disabled={knowledgeBase.isLocked}
+                                onClick={() => {
+                                    if (activeKnowledgeTab === 'books') {
+                                        setKnowledgeBase(p => ({...p, books: [...p.books, { id: Date.now(), title: 'New Book', author: '', description: '', coverUrl: '', category: 'General' }]}));
+                                    } else {
+                                        setKnowledgeBase(p => ({...p, videos: [...p.videos, { id: Date.now(), title: 'New Video', author: '', youtubeUrl: '', category: 'Interview' }]}));
+                                    }
+                                }}
+                                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 ${knowledgeBase.isLocked ? 'bg-gray-100 text-gray-400' : 'bg-gray-900 text-white hover:bg-black'}`}
+                            >
+                                <Plus className="w-4 h-4" /> Add {activeKnowledgeTab === 'books' ? 'Book' : 'Video'}
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {((activeKnowledgeTab === 'books' ? knowledgeBase?.books : knowledgeBase?.videos) || []).map((item, idx) => (
+                                <div key={item.id} className={`p-6 border rounded-2xl relative transition-all ${knowledgeBase.isLocked ? 'bg-gray-50/50' : 'bg-white shadow-sm'}`}>
+                                    <button 
+                                        disabled={knowledgeBase.isLocked}
+                                        onClick={() => {
+                                            if(!window.confirm('Delete item?')) return;
+                                            const newKb = {...knowledgeBase};
+                                            if (activeKnowledgeTab === 'books') newKb.books.splice(idx, 1);
+                                            else newKb.videos.splice(idx, 1);
+                                            setKnowledgeBase(newKb);
+                                        }}
+                                        className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                    <div className="space-y-4">
+                                        {activeKnowledgeTab === 'books' && (
+                                            <div className="w-20 aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden border mb-2 relative group/book">
+                                                {item.coverUrl ? <img src={item.coverUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><BookOpen /></div>}
+                                                {!knowledgeBase.isLocked && (
+                                                    <label className="absolute inset-0 bg-black/40 opacity-0 group-hover/book:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                                                        <Upload className="text-white w-4 h-4" />
+                                                        <input type="file" className="hidden" onChange={e => handleCmsImageUpload(e, 'knowledge', 'books', idx)} />
+                                                    </label>
+                                                )}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">Title</label>
+                                            <input 
+                                                disabled={knowledgeBase.isLocked}
+                                                value={item.title} 
+                                                onChange={e => {
+                                                    const newKb = {...knowledgeBase};
+                                                    if (activeKnowledgeTab === 'books') newKb.books[idx].title = e.target.value;
+                                                    else newKb.videos[idx].title = e.target.value;
+                                                    setKnowledgeBase(newKb);
+                                                }}
+                                                className="w-full bg-gray-50 p-3 rounded-lg border-none font-bold text-sm" 
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">{activeKnowledgeTab === 'books' ? 'Author' : 'YouTube URL'}</label>
+                                            <input 
+                                                disabled={knowledgeBase.isLocked}
+                                                value={activeKnowledgeTab === 'books' ? item.author : item.youtubeUrl} 
+                                                onChange={e => {
+                                                    const newKb = {...knowledgeBase};
+                                                    if (activeKnowledgeTab === 'books') newKb.books[idx].author = e.target.value;
+                                                    else newKb.videos[idx].youtubeUrl = e.target.value;
+                                                    setKnowledgeBase(newKb);
+                                                }}
+                                                className="w-full bg-gray-50 p-3 rounded-lg border-none font-bold text-xs" 
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">Description</label>
+                                            <textarea 
+                                                disabled={knowledgeBase.isLocked}
+                                                value={item.description || ''} 
+                                                onChange={e => {
+                                                    const newKb = {...knowledgeBase};
+                                                    if (activeKnowledgeTab === 'books') newKb.books[idx].description = e.target.value;
+                                                    else newKb.videos[idx].description = e.target.value;
+                                                    setKnowledgeBase(newKb);
+                                                }}
+                                                className="w-full bg-gray-50 p-3 rounded-lg border-none font-medium text-xs h-20" 
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ))}

@@ -7,6 +7,66 @@ import EyebrowBadge from '../components/EyebrowBadge'
 
 // --- Components ---
 
+const VideoCard = React.memo(({ item }) => {
+  const getEmbedUrl = (url) => {
+    try {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+    } catch { return null; }
+  };
+
+  const embedUrl = getEmbedUrl(item.youtubeUrl);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="group relative bg-[#FCFAF7] rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-2xl hover:shadow-hbm-purple/10 transition-all duration-700 flex flex-col h-full"
+    >
+      <div className="aspect-video relative overflow-hidden bg-black/5">
+        {embedUrl ? (
+          <iframe
+            src={embedUrl}
+            title={item.title}
+            className="w-full h-full border-none opacity-90 group-hover:opacity-100 transition-opacity"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+            <Youtube className="w-12 h-12 mb-2 opacity-20" />
+          </div>
+        )}
+        
+        {/* Decorative corner tag */}
+        <div className="absolute top-4 left-4 z-10">
+          <span className="text-[9px] font-black tracking-widest text-white uppercase bg-hbm-purple/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/20">
+            {item.category || 'Discovery'}
+          </span>
+        </div>
+      </div>
+      
+      <div className="p-8 flex flex-col flex-1">
+        <h3 className="text-2xl font-black text-hbm-dark mb-2 tracking-tight leading-tight group-hover:text-hbm-purple transition-colors">{item.title}</h3>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-0.5 w-6 bg-hbm-orange rounded-full" />
+          <p className="text-xs text-hbm-gray font-black uppercase tracking-[0.2em]">{item.author}</p>
+        </div>
+        <p className="text-base text-gray-600 font-medium leading-relaxed line-clamp-3 mb-6">
+          {item.description}
+        </p>
+        
+        <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
+           <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Knowledge Video</span>
+           <PlayCircle className="w-6 h-6 text-hbm-purple opacity-20 group-hover:opacity-100 transition-all transform group-hover:scale-110" />
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
 const KnowledgeCard = React.memo(({ item, onClick }) => {
   // Pass manualCoverUrl (from item.coverUrl) to hook
   const { cover, rating, isLoading } = useBookData(item.title, item.author, item.type, item.coverUrl)
@@ -285,11 +345,28 @@ const LibraryDrawer = ({ item, onClose }) => {
 export default function Knowledge() {
   const [selectedBook, setSelectedBook] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState('books') // 'books' | 'videos'
+  const [cmsData, setCmsData] = useState(null)
 
-  const filteredData = knowledgeData.filter(item => {
-    if (!item || !item.title || !item.author) return false;
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || ''}/api/cms/knowledge-base`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && (data.books || data.videos)) {
+          setCmsData(data);
+        }
+      })
+      .catch(err => console.error('CMS Fetch Error:', err));
+  }, []);
+
+  const books = cmsData?.books || knowledgeData;
+  const videos = cmsData?.videos || [];
+
+  const filteredData = (activeTab === 'books' ? books : videos).filter(item => {
+    if (!item || !item.title) return false;
+    const author = item.author || '';
     const matchesSearch = (item.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
-                          (item.author?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+                          (author.toLowerCase()).includes(searchQuery.toLowerCase())
     return matchesSearch
   })
 
@@ -322,19 +399,27 @@ export default function Knowledge() {
 
       {/* Sticky Search Bar (No categories as per request) */}
       <div className="sticky top-20 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 mb-12 shadow-sm transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-center">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-center gap-6">
            
-           {/* Search */}
-           <div className="relative w-full md:w-96 group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-hbm-purple transition-colors" />
-               <input 
-                type="text" 
-                placeholder="Search the library..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-white rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-hbm-purple/20 focus:border-hbm-purple/30 text-sm font-bold transition-all shadow-sm group-hover:shadow-md"
-              />
+           {/* Tab Switcher */}
+           <div className="flex bg-gray-100/50 p-1 rounded-2xl border border-gray-200/50">
+              <button 
+                onClick={() => setActiveTab('books')}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'books' ? 'bg-white text-[#6160AB] shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Books</span>
+              </button>
+              <button 
+                onClick={() => setActiveTab('videos')}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'videos' ? 'bg-white text-[#F07B3C] shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <Youtube className="w-4 h-4" />
+                <span>Videos</span>
+              </button>
            </div>
+
+            {/* Search Removed by User Request */}
         </div>
       </div>
 
@@ -343,11 +428,13 @@ export default function Knowledge() {
         {filteredData.length > 0 ? (
            <motion.div 
              layout
-             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-10"
+             className={`grid gap-6 md:gap-10 ${activeTab === 'books' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}
            >
              <AnimatePresence mode='popLayout'>
-               {filteredData.map((item, index) => (
-                   <KnowledgeCard key={item.id} item={item} onClick={setSelectedBook} />
+               {filteredData.map((item) => (
+                   activeTab === 'books' 
+                    ? <KnowledgeCard key={item.id} item={item} onClick={setSelectedBook} />
+                    : <VideoCard key={item.id} item={item} />
                ))}
              </AnimatePresence>
            </motion.div>
@@ -362,7 +449,7 @@ export default function Knowledge() {
                  <Sparkles className="w-10 h-10 text-gray-400" />
               </div>
                <h3 className="text-2xl font-black text-hbm-dark mb-2">Keep Exploring</h3>
-               <p className="text-gray-500 font-medium">We couldn't find any books matching your search. Try a different term.</p>
+               <p className="text-gray-500 font-medium">We couldn't find any {activeTab} matching your search. Try a different term.</p>
            </motion.div>
         )}
       </div>
