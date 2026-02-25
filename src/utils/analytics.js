@@ -1,18 +1,19 @@
 /**
  * HBM Enterprise Analytics Service
- * 
- * Supports: 
- * - GA4 (Google Analytics 4)
- * - Microsoft Clarity (Heatmaps & Session Recordings)
+ *
+ * - GA4 (Google Analytics 4) — Measurement ID: G-BR4CGS5B7X
+ * - Microsoft Clarity (Heatmaps, Session Recordings, consent API)
  * - Facebook Pixel (Meta Ads)
  * - LinkedIn Insight Tag
  */
 
-export const GA_ID = "G-XXXXXXX"; 
-export const CLARITY_ID = "XXXXXXX";
-export const FB_PIXEL_ID = "XXXXXXX";
+import Clarity from '@microsoft/clarity';
 
-const isValid = (id) => id && !id.includes('XXXXX');
+export const GA_ID = import.meta.env.VITE_GA_ID || "G-BR4CGS5B7X";
+export const CLARITY_ID = import.meta.env.VITE_CLARITY_ID || "vjvlklwjdb";
+export const FB_PIXEL_ID = import.meta.env.VITE_FB_PIXEL_ID || "XXXXXXX";
+
+const isValid = (id) => id && id.length > 0 && !String(id).includes('XXXXX');
 
 /**
  * Global initialization with Consent Mode v2
@@ -23,7 +24,8 @@ export const initAnalytics = () => {
     // 1. Consent Mode v2 Defaults (Deny everything by default)
     window.dataLayer = window.dataLayer || [];
     function gtag(){window.dataLayer.push(arguments);}
-    
+    window.gtag = window.gtag || gtag;
+
     const savedConsent = localStorage.getItem('hbm_cookie_consent');
     const consent = savedConsent ? JSON.parse(savedConsent) : null;
 
@@ -36,7 +38,10 @@ export const initAnalytics = () => {
     });
 
     // 2. Load scripts if consent already exists
-    if (consent?.analytics) loadGoogleAnalytics();
+    if (consent?.analytics) {
+        loadGoogleAnalytics();
+        loadClarity(consent);
+    }
     if (consent?.marketing) {
         loadMetaPixel();
         loadLinkedInInsight();
@@ -53,6 +58,7 @@ export const initAnalytics = () => {
 
 const loadGoogleAnalytics = () => {
     if (window.gtag_loaded || !isValid(GA_ID)) return;
+    window.gtag('config', GA_ID, { send_page_view: true });
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
@@ -75,24 +81,59 @@ const loadLinkedInInsight = () => {
     // Implementation for loading LinkedIn if needed
 };
 
+/** Microsoft Clarity: heatmaps, session recordings, consent (cookie‑professional) */
+const loadClarity = (consent = null) => {
+    if (window.clarity_loaded || !isValid(CLARITY_ID)) return;
+    try {
+        Clarity.init(CLARITY_ID);
+        const analyticsGranted = consent?.analytics ?? (() => {
+            try {
+                const s = localStorage.getItem('hbm_cookie_consent');
+                return s ? JSON.parse(s).analytics : false;
+            } catch (_) { return false; }
+        })();
+        const marketingGranted = consent?.marketing ?? (() => {
+            try {
+                const s = localStorage.getItem('hbm_cookie_consent');
+                return s ? JSON.parse(s).marketing : false;
+            } catch (_) { return false; }
+        })();
+        if (typeof Clarity.consentV2 === 'function') {
+            Clarity.consentV2({
+                analytics_Storage: analyticsGranted ? 'granted' : 'denied',
+                ad_Storage: marketingGranted ? 'granted' : 'denied',
+            });
+        } else if (typeof Clarity.consent === 'function') {
+            Clarity.consent(!!analyticsGranted);
+        }
+    } catch (e) {
+        console.warn('Clarity init/consent:', e);
+    }
+    window.clarity_loaded = true;
+};
+
 /**
- * updateConsent - Call this when user accepts cookies
+ * updateConsent - Call when user accepts or changes cookie preferences (cookie‑professional)
  */
 export const updateConsent = (consent) => {
-    if (!window.gtag) return;
-    window.gtag('consent', 'update', {
-        'ad_storage': consent.marketing ? 'granted' : 'denied',
-        'ad_user_data': consent.marketing ? 'granted' : 'denied',
-        'ad_personalization': consent.marketing ? 'granted' : 'denied',
-        'analytics_storage': consent.analytics ? 'granted' : 'denied'
-    });
-
-    if (consent.analytics) loadGoogleAnalytics();
+    if (window.gtag) {
+        window.gtag('consent', 'update', {
+            'ad_storage': consent.marketing ? 'granted' : 'denied',
+            'ad_user_data': consent.marketing ? 'granted' : 'denied',
+            'ad_personalization': consent.marketing ? 'granted' : 'denied',
+            'analytics_storage': consent.analytics ? 'granted' : 'denied'
+        });
+    }
+    if (consent.analytics) {
+        loadGoogleAnalytics();
+        loadClarity(consent);
+    } else if (window.clarity_loaded && typeof Clarity?.consentV2 === 'function') {
+        Clarity.consentV2({ analytics_Storage: 'denied', ad_Storage: 'denied' });
+    }
     if (consent.marketing) {
         loadMetaPixel();
         loadLinkedInInsight();
     }
-    
     localStorage.setItem('hbm_cookie_consent', JSON.stringify(consent));
 };
 
@@ -132,9 +173,12 @@ export const trackEvent = (actionName, params = {}) => {
         window.fbq('track', fbEvent, params);
     }
 
-    // Clarity Tagging
-    if (window.clarity && isValid(CLARITY_ID)) {
-        window.clarity("set", actionName, JSON.stringify(params));
+    // Clarity: custom event (shows in Recordings/Heatmaps filters)
+    if (isValid(CLARITY_ID)) {
+        try {
+            if (typeof Clarity?.event === 'function') Clarity.event(actionName);
+            else if (window.clarity) window.clarity('set', actionName, JSON.stringify(params));
+        } catch (_) {}
     }
 
     // Data Layer for Advanced Tracking

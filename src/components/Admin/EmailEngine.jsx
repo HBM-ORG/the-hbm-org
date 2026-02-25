@@ -5,10 +5,11 @@ import {
     Settings, Save, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Search,
     Wand2, Activity, Users, MousePointer, Eye, RefreshCw, PlusCircle,
     Trash2, BellOff, Database, Layers, Radio, ChevronRight, ChevronDown,
-    ToggleLeft, ToggleRight, Copy, Play, Pause, FlaskConical, Bell, Image as ImageIcon, Video, Calendar, X
+    ToggleLeft, ToggleRight, Copy, Play, Pause, FlaskConical, Bell, Image as ImageIcon, Video, Calendar, X,
+    Edit3
 } from 'lucide-react';
 
-const API = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
+import { getApiBase } from '../../utils/api';
 
 // ── Utility ─────────────────────────────────────────────────────────────────
 const TAG_COLORS = {
@@ -24,6 +25,23 @@ const DEFAULT_FLOWS = [
     { id: 'video', trigger: 'onVideoRegistration', name: 'Video Event Reg', icon: Video, desc: 'Sent when registering for an upcoming video session' },
     { id: 'journey', trigger: 'on8MinJourney', name: '8-Min Journey', icon: Zap, desc: 'Funnel or re-engagement for the general journey' }
 ];
+
+function getDefaultConfig() {
+    return {
+        smtp: { host: '', port: 587, user: '', pass: '', from: '' },
+        globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' },
+        flows: DEFAULT_FLOWS.map(df => ({
+            id: `flow_${df.id}`,
+            name: df.name,
+            trigger: df.trigger,
+            active: false,
+            subject_en: `Welcome - ${df.name}`,
+            subject_he: `ברוכים הבאים - ${df.name}`,
+            body_en: `Hello {{name}},\n\nThank you for joining us.\n\nBest regards,\nThe HBM Team`,
+            body_he: `שלום {{name}},\n\nתודה שהצטרפת אלינו.\n\nבברכה,\nצוות HBM`
+        }))
+    };
+}
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
@@ -64,7 +82,42 @@ const Toggle = ({ checked, onChange, label }) => (
     </label>
 );
 
+// Backend connection status (API reachable)
+const BackendBadge = () => {
+    const [status, setStatus] = useState('checking');
+    const [latency, setLatency] = useState(null);
+    const API = getApiBase();
+
+    const check = useCallback(async () => {
+        setStatus('checking');
+        const t0 = Date.now();
+        try {
+            const r = await fetch(`${API}/api/automation-settings`, { method: 'GET' });
+            setLatency(Date.now() - t0);
+            setStatus(r.ok ? 'ok' : 'error');
+        } catch (e) { setStatus('error'); setLatency(Date.now() - t0); }
+    }, [API]);
+
+    useEffect(() => { check(); }, [check]);
+
+    const map = {
+        ok: { dot: 'bg-green-400 shadow-[0_0_8px_#4ade80]', text: 'text-green-400', label: 'Connection OK' },
+        error: { dot: 'bg-red-500 shadow-[0_0_8px_#ef4444]', text: 'text-red-500', label: 'Connection Failed' },
+        checking: { dot: 'bg-yellow-400 animate-pulse', text: 'text-yellow-400', label: 'Checking…' },
+    }[status];
+
+    return (
+        <div className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-xl" title={status === 'error' ? 'Backend not reachable. Run: npm run dev:admin' : ''}>
+            <div className={`w-1.5 h-1.5 rounded-full ${map.dot}`} />
+            <span className={`text-[9px] font-black uppercase tracking-widest ${map.text}`}>{map.label}</span>
+            {latency != null && <span className="text-[8px] text-gray-500 font-mono ml-1">{latency}ms</span>}
+            <button onClick={check} className="ml-1 text-gray-600 hover:text-gray-400 transition-colors" title="Recheck"><RefreshCw className="w-2.5 h-2.5" /></button>
+        </div>
+    );
+};
+
 const SmtpBadge = ({ config }) => {
+    const API = getApiBase();
     const [status, setStatus] = useState('idle');
     const [msg, setMsg] = useState('');
     const [latency, setLatency] = useState(null);
@@ -83,24 +136,24 @@ const SmtpBadge = ({ config }) => {
             setStatus(d.success ? 'ok' : 'error');
             setMsg(d.message || '');
         } catch (e) { setStatus('error'); setMsg('Connection refused'); }
-    }, [config]);
+    }, [config, API]);
 
     useEffect(() => { check(); }, [check]);
 
     const map = {
-        ok: { dot: 'bg-green-400 shadow-[0_0_8px_#4ade80]', text: 'text-green-400', label: 'SMTP Online' },
-        error: { dot: 'bg-red-500 shadow-[0_0_8px_#ef4444]', text: 'text-red-500', label: msg ? (msg.length > 15 ? msg.substring(0,12)+'...' : msg) : 'SMTP Error' },
-        checking: { dot: 'bg-yellow-400 animate-pulse', text: 'text-yellow-400', label: 'Checking...' },
-        unconfigured: { dot: 'bg-gray-300', text: 'text-gray-400', label: 'Not Configured' },
+        ok: { dot: 'bg-green-400 shadow-[0_0_8px_#4ade80]', text: 'text-green-400', label: 'SMTP OK' },
+        error: { dot: 'bg-red-500 shadow-[0_0_8px_#ef4444]', text: 'text-red-500', label: 'SMTP Failed' },
+        checking: { dot: 'bg-yellow-400 animate-pulse', text: 'text-yellow-400', label: 'SMTP…' },
+        unconfigured: { dot: 'bg-gray-300', text: 'text-gray-400', label: 'SMTP Not Set' },
         idle: { dot: 'bg-gray-300', text: 'text-gray-400', label: '—' },
     }[status];
 
     return (
-        <div className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-xl" title={msg}>
+        <div className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-xl" title={msg || undefined}>
             <div className={`w-1.5 h-1.5 rounded-full ${map.dot}`} />
             <span className={`text-[9px] font-black uppercase tracking-widest ${map.text}`}>{map.label}</span>
-            {latency && <span className="text-[8px] text-gray-600 font-mono ml-1">{latency}ms</span>}
-            <button onClick={check} className="ml-1 text-gray-700 hover:text-gray-400 transition-colors"><RefreshCw className="w-2.5 h-2.5" /></button>
+            {latency != null && status !== 'unconfigured' && <span className="text-[8px] text-gray-500 font-mono ml-1">{latency}ms</span>}
+            <button onClick={check} className="ml-1 text-gray-600 hover:text-gray-400 transition-colors" title="Recheck SMTP"><RefreshCw className="w-2.5 h-2.5" /></button>
         </div>
     );
 };
@@ -156,9 +209,14 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
 // ── Main Component ────────────────────────────────────────────────────────────
 // ── Main Component ────────────────────────────────────────────────────────────
 const EmailEngine = () => {
-    const [config, setConfig] = useState(null);
+    const API = getApiBase();
+    const [config, setConfig] = useState(getDefaultConfig);
+    const [backendOffline, setBackendOffline] = useState(false);
     const [activeFlowId, setActiveFlowId] = useState(null);
+    const [activeFlowTrigger, setActiveFlowTrigger] = useState(null);
     const [activeView, setActiveView] = useState('flows');
+    const editorPanelRef = useRef(null);
+    const textareaRef = useRef(null);
     const [previewDevice, setPreviewDevice] = useState('mobile');
     const [saveStatus, setSaveStatus] = useState('');
     const [error, setError] = useState(null);
@@ -176,6 +234,7 @@ const EmailEngine = () => {
     const [suppressionList, setSuppressionList] = useState([]);
     const [aiChat, setAiChat] = useState([{ role: 'ai', content: 'Ready to help you craft the perfect connection. What are we building today?' }]);
     const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+    const [pendingAiText, setPendingAiText] = useState(null);
     const [crmSearch, setCrmSearch] = useState('');
     const [crmFilter, setCrmFilter] = useState('all');
 
@@ -183,24 +242,52 @@ const EmailEngine = () => {
         fetchAll();
     }, []);
 
+
     const fetchAll = async () => {
         try {
+            setError(null);
             const [cfg, eng, regs, q, camps, supp] = await Promise.all([
-                fetch(`${API}/api/automation-settings`).then(r => r.json()).catch(() => null),
-                fetch(`${API}/api/engagement`).then(r => r.json()).catch(() => []),
-                fetch(`${API}/api/registrations`).then(r => r.json()).catch(() => []),
-                fetch(`${API}/api/email-queue`).then(r => r.json()).catch(() => []),
-                fetch(`${API}/api/campaigns`).then(r => r.json()).catch(() => []),
-                fetch(`${API}/api/suppression`).then(r => r.json()).catch(() => []),
+                fetch(`${API}/api/automation-settings`).then(r => r.ok ? r.json().catch(() => null) : null).catch(() => null),
+                fetch(`${API}/api/engagement`).then(r => r.ok ? r.json().catch(() => []) : []).catch(() => []),
+                fetch(`${API}/api/registrations`).then(r => r.ok ? r.json().catch(() => []) : []).catch(() => []),
+                fetch(`${API}/api/email-queue`).then(r => r.ok ? r.json().catch(() => []) : []).catch(() => []),
+                fetch(`${API}/api/campaigns`).then(r => r.ok ? r.json().catch(() => []) : []).catch(() => []),
+                fetch(`${API}/api/suppression`).then(r => r.ok ? r.json().catch(() => []) : []).catch(() => []),
             ]);
-            if (cfg === null) throw new Error('Server offline — is npm run dev:admin running?');
+            if (cfg === null || typeof cfg !== 'object') {
+                setBackendOffline(true);
+                const fallback = {
+                    smtp: { host: '', port: 587, user: '', pass: '', from: '' },
+                    globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' },
+                    flows: DEFAULT_FLOWS.map(df => ({
+                        id: `flow_${df.id}`,
+                        name: df.name,
+                        trigger: df.trigger,
+                        active: false,
+                        subject_en: `Welcome - ${df.name}`,
+                        subject_he: `ברוכים הבאים - ${df.name}`,
+                        body_en: `Hello {{name}},\n\nThank you for joining us.\n\nBest regards,\nThe HBM Team`,
+                        body_he: `שלום {{name}},\n\nתודה שהצטרפת אלינו.\n\nבברכה,\nצוות HBM`
+                    }))
+                };
+                setConfig(fallback);
+                setEngagementLog([]);
+                setRegistrations([]);
+                setQueue([]);
+                setCampaigns([]);
+                setSuppressionList([]);
+                setError(null);
+                return;
+            }
 
+            setBackendOffline(false);
             if (!cfg.smtp) cfg.smtp = { host: '', port: 587, user: '', pass: '', from: '' };
             if (!cfg.globalStyling) cfg.globalStyling = { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' };
 
-            const existingFlows = cfg.flows || [];
+            const existingFlows = Array.isArray(cfg.flows) ? cfg.flows : [];
+            const triggerKey = (t) => (t || '').toLowerCase();
             DEFAULT_FLOWS.forEach(df => {
-                if (!existingFlows.find(f => f.trigger === df.trigger)) {
+                if (!existingFlows.find(f => triggerKey(f.trigger) === triggerKey(df.trigger))) {
                     existingFlows.push({
                         id: `flow_${df.id}`,
                         name: df.name,
@@ -216,42 +303,64 @@ const EmailEngine = () => {
             cfg.flows = existingFlows;
 
             setConfig(cfg);
-            setEngagementLog(eng);
-            setRegistrations(regs);
-            setQueue(q);
-            setCampaigns(camps);
-            setSuppressionList(supp);
+            setEngagementLog(Array.isArray(eng) ? eng : []);
+            setRegistrations(Array.isArray(regs) ? regs : []);
+            setQueue(Array.isArray(q) ? q : []);
+            setCampaigns(Array.isArray(camps) ? camps : []);
+            setSuppressionList(Array.isArray(supp) ? supp : []);
             setError(null);
         } catch (err) {
-            setError(err.message);
+            setBackendOffline(true);
+            const fallback = {
+                smtp: { host: '', port: 587, user: '', pass: '', from: '' },
+                globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' },
+                flows: DEFAULT_FLOWS.map(df => ({
+                    id: `flow_${df.id}`,
+                    name: df.name,
+                    trigger: df.trigger,
+                    active: false,
+                    subject_en: `Welcome - ${df.name}`,
+                    subject_he: `ברוכים הבאים - ${df.name}`,
+                    body_en: `Hello {{name}},\n\nThank you for joining us.\n\nBest regards,\nThe HBM Team`,
+                    body_he: `שלום {{name}},\n\nתודה שהצטרפת אלינו.\n\nבברכה,\nצוות HBM`
+                }))
+            };
+            setConfig(fallback);
+            setEngagementLog([]);
+            setRegistrations([]);
+            setQueue([]);
+            setCampaigns([]);
+            setSuppressionList([]);
+            setError(null);
         }
     };
 
     const handleSave = async () => {
         setSaveStatus('Deploying...');
         try {
-            await Promise.all([
+            const [settingsRes, campaignsRes] = await Promise.all([
                 fetch(`${API}/api/automation-settings`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(config)
                 }),
                 fetch(`${API}/api/campaigns/save-all`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ campaigns })
+                    body: JSON.stringify({ campaigns: Array.isArray(campaigns) ? campaigns : [] })
                 })
             ]);
-            setSaveStatus('✓ Live');
+            if (settingsRes.ok && campaignsRes.ok) setSaveStatus('✓ Live');
+            else setSaveStatus('✗ Failed');
         } catch { setSaveStatus('✗ Failed'); }
         setTimeout(() => setSaveStatus(''), 3000);
     };
 
     const updateFlow = (id, updates) => {
         if (activeView === 'campaigns') {
-            setCampaigns(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+            setCampaigns(prev => (Array.isArray(prev) ? prev : []).map(c => c.id === id ? { ...c, ...updates } : c));
         } else {
             setConfig(prev => ({
                 ...prev,
-                flows: prev.flows.map(f => f.id === id ? { ...f, ...updates } : f)
+                flows: (Array.isArray(prev.flows) ? prev.flows : []).map(f => f.id === id ? { ...f, ...updates } : f)
             }));
         }
     };
@@ -260,8 +369,9 @@ const EmailEngine = () => {
         if (!aiPrompt && !aiGoal) return;
         setAiChat(prev => [...prev, { role: 'user', content: aiPrompt || `Improve with goal: ${aiGoal}` }]);
         setAiLoading(true);
+        setPendingAiText(null);
         const textKey = editorLang === 'he' ? 'body_he' : 'body_en';
-        const textToImprove = currentFlow[textKey] || currentFlow.body || '';
+        const textToImprove = (currentFlow && (currentFlow[textKey] || currentFlow.body)) || '';
         try {
             const r = await fetch(`${API}/api/ai/improve-copy`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -273,12 +383,17 @@ const EmailEngine = () => {
                     language: editorLang 
                 })
             });
-            const d = await r.json();
-            if (d.text) {
-                setAiChat(prev => [...prev, { role: 'ai', content: m => "I've refined the copy. Should I apply it?", suggestedResult: d.text }]); // Note: This line is slightly different in the final version to handle chat better
+            const d = await r.json().catch(() => ({}));
+            if (d.text && typeof d.text === 'string') {
+                setAiChat(prev => [...prev, { role: 'ai', content: "I've refined the copy. Use Apply below to paste it into the body.", suggestedResult: d.text }]);
+                setPendingAiText(d.text);
+            } else if (!r.ok) {
+                setAiChat(prev => [...prev, { role: 'ai', content: d.error || `Request failed (${r.status}). Check GEMINI_API_KEY in .env for AI.` }]);
+            } else {
+                setAiChat(prev => [...prev, { role: 'ai', content: "No text returned. Try again or add a goal/prompt." }]);
             }
-        } catch { 
-            setAiChat(prev => [...prev, { role: 'ai', content: "Sorry, I hit a snag." }]);
+        } catch (e) {
+            setAiChat(prev => [...prev, { role: 'ai', content: `Error: ${e.message || 'Network or server error'}. Is the backend running?` }]);
         }
         setAiLoading(false);
         setAiPrompt('');
@@ -297,11 +412,11 @@ const EmailEngine = () => {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: testEmail, flowId: activeFlowId, language: editorLang })
             });
-            const d = await r.json();
+            const d = await r.json().catch(() => ({}));
             if (d.success) setTestStatus('✅ Sent!');
-            else throw new Error(d.error || 'Failed');
+            else throw new Error(d.error || (r.status ? `HTTP ${r.status}` : 'Failed'));
         } catch (e) { setTestStatus(`❌ ${e.message}`); }
-        setTimeout(() => setTestStatus(''), 5000);
+        setTimeout(() => setTestStatus(''), 8000);
     };
 
     const toggleSuppression = async (email) => {
@@ -372,21 +487,34 @@ const EmailEngine = () => {
         const name = prompt('Campaign Name:', 'Spring Newsletter 2026');
         if (!name) return;
         const segment = prompt('Target Segment (all / physical / video / newsletter):', 'all');
-        const resp = await fetch(`${API}/api/campaigns`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                name, 
-                segment: segment || 'all',
-                subject_en: 'Edit Subject...', 
-                body_en: 'Edit Content...', 
-                sentToCount: 0 
-            })
-        });
-        const data = await resp.json();
-        if (data.success) {
-            setCampaigns(prev => [...prev, data.campaign]);
-            setActiveFlowId(data.campaign.id);
+        try {
+            const resp = await fetch(`${API}/api/campaigns`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    name, 
+                    segment: segment || 'all',
+                    subject_en: 'Edit Subject...', 
+                    subject_he: 'ערוך נושא...',
+                    body_en: 'Edit content below, then click Synchronize and Launch.', 
+                    body_he: 'ערוך את התוכן למטה, ואז לחץ Synchronize ו-Launch.',
+                    sentToCount: 0,
+                    openCount: 0,
+                    clickCount: 0,
+                    status: 'draft'
+                })
+            });
+            const data = await resp.json();
+            if (data.success && data.campaign) {
+                setCampaigns(prev => [...(Array.isArray(prev) ? prev : []), data.campaign]);
+                setActiveView('campaigns');
+                setActiveFlowId(data.campaign.id);
+                setActiveFlowTrigger(null);
+            } else {
+                alert(data.error || 'Failed to create campaign');
+            }
+        } catch (e) {
+            alert('Connection error. Is the backend running?');
         }
     };
 
@@ -405,24 +533,34 @@ const EmailEngine = () => {
     };
 
     // ── derived ─────────────────────────────────────────────────────────────
-    const currentFlow = config?.flows?.find(f => f.id === activeFlowId) || campaigns.find(c => c.id === activeFlowId);
-    const sentCount = queue.filter(q => q.status === 'sent').length;
-    const pendingCount = queue.filter(q => q.status === 'pending').length;
-    const failedCount = queue.filter(q => q.status === 'failed').length;
-    const opens = engagementLog.filter(e => e.type === 'open').length;
-    const clicks = engagementLog.filter(e => e.type === 'click').length;
+    const flowsList = Array.isArray(config?.flows) ? config.flows : [];
+    const triggerKey = (t) => (t || '').toLowerCase();
+    const currentFlow =
+        flowsList.find(f => f.id === activeFlowId) ||
+        (Array.isArray(campaigns) ? campaigns : []).find(c => c.id === activeFlowId) ||
+        (activeView === 'flows' && activeFlowTrigger
+            ? flowsList.find(f => triggerKey(f.trigger) === triggerKey(activeFlowTrigger))
+            : null);
+    const safeQueue = Array.isArray(queue) ? queue : [];
+    const safeEngagement = Array.isArray(engagementLog) ? engagementLog : [];
+    const sentCount = safeQueue.filter(q => q.status === 'sent').length;
+    const pendingCount = safeQueue.filter(q => q.status === 'pending').length;
+    const failedCount = safeQueue.filter(q => q.status === 'failed').length;
+    const opens = safeEngagement.filter(e => e.type === 'open').length;
+    const clicks = safeEngagement.filter(e => e.type === 'click').length;
     const openRate = sentCount > 0 ? Math.round((opens / sentCount) * 100) : 0;
     const ctr = opens > 0 ? Math.round((clicks / opens) * 100) : 0;
 
     // ── Error / Loading ──────────────────────────────────────────────────────
     if (error) return (
         <div className="h-full flex items-center justify-center p-10">
-            <div className="bg-red-50 border border-red-100 rounded-[2rem] p-10 max-w-sm text-center shadow-xl">
+            <div className="bg-red-50 border border-red-100 rounded-[2rem] p-10 max-w-md text-center shadow-xl">
                 <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <AlertCircle className="w-7 h-7 text-red-500" />
                 </div>
                 <h3 className="text-lg font-black text-red-700 tracking-tight mb-2">Engine Offline</h3>
-                <p className="text-xs text-red-400 font-mono mb-6">{error}</p>
+                <p className="text-xs text-red-400 font-mono mb-2">{error}</p>
+                <p className="text-[10px] text-gray-500 mb-6">בפיתוח: הרץ <code className="bg-gray-200 px-1 rounded">npm run dev:admin</code> (גם Vite וגם השרת). בפרודקשן וודא ש-admin-server רץ.</p>
                 <button onClick={fetchAll} className="bg-red-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg">
                     Reconnect
                 </button>
@@ -430,16 +568,20 @@ const EmailEngine = () => {
         </div>
     );
 
-    if (!config) return (
-        <div className="h-full flex flex-col items-center justify-center gap-4">
-            <div className="w-12 h-12 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Booting Email Engine...</p>
-        </div>
-    );
-
-    // ── Main render ──────────────────────────────────────────────────────────
+    // ── Main render (config is always set: default first, then server data from fetchAll) ──────────────────────────────────────────────────────────
     return (
         <div className="flex flex-col h-full bg-[#f8f9fc] overflow-hidden font-sans">
+            {/* OFFLINE BANNER */}
+            {backendOffline && (
+                <div className="bg-amber-50 border-b border-amber-200 px-8 py-3 flex items-center justify-between shrink-0">
+                    <p className="text-xs text-amber-800 font-bold">
+                        השרת לא זמין — מוצג תוכן מקומי. הרץ <code className="bg-amber-200 px-1 rounded">npm run dev:admin</code> ולחץ נסה שוב כדי לטעון את המיילים והעיצובים השמורים.
+                    </p>
+                    <button onClick={fetchAll} className="bg-amber-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-700">
+                        נסה שוב
+                    </button>
+                </div>
+            )}
             {/* TOP BAR */}
             <div className="flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100 shrink-0">
                 <div className="flex items-center gap-5">
@@ -449,7 +591,7 @@ const EmailEngine = () => {
                             <span className="text-[8px] bg-gradient-to-r from-purple-600 to-pink-500 text-white px-2 py-0.5 rounded-full font-black">ULTIMATE</span>
                         </h2>
                         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
-                            {config.flows?.length + campaigns.length} paths · {registrations.length} leads · {suppressionList.length} opted out
+                            {flowsList.length + (Array.isArray(campaigns) ? campaigns.length : 0)} paths · {(Array.isArray(registrations) ? registrations : []).length} leads · {(Array.isArray(suppressionList) ? suppressionList : []).length} opted out
                         </p>
                     </div>
                     <nav className="flex gap-0.5 p-1 bg-gray-100 rounded-xl">
@@ -460,7 +602,7 @@ const EmailEngine = () => {
                             { id: 'analytics', icon: BarChart3, label: 'Stats' },
                             { id: 'settings', icon: Settings, label: 'Setup' },
                         ].map(({ id, icon: Icon, label }) => (
-                            <button key={id} onClick={() => { setActiveView(id); setActiveFlowId(null); }}
+                            <button key={id} onClick={() => { setActiveView(id); setActiveFlowId(null); setActiveFlowTrigger(null); }}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeView === id ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}>
                                 <Icon className="w-3 h-3" />{label}
                             </button>
@@ -468,6 +610,7 @@ const EmailEngine = () => {
                     </nav>
                 </div>
                 <div className="flex items-center gap-3">
+                    <BackendBadge />
                     <SmtpBadge config={config} />
                     {saveStatus && <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest animate-pulse">{saveStatus}</span>}
                     <button onClick={handleSave} className="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all flex items-center gap-2 shadow-lg">
@@ -479,14 +622,26 @@ const EmailEngine = () => {
             {/* FLOWS VIEW */}
             {activeView === 'flows' && !activeFlowId && (
                 <div className="flex-1 p-10 overflow-y-auto">
-                    <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-8">Engagement Triggers</h3>
+                    <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-2">Engagement Triggers</h3>
+                    <p className="text-xs text-gray-500 mb-8">לחץ על כרטיס לעריכת נושא וגוף המייל שנשלח אוטומטית מהמערכת. אירוע פיזי = רישום באירוע בעולם האמיתי. אירוע וידאו = רישום לאירוע וידאו.</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
                         {DEFAULT_FLOWS.map((df) => {
-                            const flow = config.flows.find(f => f.trigger === df.trigger);
+                            const candidates = flowsList.filter(f => (f.trigger || '').toLowerCase() === (df.trigger || '').toLowerCase());
+                            const flow = candidates.length > 0
+                                ? candidates.find(f => f.subject_en || f.subject) || candidates[0]
+                                : null;
                             if (!flow) return null;
+                            const openEditor = () => {
+                                setActiveFlowId(flow.id);
+                                setActiveFlowTrigger(flow.trigger || null);
+                                setTimeout(() => editorPanelRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }), 100);
+                            };
                             return (
-                                <div key={df.id} 
-                                    onClick={() => setActiveFlowId(flow.id)}
+                                <div key={df.id}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={openEditor}
+                                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEditor(); } }}
                                     className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer overflow-hidden group">
                                     <div className="p-8 pb-6 flex items-start justify-between border-b border-gray-50 bg-gray-50/50">
                                         <div className="bg-purple-100 w-12 h-12 rounded-2xl flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
@@ -496,9 +651,12 @@ const EmailEngine = () => {
                                     </div>
                                     <div className="p-8 pt-6">
                                         <h4 className="text-lg font-black text-gray-900 tracking-tight mb-2">{df.name}</h4>
-                                        <p className="text-xs text-gray-400 font-bold mb-4">{df.desc}</p>
-                                        <div className="flex items-center gap-2">
-                                            <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest font-mono truncate">on_{df.trigger.replace('on', '')}</span>
+                                        <p className="text-xs text-gray-400 font-bold mb-2">{df.desc}</p>
+                                        <button type="button" onClick={e => { e.stopPropagation(); openEditor(); }} className="w-full mt-3 py-3 rounded-xl bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-purple-700 transition-all flex items-center justify-center gap-2">
+                                            <Edit3 className="w-4 h-4" /> ערוך נושא וגוף המייל
+                                        </button>
+                                        <div className="flex items-center gap-2 mt-4">
+                                            <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest font-mono truncate">on_{(df.trigger || '').replace(/^on/i, '')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -586,7 +744,7 @@ const EmailEngine = () => {
                                         </div>
 
                                         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                            <button onClick={() => setActiveFlowId(c.id)} className="flex-1 bg-gray-900 text-white py-3 rounded-xl text-[9px] font-black uppercase hover:bg-black transition flex items-center justify-center gap-1.5">
+                                            <button onClick={() => { setActiveFlowId(c.id); setActiveFlowTrigger(null); setTimeout(() => editorPanelRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }), 100); }} className="flex-1 bg-gray-900 text-white py-3 rounded-xl text-[9px] font-black uppercase hover:bg-black transition flex items-center justify-center gap-1.5">
                                                 <Edit3 className="w-3 h-3" /> Edit
                                             </button>
                                             <button 
@@ -608,13 +766,13 @@ const EmailEngine = () => {
 
             {/* EDITOR VIEW */}
             {(activeView === 'flows' || activeView === 'campaigns') && activeFlowId && currentFlow && (
-                <div className="flex flex-1 overflow-y-auto gap-0 bg-white">
+                <div ref={editorPanelRef} className="flex flex-1 overflow-y-auto gap-0 bg-white min-h-0">
                     <div className="flex-1 p-8 space-y-6 overflow-y-auto min-w-0 border-r border-gray-100 rounded-tl-3xl shadow-[-10px_0_20px_rgba(0,0,0,0.02)] relative bg-[#f8f9fc]">
                         
                         {/* Editor Header */}
                         <div className="flex items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
                             <div className="flex items-center gap-4">
-                                <button onClick={() => setActiveFlowId(null)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors">
+                                <button onClick={() => { setActiveFlowId(null); setActiveFlowTrigger(null); }} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors" title="Back to triggers">
                                     <ArrowLeft className="w-4 h-4" />
                                 </button>
                                 <div>
@@ -703,6 +861,13 @@ const EmailEngine = () => {
                                         {aiLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />} Refine
                                     </button>
                                 </div>
+                                    {pendingAiText && (
+                                        <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                            <span className="text-[10px] text-white/90">Refined copy ready →</span>
+                                            <button type="button" onClick={() => { const key = editorLang === 'he' ? 'body_he' : 'body_en'; updateFlow(activeFlowId, { [key]: pendingAiText }); setPendingAiText(null); }} className="bg-white text-purple-700 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase">Apply to body</button>
+                                            <button type="button" onClick={() => setPendingAiText(null)} className="text-white/80 hover:text-white text-[9px] font-bold">Dismiss</button>
+                                        </div>
+                                    )}
                             </div>
 
                             <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
@@ -799,7 +964,7 @@ const EmailEngine = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {registrations
+                                    {(Array.isArray(registrations) ? registrations : [])
                                         .filter(r => {
                                             const matchesSearch = (r.name || '').toLowerCase().includes(crmSearch.toLowerCase()) || 
                                                                   (r.email || '').toLowerCase().includes(crmSearch.toLowerCase());
@@ -810,8 +975,8 @@ const EmailEngine = () => {
                                             return matchesSearch && matchesFilter;
                                         })
                                         .map(r => {
-                                            const isUnsub = suppressionList.includes(r.email);
-                                            const engSteps = engagementLog.filter(e => e.email === r.email).length;
+                                            const isUnsub = (Array.isArray(suppressionList) ? suppressionList : []).includes(r.email);
+                                            const engSteps = safeEngagement.filter(e => e.email === r.email).length;
                                         return (
                                             <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-8 py-6">
@@ -863,7 +1028,7 @@ const EmailEngine = () => {
                             <KpiCard icon={Send} label="Outbound Total" value={sentCount} color="purple" />
                             <KpiCard icon={Eye} label="Open Events" value={opens} color="blue" sub={`${openRate}% rate`} />
                             <KpiCard icon={MousePointer} label="Direct Clicks" value={clicks} color="orange" sub={`${ctr}% CTR`} />
-                            <KpiCard icon={Database} label="Growth Index" value={registrations.length} color="green" sub={`+${registrations.filter(r => new Date(r.date) > new Date(Date.now() - 7*24*60*60*1000)).length} this week`} />
+                            <KpiCard icon={Database} label="Growth Index" value={(Array.isArray(registrations) ? registrations : []).length} color="green" sub={`+${(Array.isArray(registrations) ? registrations : []).filter(r => new Date(r.date) > new Date(Date.now() - 7*24*60*60*1000)).length} this week`} />
                         </div>
                         <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm">
                             <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-10">Conversion Funnel</h4>
@@ -900,6 +1065,9 @@ const EmailEngine = () => {
                                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Configure SMTP, branding, and global sending preferences</p>
                             </div>
 
+                            <div className="mb-6 p-4 bg-purple-50 border border-purple-100 rounded-xl text-[10px] text-purple-800">
+                                <strong>רישום לאירוע:</strong> כל נרשם נשמר אוטומטית ב-CRM. כדי שהנרשם <em>יקבל מייל</em> — בטאב Flows הפעל (Toggle) את &quot;Physical Event Reg&quot; או &quot;Video Event Reg&quot;, ערוך טקסט/נושא אם צריך, לחץ Synchronize, והגדר SMTP למטה.
+                            </div>
                             <div className="grid grid-cols-2 gap-8">
                                 {/* SMTP Config */}
                                 <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-5">

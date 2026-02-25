@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Instagram } from 'lucide-react'
+import { Instagram, Volume2, VolumeX } from 'lucide-react'
 import { useI18n, t } from '../../i18n/context'
 import BubbleContainer from '../BubbleContainer'
 
@@ -27,6 +27,15 @@ const featureCards = [
 
 export default function Why8Minutes() {
   const { lang } = useI18n()
+  const videoRef = useRef(null)
+  const [isMuted, setIsMuted] = useState(true)
+
+  const toggleMute = () => {
+    if (!videoRef.current) return
+    const next = !isMuted
+    videoRef.current.muted = next
+    setIsMuted(next)
+  }
 
   return (
     <section className="section-padding bg-hbm-cream flex flex-col items-center justify-center min-h-[85vh] md:min-h-screen relative overflow-hidden">
@@ -82,6 +91,7 @@ export default function Why8Minutes() {
           >
             <div className="relative aspect-[9/16] bg-black rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] md:border-[8px] border-gray-900">
                 <video
+                  ref={videoRef}
                   src="/meeter-video/Meeter_Com_Reel.mp4"
                   autoPlay
                   loop
@@ -89,6 +99,14 @@ export default function Why8Minutes() {
                   playsInline
                   className="w-full h-full object-cover"
                 />
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white backdrop-blur-sm transition-colors"
+                  aria-label={isMuted ? t({ en: 'Unmute', he: 'הפעל שמע' }, lang) : t({ en: 'Mute', he: 'השתק' }, lang)}
+                >
+                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                </button>
             </div>
           </motion.div>
 

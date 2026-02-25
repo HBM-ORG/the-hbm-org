@@ -73,13 +73,9 @@ export default function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
 
-              {/* Internal Tools - Dev Only */}
-              {import.meta.env.DEV && (
-                <>
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                </>
-              )}
+              {/* Admin Dashboard - available when site is live (protected by password) */}
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
               {/* Redirects */}
               <Route path="/b2b" element={<MeeterWho />} />

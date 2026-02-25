@@ -16,6 +16,7 @@ import BubbleContainer from "../BubbleContainer";
 import CountdownTimer from "./CountdownTimer";
 import CalendarDropdown from "./CalendarDropdown";
 import { hbmAnalytics } from "../../utils/analytics";
+import { getApiBase } from "../../utils/api";
 
 const NextEventHero = ({
   event,
@@ -62,10 +63,6 @@ const NextEventHero = ({
     e.preventDefault();
     setSubmitStatus("submitting");
 
-    const base = import.meta.env.DEV
-      ? `http://${window.location.hostname}:3001`
-      : "";
-
     try {
       const bodyData = {
         ...formState,
@@ -73,7 +70,7 @@ const NextEventHero = ({
         eventName: event.title?.en || event.title,
         language: lang,
       };
-      const response = await fetch(`${base}/api/register`, {
+      const response = await fetch(`${getApiBase()}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),

@@ -10,6 +10,7 @@ import BubbleContainer from "../components/BubbleContainer";
 import NextPageBridge from "../components/NextPageBridge";
 import GlobeDemo from "../components/ui/GlobeDemo";
 import SEO from "../components/SEO";
+import { getApiBase } from "../utils/api";
 
 const { about, global } = siteContent;
 
@@ -129,33 +130,36 @@ function ValuesGrid({ lang }) {
     </div>
   );
 }
+const defaultTeam = Array.isArray(siteContent?.about?.team?.members) ? siteContent.about.team.members : [];
+
 export default function About() {
   const { lang } = useI18n();
   const [selectedMember, setSelectedMember] = useState(null);
-  const [teamMembers, setTeamMembers] = useState(about.team.members);
+  const [teamMembers, setTeamMembers] = useState(defaultTeam);
   const whatsappUrl = getWhatsappUrl(lang);
 
   useEffect(() => {
-    const base = import.meta.env.DEV
-      ? `http://${window.location.hostname}:3001`
-      : "";
-    fetch(`${base}/api/site-content`)
-      .then((res) => res.json())
+    fetch(`${getApiBase()}/api/site-content`)
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data.team && data.team.length > 0) {
+        if (data?.team?.length) {
+          const staticMembers = about?.team?.members ?? defaultTeam;
           const mergedTeam = data.team.map((member) => {
-            const staticMatch = about.team.members.find(
-              (sm) => sm.name === member.name,
+            const staticMatch = staticMembers.find(
+              (sm) => sm && sm.name === member.name,
             );
-            if (!member.image && !member.imageUrl && staticMatch) {
-              member.image = staticMatch.image;
+            if (staticMatch) {
+              if (!member.image && !member.imageUrl) member.image = staticMatch.image;
+              if (member.bio === undefined || member.bio === '') member.bio = staticMatch.bio;
+              if (member.funFact === undefined || member.funFact === '') member.funFact = staticMatch.funFact;
+              if (member.funFacts === undefined && staticMatch.funFacts) member.funFacts = staticMatch.funFacts;
             }
             return member;
           });
           setTeamMembers(mergedTeam);
         }
       })
-      .catch((err) => console.error(err));
+      .catch(() => {});
   }, []);
 
   return (
@@ -181,7 +185,7 @@ export default function About() {
             className="text-4xl md:text-7xl font-bold mb-2 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent"
             style={{ letterSpacing: "-2px" }}
           >
-            {t(about.hero.title, lang)}
+            {t(about?.hero?.title ?? { en: "About Us", he: "מי אנחנו" }, lang)}
           </h1>
         </div>
       </section>
@@ -258,10 +262,11 @@ export default function About() {
         </div>
       </section>
 
-      {/* Interactive World Connection Section */}
-      <section className="bg-hbm-cream pt-0 pb-8 overflow-hidden">
-        {/* GlobeDemo manages its own fixed 600px height — do NOT wrap in a resizable container */}
-        <GlobeDemo />
+      {/* Interactive World Connection Section — fixed height so globe never resizes when modal opens */}
+      <section className="bg-hbm-cream pt-0 pb-8 overflow-hidden" style={{ minHeight: '600px' }}>
+        <div className="h-[600px] w-full" aria-hidden="true">
+          <GlobeDemo key="about-globe" />
+        </div>
         <div className="text-center mt-4 mb-4 px-4">
           <p className="text-sm md:text-base lg:text-lg font-bold text-hbm-dark/60 font-['Sora'] tracking-wide break-words">
             {t(
@@ -280,7 +285,7 @@ export default function About() {
         <BubbleContainer bgColor="white">
           <div className="max-w-6xl mx-auto w-full">
             <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-4 font-['Sora']">
-              {t(about.values.title, lang)}
+              {t(about?.values?.title ?? { en: "Our Values", he: "הערכים שלנו" }, lang)}
             </h2>
             <p className="text-hbm-gray text-center mb-12 font-['Sora']">
               {t(
@@ -306,11 +311,11 @@ export default function About() {
         <BubbleContainer bgColor="white">
           <div className="max-w-6xl mx-auto w-full relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-12">
-              {t(about.team.title, lang)}
+              {t(about?.team?.title ?? { en: "Meet The Team", he: "הכירו את הצוות" }, lang)}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-              {teamMembers
-                .filter((m) => m.name && (m.image || m.imageUrl))
+              {(teamMembers || [])
+                .filter((m) => m && m.name && (m.image || m.imageUrl))
                 .map((member, i) => (
                   <div
                     key={i}
@@ -397,28 +402,31 @@ export default function About() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
             >
-              {/* Close Button */}
+              {/* Close Button — left side so LinkedIn (top-right of image) doesn't hide it */}
               <button
                 onClick={() => setSelectedMember(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+                className="absolute top-4 left-4 z-20 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+                aria-label="Close"
               >
                 <X size={20} />
               </button>
 
-              {/* Profile Image (Side) */}
-              <div className="w-full md:w-2/5 md:max-w-sm shrink-0 bg-gray-100 relative">
+              {/* Profile Image (Side) — fixed aspect ratio so the photo doesn't squash */}
+              <div className="w-full md:w-2/5 md:max-w-sm shrink-0 bg-gray-100 relative flex items-start justify-center md:min-h-0">
+                <div className="w-full aspect-[3/4] max-h-[420px] md:max-h-none md:aspect-square md:h-full overflow-hidden">
                 {selectedMember.image || selectedMember.imageUrl ? (
                   <img
                     src={selectedMember.image || selectedMember.imageUrl}
                     alt={selectedMember.name}
-                    className="w-full h-64 md:h-full object-cover"
+                    className="w-full h-full object-cover object-center"
                   />
                 ) : (
-                  <div className="w-full h-64 md:h-full flex items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40">
+                  <div className="w-full h-full min-h-[200px] flex items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40">
                     <User size={80} />
                   </div>
                 )}
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent text-white">
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent text-white pointer-events-none">
                   <h3 className="text-3xl font-black text-white tracking-tight mb-1">
                     {selectedMember.name}
                   </h3>
@@ -464,25 +472,36 @@ export default function About() {
                     {typeof selectedMember.bio === "string" ? (
                       <p>{selectedMember.bio}</p>
                     ) : (
-                      t(selectedMember.bio, lang).map((para, idx) => (
+                      (Array.isArray(t(selectedMember.bio, lang)) ? t(selectedMember.bio, lang) : []).map((para, idx) => (
                         <p key={idx} className="mb-4 leading-relaxed">
                           {para}
                         </p>
                       ))
                     )}
                   </div>
-                  {selectedMember.funFact && (
-                    <div className="pt-4 border-t border-gray-100">
-                      <p className="text-sm">
-                        <span className="font-bold text-hbm-orange">
-                          Fun Fact:{" "}
-                        </span>
-                        <span className="text-gray-500 italic">
-                          {t(selectedMember.funFact, lang)}
-                        </span>
-                      </p>
-                    </div>
-                  )}
+                  {(() => {
+                    let facts = [];
+                    if (Array.isArray(selectedMember.funFacts)) {
+                      facts = selectedMember.funFacts.map((f) => (typeof f === "string" ? f : t(f, lang)));
+                    } else if (selectedMember.funFact) {
+                      const v = selectedMember.funFact;
+                      const str = typeof v === "string" ? v : t(v, lang);
+                      facts = str ? str.split(/\n/).map((s) => s.trim()).filter(Boolean) : [];
+                    }
+                    if (facts.length === 0) return null;
+                    return (
+                      <div className="pt-4 border-t border-gray-100 space-y-2">
+                        <p className="text-sm font-bold text-hbm-orange">
+                          {facts.length > 1 ? (lang === "he" ? "עובדות מהנות" : "Fun Facts") : (lang === "he" ? "עובדה מהנה" : "Fun Fact")}:{" "}
+                        </p>
+                        {facts.map((fact, idx) => (
+                          <p key={idx} className="text-sm text-gray-500 italic">
+                            {fact}
+                          </p>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </motion.div>

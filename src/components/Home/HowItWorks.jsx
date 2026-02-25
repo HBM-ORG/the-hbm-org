@@ -4,6 +4,7 @@ import { useI18n, t } from '../../i18n/context'
 import { siteContent } from '../../data/content'
 import BubbleContainer from '../BubbleContainer'
 import { ChevronDown } from 'lucide-react'
+import { getApiBase } from '../../utils/api'
 
 // 3D Tilt Card Component
 const MagicCard = ({ image }) => {
@@ -77,14 +78,14 @@ export default function HowItWorks() {
   const containerRef = useRef(null)
   
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || ''}/api/cms/how-it-works`)
-      .then(res => res.json())
+    fetch(`${getApiBase()}/api/cms/how-it-works`)
+      .then(res => (res.ok ? res.json() : {}))
       .then(data => {
         if (data && (data.videoSteps || data.physicalSteps)) {
           setCmsContent(data);
         }
       })
-      .catch(err => console.error('CMS Fetch Error:', err));
+      .catch(() => { /* use static siteContent fallback */ });
   }, []);
 
   const { howItWorks } = siteContent.home

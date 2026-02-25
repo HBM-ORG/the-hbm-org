@@ -34,7 +34,7 @@ export default function Contact() {
         <div className="mb-12">
           <h3 className="text-xl font-bold text-hbm-dark text-center mb-6">{t(contact.formLabels.type)}</h3>
           <div className="flex flex-wrap gap-3 justify-center">
-            {contact.formLabels.typeOptions.map((opt, i) => (
+            {(contact?.formLabels?.typeOptions || []).map((opt, i) => (
               <button key={i} onClick={() => setSelectedType(i)}
                 className={`px-6 py-3 rounded-full text-sm font-semibold transition-all ${
                   selectedType === i

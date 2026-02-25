@@ -22,6 +22,7 @@ import NextPageBridge from "../components/NextPageBridge";
 import EyebrowBadge from "../components/EyebrowBadge";
 import { Quote, Star } from "lucide-react";
 import SEO from "../components/SEO";
+import { getApiBase } from "../utils/api";
 
 const WP = "https://www.thehbm.org/wp-content/uploads";
 const { home, global } = siteContent;
@@ -288,18 +289,13 @@ export default function Home() {
   const [testimonialsList, setTestimonialsList] = useState([]);
 
   useEffect(() => {
-    const base = import.meta.env.DEV
-      ? `http://${window.location.hostname}:3001`
-      : "";
-    fetch(`${base}/api/site-content`)
-      .then((res) => res.json())
+    fetch(`${getApiBase()}/api/site-content`)
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data.partners && data.partners.length > 0)
-          setPartnerLogosList(data.partners);
-        if (data.testimonials && data.testimonials.length > 0)
-          setTestimonialsList(data.testimonials);
+        if (data?.partners?.length) setPartnerLogosList(data.partners);
+        if (data?.testimonials?.length) setTestimonialsList(data.testimonials);
       })
-      .catch((err) => console.error(err));
+      .catch(() => {});
   }, []);
 
   return (
@@ -418,7 +414,7 @@ export default function Home() {
 
             {/* Right side — 3 floating cards with 3D hover effects */}
             <div className="md:w-3/5 relative space-y-4">
-              {home.conversationCards.cards.map((card, i) => (
+              {(home?.conversationCards?.cards || []).map((card, i) => (
                 <InteractiveCard
                   key={i}
                   card={card}

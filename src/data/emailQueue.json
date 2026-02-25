@@ -920,5 +920,334 @@
     "flowId": "eight_minute_funnel",
     "attempts": 0,
     "error": "Missing credentials for \"LOGIN\""
+  },
+  {
+    "id": "f08f42ad-8eb7-4309-9fb0-dba323f505fe",
+    "status": "failed",
+    "scheduledFor": 1772037573470,
+    "data": {
+      "name": "Test User",
+      "email": "yuval7040@gmil.com",
+      "eventName": "HBM Live Demo",
+      "date": "2026-02-25T16:39:33.469Z",
+      "location": "Tel Aviv Hub",
+      "id": "TEST-671",
+      "language": "en"
+    },
+    "stepType": "email",
+    "flowId": null,
+    "error": "Source flow/campaign not found"
+  },
+  {
+    "id": "a28bf6e1-8d1b-414b-8e34-a4de307abf2f",
+    "status": "failed",
+    "scheduledFor": 1772037897493,
+    "data": {
+      "id": 1772037897492,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T16:44:57.492Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T16:44:57.492Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "attempts": 0,
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "8957246d-1826-4044-aa4e-b6ac14ddadf2",
+    "status": "failed",
+    "scheduledFor": 1772037897494,
+    "data": {
+      "id": 1772037897492,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T16:44:57.492Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T16:44:57.492Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "registration_confirmed",
+    "attempts": 0,
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "29da58e1-db13-4bb1-90e0-071748c887bd",
+    "status": "pending",
+    "scheduledFor": 1772210697494,
+    "data": {
+      "id": 1772037897492,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T16:44:57.492Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T16:44:57.492Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "check_in_curiosity",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "37b2470d-f6d6-46e6-acfb-e9268630cdbf",
+    "status": "pending",
+    "scheduledFor": 1772469897494,
+    "data": {
+      "id": 1772037897492,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T16:44:57.492Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T16:44:57.492Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "post_event_warmth",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "f2efee94-0086-46ab-b3f4-2b43c6dba51f",
+    "status": "failed",
+    "scheduledFor": 1772037897495,
+    "data": {
+      "id": 1772037897492,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T16:44:57.492Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T16:44:57.492Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "eight_minute_funnel",
+    "attempts": 0,
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "07bfe7e0-aec3-428b-90f3-d02a1118f571",
+    "status": "failed",
+    "scheduledFor": 1772038883302,
+    "data": {
+      "id": 1772038883301,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T17:01:23.301Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T17:01:23.301Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "attempts": 0,
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "150e4398-a85b-4692-9d63-ee4f04f09ad6",
+    "status": "failed",
+    "scheduledFor": 1772038883303,
+    "data": {
+      "id": 1772038883301,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T17:01:23.301Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T17:01:23.301Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "registration_confirmed",
+    "attempts": 0,
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "cfebd7fa-59e7-4078-ba51-9f83ed03d36a",
+    "status": "pending",
+    "scheduledFor": 1772211683303,
+    "data": {
+      "id": 1772038883301,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T17:01:23.301Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T17:01:23.301Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "check_in_curiosity",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "d9a15017-665c-4d90-91f1-322143ee73f7",
+    "status": "pending",
+    "scheduledFor": 1772470883303,
+    "data": {
+      "id": 1772038883301,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T17:01:23.301Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T17:01:23.301Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "post_event_warmth",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "6058157b-522f-4077-9618-26ee20581c19",
+    "status": "failed",
+    "scheduledFor": 1772038883304,
+    "data": {
+      "id": 1772038883301,
+      "name": "yuval",
+      "email": "yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T17:01:23.301Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T17:01:23.301Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "eight_minute_funnel",
+    "attempts": 0,
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   }
 ]

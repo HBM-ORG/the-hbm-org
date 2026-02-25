@@ -1,11 +1,14 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import CookieConsent from './CookieCompliance/CookieConsent'
 import NewsletterSection from './NewsletterSection'
+import PageErrorBoundary from './PageErrorBoundary'
 import { useI18n, t } from '../i18n/context'
+
+const isAdminPath = (pathname) => pathname.startsWith('/admin') || pathname.startsWith('/admin-dashboard')
 
 const whatsappMessages = {
   en: "Hi! I'm ready to find my next opportunity. Can you help me get started with Meeter?",
@@ -22,9 +25,11 @@ export function getWhatsappUrl(lang) {
 }
 
 export default function Layout() {
+  const { pathname } = useLocation()
   const { lang } = useI18n()
   const whatsappUrl = getWhatsappUrl(lang)
   const [showTooltip, setShowTooltip] = useState(false)
+  const isAdmin = isAdminPath(pathname)
 
   useEffect(() => {
     // Show tooltip after 4 seconds
@@ -38,13 +43,16 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col w-full">
       <Navbar />
       <main className="flex-1">
-        <Outlet />
+        <PageErrorBoundary>
+          <Outlet />
+        </PageErrorBoundary>
       </main>
       <NewsletterSection />
       <Footer />
-      <CookieConsent />
+      {!isAdmin && <CookieConsent />}
 
-      {/* WhatsApp Floating Button */}
+      {/* WhatsApp Floating Button - hidden in admin (no need there) */}
+      {!isAdmin && (
       <div className="whatsapp-float-container">
 
         {/* Tooltip Bubble */}
@@ -84,6 +92,7 @@ export default function Layout() {
           </svg>
         </a>
       </div>
+      )}
     </div>
   )
 }

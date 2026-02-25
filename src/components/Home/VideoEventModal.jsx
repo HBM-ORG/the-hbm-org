@@ -6,6 +6,7 @@ import { hbmAnalytics } from '../../utils/analytics';
 import CountdownTimer from '../Events/CountdownTimer';
 import CalendarDropdown from '../Events/CalendarDropdown';
 import { MagicCard } from '../ui/MagicCard';
+import { getApiBase } from '../../utils/api';
 
 const VideoEventModal = ({ isOpen, onClose, config }) => {
     const { lang } = useI18n();
@@ -20,8 +21,7 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
         setSubmitStatus('submitting');
         
         try {
-            const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
-            const res = await fetch(`${base}/api/register`, {
+            const res = await fetch(`${getApiBase()}/api/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

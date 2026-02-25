@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, Users, Quote, Image as ImageIcon, Plus, Trash2, Edit3, X, Lock, Unlock, Star, Smartphone, BookOpen, Video, Youtube, Upload, Sparkles, ChevronUp, ChevronDown } from 'lucide-react';
+import { Save, Users, Quote, Image as ImageIcon, Plus, Trash2, Edit3, X, Lock, Unlock, Star, Smartphone, BookOpen, Video, Youtube, Upload, Sparkles, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
+import { siteContent } from '../../data/content';
+import knowledgeBaseFallback from '../../data/knowledgeBaseConfig.json';
+import { getApiBase } from '../../utils/api';
 
 const PhoneMockup = ({ children, className = "" }) => (
     <div className={`relative mx-auto rounded-[2.5rem] border-[6px] border-gray-900 bg-gray-900 shadow-2xl overflow-hidden ${className}`} style={{ aspectRatio: '9/19.5', width: '160px' }}>
@@ -22,22 +25,65 @@ const SiteContentManager = () => {
     const [activeKnowledgeTab, setActiveKnowledgeTab] = useState('books');
     const fileInputRef = useRef(null);
 
-    const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
+    const base = getApiBase();
+
+    // Fallback from static content when backend is offline so Site Content Manager always shows existing data
+    const getFallbackContent = () => {
+        const team = (siteContent?.about?.team?.members || []).map((m, i) => ({
+            id: m.name?.replace(/\s+/g, '-').toLowerCase() || `member-${i}`,
+            name: m.name,
+            role: typeof m.role === 'object' ? m.role?.en : m.role,
+            nickname: typeof m.nickname === 'object' ? m.nickname?.en : m.nickname,
+            imageUrl: m.image,
+            image: m.image,
+            linkedin: m.linkedin,
+            bio: typeof m.bio === 'object' ? m.bio?.en : m.bio,
+            funFact: typeof m.funFact === 'object' ? (m.funFact?.en || m.funFact?.he || '') : (m.funFact || ''),
+        }));
+        return {
+            team,
+            testimonials: [],
+            partners: [],
+            locks: { team: false, testimonials: false, partners: false },
+        };
+    };
+    const getFallbackHowItWorks = () => ({
+        videoSteps: siteContent?.home?.howItWorks?.videoSteps || [],
+        physicalSteps: siteContent?.home?.howItWorks?.physicalSteps || [],
+        isLocked: false,
+    });
+    const getFallbackKnowledgeBase = () => ({
+        books: knowledgeBaseFallback?.books ?? [],
+        videos: knowledgeBaseFallback?.videos ?? [],
+        isLocked: knowledgeBaseFallback?.isLocked ?? false,
+    });
 
     useEffect(() => {
         const fetchAll = async () => {
             setLoading(true);
             try {
-                const [siteRes, howRes, knowRes] = await Promise.all([
+                const [siteSettled, howSettled, knowSettled] = await Promise.allSettled([
                     fetch(`${base}/api/site-content`).then(r => r.json()),
                     fetch(`${base}/api/cms/how-it-works`).then(r => r.json()),
-                    fetch(`${base}/api/cms/knowledge-base`).then(r => r.json())
+                    fetch(`${base}/api/cms/knowledge-base`).then(r => r.json()),
                 ]);
-                setContent(siteRes);
-                setHowItWorks(howRes);
-                setKnowledgeBase(knowRes);
+                const siteRes = siteSettled.status === 'fulfilled' && siteSettled.value && !siteSettled.value.error
+                    ? siteSettled.value
+                    : getFallbackContent();
+                const howRes = howSettled.status === 'fulfilled' && howSettled.value && (Array.isArray(howSettled.value.videoSteps) || Array.isArray(howSettled.value.physicalSteps))
+                    ? howSettled.value
+                    : getFallbackHowItWorks();
+                const knowRes = knowSettled.status === 'fulfilled' && knowSettled.value && (Array.isArray(knowSettled.value.books) || Array.isArray(knowSettled.value.videos))
+                    ? knowSettled.value
+                    : getFallbackKnowledgeBase();
+                setContent(prev => ({ ...prev, ...siteRes, locks: siteRes.locks ?? prev.locks }));
+                setHowItWorks(prev => ({ ...prev, ...howRes, videoSteps: howRes.videoSteps ?? prev.videoSteps, physicalSteps: howRes.physicalSteps ?? prev.physicalSteps }));
+                setKnowledgeBase(prev => ({ ...prev, ...knowRes, books: knowRes.books ?? prev.books, videos: knowRes.videos ?? prev.videos }));
             } catch (err) {
                 console.error("Error fetching content", err);
+                setContent(getFallbackContent());
+                setHowItWorks(getFallbackHowItWorks());
+                setKnowledgeBase(getFallbackKnowledgeBase());
             } finally {
                 setLoading(false);
             }
@@ -181,46 +227,65 @@ const SiteContentManager = () => {
         }
     };
 
+    const [magicFetching, setMagicFetching] = useState(null); // 'books-0' | 'videos-1' | null
+
     const magicFetchBook = async (idx) => {
         const book = knowledgeBase.books[idx];
-        if (!book.title) return alert("Please enter a title first");
-        
+        if (!book?.title) return alert("Please enter a title first");
+        const key = `books-${idx}`;
+        setMagicFetching(key);
         try {
             const res = await fetch(`${base}/api/ai/fetch-book`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: book.title, author: book.author || '' })
             });
-            const data = await res.json();
+            const raw = await res.text();
+            let data;
+            try { data = JSON.parse(raw); } catch (_) { throw new Error("Invalid response from server"); }
             if (data.error) throw new Error(data.error);
 
-            const newKb = {...knowledgeBase};
-            newKb.books[idx] = { ...newKb.books[idx], ...data };
+            const newKb = { ...knowledgeBase };
+            const existing = newKb.books[idx] || {};
+            newKb.books[idx] = {
+                ...existing,
+                ...data,
+                // Keep existing cover if API didn't return one
+                coverUrl: data.coverUrl != null && data.coverUrl !== '' ? data.coverUrl : (existing.coverUrl || ''),
+                threeKeySentences: Array.isArray(data.threeKeySentences) ? data.threeKeySentences : (existing.threeKeySentences || ['', '', ''])
+            };
             setKnowledgeBase(newKb);
         } catch (err) {
-            alert("Magic Fetch failed: " + err.message);
+            alert("Magic Fetch failed: " + (err.message || "Network error"));
+        } finally {
+            setMagicFetching(null);
         }
     };
 
     const magicFetchVideo = async (idx) => {
         const video = knowledgeBase.videos[idx];
-        if (!video.youtubeUrl) return alert("Please enter a YouTube URL first");
-        
+        if (!video?.youtubeUrl) return alert("Please enter a YouTube URL first");
+        const key = `videos-${idx}`;
+        setMagicFetching(key);
         try {
             const res = await fetch(`${base}/api/ai/fetch-video`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ youtubeUrl: video.youtubeUrl })
             });
-            const data = await res.json();
+            const raw = await res.text();
+            let data;
+            try { data = JSON.parse(raw); } catch (_) { throw new Error("Invalid response from server"); }
             if (data.error) throw new Error(data.error);
 
-            const newKb = {...knowledgeBase};
+            const newKb = { ...knowledgeBase };
             newKb.videos[idx] = { ...newKb.videos[idx], ...data };
             setKnowledgeBase(newKb);
         } catch (err) {
             console.error("Magic Fetch Error:", err);
-            alert("🪄 Magic Fetch Issue:\n" + err.message);
+            alert("Magic Fetch failed: " + (err.message || "Network error"));
+        } finally {
+            setMagicFetching(null);
         }
     };
 
@@ -293,7 +358,7 @@ const SiteContentManager = () => {
                             </div>
                             <button 
                                 disabled={content.locks?.team}
-                                onClick={() => addItem('team', { name: 'New Member', role: 'Role', bio: '', imageUrl: '', nickname: '', linkedin: '' })} 
+                                onClick={() => addItem('team', { name: 'New Member', role: 'Role', bio: '', funFact: '', imageUrl: '', nickname: '', linkedin: '' })} 
                                 className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center gap-1 transition-all ${content.locks?.team ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-black shadow-md'}`}
                             >
                                 <Plus className="w-3 h-3" /> Add Member
@@ -310,7 +375,8 @@ const SiteContentManager = () => {
                                     <div className="space-y-4">
                                         <div><label className="text-[10px] font-black uppercase text-gray-400">Name</label><input type="text" disabled={content.locks?.team} value={member.name} onChange={e => handleArrayChange('team', idx, 'name', e.target.value)} className="w-full bg-white p-3 rounded-lg border font-bold text-sm disabled:bg-gray-50 disabled:text-gray-500" /></div>
                                         <div><label className="text-[10px] font-black uppercase text-gray-400">Role / Title</label><input type="text" disabled={content.locks?.team} value={member.role} onChange={e => handleArrayChange('team', idx, 'role', e.target.value)} className="w-full bg-white p-3 rounded-lg border font-bold text-sm disabled:bg-gray-50 disabled:text-gray-500" /></div>
-                                        <div><label className="text-[10px] font-black uppercase text-gray-400">Bio</label><textarea disabled={content.locks?.team} value={member.bio} onChange={e => handleArrayChange('team', idx, 'bio', e.target.value)} rows="3" className="w-full bg-white p-3 rounded-lg border font-bold text-sm resize-none disabled:bg-gray-50 disabled:text-gray-500"></textarea></div>
+                                        <div><label className="text-[10px] font-black uppercase text-gray-400">Bio</label><textarea disabled={content.locks?.team} value={member.bio ?? ''} onChange={e => handleArrayChange('team', idx, 'bio', e.target.value)} rows="3" className="w-full bg-white p-3 rounded-lg border font-bold text-sm resize-none disabled:bg-gray-50 disabled:text-gray-500" placeholder="Short bio (EN or bilingual)"></textarea></div>
+                                        <div><label className="text-[10px] font-black uppercase text-gray-400">Fun fact(s)</label><textarea disabled={content.locks?.team} value={member.funFact ?? ''} onChange={e => handleArrayChange('team', idx, 'funFact', e.target.value)} rows="2" className="w-full bg-white p-3 rounded-lg border font-bold text-sm resize-none disabled:bg-gray-50 disabled:text-gray-500" placeholder="One line, or multiple facts separated by new lines"></textarea></div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div><label className="text-[10px] font-black uppercase text-gray-400">Nickname</label><input type="text" disabled={content.locks?.team} value={member.nickname || ''} onChange={e => handleArrayChange('team', idx, 'nickname', e.target.value)} className="w-full bg-white p-3 rounded-lg border font-bold text-sm disabled:bg-gray-50 disabled:text-gray-500" /></div>
                                             <div><label className="text-[10px] font-black uppercase text-gray-400">LinkedIn URL</label><input type="text" disabled={content.locks?.team} value={member.linkedin || ''} onChange={e => handleArrayChange('team', idx, 'linkedin', e.target.value)} className="w-full bg-white p-3 rounded-lg border font-bold text-sm text-blue-600 disabled:bg-gray-50 disabled:text-gray-400" /></div>
@@ -640,10 +706,14 @@ const SiteContentManager = () => {
                                             <label className="text-[10px] font-black uppercase text-gray-400">Title</label>
                                             <button 
                                                 onClick={() => activeKnowledgeTab === 'books' ? magicFetchBook(idx) : magicFetchVideo(idx)} 
-                                                disabled={knowledgeBase.isLocked}
+                                                disabled={knowledgeBase.isLocked || magicFetching != null}
                                                 className="bg-purple-600 text-white rounded-lg px-3 py-1 font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 hover:bg-purple-700 shadow-sm transition-all disabled:opacity-50"
                                             >
-                                                <Sparkles className="w-3 h-3" /> Magic Fetch
+                                                {magicFetching === `${activeKnowledgeTab}-${idx}` ? (
+                                                    <><RefreshCw className="w-3 h-3 animate-spin" /> Fetching…</>
+                                                ) : (
+                                                    <><Sparkles className="w-3 h-3" /> Magic Fetch</>
+                                                )}
                                             </button>
                                         </div>
                                         <input 

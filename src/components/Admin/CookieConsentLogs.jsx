@@ -1,23 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Database,
-  Shield,
   ShieldAlert,
   ShieldCheck,
   Clock,
   Hash,
+  RefreshCw,
 } from "lucide-react";
+import { getApiBase } from "../../utils/api";
+
+const LIVE_REFRESH_MS = 30_000;
 
 const CookieConsentLogs = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [backendOffline, setBackendOffline] = useState(false);
+  const [lastSynced, setLastSynced] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const base = import.meta.env.DEV
-      ? `http://${window.location.hostname}:3001`
-      : "";
-    fetch(`${base}/api/cookie-consent-logs`)
+  const fetchLogs = useCallback(() => {
+    setRefreshing(true);
+    fetch(`${getApiBase()}/api/cookie-consent-logs`)
       .then((res) => {
         if (!res.ok) {
           console.warn(`Server returned ${res.status}`);
@@ -40,12 +43,26 @@ const CookieConsentLogs = () => {
         }
         setLoading(false);
       })
-      .catch((err) => {
-        console.error("Failed to fetch logs:", err);
+      .catch(() => {
         setLogs([]);
+        setBackendOffline(true);
+      })
+      .finally(() => {
         setLoading(false);
+        setRefreshing(false);
+        setLastSynced(new Date());
       });
   }, []);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
+  useEffect(() => {
+    if (backendOffline) return;
+    const t = setInterval(fetchLogs, LIVE_REFRESH_MS);
+    return () => clearInterval(t);
+  }, [fetchLogs, backendOffline]);
 
   const getChoiceBadge = (choice) => {
     switch (choice) {
@@ -77,17 +94,41 @@ const CookieConsentLogs = () => {
       </div>
     );
 
+  if (backendOffline)
+    return (
+      <div className="p-8 text-center">
+        <p className="text-gray-500 mb-2">Cannot load logs — backend offline.</p>
+        <p className="text-sm text-gray-400">Run <code className="bg-gray-100 px-1 rounded">npm run dev:admin</code> to enable.</p>
+      </div>
+    );
+
   return (
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-gray-50 bg-gray-50/50 flex items-center justify-between">
+      <div className="p-6 border-b border-gray-50 bg-gray-50/50 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Database className="w-5 h-5 text-hbm-purple" />
           <h3 className="font-black text-hbm-dark uppercase tracking-wider">
             Cookie Compliance Logs (2026)
           </h3>
         </div>
-        <div className="text-xs text-gray-400 font-medium">
-          Last 100 choices logged
+        <div className="flex items-center gap-3">
+          {lastSynced && (
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
+              Synced {lastSynced.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={fetchLogs}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+          <span className="text-xs text-gray-400 font-medium">
+            Last 100 choices · Live sync
+          </span>
         </div>
       </div>
 
@@ -103,7 +144,14 @@ const CookieConsentLogs = () => {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {logs.map((log) => {
-              const settings = JSON.parse(log.settings);
+              let settings = {};
+              try {
+                if (typeof log.settings === "string") settings = JSON.parse(log.settings);
+                else if (log.settings && typeof log.settings === "object") settings = log.settings;
+                else if (log.data) settings = typeof log.data === "string" ? JSON.parse(log.data) : log.data;
+              } catch (_) {}
+              const choice = log.choice || "custom";
+              const hashedIp = log.hashedIp || "—";
               return (
                 <tr
                   key={log.id}
@@ -112,10 +160,10 @@ const CookieConsentLogs = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-xs text-gray-500">
                       <Clock className="w-3 h-3" />
-                      {new Date(log.timestamp).toLocaleString()}
+                      {(log.timestamp && new Date(log.timestamp).toLocaleString()) || "—"}
                     </div>
                   </td>
-                  <td className="px-6 py-4">{getChoiceBadge(log.choice)}</td>
+                  <td className="px-6 py-4">{getChoiceBadge(choice)}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
                       {settings.essential && (
@@ -145,7 +193,7 @@ const CookieConsentLogs = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 font-mono text-[10px] text-gray-400">
                       <Hash className="w-3 h-3" />
-                      {log.hashedIp.substring(0, 16)}...
+                      {hashedIp && hashedIp !== "—" ? `${hashedIp.substring(0, 16)}...` : "—"}
                     </div>
                   </td>
                 </tr>

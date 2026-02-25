@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Drawer } from "vaul";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,11 +10,13 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { updateConsent } from "../../utils/analytics";
+import { getApiBase } from "../../utils/api";
 
 const CookieConsent = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showWidget, setShowWidget] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const drawerContentRef = useRef(null);
   const [settings, setSettings] = useState({
     essential: true,
     analytics: true,
@@ -36,11 +38,23 @@ const CookieConsent = () => {
     }
   }, []);
 
+  // Move focus into drawer when it opens to avoid aria-hidden on focused element (accessibility)
+  useEffect(() => {
+    if (!isOpen) return;
+    const frame = requestAnimationFrame(() => {
+      const el = drawerContentRef.current;
+      if (!el) return;
+      const focusable = el.querySelector(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable) focusable.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isOpen]);
+
   const logConsent = async (choice, finalSettings) => {
     try {
-      const base = import.meta.env.DEV
-        ? `http://${window.location.hostname}:3001`
-        : "";
+      const base = getApiBase();
       await fetch(`${base}/api/cookie-consent-log`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,13 +96,25 @@ const CookieConsent = () => {
           <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-md z-[999]" />
           <Drawer.Content
             className="fixed bottom-0 left-0 right-0 z-[1000] flex flex-col items-center outline-none"
-            aria-label="Cookie consent settings"
+            aria-labelledby="cookie-consent-title"
+            aria-describedby="cookie-consent-desc"
           >
-            <div className="w-full max-w-2xl bg-white border-t border-x border-gray-100 rounded-t-[40px] p-8 md:p-10 shadow-2xl relative">
+            <Drawer.Title asChild>
+              <h2 id="cookie-consent-title" className="sr-only">
+                Cookie consent
+              </h2>
+            </Drawer.Title>
+            <Drawer.Description asChild>
+              <p id="cookie-consent-desc" className="sr-only">
+                Choose how we use cookies on this site.
+              </p>
+            </Drawer.Description>
+            <div ref={drawerContentRef} className="w-full max-w-2xl bg-white border-t border-x border-gray-100 rounded-t-[40px] p-8 md:p-10 shadow-2xl relative" tabIndex={-1}>
               {/* Close Button */}
               <button
                 onClick={() => setIsOpen(false)}
                 className="absolute top-6 right-8 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close cookie consent"
               >
                 <X className="w-5 h-5" />
               </button>

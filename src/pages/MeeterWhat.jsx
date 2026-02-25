@@ -51,36 +51,44 @@ export default function MeeterWhat() {
             </div>
             <div className="rounded-2xl overflow-hidden shadow-2xl max-w-3xl mx-auto ring-4 ring-white/50">
               <div className="aspect-video bg-hbm-purple/5 relative group">
-                {!isPlaying && (
-                  <div 
-                    className="absolute inset-0 z-10 cursor-pointer"
+                {!isPlaying ? (
+                  <button
+                    type="button"
+                    className="absolute inset-0 z-10 cursor-pointer w-full h-full border-0 p-0 block"
                     onClick={() => setIsPlaying(true)}
+                    aria-label={t({ en: 'Play video', he: 'הפעל סרטון' }, lang)}
                   >
                     <img 
                       src={mode === 'virtual' 
                         ? "https://img.youtube.com/vi/PaElS1jAVEo/maxresdefault.jpg" 
                         : "https://img.youtube.com/vi/Zkym_6Kd-lo/maxresdefault.jpg"}
                       alt="Video Thumbnail"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover pointer-events-none"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-all">
-                      <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-hbm-orange border-b-[10px] border-b-transparent ml-1" />
-                      </div>
-                    </div>
-                  </div>
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-all pointer-events-none">
+                      <span className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <span className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-hbm-orange border-b-[10px] border-b-transparent ml-1" aria-hidden />
+                      </span>
+                    </span>
+                  </button>
+                ) : (
+                  <iframe 
+                    key={`${mode}-play`}
+                    src={`${mode === 'virtual' ? "https://www.youtube.com/embed/PaElS1jAVEo" : "https://www.youtube.com/embed/Zkym_6Kd-lo"}?autoplay=1&mute=1&rel=0`} 
+                    title="HBM Video" 
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen 
+                  />
                 )}
-                <iframe 
-                  key={mode}
-                  src={`${mode === 'virtual' ? "https://www.youtube.com/embed/PaElS1jAVEo" : "https://www.youtube.com/embed/Zkym_6Kd-lo"}?autoplay=${isPlaying ? 1 : 0}`} 
-                  title="HBM" 
-                  className="w-full h-full" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowFullScreen 
-                />
               </div>
             </div>
             <p className="text-hbm-gray mt-6 italic text-sm">{t({ en: 'See how 8 minutes change everything.', he: 'ראו איך 8 דקות משנות הכל.' }, lang)}</p>
+            {isPlaying && (
+              <p className="text-hbm-gray mt-2 text-xs">
+                {t({ en: 'Video starts muted — click the speaker icon in the player for sound.', he: 'הסרטון מתחיל בהשתקה — לחצו על אייקון הרמקול בנגן לשמע.' }, lang)}
+              </p>
+            )}
           </div>
       </section>
 

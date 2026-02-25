@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const World = lazy(() => import("./Globe").then((m) => ({ default: m.World })));
 
-export default function GlobeDemo() {
+function GlobeDemo() {
   const globeConfig = {
     pointSize: 4,
     globeColor: "#062056",
@@ -454,3 +454,6 @@ export default function GlobeDemo() {
     </div>
   );
 }
+
+// Prevent re-render when parent state changes (e.g. team modal open) so the globe doesn't distort
+export default React.memo(GlobeDemo);

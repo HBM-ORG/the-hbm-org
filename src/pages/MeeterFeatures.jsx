@@ -13,9 +13,18 @@ import { Palette, Type, Tag, MessageCircle, Share2 } from 'lucide-react'
 import { siteContent } from '../data/content'
 import SEO from '../components/SEO'
 
+const defaultFeatures = {
+  sectionTitle: { en: 'Features', he: 'תכונות' },
+  matchingZone: { title: {}, description: {}, bullets: [] },
+  iceBreakers: { title: {}, description: {}, bullets: [] },
+  customLocations: { title: {}, description: {}, bullets: [] },
+  liveData: { title: {}, description: {}, bullets: [] },
+  emotionMatrix: { title: {}, description: {}, bullets: [] },
+}
+
 export default function MeeterFeatures() {
   const { lang } = useI18n()
-  const features = siteContent.home.features
+  const features = siteContent?.home?.features ?? defaultFeatures
 
   return (
     <div className="min-h-screen bg-hbm-cream">
@@ -135,7 +144,7 @@ export default function MeeterFeatures() {
                 )}
               </p>
               <ul className="space-y-4 font-['Sora']">
-                {features.matchingZone.bullets.map((bullet, idx) => (
+                {(features.matchingZone?.bullets ?? []).map((bullet, idx) => (
                   <li key={idx} className="flex items-start gap-4">
                     <div className="w-6 h-6 rounded-full bg-hbm-green/10 flex items-center justify-center flex-shrink-0 mt-1">
                       <span className="text-hbm-green text-sm font-bold">✓</span>
@@ -166,7 +175,7 @@ export default function MeeterFeatures() {
                 {t(features.iceBreakers.description, lang)}
               </p>
               <ul className="space-y-4 font-['Sora']">
-                {features.iceBreakers.bullets.map((bullet, idx) => (
+                {(features.iceBreakers?.bullets ?? []).map((bullet, idx) => (
                   <li key={idx} className="flex items-start gap-4">
                     <div className="w-6 h-6 rounded-full bg-hbm-orange/10 flex items-center justify-center flex-shrink-0 mt-1">
                       <span className="text-hbm-orange text-sm font-bold">✓</span>
@@ -197,7 +206,7 @@ export default function MeeterFeatures() {
                 {t(features.customLocations.description, lang)}
               </p>
               <ul className="space-y-4 font-['Sora']">
-                {features.customLocations.bullets.map((bullet, idx) => (
+                {(features.customLocations?.bullets ?? []).map((bullet, idx) => (
                   <li key={idx} className="flex items-start gap-4">
                     <div className="w-6 h-6 rounded-full bg-[#6160AB]/10 flex items-center justify-center flex-shrink-0 mt-1">
                       <span className="text-[#6160AB] text-sm font-bold">✓</span>
@@ -263,7 +272,7 @@ export default function MeeterFeatures() {
                 {t(features.liveData.description, lang)}
               </p>
               <ul className="space-y-4 font-['Sora']">
-                {features.liveData.bullets.map((bullet, idx) => (
+                {(features.liveData?.bullets ?? []).map((bullet, idx) => (
                   <li key={idx} className="flex items-start gap-4">
                     <div className="w-6 h-6 rounded-full bg-[#73C154]/10 flex items-center justify-center flex-shrink-0 mt-1">
                       <span className="text-[#73C154] text-sm font-bold">✓</span>
@@ -294,7 +303,7 @@ export default function MeeterFeatures() {
                 {t(features.emotionMatrix.description, lang)}
               </p>
               <ul className="space-y-4 font-['Sora']">
-                {features.emotionMatrix.bullets.map((bullet, idx) => (
+                {(features.emotionMatrix?.bullets ?? []).map((bullet, idx) => (
                   <li key={idx} className="flex items-start gap-4">
                     <div className="w-6 h-6 rounded-full bg-hbm-purple/10 flex items-center justify-center flex-shrink-0 mt-1">
                       <span className="text-hbm-purple text-sm font-bold">✓</span>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useI18n, t } from "../i18n/context";
+import { getApiBase } from "../utils/api";
 import {
   Building2,
   Hotel,
@@ -465,37 +466,36 @@ export default function MeeterWho() {
   const [partnerLogosList, setPartnerLogosList] = useState(partnerLogos);
 
   useEffect(() => {
-    const base = import.meta.env.DEV
-      ? `http://${window.location.hostname}:3001`
-      : "";
-    fetch(`${base}/api/site-content`)
-      .then((res) => res.json())
+    fetch(`${getApiBase()}/api/site-content`)
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data.testimonials && data.testimonials.length > 0)
-          setTestimonialsList(data.testimonials);
-        if (data.partners && data.partners.length > 0)
-          setPartnerLogosList(data.partners);
+        if (data?.testimonials?.length) setTestimonialsList(data.testimonials);
+        if (data?.partners?.length) setPartnerLogosList(data.partners);
       })
-      .catch((err) => console.error(err));
+      .catch(() => {});
   }, []);
 
-  // Load SociableKIT script
+  // Load SociableKIT script (with error handling so failed load doesn't break the page)
   useEffect(() => {
     const scriptUrl =
       "https://widgets.sociablekit.com/instagram-reels/widget.js";
     const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
 
     const initWidget = () => {
-      if (
-        window.sk_instagram_reels &&
-        typeof window.sk_instagram_reels.init === "function"
-      ) {
-        window.sk_instagram_reels.init();
-      } else if (
-        window.SociableKIT &&
-        typeof window.SociableKIT.init === "function"
-      ) {
-        window.SociableKIT.init();
+      try {
+        if (
+          window.sk_instagram_reels &&
+          typeof window.sk_instagram_reels.init === "function"
+        ) {
+          window.sk_instagram_reels.init();
+        } else if (
+          window.SociableKIT &&
+          typeof window.SociableKIT.init === "function"
+        ) {
+          window.SociableKIT.init();
+        }
+      } catch {
+        // Widget or network failure (e.g. embed config); fail silently
       }
     };
 
@@ -505,6 +505,9 @@ export default function MeeterWho() {
       script.async = true;
       script.defer = true;
       script.onload = initWidget;
+      script.onerror = () => {
+        // Script failed to load (e.g. network); avoid uncaught errors
+      };
       document.body.appendChild(script);
     } else {
       initWidget();
@@ -671,7 +674,7 @@ export default function MeeterWho() {
 
                     {/* The 3-Point Grid with Wobble Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch relative z-20">
-                      {currentTab.points.map((item, i) => (
+                      {(currentTab?.points ?? []).map((item, i) => (
                         <WobbleCard
                           key={i}
                           containerClassName="h-full bg-white/95 backdrop-blur-md border border-white/50 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl md:!rounded-3xl !overflow-hidden relative group z-20"

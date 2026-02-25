@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { Search, X, BookOpen, Youtube, ExternalLink, Star, ChevronRight, PlayCircle, Library, Sparkles, Quote, ArrowUpRight } from 'lucide-react'
 import { knowledgeData, knowledgeCategories } from '../data/knowledgeConfig'
+import knowledgeBaseFallback from '../data/knowledgeBaseConfig.json'
 import { useBookData } from '../hooks/useBookData'
 import EyebrowBadge from '../components/EyebrowBadge'
 import SEO from '../components/SEO'
 import { useI18n, t } from '../i18n/context'
+import { getApiBase } from '../utils/api'
 
 // --- Components ---
 
@@ -205,10 +208,23 @@ const LibraryDrawer = ({ item, onClose }) => {
             />
          </div>
 
-         {/* Close Button */}
-         <button onClick={onClose} className="fixed top-6 right-6 p-2 bg-black/5 hover:bg-black/10 rounded-full transition-colors z-50 backdrop-blur-md">
-            <X size={24} />
-         </button>
+         {/* Close (X) — rendered in portal so always viewport top-right, visible on mobile */}
+         {typeof document !== 'undefined' && createPortal(
+           <button
+             type="button"
+             onClick={(e) => { e.stopPropagation(); onClose(); }}
+             className="fixed w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-gray-900 hover:bg-black text-white shadow-xl border-2 border-white/30 transition-colors"
+             style={{
+               top: 'max(0.75rem, env(safe-area-inset-top, 0px))',
+               right: 'max(0.75rem, env(safe-area-inset-right, 0px))',
+               zIndex: 9999
+             }}
+             aria-label="Close"
+           >
+             <X size={22} strokeWidth={2.5} />
+           </button>,
+           document.body
+         )}
 
          {/* Scrollable Content Container */}
          <div 
@@ -357,39 +373,18 @@ export default function Knowledge() {
    const books = useMemo(() => cmsData?.books || knowledgeData, [cmsData]);
    const videos = useMemo(() => cmsData?.videos || [], [cmsData]);
 
-   // Load CMS Data
+   // Load CMS Data (single API base; fallback to static config if backend unavailable)
    useEffect(() => {
-     const ports = ['3001', '3000', '5000', '8080'];
-     const tryFetch = async (port) => {
-        try {
-            const apiBase = port ? `http://${window.location.hostname}:${port}` : '';
-            const res = await fetch(`${apiBase}/api/cms/knowledge-base`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data && (data.books || data.videos)) {
-                    setCmsData(data);
-                    return true;
-                }
-            }
-        } catch(e) { return false; }
-        return false;
-     };
-
-     const init = async () => {
-         // 1. Try relative path (standard production)
-         const okRelative = await tryFetch('');
-         if (okRelative) return;
-
-         // 2. Try current port (hybrid)
-         const okCurrent = await tryFetch(window.location.port);
-         if (okCurrent) return;
-
-         // 3. Try common dev ports
-         for (const p of ports) {
-             if (await tryFetch(p)) return;
+     fetch(`${getApiBase()}/api/cms/knowledge-base`)
+       .then(res => (res.ok ? res.json() : null))
+       .then(data => {
+         if (data && (Array.isArray(data.books) || Array.isArray(data.videos))) {
+           setCmsData(data);
+         } else {
+           setCmsData({ books: knowledgeBaseFallback?.books ?? [], videos: knowledgeBaseFallback?.videos ?? [] });
          }
-     };
-     init();
+       })
+       .catch(() => setCmsData({ books: knowledgeBaseFallback?.books ?? [], videos: knowledgeBaseFallback?.videos ?? [] }));
    }, []);
 
    // Sync state with URL params
@@ -423,7 +418,7 @@ export default function Knowledge() {
     navigate('/knowledge');
   };
 
-  const filteredData = (activeTab === 'books' ? books : videos).filter(item => {
+  const filteredData = (activeTab === 'books' ? (books || []) : (videos || [])).filter(item => {
     if (!item || !item.title) return false;
     const searchLow = searchQuery.toLowerCase();
     const titleMatch = (item.title?.toLowerCase() || '').includes(searchLow);

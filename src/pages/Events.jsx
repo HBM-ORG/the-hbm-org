@@ -11,6 +11,7 @@ import EyebrowBadge from '../components/EyebrowBadge';
 import FeaturedEventCard from '../components/Events/FeaturedEventCard';
 import NextVideoEvent from '../components/Home/NextVideoEvent';
 import SEO from '../components/SEO';
+import { getApiBase } from '../utils/api';
 
 
 const Events = () => {
@@ -42,20 +43,16 @@ const Events = () => {
       registrationUrl: '/events#register-video'
     };
 
-    const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : '';
-    fetch(`${base}/api/video-event`)
-      .then(res => res.json())
+    fetch(`${getApiBase()}/api/video-event`)
+      .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data && data.title && (data.title.en || data.title.he)) {
+        if (data?.title && (data.title.en || data.title.he)) {
           setVideoEventConfig(data);
         } else {
           setVideoEventConfig(fallbackConfig);
         }
       })
-      .catch(err => {
-        console.error("Video Event config fetch error:", err);
-        setVideoEventConfig(fallbackConfig);
-      });
+      .catch(() => setVideoEventConfig(fallbackConfig));
   }, []);
 
   const openEventModal = (event) => {
@@ -188,15 +185,21 @@ const EventCard = ({ event, index, onClick, lang }) => {
     >
       <div className="relative h-full bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100">
         
-        {/* Image */}
-        <div className="relative h-64 overflow-hidden">
-          <motion.img
-            src={event.thumbnail || event.image}
-            alt={t(event.title, lang)}
-            className="w-full h-full object-cover"
-            whileHover={{ scale: 1.1 }}
-            transition={{ duration: 0.7 }}
-          />
+        {/* Image — never use empty src (causes console error and re-download) */}
+        <div className="relative h-64 overflow-hidden bg-gray-100">
+          {(event.thumbnail || event.image) ? (
+            <motion.img
+              src={event.thumbnail || event.image}
+              alt={t(event.title, lang)}
+              className="w-full h-full object-cover"
+              whileHover={{ scale: 1.1 }}
+              transition={{ duration: 0.7 }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-300">
+              <ImageIcon className="w-16 h-16" />
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
 
           {/* Date Badge */}
