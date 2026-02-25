@@ -50,105 +50,73 @@ const DidYouKnowSection = () => {
   }, lang);
   const words = sentence.split(' ');
 
-  // Mobile: single screen, same visual as desktop (no scroll) so it looks identical
-  const mobileBlock = (
-    <section className="md:hidden relative min-h-screen bg-hbm-cream z-10 flex flex-col items-center justify-center px-6 py-16">
-      <div className="relative w-full max-w-7xl flex flex-col items-center justify-center text-center">
-        <p className="text-[#F07B3C] font-black text-lg uppercase tracking-[0.2em] mb-8 font-['Sora']">
-          {t({ en: 'DID YOU KNOW?', he: 'הידעת?' }, lang)}
-        </p>
-        <div className="max-w-4xl mx-auto mb-8" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-          <div className="flex flex-wrap justify-center items-center gap-x-2">
-            {words.map((word, i) => (
-              <React.Fragment key={i}>
-                <span className="text-4xl font-black tracking-tighter inline-block px-2 leading-[0.9] text-[#1e293b]">
-                  {word}
-                </span>
-                {i === 2 && <div className="w-full h-0" />}
-              </React.Fragment>
-            ))}
+  // Single section for mobile + desktop: scroll drives progress → sticky → words pop → "We fixed it."
+  // Do not split into separate mobile/desktop blocks or mobile will lose the animation (bug: endless scroll + empty space).
+  return (
+    <section ref={containerRef} className="relative h-[320vh] md:h-[450vh] bg-hbm-cream z-10">
+      <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden px-6 bg-hbm-cream z-50">
+        <div className="relative w-full max-w-7xl flex flex-col items-center justify-center text-center">
+          <motion.p 
+            style={{ opacity: 1, fontFamily: "'Sora', sans-serif" }}
+            className="text-[#F07B3C] font-black text-lg md:text-xl uppercase tracking-[0.2em] mb-6 md:mb-10"
+          >
+            {t({ en: 'DID YOU KNOW?', he: 'הידעת?' }, lang)}
+          </motion.p>
+          <div className="max-w-4xl mx-auto mb-6 md:mb-8" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+            <div className="flex flex-wrap justify-center items-center gap-x-1 md:gap-x-4">
+              {words.map((word, i) => {
+                const startThreshold = 0.08 + (i * (0.65 / words.length));
+                const wordOpacity = useTransform(smoothProgress, [startThreshold - 0.01, startThreshold, 0.82, 0.9], [0.1, 1, 1, 0.2]);
+                const isBreak = i === 2;
+                return (
+                  <React.Fragment key={i}>
+                    <motion.span 
+                      style={{ opacity: wordOpacity, color: useTransform(smoothProgress, [startThreshold - 0.01, startThreshold], ["#cbd5e1", "#1e293b"]) }} 
+                      className="text-3xl sm:text-4xl md:text-7xl lg:text-[7.5rem] font-black tracking-tighter inline-block px-1 md:px-2 leading-[0.9]"
+                    >
+                      {word}
+                    </motion.span>
+                    {isBreak && <div className="w-full h-0" />}
+                  </React.Fragment>
+                );
+              })}
+            </div>
           </div>
-        </div>
-        <div className="relative h-24 w-full flex items-center justify-center pt-8">
-          <p className="text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-[#F07B3C] via-[#6160AB] to-[#6160AB] leading-none whitespace-nowrap px-4">
-            {t({ en: 'We fixed it.', he: 'אנחנו תיקנו את זה.' }, lang)}
-          </p>
+          <div className="relative h-20 md:h-40 w-full flex items-center justify-center pt-6 md:pt-8">
+            <motion.div 
+              style={{ 
+                opacity: useTransform(smoothProgress, [0.77, 0.85], [0, 1]),
+                scale: useTransform(smoothProgress, [0.8, 0.9], [0.8, 1]),
+                y: useTransform(smoothProgress, [0.8, 0.9], [20, 0]),
+                rotate: 0
+              }}
+              className="absolute z-60 w-full flex justify-center"
+            >
+              <MagneticText>
+                <motion.p 
+                  className="text-4xl sm:text-5xl md:text-8xl lg:text-[12rem] font-black bg-clip-text text-transparent bg-gradient-to-r from-[#F07B3C] via-[#6160AB] to-[#6160AB] leading-none whitespace-nowrap px-2 md:px-4 py-4 md:py-8"
+                  animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                  style={{ backgroundSize: '200% auto' }}
+                >
+                  {t({ en: 'We fixed it.', he: 'אנחנו תיקנו את זה.' }, lang)}
+                </motion.p>
+              </MagneticText>
+            </motion.div>
+          </div>
         </div>
       </div>
-    </section>
-  );
-
-  return (
-    <>
-      {/* Mobile: one screen, same look as desktop — no long scroll */}
-      {mobileBlock}
-
-      {/* Desktop: scroll-driven animation */}
-      <section ref={containerRef} className="relative h-[450vh] bg-hbm-cream z-10 hidden md:block">
-        <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden px-6 bg-hbm-cream z-50">
-          <div className="relative w-full max-w-7xl flex flex-col items-center justify-center text-center">
-            <motion.p 
-              style={{ opacity: 1, fontFamily: "'Sora', sans-serif" }}
-              className="text-[#F07B3C] font-black text-lg md:text-xl uppercase tracking-[0.2em] mb-8 md:mb-10"
-            >
-              {t({ en: 'DID YOU KNOW?', he: 'הידעת?' }, lang)}
-            </motion.p>
-            <div className="max-w-4xl mx-auto mb-8" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-              <div className="flex flex-wrap justify-center items-center gap-x-2 md:gap-x-4">
-                {words.map((word, i) => {
-                  const startThreshold = 0.08 + (i * (0.65 / words.length));
-                  const wordOpacity = useTransform(smoothProgress, [startThreshold - 0.01, startThreshold, 0.82, 0.9], [0.1, 1, 1, 0.2]);
-                  const isBreak = i === 2;
-                  return (
-                    <React.Fragment key={i}>
-                      <motion.span 
-                        style={{ opacity: wordOpacity, color: useTransform(smoothProgress, [startThreshold - 0.01, startThreshold], ["#cbd5e1", "#1e293b"]) }} 
-                        className="text-4xl md:text-7xl lg:text-[7.5rem] font-black tracking-tighter inline-block px-2 leading-[0.9]"
-                      >
-                        {word}
-                      </motion.span>
-                      {isBreak && <div className="w-full h-0" />}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="relative h-24 md:h-40 w-full flex items-center justify-center pt-8">
-              <motion.div 
-                style={{ 
-                  opacity: useTransform(smoothProgress, [0.77, 0.85], [0, 1]),
-                  scale: useTransform(smoothProgress, [0.8, 0.9], [0.8, 1]),
-                  y: useTransform(smoothProgress, [0.8, 0.9], [20, 0]),
-                  rotate: 0
-                }}
-                className="absolute z-60 w-full flex justify-center"
-              >
-                <MagneticText>
-                  <motion.p 
-                    className="text-5xl md:text-8xl lg:text-[12rem] font-black bg-clip-text text-transparent bg-gradient-to-r from-[#F07B3C] via-[#6160AB] to-[#6160AB] leading-none whitespace-nowrap px-4 py-8"
-                    animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                    style={{ backgroundSize: '200% auto' }}
-                  >
-                    {t({ en: 'We fixed it.', he: 'אנחנו תיקנו את זה.' }, lang)}
-                  </motion.p>
-                </MagneticText>
-              </motion.div>
-            </div>
-          </div>
-        </div>
+      <motion.div 
+        style={{ opacity: useTransform(smoothProgress, [0.96, 0.99], [0, 1]) }}
+        className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2"
+      >
         <motion.div 
-          style={{ opacity: useTransform(smoothProgress, [0.96, 0.99], [0, 1]) }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2"
-        >
-          <motion.div 
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-1 h-12 bg-gradient-to-b from-hbm-purple/20 to-transparent rounded-full"
-          />
-        </motion.div>
-      </section>
-    </>
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="w-1 h-10 md:h-12 bg-gradient-to-b from-hbm-purple/20 to-transparent rounded-full"
+        />
+      </motion.div>
+    </section>
   )
 }
 
