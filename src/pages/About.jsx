@@ -459,8 +459,8 @@ export default function About() {
                 )}
               </div>
 
-              {/* Bio Content (Main) — scrollable on mobile if needed */}
-              <div className="w-full md:w-3/5 p-6 md:p-10 overflow-y-auto min-h-0 flex-1">
+              {/* Bio Content (Main) — fixed max height so card size stays "בול"; long bio scrolls inside */}
+              <div className="w-full md:w-3/5 p-6 md:p-10 overflow-y-auto min-h-0 flex-1 max-h-[45vh] md:max-h-[55vh]">
                 {selectedMember.nickname && (
                   <p className="text-hbm-dark font-black italic text-lg mb-4">
                     {t(selectedMember.nickname, lang)}:
