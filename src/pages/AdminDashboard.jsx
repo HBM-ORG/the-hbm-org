@@ -1,5 +1,42 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+class FlowsErrorBoundary extends React.Component {
+  state = { hasError: false, retryKey: 0 };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, info) {
+    console.error("FlowsErrorBoundary:", error, info);
+  }
+  handleRetry = () => {
+    this.setState({ hasError: false, retryKey: (s) => s.retryKey + 1 });
+  };
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="h-full flex items-center justify-center p-10 bg-[#f8f9fc]">
+          <div className="bg-white border border-gray-200 rounded-2xl p-10 max-w-md text-center shadow-lg">
+            <h3 className="text-lg font-black text-gray-800 mb-2">Connection Error</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              The Flows panel could not load. Check your connection and try again.
+            </p>
+            <button
+              type="button"
+              onClick={this.handleRetry}
+              className="bg-gray-900 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-800"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return React.cloneElement(React.Children.only(this.props.children), {
+      key: this.state.retryKey,
+    });
+  }
+}
 import {
   Calendar,
   MapPin,
@@ -42,6 +79,9 @@ import {
   Activity,
   Flame,
   ShieldCheck,
+  Filter,
+  UserCircle,
+  List,
 } from "lucide-react";
 import VisualEventEditor from "../components/Admin/VisualEventEditor";
 import EmailEngine from "../components/Admin/EmailEngine";
@@ -49,6 +89,7 @@ import SiteContentManager from "../components/Admin/SiteContentManager";
 import AnalyticsDashboard from "../components/Admin/AnalyticsDashboard";
 import CookieConsentLogs from "../components/Admin/CookieConsentLogs";
 import { useEvents } from "../context/EventsContext";
+import { getApiBase } from "../utils/api";
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -75,41 +116,143 @@ const AdminDashboard = () => {
   const [topView, setTopView] = useState("events");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEvent, setFilterEvent] = useState("all");
+  const [filterSource, setFilterSource] = useState("all");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [crmViewMode, setCrmViewMode] = useState("byPerson"); // 'byPerson' | 'byRegistration'
+  const [crmSortBy, setCrmSortBy] = useState("countDesc"); // countDesc | countAsc | name | lastDateDesc | lastDateAsc
 
   useEffect(() => {
-    const base = import.meta.env.DEV
-      ? `http://${window.location.hostname}:3001`
-      : "";
+    const base = getApiBase();
 
     fetch(`${base}/api/registrations/stats`)
-      .then((res) => res.json())
-      .then((data) => setStats(data))
-      .catch((err) => console.error("Stats fetch error:", err));
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((data) => setStats(data || {}))
+      .catch(() => setStats({}));
 
     fetch(`${base}/api/registrations`)
-      .then((res) => res.json())
-      .then((data) => setRegistrationsList(data))
-      .catch((err) => console.error("Registrations fetch error:", err));
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setRegistrationsList(Array.isArray(data) ? data : []))
+      .catch(() => setRegistrationsList([]));
 
     fetch(`${base}/api/automation-settings`)
-      .then((res) => {
-        if (!res.ok) throw new Error("API Error");
-        return res.json();
-      })
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        setAutomationConfig(data);
-        setEmailEngineStatus("online");
+        if (data && (data.flows || data.smtp !== undefined)) {
+          setAutomationConfig(data);
+          setEmailEngineStatus("online");
+        } else {
+          setEmailEngineStatus("error");
+        }
       })
-      .catch((err) => {
-        console.error("Automation settings fetch error:", err);
-        setEmailEngineStatus("error");
-      });
+      .catch(() => setEmailEngineStatus("error"));
 
     fetch(`${base}/api/video-event`)
-      .then((res) => res.json())
-      .then((data) => setVideoEventConfig(data))
-      .catch((err) => console.error("Video Event config fetch error:", err));
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setVideoEventConfig(data))
+      .catch(() => {});
   }, []);
+
+  // Aggregate registrations by person (email or phone+name)
+  const contactsAggregated = useMemo(() => {
+    const list = Array.isArray(registrationsList) ? registrationsList : [];
+    const byKey = new Map();
+    list.forEach((reg) => {
+      const email = (reg.email || "").trim().toLowerCase();
+      const key = email || `${(reg.phone || "").trim()}_${(reg.name || "").toLowerCase().trim()}`;
+      if (!key) return;
+      if (!byKey.has(key)) {
+        byKey.set(key, {
+          key,
+          name: reg.name || "—",
+          email: reg.email || "",
+          phone: reg.phone || "",
+          registrations: [],
+          eventIds: [],
+          eventNames: [],
+          sources: [],
+        });
+      }
+      const c = byKey.get(key);
+      c.registrations.push(reg);
+      if (reg.eventId && !c.eventIds.includes(reg.eventId)) c.eventIds.push(reg.eventId);
+      if (reg.eventName && !c.eventNames.includes(reg.eventName)) c.eventNames.push(reg.eventName);
+      if (reg.source && !c.sources.includes(reg.source)) c.sources.push(reg.source);
+    });
+    return Array.from(byKey.values()).map((c) => ({
+      ...c,
+      count: c.registrations.length,
+      lastDate: c.registrations.length
+        ? c.registrations.reduce((max, r) => (new Date(r.date) > new Date(max) ? r.date : max), c.registrations[0].date)
+        : null,
+    }));
+  }, [registrationsList]);
+
+  const applyCrmFilters = (items, isContactList) => {
+    const search = (searchTerm || "").toLowerCase().trim();
+    const from = filterDateFrom ? new Date(filterDateFrom) : null;
+    const to = filterDateTo ? new Date(filterDateTo) : null;
+    return items.filter((item) => {
+      const regs = isContactList ? item.registrations : [item];
+      const matchSearch =
+        !search ||
+        (item.name || "").toLowerCase().includes(search) ||
+        (item.email || "").toLowerCase().includes(search) ||
+        (item.phone || "").toLowerCase().includes(search);
+      const matchEvent =
+        filterEvent === "all" ||
+        regs.some((r) => (r.eventId || "").toString() === filterEvent.toString());
+      const matchSource =
+        filterSource === "all" ||
+        regs.some((r) => (r.source || "").toLowerCase() === filterSource.toLowerCase());
+      const matchDate =
+        (!from && !to) ||
+        regs.some((r) => {
+          const d = r.date ? new Date(r.date) : null;
+          if (!d) return false;
+          if (from && d < from) return false;
+          if (to && d > to) return false;
+          return true;
+        });
+      return matchSearch && matchEvent && matchSource && matchDate;
+    });
+  };
+
+  const sortedContacts = useMemo(() => {
+    const filtered = applyCrmFilters(contactsAggregated, true);
+    const sorted = [...filtered];
+    switch (crmSortBy) {
+      case "countDesc":
+        sorted.sort((a, b) => b.count - a.count);
+        break;
+      case "countAsc":
+        sorted.sort((a, b) => a.count - b.count);
+        break;
+      case "name":
+        sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        break;
+      case "lastDateDesc":
+        sorted.sort((a, b) => new Date(b.lastDate || 0) - new Date(a.lastDate || 0));
+        break;
+      case "lastDateAsc":
+        sorted.sort((a, b) => new Date(a.lastDate || 0) - new Date(b.lastDate || 0));
+        break;
+      default:
+        sorted.sort((a, b) => b.count - a.count);
+    }
+    return sorted;
+  }, [contactsAggregated, crmViewMode, searchTerm, filterEvent, filterSource, filterDateFrom, filterDateTo, crmSortBy]);
+
+  const filteredRegistrations = useMemo(() => {
+    const filtered = applyCrmFilters(registrationsList, false);
+    return [...filtered].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  }, [registrationsList, searchTerm, filterEvent, filterSource, filterDateFrom, filterDateTo]);
+
+  const uniqueSources = useMemo(() => {
+    const set = new Set();
+    (registrationsList || []).forEach((r) => r.source && set.add(r.source));
+    return Array.from(set).sort();
+  }, [registrationsList]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -239,32 +382,29 @@ const AdminDashboard = () => {
   };
 
   const exportToCSV = () => {
-    if (registrationsList.length === 0) return alert("No data to export");
-    const dataToExport =
-      filterEvent === "all"
-        ? registrationsList
-        : registrationsList.filter(
-            (r) => r.eventId?.toString() === filterEvent.toString(),
-          );
-    if (dataToExport.length === 0)
-      return alert("No data found for this filter");
+    const dataToExport = filteredRegistrations;
+    if (dataToExport.length === 0) return alert("No data to export for current filters");
     const headers = [
       "Name",
       "Email",
       "Phone",
       "Source",
       "Event",
+      "EventId",
       "Date",
       "Status",
+      "Language",
     ];
     const rows = dataToExport.map((r) => [
-      `"${r.name}"`,
-      `"${r.email}"`,
-      `"${r.phone}"`,
-      `"${r.source}"`,
-      `"${r.eventName}"`,
-      `"${new Date(r.date).toLocaleString()}"`,
+      `"${(r.name || "").replace(/"/g, '""')}"`,
+      `"${(r.email || "").replace(/"/g, '""')}"`,
+      `"${(r.phone || "").replace(/"/g, '""')}"`,
+      `"${(r.source || "").replace(/"/g, '""')}"`,
+      `"${(r.eventName || "").replace(/"/g, '""')}"`,
+      `"${(r.eventId || "").toString().replace(/"/g, '""')}"`,
+      `"${r.date ? new Date(r.date).toLocaleString() : ""}"`,
       `"${r.status || "confirmed"}"`,
+      `"${r.language || ""}"`,
     ]);
     const csvContent =
       "\uFEFF" +
@@ -544,6 +684,14 @@ const AdminDashboard = () => {
             </p>
           </div>
 
+          {emailEngineStatus === "error" && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+              <p className="text-sm text-amber-800 font-medium">
+                Backend offline. Start it with: <code className="bg-amber-100 px-2 py-0.5 rounded text-xs font-mono">npm run dev:admin</code> so Email Architect, Site Content, and CRM data load from the server.
+              </p>
+            </div>
+          )}
           <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border">
             <a
               href="/"
@@ -631,12 +779,14 @@ const AdminDashboard = () => {
           )}
           {topView === "emails" && !isEditing && (
             <div className="h-[calc(100vh-250px)] animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <EmailEngine />
+              <FlowsErrorBoundary>
+                <EmailEngine />
+              </FlowsErrorBoundary>
             </div>
           )}
           {topView === "analytics" && !isEditing && (
             <div className="h-[calc(100vh-250px)] animate-in fade-in slide-in-from-bottom-4 duration-500 bg-white rounded-[2rem] shadow-xl overflow-hidden">
-              <AnalyticsDashboard />
+              <AnalyticsDashboard onOpenCookieLogs={() => setTopView("cookies")} />
             </div>
           )}
           {topView === "cookies" && !isEditing && (
@@ -746,139 +896,240 @@ const AdminDashboard = () => {
 
           {!isEditing && topView === "registrations" && (
             <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden animate-in fade-in duration-500 border">
-              <div className="p-8 border-b border-gray-100 bg-gray-50/30 flex flex-col md:flex-row justify-between items-center gap-6">
-                <div>
-                  <h2 className="text-2xl font-black text-gray-900 tracking-tighter">
-                    Community Intelligence
-                  </h2>
-                  <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">
-                    Cross-Event Registry
-                  </p>
+              <div className="p-8 border-b border-gray-100 bg-gray-50/30">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
+                  <div>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tighter">
+                      Community Intelligence
+                    </h2>
+                    <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">
+                      {crmViewMode === "byPerson"
+                        ? `${sortedContacts.length} contacts · ${registrationsList.length} total registrations`
+                        : `${filteredRegistrations.length} registrations`}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => setCrmViewMode("byPerson")}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${crmViewMode === "byPerson" ? "bg-gray-900 text-white shadow-lg" : "bg-white border text-gray-500 hover:bg-gray-50"}`}
+                    >
+                      <UserCircle className="w-4 h-4" /> By person
+                    </button>
+                    <button
+                      onClick={() => setCrmViewMode("byRegistration")}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${crmViewMode === "byRegistration" ? "bg-gray-900 text-white shadow-lg" : "bg-white border text-gray-500 hover:bg-gray-50"}`}
+                    >
+                      <List className="w-4 h-4" /> By registration
+                    </button>
+                    <button
+                      onClick={exportToCSV}
+                      className="bg-green-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-green-100 ml-2"
+                    >
+                      <Download className="w-4 h-4" /> Export
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-3 w-full md:w-auto">
-                  <div className="relative flex-1 md:flex-none">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative flex-1 min-w-[180px] max-w-[240px]">
                     <Database className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="Search..."
+                      placeholder="Search name, email, phone..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="bg-white border rounded-xl pl-9 pr-4 py-3 text-xs font-bold w-full md:w-64"
+                      className="bg-white border rounded-xl pl-9 pr-4 py-2.5 text-xs font-bold w-full"
                     />
                   </div>
                   <select
                     value={filterEvent}
                     onChange={(e) => setFilterEvent(e.target.value)}
-                    className="bg-white border rounded-xl px-4 py-2 text-xs font-bold"
+                    className="bg-white border rounded-xl px-4 py-2.5 text-xs font-bold"
                   >
-                    <option value="all">Global</option>
+                    <option value="all">All events</option>
                     {events.map((ev) => (
                       <option key={ev.id} value={ev.id}>
-                        {ev.title.en || ev.title}
+                        {ev.title?.en || ev.title || ev.id}
                       </option>
                     ))}
                   </select>
-                  <button
-                    onClick={exportToCSV}
-                    className="bg-green-600 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-green-100"
+                  <select
+                    value={filterSource}
+                    onChange={(e) => setFilterSource(e.target.value)}
+                    className="bg-white border rounded-xl px-4 py-2.5 text-xs font-bold"
                   >
-                    <Download className="w-4 h-4" /> Export
-                  </button>
+                    <option value="all">All sources</option>
+                    {uniqueSources.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-gray-400" />
+                    <input
+                      type="date"
+                      value={filterDateFrom}
+                      onChange={(e) => setFilterDateFrom(e.target.value)}
+                      className="bg-white border rounded-xl px-3 py-2 text-[10px] font-bold"
+                      title="From date"
+                    />
+                    <span className="text-gray-400 text-[10px]">–</span>
+                    <input
+                      type="date"
+                      value={filterDateTo}
+                      onChange={(e) => setFilterDateTo(e.target.value)}
+                      className="bg-white border rounded-xl px-3 py-2 text-[10px] font-bold"
+                      title="To date"
+                    />
+                  </div>
+                  <select
+                    value={crmSortBy}
+                    onChange={(e) => setCrmSortBy(e.target.value)}
+                    className="bg-white border rounded-xl px-4 py-2.5 text-xs font-bold flex items-center gap-1"
+                  >
+                    <option value="countDesc">Most registrations first</option>
+                    <option value="countAsc">Fewest registrations first</option>
+                    <option value="name">Name A–Z</option>
+                    <option value="lastDateDesc">Newest activity first</option>
+                    <option value="lastDateAsc">Oldest activity first</option>
+                  </select>
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50/50 border-b">
-                    <tr>
-                      <th className="px-8 py-4">Participant</th>
-                      <th className="px-8 py-4">Email / Info</th>
-                      <th className="px-8 py-4 text-center">Score</th>
-                      <th className="px-8 py-4">Source</th>
-                      <th className="px-8 py-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {registrationsList
-                      .filter((reg) => {
-                        const match =
-                          (reg.name || "")
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase()) ||
-                          (reg.email || "")
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase());
-                        const filter =
-                          filterEvent === "all" ||
-                          reg.eventId?.toString() === filterEvent.toString();
-                        return match && filter;
-                      })
-                      .slice()
-                      .reverse()
-                      .map((reg, idx) => (
-                        <tr
-                          key={idx}
-                          className="hover:bg-blue-50/30 transition-colors"
-                        >
+                {crmViewMode === "byPerson" ? (
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50/50 border-b">
+                      <tr>
+                        <th className="px-8 py-4">Contact</th>
+                        <th className="px-8 py-4">Email / Phone</th>
+                        <th className="px-8 py-4 text-center"># Registrations</th>
+                        <th className="px-8 py-4">Events</th>
+                        <th className="px-8 py-4">Last registration</th>
+                        <th className="px-8 py-4">Sources</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {sortedContacts.map((contact) => (
+                        <tr key={contact.key} className="hover:bg-blue-50/30 transition-colors">
+                          <td className="px-8 py-5">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center font-black text-purple-600 text-[10px] shrink-0">
+                                {(contact.name || "?")
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .slice(0, 2)
+                                  .toUpperCase()}
+                              </div>
+                              <div className="font-black text-gray-900 text-xs min-w-0">
+                                {contact.name}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-8 py-5">
+                            <div className="text-gray-600 font-bold text-xs">{contact.email || "—"}</div>
+                            <div className="text-gray-400 text-[10px]">{contact.phone || "—"}</div>
+                          </td>
+                          <td className="px-8 py-5 text-center">
+                            <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-xl bg-purple-100 text-purple-700 font-black text-sm">
+                              {contact.count}
+                            </span>
+                          </td>
+                          <td className="px-8 py-5 max-w-[200px]">
+                            <div className="flex flex-wrap gap-1">
+                              {contact.eventNames.slice(0, 3).map((e) => (
+                                <span
+                                  key={e}
+                                  className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[9px] font-bold truncate max-w-[120px]"
+                                  title={e}
+                                >
+                                  {e}
+                                </span>
+                              ))}
+                              {contact.eventNames.length > 3 && (
+                                <span className="text-[9px] text-gray-400 font-bold" title={contact.eventNames.join(", ")}>
+                                  +{contact.eventNames.length - 3}
+                                </span>
+                              )}
+                              {contact.eventNames.length === 0 && <span className="text-gray-300 text-[9px]">—</span>}
+                            </div>
+                          </td>
+                          <td className="px-8 py-5 text-[10px] text-gray-500 font-bold">
+                            {contact.lastDate ? new Date(contact.lastDate).toLocaleDateString(undefined, { dateStyle: "short" }) : "—"}
+                          </td>
+                          <td className="px-8 py-5">
+                            <div className="flex flex-wrap gap-1">
+                              {contact.sources.map((s) => (
+                                <span key={s} className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[8px] font-black uppercase">
+                                  {s}
+                                </span>
+                              ))}
+                              {contact.sources.length === 0 && <span className="text-gray-300 text-[9px]">—</span>}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {sortedContacts.length === 0 && (
+                        <tr>
+                          <td colSpan="6" className="px-8 py-20 text-center text-gray-400 font-bold uppercase text-xs italic tracking-widest">
+                            No contacts match filters
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                ) : (
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50/50 border-b">
+                      <tr>
+                        <th className="px-8 py-4">Participant</th>
+                        <th className="px-8 py-4">Email / Phone</th>
+                        <th className="px-8 py-4">Event</th>
+                        <th className="px-8 py-4">Date</th>
+                        <th className="px-8 py-4">Source</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {filteredRegistrations.map((reg, idx) => (
+                        <tr key={reg.id || idx} className="hover:bg-blue-50/30 transition-colors">
                           <td className="px-8 py-5">
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center font-black text-purple-600 text-[10px]">
-                                {reg.name
+                                {(reg.name || "?")
                                   .split(" ")
                                   .map((n) => n[0])
-                                  .join("")}
+                                  .join("")
+                                  .slice(0, 2)
+                                  .toUpperCase()}
                               </div>
-                              <div>
-                                <div className="font-black text-gray-900 text-xs">
-                                  {reg.name}
-                                </div>
-                                <div className="text-[8px] font-black text-gray-400 uppercase tracking-tighter mt-0.5">
-                                  {reg.eventName}
-                                </div>
-                              </div>
+                              <div className="font-black text-gray-900 text-xs">{reg.name}</div>
                             </div>
                           </td>
                           <td className="px-8 py-5">
-                            <div className="text-gray-600 font-bold text-xs">
-                              {reg.email}
-                            </div>
-                            <div className="text-gray-400 text-[10px]">
-                              {reg.phone}
-                            </div>
+                            <div className="text-gray-600 font-bold text-xs">{reg.email || "—"}</div>
+                            <div className="text-gray-400 text-[10px]">{reg.phone || "—"}</div>
                           </td>
-                          <td className="px-8 py-5 text-center">
-                            <div className="flex items-center justify-center">
-                              <div className="w-12 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div
-                                  className="bg-purple-500 h-full"
-                                  style={{ width: "65%" }}
-                                ></div>
-                              </div>
-                            </div>
+                          <td className="px-8 py-5 text-[10px] font-bold text-gray-600">{reg.eventName || "—"}</td>
+                          <td className="px-8 py-5 text-[10px] text-gray-500">
+                            {reg.date ? new Date(reg.date).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" }) : "—"}
                           </td>
                           <td className="px-8 py-5">
                             <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[8px] font-black uppercase">
                               {reg.source || "Direct"}
                             </span>
                           </td>
-                          <td className="px-8 py-5 text-right">
-                            <button className="text-gray-300 hover:text-purple-600 transition-colors">
-                              <History className="w-4 h-4" />
-                            </button>
-                          </td>
                         </tr>
                       ))}
-                    {registrationsList.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan="5"
-                          className="px-8 py-20 text-center text-gray-400 font-bold uppercase text-xs italic tracking-widest"
-                        >
-                          No Intelligence Data Sync
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      {filteredRegistrations.length === 0 && (
+                        <tr>
+                          <td colSpan="5" className="px-8 py-20 text-center text-gray-400 font-bold uppercase text-xs italic tracking-widest">
+                            No registrations match filters
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           )}

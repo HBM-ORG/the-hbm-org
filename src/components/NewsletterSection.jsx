@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useI18n, t } from '../i18n/context'
 import { hbmAnalytics } from '../utils/analytics'
+import { getApiBase } from '../utils/api'
 
 export default function NewsletterSection() {
   const { lang } = useI18n()
@@ -13,8 +14,7 @@ export default function NewsletterSection() {
     setStatus('loading')
 
     try {
-      const base = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : ''
-      const res = await fetch(`${base}/api/newsletter`, {
+      const res = await fetch(`${getApiBase()}/api/newsletter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, language: lang, source: 'footer_newsletter' })

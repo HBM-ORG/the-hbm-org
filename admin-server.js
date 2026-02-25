@@ -30,41 +30,36 @@ const dbPath = process.env.DATABASE_URL
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
 
-// Initialize tables if they don't exist
+// Initialize tables if they don't exist (schema: choice, settings, hashedIp, timestamp)
 db.exec(`
   CREATE TABLE IF NOT EXISTS "CookieConsentLog" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "timestamp" TEXT NOT NULL,
-    "data" TEXT NOT NULL
+    "timestamp" TEXT NOT NULL DEFAULT (datetime('now')),
+    "choice" TEXT NOT NULL,
+    "settings" TEXT NOT NULL,
+    "hashedIp" TEXT NOT NULL
   );
 `);
+// Migration: if old schema (data column exists, no choice), add new columns
+try {
+  const info = db.prepare("PRAGMA table_info(CookieConsentLog)").all();
+  const hasChoice = info.some((c) => c.name === "choice");
+  const hasData = info.some((c) => c.name === "data");
+  if (!hasChoice && hasData) {
+    db.exec(`ALTER TABLE "CookieConsentLog" ADD COLUMN "choice" TEXT;`);
+    db.exec(`ALTER TABLE "CookieConsentLog" ADD COLUMN "settings" TEXT;`);
+    db.exec(`ALTER TABLE "CookieConsentLog" ADD COLUMN "hashedIp" TEXT;`);
+    console.log("[CookieConsentLog] Migrated table to new schema");
+  }
+} catch (e) {
+  // ignore if table doesn't exist yet
+}
 
 // Define triggerAutomation function
 const triggerAutomation = async (flowId) => {
   console.log(`Triggering automation for flowId: ${flowId}`);
   // Add logic here
 };
-
-// Example of meaningful error handling
-app.get("/api/example", async (req, res) => {
-  try {
-    const result = "Example result"; // Replace with actual logic
-    res.json(result);
-  } catch (error) {
-    console.error("Error in /api/example:", error);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
-// Fix empty catch blocks
-app.get("/api/fix-empty-catch", (req, res) => {
-  try {
-    // Some logic
-  } catch (e) {
-    console.error("Error occurred:", e);
-    res.status(500).json({ error: "An error occurred." });
-  }
-});
 
 const PORT = process.env.PORT || 3001;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
@@ -304,8 +299,8 @@ app.post("/api/cookie-consent-log", async (req, res) => {
 
   try {
     const stmt = db.prepare(`
-            INSERT INTO "CookieConsentLog" ("choice", "settings", "hashedIp")
-            VALUES (?, ?, ?)
+            INSERT INTO "CookieConsentLog" ("timestamp", "choice", "settings", "hashedIp")
+            VALUES (datetime('now'), ?, ?, ?)
         `);
     const result = stmt.run(
       choice || "custom",
@@ -491,19 +486,6 @@ app.post("/api/register", (req, res) => {
       JSON.stringify(registrations, null, 2),
     );
 
-    // TRIGGER AUTOMATIONS
-    // Trigger specific typed events
-    if (eventId === "video-event")
-      triggerAutomationByEvent("onVideoRegistration", newRegistration);
-    else triggerAutomationByEvent("onPhysicalRegistration", newRegistration);
-
-    if (source === "8min_journey")
-      triggerAutomationByEvent("on8MinJourney", newRegistration);
-
-    // Trigger generic sequence events (from automationConfig.json)
-    triggerAutomationByEvent("registration", newRegistration);
-    triggerAutomationByEvent("site_signup", newRegistration);
-
     console.log(
       `[CRM] New registration: ${name} (${email}) | Event: ${eventName} | Source: ${source}`,
     );
@@ -511,6 +493,22 @@ app.post("/api/register", (req, res) => {
       success: true,
       message: "Registration successful",
       leadId: newRegistration.id,
+    });
+
+    // Trigger automations asynchronously so email failures never block or fail the response
+    setImmediate(() => {
+      try {
+        if (eventId === "video-event")
+          triggerAutomationByEvent("onVideoRegistration", newRegistration);
+        else
+          triggerAutomationByEvent("onPhysicalRegistration", newRegistration);
+        if (source === "8min_journey")
+          triggerAutomationByEvent("on8MinJourney", newRegistration);
+        triggerAutomationByEvent("registration", newRegistration);
+        triggerAutomationByEvent("site_signup", newRegistration);
+      } catch (e) {
+        console.error("[Email] Registration automation trigger error:", e);
+      }
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -740,25 +738,44 @@ const parseDelay = (str) => {
 };
 
 const processQueue = async (specificItemId = null) => {
-  if (!fs.existsSync(EMAIL_QUEUE_PATH)) return false;
-  const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH));
-  const now = Date.now();
-  const config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH));
-  const suppressionList = fs.existsSync(SUPPRESSION_LIST_PATH)
-    ? JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH))
-    : [];
+  try {
+    if (!fs.existsSync(EMAIL_QUEUE_PATH)) return false;
+    const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH));
+    const now = Date.now();
+    let config;
+    try {
+      config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH));
+    } catch (e) {
+      console.error("[Email] processQueue: failed to load config", e);
+      return false;
+    }
+    const suppressionList = fs.existsSync(SUPPRESSION_LIST_PATH)
+      ? JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH))
+      : [];
 
-  if (!config?.smtp?.host) return false;
+    if (!config?.smtp?.host) return false;
 
-  const transporter = nodemailer.createTransport({
-    host: config.smtp.host,
-    port: parseInt(config.smtp.port) || 587,
-    secure: parseInt(config.smtp.port) === 465,
-    auth: { user: config.smtp.user, pass: config.smtp.pass },
-  });
+    const port = parseInt(config.smtp.port) || 587;
+    const secure =
+      typeof config.smtp.secure === "boolean"
+        ? config.smtp.secure
+        : port === 465;
+    let transporter;
+    try {
+      transporter = nodemailer.createTransport({
+        host: config.smtp.host,
+        port,
+        secure,
+        requireTLS: port === 587 && !secure,
+        auth: { user: config.smtp.user, pass: config.smtp.pass || "" },
+      });
+    } catch (err) {
+      console.error("[Email] processQueue: createTransport failed", err);
+      return false;
+    }
 
-  let success = true;
-  for (let item of queue) {
+    let success = true;
+    for (let item of queue) {
     if (specificItemId && item.id !== specificItemId) continue;
     if (
       item.status === "pending" &&
@@ -772,7 +789,7 @@ const processQueue = async (specificItemId = null) => {
       }
 
       try {
-        const flow = config.flows.find((f) => f.id === item.flowId);
+        const flow = (config.flows || []).find((f) => f.id === item.flowId);
         const campaign = !flow
           ? fs.existsSync(CAMPAIGNS_FILE_PATH)
             ? JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH)).find(
@@ -853,14 +870,23 @@ const processQueue = async (specificItemId = null) => {
       } catch (err) {
         logError("SMTP/Queue", err);
         item.status = "failed";
-        item.error = err.message;
+        let errMsg = err.message || String(err);
+        const host = (config.smtp?.host || "").toLowerCase();
+        if (/535|auth|login|invalid credentials/i.test(errMsg) && (host.includes("office365") || host.includes("outlook"))) {
+          errMsg = "SMTP auth failed. For Office 365 use an App Password (Security → App passwords), not your account password.";
+        }
+        item.error = errMsg;
         success = false;
       }
     }
   }
 
-  fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
-  return success;
+    fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
+    return success;
+  } catch (err) {
+    console.error("[Email] processQueue error:", err);
+    return false;
+  }
 };
 
 const logEngagement = (id, type, email, metadata = {}) => {
@@ -948,24 +974,33 @@ app.get("/api/email-queue", (req, res) => {
 
 // POST SMTP Check (real connectivity test)
 app.post("/api/smtp-check", async (req, res) => {
-  const { host, port, user, pass } = req.body;
+  const { host, port, user, pass, secure } = req.body;
   if (!host || !user)
     return res.json({ success: false, message: "SMTP not configured" });
+  const portNum = parseInt(port) || 587;
+  const useSecure =
+    typeof secure === "boolean" ? secure : portNum === 465;
+  const isOffice365 = (host || "").toLowerCase().includes("office365") || (host || "").toLowerCase().includes("outlook");
   try {
     const transporter = nodemailer.createTransport({
       host,
-      port: parseInt(port) || 587,
-      secure: parseInt(port) === 465,
-      auth: { user, pass },
-      connectionTimeout: 5000,
+      port: portNum,
+      secure: useSecure,
+      requireTLS: portNum === 587 && !useSecure,
+      auth: { user, pass: pass || "" },
+      connectionTimeout: 10000,
     });
     await transporter.verify();
     res.json({ success: true, message: "SMTP connection verified" });
   } catch (err) {
     console.error("SMTP Check Error:", err);
+    let msg = err.message || err.code || "Connection failed";
+    if (/535|auth|login|invalid credentials/i.test(String(msg)) && isOffice365) {
+      msg = "Auth failed. For Office 365 use an App Password (not your account password). Account → Security → App passwords.";
+    }
     res.json({
       success: false,
-      message: `Connection Failed: ${err.code || err.message}`,
+      message: msg,
     });
   }
 });
@@ -1040,15 +1075,46 @@ app.post("/api/ai/improve-copy", async (req, res) => {
       });
     }
 
-    const improvedText =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      getSimulation(text, tone, goal, language, prompt);
-    res.json({ text: improvedText.trim() });
+    const raw =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ??
+      data.candidates?.[0]?.output ||
+      (data.candidates?.[0]?.content?.parts?.[0] && typeof data.candidates[0].content.parts[0] === "string"
+        ? data.candidates[0].content.parts[0]
+        : null);
+    const improvedText = raw ? String(raw).trim() : getSimulation(text, tone, goal, language, prompt);
+    res.json({ text: improvedText });
   } catch (err) {
     console.error("[AI Exception]", err);
     res.json({ text: getSimulation(text, tone, goal, language, prompt) });
   }
 });
+
+const AUTOMATION_SETTINGS_DEFAULT_FLOWS = [
+  {
+    id: "newsletter",
+    trigger: "onNewsletterSignup",
+    name: "Newsletter Welcome",
+    desc: "Sent when explicitly signing up for the newsletter",
+  },
+  {
+    id: "physical",
+    trigger: "onPhysicalRegistration",
+    name: "Physical Event Reg",
+    desc: "Sent when booking a spot for a real-world event",
+  },
+  {
+    id: "video",
+    trigger: "onVideoRegistration",
+    name: "Video Event Reg",
+    desc: "Sent when registering for an upcoming video session",
+  },
+  {
+    id: "journey",
+    trigger: "on8MinJourney",
+    name: "8-Min Journey",
+    desc: "Funnel or re-engagement for the general journey",
+  },
+];
 
 app.get("/api/automation-settings", (req, res) => {
   try {
@@ -1056,39 +1122,19 @@ app.get("/api/automation-settings", (req, res) => {
     if (fs.existsSync(AUTOMATION_CONFIG_PATH)) {
       config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH, "utf8"));
     }
-
-    const DEFAULT_FLOWS = [
-      {
-        id: "newsletter",
-        trigger: "onNewsletterSignup",
-        name: "Newsletter Welcome",
-        desc: "Sent when explicitly signing up for the newsletter",
-      },
-      {
-        id: "physical",
-        trigger: "onPhysicalRegistration",
-        name: "Physical Event Reg",
-        desc: "Sent when booking a spot for a real-world event",
-      },
-      {
-        id: "video",
-        trigger: "onVideoRegistration",
-        name: "Video Event Reg",
-        desc: "Sent when registering for an upcoming video session",
-      },
-      {
-        id: "journey",
-        trigger: "on8MinJourney",
-        name: "8-Min Journey",
-        desc: "Funnel or re-engagement for the general journey",
-      },
-    ];
-
-    config.flows = config.flows || DEFAULT_FLOWS;
+    config.flows = Array.isArray(config.flows) ? config.flows : AUTOMATION_SETTINGS_DEFAULT_FLOWS;
+    config.smtp = config.smtp || {};
+    config.globalStyling = config.globalStyling || {};
+    config.sequences = Array.isArray(config.sequences) ? config.sequences : [];
     res.json(config);
   } catch (error) {
     console.error("Error loading automation settings:", error);
-    res.status(500).json({ error: "Failed to load automation settings." });
+    res.status(200).json({
+      smtp: {},
+      globalStyling: {},
+      flows: AUTOMATION_SETTINGS_DEFAULT_FLOWS,
+      sequences: [],
+    });
   }
 });
 
@@ -1223,15 +1269,20 @@ app.post("/api/campaigns/save-all", (req, res) => {
 app.post("/api/campaigns/send", (req, res) => {
   const { campaignId, segment } = req.body;
   try {
-    const campaigns = JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH));
+    if (!fs.existsSync(CAMPAIGNS_FILE_PATH)) return res.status(404).json({ error: "No campaigns file" });
+    const campaigns = JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH, "utf8"));
     const campaign = campaigns.find((c) => c.id === campaignId);
     if (!campaign) return res.status(404).json({ error: "Campaign not found" });
 
-    const regs = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH));
+    const regs = fs.existsSync(REGISTRATIONS_FILE_PATH)
+      ? JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"))
+      : [];
     const targets =
-      segment === "all" ? regs : regs.filter((r) => r.source === segment);
+      segment === "all" ? regs : regs.filter((r) => (r.source || r.registrationSource || "").toLowerCase() === String(segment).toLowerCase());
 
-    const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH));
+    const queue = fs.existsSync(EMAIL_QUEUE_PATH)
+      ? JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH, "utf8"))
+      : [];
     targets.forEach((user) => {
       queue.push({
         id: uuidv4(),
@@ -1431,11 +1482,12 @@ const SITE_CONFIGS_PATH = path.join(__dirname, "data", "site-configs.json");
 app.get("/api/site-content", (req, res) => {
   try {
     if (!fs.existsSync(SITE_CONFIGS_PATH)) {
-      return res.json({ team: [], testimonials: [], partners: [] });
+      return res.json({ team: [], testimonials: [], partners: [], locks: { team: false, testimonials: false, partners: false } });
     }
     res.json(JSON.parse(fs.readFileSync(SITE_CONFIGS_PATH, "utf8")));
   } catch (err) {
-    res.status(500).json({ error: "Failed to read site content" });
+    console.error("Error reading site content:", err);
+    res.status(200).json({ team: [], testimonials: [], partners: [], locks: { team: false, testimonials: false, partners: false } });
   }
 });
 
@@ -1454,10 +1506,12 @@ app.post("/api/site-content", (req, res) => {
 // ==========================================
 app.get("/api/cms/how-it-works", (req, res) => {
   try {
-    if (!fs.existsSync(HOW_IT_WORKS_CONFIG_PATH)) return res.json({});
-    res.json(JSON.parse(fs.readFileSync(HOW_IT_WORKS_CONFIG_PATH, "utf8")));
-  } catch {
-    res.json({});
+    if (!fs.existsSync(HOW_IT_WORKS_CONFIG_PATH)) return res.status(200).json({ videoSteps: [], physicalSteps: [], isLocked: false });
+    const data = JSON.parse(fs.readFileSync(HOW_IT_WORKS_CONFIG_PATH, "utf8"));
+    res.status(200).json(data);
+  } catch (err) {
+    console.error("GET /api/cms/how-it-works error:", err);
+    res.status(200).json({ videoSteps: [], physicalSteps: [], isLocked: false });
   }
 });
 
@@ -1481,10 +1535,12 @@ app.post("/api/cms/how-it-works", (req, res) => {
 
 app.get("/api/cms/knowledge-base", (req, res) => {
   try {
-    if (!fs.existsSync(KNOWLEDGE_BASE_CONFIG_PATH)) return res.json({});
-    res.json(JSON.parse(fs.readFileSync(KNOWLEDGE_BASE_CONFIG_PATH, "utf8")));
-  } catch {
-    res.json({});
+    if (!fs.existsSync(KNOWLEDGE_BASE_CONFIG_PATH)) return res.status(200).json({ books: [], videos: [], isLocked: false });
+    const data = JSON.parse(fs.readFileSync(KNOWLEDGE_BASE_CONFIG_PATH, "utf8"));
+    res.status(200).json(data);
+  } catch (err) {
+    console.error("GET /api/cms/knowledge-base error:", err);
+    res.status(200).json({ books: [], videos: [], isLocked: false });
   }
 });
 
@@ -1536,14 +1592,9 @@ app.get("/api/events", (req, res) => {
 
 app.get("/api/registrations/stats", async (req, res) => {
   try {
-    const registrationsPath = path.join(
-      __dirname,
-      "data",
-      "registrations.json",
-    );
     let registrations = [];
-    if (fs.existsSync(registrationsPath)) {
-      registrations = JSON.parse(fs.readFileSync(registrationsPath, "utf8"));
+    if (fs.existsSync(REGISTRATIONS_FILE_PATH)) {
+      registrations = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"));
     }
 
     // Return some basic stats
@@ -1640,6 +1691,38 @@ async function callAI(prompt, systemPrompt = "You are a helpful assistant.") {
   return null; // All failed
 }
 
+// Prefer largest available book cover URL and force https
+function getBookCoverUrl(volumeInfo) {
+  const links = volumeInfo?.imageLinks;
+  if (!links) return null;
+  const url =
+    links.large || links.medium || links.small || links.thumbnail || links.smallThumbnail;
+  if (!url) return null;
+  return url.replace(/^http:\/\//i, "https://");
+}
+
+// Open Library cover fallback by title (+ optional author)
+async function fetchOpenLibraryCover(title, author) {
+  try {
+    const q = author ? `${title} ${author}` : title;
+    const res = await fetch(
+      `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=1`
+    );
+    const data = await res.json();
+    const work = data.docs?.[0];
+    if (!work) return null;
+    const olid = work.cover_edition_key || work.edition_key?.[0];
+    const isbn = work.isbn?.[0];
+    if (olid)
+      return `https://covers.openlibrary.org/b/olid/${olid}-M.jpg`;
+    if (isbn)
+      return `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
 app.post("/api/ai/fetch-book", async (req, res) => {
   const { title, author } = req.body;
   if (!title) return res.status(400).json({ error: "Title is required" });
@@ -1648,13 +1731,11 @@ app.post("/api/ai/fetch-book", async (req, res) => {
     let book;
     const queryStr = title + (author ? ` ${author}` : "");
     try {
-      // Try with key first
       let googleRes = await fetch(
         `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryStr)}&key=${process.env.GOOGLE_BOOKS_API_KEY || ""}`,
       );
       let googleData = await googleRes.json();
 
-      // If nothing found or error, try without key (sometimes key restricts results)
       if (!googleData.items || googleData.items.length === 0) {
         googleRes = await fetch(
           `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryStr)}`,
@@ -1664,8 +1745,11 @@ app.post("/api/ai/fetch-book", async (req, res) => {
 
       book = googleData.items?.[0]?.volumeInfo;
     } catch (e) {
-      console.error("Google Books Failed");
+      console.error("Google Books Failed:", e.message);
     }
+
+    let coverUrl = getBookCoverUrl(book);
+    if (!coverUrl) coverUrl = await fetchOpenLibraryCover(title, author || book?.authors?.[0]);
 
     let aiData = {};
     const prompt = `Return ONLY a JSON object for the book "${title}" ${author ? `by ${author}` : ""}:
@@ -1684,11 +1768,11 @@ app.post("/api/ai/fetch-book", async (req, res) => {
     );
     if (aiText) {
       try {
-        const cleaned = aiText.match(/\{[\s\S]*\}/)[0];
-        aiData = JSON.parse(cleaned);
+        const match = aiText.match(/\{[\s\S]*\}/);
+        if (match) aiData = JSON.parse(match[0]);
         console.log(`[AI] Success for: ${title}`);
       } catch (e) {
-        console.error("AI Parse Fail");
+        console.error("AI Parse Fail:", e.message);
       }
     }
 
@@ -1700,9 +1784,9 @@ app.post("/api/ai/fetch-book", async (req, res) => {
         "Unknown Author",
       description:
         book?.description || aiData.shortSummary || "No description available.",
-      coverUrl: book?.imageLinks?.thumbnail?.replace("http:", "https:") || null,
+      coverUrl: coverUrl || null,
       authorQuote: aiData.authorQuote || "",
-      threeKeySentences: aiData.threeKeySentences || [],
+      threeKeySentences: Array.isArray(aiData.threeKeySentences) ? aiData.threeKeySentences : [],
       shortSummary: aiData.shortSummary || "",
       fullSummary: aiData.fullSummary || "",
       finalQuote: aiData.finalQuote || "",
@@ -1712,7 +1796,7 @@ app.post("/api/ai/fetch-book", async (req, res) => {
     });
   } catch (err) {
     console.error("Fetch Book Crash:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message || "Internal server error" });
   }
 });
 
@@ -1763,7 +1847,7 @@ app.post("/api/ai/fetch-video", async (req, res) => {
     });
   } catch (err) {
     console.error("Fetch Video Crash:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message || "Internal server error" });
   }
 });
 
