@@ -392,16 +392,64 @@ export default function GlobeDemo() {
   ];
 
   return (
-    <div style={{ width: '100%', height: '600px', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-        <Suspense fallback={<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading World...</div>}>
-          <div style={{ position: 'absolute', width: '100%', top: 0, height: '100%', zIndex: 10 }}>
+    <div
+      className="w-full px-4 sm:px-6 md:px-0"
+      style={{
+        height: "400px",
+        position: "relative",
+        overflow: "hidden",
+        maxWidth: "100%",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "relative",
+          margin: "0 auto",
+          maxWidth: "900px",
+        }}
+      >
+        <Suspense
+          fallback={
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              Loading World...
+            </div>
+          }
+        >
+          <div
+            style={{
+              position: "absolute",
+              width: "100%",
+              top: 0,
+              height: "100%",
+              zIndex: 10,
+            }}
+          >
             <World data={sampleArcs} globeConfig={globeConfig} />
           </div>
         </Suspense>
-        
+
         {/* Subtle Gradient Overlays to help it blend */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 20, background: 'linear-gradient(to bottom, var(--color-hbm-cream), transparent 30%, transparent 70%, var(--color-hbm-cream))', opacity: 0.5 }} />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 20,
+            background:
+              "linear-gradient(to bottom, var(--color-hbm-cream), transparent 30%, transparent 70%, var(--color-hbm-cream))",
+            opacity: 0.5,
+          }}
+        />
       </div>
     </div>
   );

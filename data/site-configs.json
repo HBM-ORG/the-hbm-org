@@ -134,6 +134,11 @@
       "logoUrl": "/partner-logos/49.png"
     },
     {
+      "id": "p52",
+      "name": "Meta",
+      "logoUrl": "/partner-logos/52.png"
+    },
+    {
       "id": "p50",
       "name": "Amazon",
       "logoUrl": "/partner-logos/50.png"
@@ -142,11 +147,6 @@
       "id": "p51",
       "name": "Microsoft",
       "logoUrl": "/partner-logos/51.png"
-    },
-    {
-      "id": "p52",
-      "name": "Meta",
-      "logoUrl": "/partner-logos/52.png"
     },
     {
       "id": "p53",

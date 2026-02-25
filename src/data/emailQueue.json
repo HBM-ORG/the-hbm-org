@@ -554,5 +554,346 @@
     "stepType": "email",
     "flowId": "eight_minute_funnel",
     "attempts": 0
+  },
+  {
+    "id": "1b9832d8-598d-4e2a-a58d-81cef3cebfd6",
+    "status": "pending",
+    "scheduledFor": 1772030005155,
+    "data": {
+      "id": 1772030005155,
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "+1234567890",
+      "acquisitionSource": "Direct",
+      "registrationSource": "website_general",
+      "source": "Direct Web",
+      "category": "Event Lead",
+      "eventId": "test-event",
+      "eventName": "General Registration",
+      "date": "2026-02-25T14:33:25.155Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:33:25.155Z",
+          "message": "Registered for General"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "attempts": 0
+  },
+  {
+    "id": "41a9e93b-35f9-4b39-b721-15b6cbfa86ae",
+    "status": "pending",
+    "scheduledFor": 1772030005156,
+    "data": {
+      "id": 1772030005155,
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "+1234567890",
+      "acquisitionSource": "Direct",
+      "registrationSource": "website_general",
+      "source": "Direct Web",
+      "category": "Event Lead",
+      "eventId": "test-event",
+      "eventName": "General Registration",
+      "date": "2026-02-25T14:33:25.155Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:33:25.155Z",
+          "message": "Registered for General"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "registration_confirmed",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "9ad901c0-9561-4418-b7f4-b59b8dd2dab0",
+    "status": "pending",
+    "scheduledFor": 1772202805156,
+    "data": {
+      "id": 1772030005155,
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "+1234567890",
+      "acquisitionSource": "Direct",
+      "registrationSource": "website_general",
+      "source": "Direct Web",
+      "category": "Event Lead",
+      "eventId": "test-event",
+      "eventName": "General Registration",
+      "date": "2026-02-25T14:33:25.155Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:33:25.155Z",
+          "message": "Registered for General"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "check_in_curiosity",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "9e9b78cc-0e95-4b4e-a0e7-4452def51b42",
+    "status": "pending",
+    "scheduledFor": 1772462005156,
+    "data": {
+      "id": 1772030005155,
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "+1234567890",
+      "acquisitionSource": "Direct",
+      "registrationSource": "website_general",
+      "source": "Direct Web",
+      "category": "Event Lead",
+      "eventId": "test-event",
+      "eventName": "General Registration",
+      "date": "2026-02-25T14:33:25.155Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:33:25.155Z",
+          "message": "Registered for General"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "post_event_warmth",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "74bff201-d114-400d-8cfa-fc9e0d52be82",
+    "status": "pending",
+    "scheduledFor": 1772030005157,
+    "data": {
+      "id": 1772030005155,
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "+1234567890",
+      "acquisitionSource": "Direct",
+      "registrationSource": "website_general",
+      "source": "Direct Web",
+      "category": "Event Lead",
+      "eventId": "test-event",
+      "eventName": "General Registration",
+      "date": "2026-02-25T14:33:25.155Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:33:25.155Z",
+          "message": "Registered for General"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "eight_minute_funnel",
+    "attempts": 0
+  },
+  {
+    "id": "24fca19e-c65a-47d6-9eaf-2108a6269c00",
+    "status": "pending",
+    "scheduledFor": 1772030183345,
+    "data": {
+      "id": 1772030005155,
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "+1234567890",
+      "acquisitionSource": "Direct",
+      "registrationSource": "website_general",
+      "source": "Direct Web",
+      "category": "Event Lead",
+      "eventId": "test-event",
+      "eventName": "General Registration",
+      "date": "2026-02-25T14:33:25.155Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:33:25.155Z",
+          "message": "Registered for General"
+        },
+        {
+          "type": "subscription",
+          "date": "2026-02-25T14:36:23.344Z",
+          "message": "Re-subscribed to Newsletter"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onNewsletterSignup",
+    "attempts": 0
+  },
+  {
+    "id": "30c6c5d9-d9a6-4f4e-8620-695072cab01c",
+    "status": "pending",
+    "scheduledFor": 1772030229663,
+    "data": {
+      "id": 1772030229662,
+      "name": "yuval",
+      "email": "Yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T14:37:09.662Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:37:09.662Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "attempts": 0
+  },
+  {
+    "id": "da31eec1-57c1-4856-a3fb-62c5b465157c",
+    "status": "pending",
+    "scheduledFor": 1772030229665,
+    "data": {
+      "id": 1772030229662,
+      "name": "yuval",
+      "email": "Yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T14:37:09.662Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:37:09.662Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "registration_confirmed",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "2c2151a2-b8b3-4970-94e2-9ae1048dd960",
+    "status": "pending",
+    "scheduledFor": 1772203029665,
+    "data": {
+      "id": 1772030229662,
+      "name": "yuval",
+      "email": "Yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T14:37:09.662Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:37:09.662Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "check_in_curiosity",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "21cffd03-d0cf-46d9-91c8-42309c708710",
+    "status": "pending",
+    "scheduledFor": 1772462229665,
+    "data": {
+      "id": 1772030229662,
+      "name": "yuval",
+      "email": "Yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T14:37:09.662Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:37:09.662Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "post_event_warmth",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "b668308e-5369-49d7-8a5a-fbfa01dde522",
+    "status": "pending",
+    "scheduledFor": 1772030229666,
+    "data": {
+      "id": 1772030229662,
+      "name": "yuval",
+      "email": "Yuval17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T14:37:09.662Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T14:37:09.662Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "eight_minute_funnel",
+    "attempts": 0
   }
 ]
