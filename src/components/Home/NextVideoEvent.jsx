@@ -4,9 +4,17 @@ import { Calendar, MapPin, ArrowRight, Video } from 'lucide-react';
 import { useI18n, t } from '../../i18n/context';
 import VideoEventModal from './VideoEventModal';
 
+const DEFAULT_VIDEO_THUMBNAIL = '/assets/events/1_YouTube.png';
+
 const NextVideoEvent = ({ config }) => {
   const { lang } = useI18n();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imgSrc, setImgSrc] = useState(config?.image || DEFAULT_VIDEO_THUMBNAIL);
+
+  // Sync when config.image changes
+  React.useEffect(() => {
+    setImgSrc(config?.image || DEFAULT_VIDEO_THUMBNAIL);
+  }, [config?.image]);
 
   // If no config or config is completely empty, don't show
   if (!config || !config.title?.en) return null;
@@ -21,12 +29,13 @@ const NextVideoEvent = ({ config }) => {
               className="bg-white rounded-[2rem] p-4 shadow-xl shadow-red-900/5 hover:shadow-2xl hover:shadow-red-900/10 transition-all border border-gray-100 flex flex-col md:flex-row gap-8 items-center group cursor-pointer"
               onClick={() => setIsModalOpen(true)}
           >
-              {/* Image Section */}
+              {/* Image Section — fallback to 1_YouTube.png on error or when no image */}
               <div className="w-full md:w-1/2 h-64 md:h-80 relative overflow-hidden rounded-[1.5rem]">
                   <img 
-                      src={config.image || '/assets/default-hero.jpg'} 
+                      src={imgSrc} 
                       alt={t(config.title, lang)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      onError={() => setImgSrc(DEFAULT_VIDEO_THUMBNAIL)}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
                   

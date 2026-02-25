@@ -459,7 +459,7 @@ export default function About() {
                 )}
               </div>
 
-              {/* Bio Content (Main) */}
+              {/* Bio Content (Main) — show Bio prominently, same size; Fun Fact optional below */}
               <div className="w-full md:w-3/5 p-8 md:p-10">
                 {selectedMember.nickname && (
                   <p className="text-hbm-dark font-black italic text-lg mb-4">
@@ -468,17 +468,22 @@ export default function About() {
                 )}
 
                 <div className="space-y-4">
-                  <div className="prose prose-sm md:prose-base text-hbm-gray">
+                  {/* Bio (primary — same label/text size as previous Fun Fact block) */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-bold text-hbm-orange">
+                      {lang === "he" ? "ביו" : "Bio"}:{" "}
+                    </p>
                     {typeof selectedMember.bio === "string" ? (
-                      <p>{selectedMember.bio}</p>
+                      <p className="text-sm text-gray-500 leading-relaxed">{selectedMember.bio}</p>
                     ) : (
                       (Array.isArray(t(selectedMember.bio, lang)) ? t(selectedMember.bio, lang) : []).map((para, idx) => (
-                        <p key={idx} className="mb-4 leading-relaxed">
+                        <p key={idx} className="text-sm text-gray-500 leading-relaxed mb-2">
                           {para}
                         </p>
                       ))
                     )}
                   </div>
+                  {/* Fun Fact (optional, secondary) */}
                   {(() => {
                     let facts = [];
                     if (Array.isArray(selectedMember.funFacts)) {
