@@ -4,27 +4,12 @@ const CACHE_KEY = 'hbm_library_cache_v3'; // Version bump
 const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 // CRITICAL: High-Res Covers for Flagship Books to prevent "Holes"
+// CRITICAL: High-Res Covers for Flagship Books
+// Removed m.media-amazon.com links as they are unreliable (Anti-Hotlinking 404s)
 const HARDCODED_COVERS = {
-    "Atomic Habits": "https://m.media-amazon.com/images/I/81F90H7hnML._SL1500_.jpg",
-    "Can't Hurt Me": "https://m.media-amazon.com/images/I/81gTRv2HXrL._SL1500_.jpg",
-    "The Psychology of Money": "https://m.media-amazon.com/images/I/81Dky+tD+pL._SL1500_.jpg",
-    "Deep Work": "https://m.media-amazon.com/images/I/719mJ-sLzTL.jpg", // Verified
-    "Meditations": "https://m.media-amazon.com/images/I/517fH0zIdfL.jpg", // Verified (Gregory Hays)
-    "Why We Sleep": "https://m.media-amazon.com/images/I/8125di58M+L._SL1500_.jpg",
-    "Thinking, Fast and Slow": "https://m.media-amazon.com/images/I/61fdrEuPJwL._SL1500_.jpg",
-    "Extreme Ownership": "https://m.media-amazon.com/images/I/71+jNdtM3TL._SL1500_.jpg",
-    "Man's Search for Meaning": "https://m.media-amazon.com/images/I/81E1iJjFmvL._SL1500_.jpg",
-    "Tools of Titans": "https://m.media-amazon.com/images/I/814pC+5eXGL._SL1500_.jpg",
-    "Sapiens": "https://m.media-amazon.com/images/I/713jIoMO3UL._SL1500_.jpg",
-    "Homo Deus": "https://www.ynharari.com/wp-content/uploads/2017/01/homo_deus.png", // Verified (Author Site)
-    "The Gene": "https://m.media-amazon.com/images/I/91T212D1eLL._SL1500_.jpg",
-    "Breath": "https://m.media-amazon.com/images/I/71Un-2JEeNL._SL1500_.jpg",
-    "The Alchemist": "https://m.media-amazon.com/images/I/71aFt4+OTOL._SL1500_.jpg",
-    "Rich Dad Poor Dad": "https://m.media-amazon.com/images/I/81bsw6fnUiL._SL1500_.jpg",
-    "The 4-Hour Workweek": "https://m.media-amazon.com/images/I/81qW97ndkvL._SL1500_.jpg",
-    "The Power of Now": "https://m.media-amazon.com/images/I/714FbKtXS+L._SL1500_.jpg",
-    "Daring Greatly": "https://m.media-amazon.com/images/I/817gXox+x9L._SL1500_.jpg",
-    "Start with Why": "https://m.media-amazon.com/images/I/71O3vC+tFdL._SL1500_.jpg"
+    "Meditations": "https://covers.openlibrary.org/b/id/12711090-L.jpg",
+    "Homo Deus": "https://www.ynharari.com/wp-content/uploads/2017/01/homo_deus.png",
+    "Deep Work": "https://covers.openlibrary.org/b/id/12745300-L.jpg"
 };
 
 export const useBookData = (title, author, type, manualCoverUrl) => {
@@ -35,8 +20,13 @@ export const useBookData = (title, author, type, manualCoverUrl) => {
   useEffect(() => {
     // 1. Manual Override / Hardcoded Map (Highest Priority)
     // This ensures checking "Atomic Habits" always returns a valid cover.
-    const hardcodedCover = HARDCODED_COVERS[title] || manualCoverUrl;
+    let hardcodedCover = HARDCODED_COVERS[title] || manualCoverUrl;
     
+    // Safety check: Avoid using known broken amazon links from CMS
+    if (hardcodedCover && hardcodedCover.includes('m.media-amazon.com')) {
+        hardcodedCover = null;
+    }
+
     if (hardcodedCover) {
         setBookData({
             cover: hardcodedCover,

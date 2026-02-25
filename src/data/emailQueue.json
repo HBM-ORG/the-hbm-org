@@ -180,5 +180,379 @@
     },
     "stepType": "email",
     "flowId": "flow_1771844992584_onPhysicalRegistration"
+  },
+  {
+    "id": "2470bb7c-c693-4b91-8ceb-f04d12ba131a",
+    "status": "pending",
+    "scheduledFor": 1771928244786,
+    "data": {
+      "id": 1771928244785,
+      "name": "Subscriber",
+      "email": "yuval17040@gmail.com",
+      "source": "newsletter",
+      "eventId": "newsletter",
+      "eventName": "Newsletter Subscription",
+      "language": "en",
+      "date": "2026-02-24T10:17:24.785Z",
+      "status": "confirmed"
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onNewsletterSignup"
+  },
+  {
+    "id": "d3000116-521a-4708-941a-56bc85fbcbc7",
+    "status": "pending",
+    "scheduledFor": 1771928411384,
+    "data": {
+      "name": "Test User",
+      "email": "yuval17040@gmaill.com",
+      "eventName": "HBM Live Demo",
+      "date": "2026-02-24T10:20:11.383Z",
+      "location": "Tel Aviv Hub",
+      "id": "TEST-388",
+      "language": "he"
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration"
+  },
+  {
+    "id": "177e9753-5f2a-46a1-b568-912af6778edf",
+    "status": "pending",
+    "scheduledFor": 1771928412325,
+    "data": {
+      "name": "Test User",
+      "email": "yuval17040@gmaill.com",
+      "eventName": "HBM Live Demo",
+      "date": "2026-02-24T10:20:12.324Z",
+      "location": "Tel Aviv Hub",
+      "id": "TEST-781",
+      "language": "he"
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration"
+  },
+  {
+    "id": "eade3884-c795-4da8-834f-369f554cad5e",
+    "status": "pending",
+    "scheduledFor": 1771941484568,
+    "data": {
+      "id": 1771941484568,
+      "name": "Subscriber",
+      "email": "yuval17040@gmail.com",
+      "source": "newsletter",
+      "eventId": "newsletter",
+      "eventName": "Newsletter Subscription",
+      "language": "en",
+      "date": "2026-02-24T13:58:04.568Z",
+      "status": "confirmed"
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onNewsletterSignup"
+  },
+  {
+    "id": "aab53907-4d9f-4fe3-9fac-431f8569a67a",
+    "status": "pending",
+    "scheduledFor": 1772025775561,
+    "data": {
+      "id": 1772025775560,
+      "name": "QA Tester",
+      "email": "qa@thehbm.org",
+      "phone": "0501234567",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T13:22:55.560Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:22:55.560Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "attempts": 0
+  },
+  {
+    "id": "cd3c1c87-b1f3-4450-98b9-e394e3abe5dc",
+    "status": "pending",
+    "scheduledFor": 1772025775561,
+    "data": {
+      "id": 1772025775560,
+      "name": "QA Tester",
+      "email": "qa@thehbm.org",
+      "phone": "0501234567",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T13:22:55.560Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:22:55.560Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "registration_confirmed",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "c357ddcb-65eb-4d09-86c4-17f4d294518b",
+    "status": "pending",
+    "scheduledFor": 1772198575561,
+    "data": {
+      "id": 1772025775560,
+      "name": "QA Tester",
+      "email": "qa@thehbm.org",
+      "phone": "0501234567",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T13:22:55.560Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:22:55.560Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "check_in_curiosity",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "8e977fd5-1c69-47ff-80b6-4bb85940bdcd",
+    "status": "pending",
+    "scheduledFor": 1772457775561,
+    "data": {
+      "id": 1772025775560,
+      "name": "QA Tester",
+      "email": "qa@thehbm.org",
+      "phone": "0501234567",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T13:22:55.560Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:22:55.560Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "post_event_warmth",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "bb0a6da9-7313-432a-9181-11c9ae55c15c",
+    "status": "pending",
+    "scheduledFor": 1772025775562,
+    "data": {
+      "id": 1772025775560,
+      "name": "QA Tester",
+      "email": "qa@thehbm.org",
+      "phone": "0501234567",
+      "acquisitionSource": "social",
+      "registrationSource": "website_general",
+      "source": "social",
+      "category": "Event Lead",
+      "eventId": "next-1",
+      "eventName": "The HBM Community Night",
+      "date": "2026-02-25T13:22:55.560Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:22:55.560Z",
+          "message": "Registered for The HBM Community Night"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "eight_minute_funnel",
+    "attempts": 0
+  },
+  {
+    "id": "c906f192-873c-49c4-a5c6-8c515207d979",
+    "status": "pending",
+    "scheduledFor": 1772026152070,
+    "data": {
+      "id": 1772026152069,
+      "name": "QA Video Bot",
+      "email": "qa-video@thehbm.org",
+      "phone": "0509988776",
+      "acquisitionSource": "other",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-25T13:29:12.069Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:29:12.069Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onVideoRegistration",
+    "attempts": 0
+  },
+  {
+    "id": "9126f573-1fdb-4404-99a6-5d0d7a162206",
+    "status": "pending",
+    "scheduledFor": 1772026152070,
+    "data": {
+      "id": 1772026152069,
+      "name": "QA Video Bot",
+      "email": "qa-video@thehbm.org",
+      "phone": "0509988776",
+      "acquisitionSource": "other",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-25T13:29:12.069Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:29:12.069Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "registration_confirmed",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "1f7da158-13f4-4ee8-9850-bdf5835d8c45",
+    "status": "pending",
+    "scheduledFor": 1772198952070,
+    "data": {
+      "id": 1772026152069,
+      "name": "QA Video Bot",
+      "email": "qa-video@thehbm.org",
+      "phone": "0509988776",
+      "acquisitionSource": "other",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-25T13:29:12.069Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:29:12.069Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "check_in_curiosity",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "59ee8965-f1fc-491f-84e6-d377030fca3f",
+    "status": "pending",
+    "scheduledFor": 1772458152070,
+    "data": {
+      "id": 1772026152069,
+      "name": "QA Video Bot",
+      "email": "qa-video@thehbm.org",
+      "phone": "0509988776",
+      "acquisitionSource": "other",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-25T13:29:12.069Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:29:12.069Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "post_event_warmth",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "6428892c-592f-4ca3-a650-1473cb65112e",
+    "status": "pending",
+    "scheduledFor": 1772026152070,
+    "data": {
+      "id": 1772026152069,
+      "name": "QA Video Bot",
+      "email": "qa-video@thehbm.org",
+      "phone": "0509988776",
+      "acquisitionSource": "other",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-25T13:29:12.069Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-25T13:29:12.069Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "eight_minute_funnel",
+    "attempts": 0
   }
 ]

@@ -34,7 +34,7 @@ export function MagicCard({
 
   return (
     <div
-      className={cn("group relative rounded-[inherit] overflow-hidden bg-white/5", className)}
+      className={cn("group relative rounded-[inherit] bg-white/5", className)}
       onMouseMove={handlePointerMove}
       onMouseLeave={reset}
     >

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import Navbar from './Navbar'
 import Footer from './Footer'
+import CookieConsent from './CookieCompliance/CookieConsent'
 import NewsletterSection from './NewsletterSection'
 import { useI18n, t } from '../i18n/context'
 
@@ -34,13 +35,14 @@ export default function Layout() {
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden w-full">
+    <div className="min-h-screen flex flex-col w-full">
       <Navbar />
       <main className="flex-1">
         <Outlet />
       </main>
       <NewsletterSection />
       <Footer />
+      <CookieConsent />
 
       {/* WhatsApp Floating Button */}
       <div className="whatsapp-float-container">

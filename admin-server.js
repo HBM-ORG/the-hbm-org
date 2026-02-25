@@ -12,6 +12,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+import fetch from 'node-fetch';
+import crypto from 'crypto';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
 // Load .env in development (Railway injects env vars automatically in production)
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
@@ -38,6 +43,24 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
+// --- Subdomain Routing ---
+app.use((req, res, next) => {
+    const host = req.headers.host || '';
+    // Redirect admin subdomain to the dashboard
+    if (host.startsWith('admin.') && req.path === '/') {
+        return res.redirect('/admin-dashboard');
+    }
+    next();
+});
+
+// Middleware for logging
+app.use((req, res, next) => {
+  if (req.path !== '/api/events' && !req.path.startsWith('/assets/')) {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} (Host: ${req.headers.host})`);
+  }
+  next();
+});
+
 // Global Paths
 const EVENTS_FILE_PATH = path.join(__dirname, 'public', 'data', 'events.json');
 const AUTOMATION_CONFIG_PATH = path.join(__dirname, 'src', 'data', 'automationConfig.json');
@@ -48,6 +71,7 @@ const VIDEO_EVENT_CONFIG_PATH = path.join(__dirname, 'src', 'data', 'videoEvent.
 const SUPPRESSION_LIST_PATH = path.join(__dirname, 'src', 'data', 'suppression.json');
 const CAMPAIGNS_FILE_PATH = path.join(__dirname, 'src', 'data', 'campaigns.json');
 const HOW_IT_WORKS_CONFIG_PATH = path.join(__dirname, 'src', 'data', 'howItWorksConfig.json');
+const HOW_IT_WORKS_STAGING_PATH = path.join(__dirname, 'src', 'data', 'howItWorksStaging.json');
 const KNOWLEDGE_BASE_CONFIG_PATH = path.join(__dirname, 'src', 'data', 'knowledgeBaseConfig.json');
 const ASSETS_DIR = path.join(__dirname, 'public', 'assets', 'events');
 const CMS_ASSETS_DIR = path.join(__dirname, 'public', 'assets', 'cms');
@@ -152,6 +176,27 @@ app.get('/api/images/:folderName', (req, res) => {
     }
 });
 
+// Cookie Consent Logging
+app.post('/api/cookie-consent-log', async (req, res) => {
+    const { choice, settings } = req.body;
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const hashedIp = crypto.createHash('sha256').update(ip || 'unknown').digest('hex');
+
+    try {
+        await prisma.cookieConsentLog.create({
+            data: {
+                choice,
+                settings: JSON.stringify(settings || {}),
+                hashedIp
+            }
+        });
+        res.json({ success: true });
+    } catch (error) {
+        logError('CookieConsentLog', error);
+        res.status(500).json({ error: 'Failed to log consent' });
+    }
+});
+
 // 2. Upload Image(s) - Bulk Support
 app.post('/api/upload-image', upload.array('images'), (req, res) => {
     if (!req.files || req.files.length === 0) {
@@ -159,6 +204,19 @@ app.post('/api/upload-image', upload.array('images'), (req, res) => {
     }
     const filenames = req.files.map(f => f.filename);
     res.json({ success: true, filenames });
+});
+
+app.get('/api/cookie-consent-logs', async (req, res) => {
+    try {
+        const logs = await prisma.cookieConsentLog.findMany({
+            orderBy: { timestamp: 'desc' },
+            take: 100
+        });
+        res.json(logs);
+    } catch (error) {
+        logError('FetchCookieLogs', error);
+        res.status(500).json({ error: 'Failed to fetch logs' });
+    }
 });
 
 // 2b. Upload General Asset (Video, Partners, etc.)
@@ -269,31 +327,42 @@ app.post('/api/register', (req, res) => {
       registrations = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, 'utf8'));
     }
 
+    // Professional Lead Object
     const newRegistration = {
       id: Date.now(),
       name,
       email,
       phone,
-      source: source || 'unknown',
+      acquisitionSource: req.body.source || 'Direct', // How they heard about us
+      registrationSource: req.body.regSource || 'website_general', // Where they clicked
+      source: req.body.regSource || req.body.source || 'Direct Web', // Legacy support
+      category: eventId === 'video-event' ? 'Video Lead' : 'Event Lead',
       eventId: eventId || 'general',
       eventName: eventName || 'General Registration',
       date: new Date().toISOString(),
       language: language || 'en',
-      status: 'confirmed'
+      status: 'confirmed',
+      history: [
+        { type: 'registration', date: new Date().toISOString(), message: `Registered for ${eventName || 'General'}` }
+      ]
     };
 
     registrations.push(newRegistration);
     fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(registrations, null, 2));
 
-    // TRIGGER EVENT SEQUENCE
-    let triggerType = source;
-    if (!triggerType) {
-        triggerType = eventId === 'video-event' ? 'onVideoRegistration' : 'onPhysicalRegistration';
-    }
-    triggerAutomationByEvent(triggerType, newRegistration);
+    // TRIGGER AUTOMATIONS
+    // Trigger specific typed events
+    if (eventId === 'video-event') triggerAutomationByEvent('onVideoRegistration', newRegistration);
+    else triggerAutomationByEvent('onPhysicalRegistration', newRegistration);
+    
+    if (source === '8min_journey') triggerAutomationByEvent('on8MinJourney', newRegistration);
+    
+    // Trigger generic sequence events (from automationConfig.json)
+    triggerAutomationByEvent('registration', newRegistration);
+    triggerAutomationByEvent('site_signup', newRegistration);
 
-    console.log(`New registration: ${name} (${email}) for Event: ${eventName}`);
-    res.json({ success: true, message: 'Registration successful' });
+    console.log(`[CRM] New registration: ${name} (${email}) | Event: ${eventName} | Source: ${source}`);
+    res.json({ success: true, message: 'Registration successful', leadId: newRegistration.id });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Failed to save registration' });
@@ -302,7 +371,7 @@ app.post('/api/register', (req, res) => {
 
 app.post('/api/newsletter', (req, res) => {
   try {
-    const { email, name, language } = req.body;
+    const { email, name, language, source } = req.body;
     if (!email) return res.status(400).json({ error: 'Missing email' });
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -315,24 +384,32 @@ app.post('/api/newsletter', (req, res) => {
       registrations = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, 'utf8'));
     }
 
-    const newRegistration = {
-      id: Date.now(),
-      name: name || 'Subscriber',
-      email,
-      source: 'newsletter',
-      eventId: 'newsletter',
-      eventName: 'Newsletter Subscription',
-      language: language || 'en',
-      date: new Date().toISOString(),
-      status: 'confirmed'
-    };
-
-    if (!registrations.find(r => r.email === email)) {
+    const existing = registrations.find(r => r.email === email);
+    if (!existing) {
+      const newRegistration = {
+        id: Date.now(),
+        name: name || 'Subscriber',
+        email,
+        phone: '',
+        source: source || 'Newsletter Footer',
+        category: 'Subscriber',
+        date: new Date().toISOString(),
+        language: language || 'en',
+        status: 'confirmed',
+        history: [{ type: 'subscription', date: new Date().toISOString(), message: 'Subscribed to Newsletter' }]
+      };
       registrations.push(newRegistration);
       fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(registrations, null, 2));
+      triggerAutomationByEvent('onNewsletterSignup', newRegistration);
+    } else {
+        // Just update or trigger if it's a new subscription attempt
+        existing.category = existing.category === 'Lead' ? 'Lead + Subscriber' : existing.category;
+        if (!existing.history) existing.history = [];
+        existing.history.push({ type: 'subscription', date: new Date().toISOString(), message: 'Re-subscribed to Newsletter' });
+        fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(registrations, null, 2));
+        triggerAutomationByEvent('onNewsletterSignup', existing);
     }
 
-    triggerAutomationByEvent('onNewsletterSignup', newRegistration);
     res.json({ success: true, message: 'Newsletter signup successful' });
   } catch (error) {
     res.status(500).json({ error: 'Failed' });
@@ -398,36 +475,67 @@ const getEmailTemplate = (body, config, trackingId, email, language) => {
 
 const triggerAutomationByEvent = (triggerType, userData) => {
     try {
-        const queue = fs.existsSync(EMAIL_QUEUE_PATH) ? JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH)) : [];
+        if (!fs.existsSync(AUTOMATION_CONFIG_PATH)) return;
         const config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH));
         
-        const activeFlows = (config.flows || []).filter(f => f.active && f.trigger === triggerType);
-        if (activeFlows.length === 0) return;
-
+        const queue = fs.existsSync(EMAIL_QUEUE_PATH) ? JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH)) : [];
         const now = Date.now();
-        const pendingItems = activeFlows.map(flow => {
+        let queuedCount = 0;
+
+        // 1. Process Individual Flows
+        const activeFlows = (config.flows || []).filter(f => f.active && f.trigger === triggerType);
+        activeFlows.forEach(flow => {
             let scheduledFor = now;
             if (flow.delayValue && flow.delayUnit) {
                 const multiplier = flow.delayUnit === 'h' ? 3600000 : flow.delayUnit === 'd' ? 86400000 : 60000;
                 scheduledFor += (parseInt(flow.delayValue) * multiplier);
             }
-            return {
+            queue.push({
                 id: uuidv4(),
                 status: 'pending',
-                scheduledFor: scheduledFor,
+                scheduledFor,
                 data: userData,
                 stepType: 'email',
-                flowId: flow.id
-            };
+                flowId: flow.id,
+                attempts: 0
+            });
+            queuedCount++;
         });
 
-        queue.push(...pendingItems);
-        fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
-        console.log(`🚀 Triggered [${triggerType}] for ${userData.email}`);
-        
-        processQueue();
+        // 2. Process Sequences (Journeys)
+        const activeSequences = (config.sequences || []).filter(s => s.active && s.trigger === triggerType);
+        activeSequences.forEach(seq => {
+            let cumulativeDelay = 0;
+            seq.steps.forEach(step => {
+                if (step.type === 'wait') {
+                    cumulativeDelay += parseDelay(step.duration);
+                } else if (step.type === 'email') {
+                    // Note: If the email has its own duration (e.g. '24h'), add it
+                    const stepDelay = step.duration ? parseDelay(step.duration) : 0;
+                    queue.push({
+                        id: uuidv4(),
+                        status: 'pending',
+                        scheduledFor: now + cumulativeDelay + stepDelay,
+                        data: userData,
+                        stepType: 'email',
+                        flowId: step.flowId,
+                        attempts: 0,
+                        sequenceId: seq.id
+                    });
+                    queuedCount++;
+                }
+            });
+        });
+
+        if (queuedCount > 0) {
+            fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
+            console.log(`🚀 [Email] Queued ${queuedCount} items for trigger [${triggerType}] -> ${userData.email}`);
+            processQueue().catch(err => console.error("[Email] Immediate process failed:", err));
+        } else {
+            console.log(`[Email] No active flows or sequences found for trigger: ${triggerType}`);
+        }
     } catch (err) {
-        logError('triggerAutomationByEvent', err);
+        console.error('[Email] triggerAutomationByEvent Error:', err);
     }
 };
 
@@ -907,26 +1015,70 @@ app.get('/api/registrations', (req, res) => {
     }
 });
 
-// GET Stats by Event ID
-app.get('/api/registrations/stats', (req, res) => {
+// Professional Lead Management
+app.get('/api/crm/leads', (req, res) => {
     try {
-        if (!fs.existsSync(REGISTRATIONS_FILE_PATH)) {
-            return res.json({});
+        if (!fs.existsSync(REGISTRATIONS_FILE_PATH)) return res.json([]);
+        const leads = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, 'utf8'));
+        res.json(leads);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.patch('/api/crm/leads/:id/status', (req, res) => {
+    try {
+        const { status } = req.body;
+        let leads = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, 'utf8'));
+        const leadIndex = leads.findIndex(l => l.id.toString() === req.params.id.toString());
+        if (leadIndex === -1) return res.status(404).json({ error: 'Lead not found' });
+        
+        leads[leadIndex].status = status;
+        if (!leads[leadIndex].history) leads[leadIndex].history = [];
+        leads[leadIndex].history.push({ type: 'status_change', date: new Date().toISOString(), message: `Status changed to ${status}` });
+        
+        fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(leads, null, 2));
+        res.json({ success: true, lead: leads[leadIndex] });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/crm/leads/:id/note', (req, res) => {
+    try {
+        const { note } = req.body;
+        let leads = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, 'utf8'));
+        const leadIndex = leads.findIndex(l => l.id.toString() === req.params.id.toString());
+        if (leadIndex === -1) return res.status(404).json({ error: 'Lead not found' });
+        
+        if (!leads[leadIndex].history) leads[leadIndex].history = [];
+        leads[leadIndex].history.push({ type: 'note', date: new Date().toISOString(), message: note });
+        
+        fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(leads, null, 2));
+        res.json({ success: true, lead: leads[leadIndex] });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Staging & Publish Logic for How It Works
+app.get('/api/cms/how-it-works/staging', (req, res) => {
+    try {
+        const target = fs.existsSync(HOW_IT_WORKS_STAGING_PATH) ? HOW_IT_WORKS_STAGING_PATH : HOW_IT_WORKS_CONFIG_PATH;
+        res.json(JSON.parse(fs.readFileSync(target, 'utf8')));
+    } catch { res.json({}); }
+});
+
+app.post('/api/cms/how-it-works/staging', (req, res) => {
+    try {
+        fs.writeFileSync(HOW_IT_WORKS_STAGING_PATH, JSON.stringify(req.body, null, 2));
+        res.json({ success: true, message: 'Saved to staging' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/cms/how-it-works/publish', (req, res) => {
+    try {
+        if (!fs.existsSync(HOW_IT_WORKS_STAGING_PATH)) {
+            return res.status(400).json({ error: 'No staged changes to publish' });
         }
-        const registrations = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, 'utf8'));
-        
-        // Group by eventId
-        const stats = registrations.reduce((acc, curr) => {
-            const id = curr.eventId || 'general';
-            acc[id] = (acc[id] || 0) + 1;
-            return acc;
-        }, {});
-        
-        res.json(stats);
-    } catch (err) {
-        console.error('Error calculating stats:', err);
-        res.status(500).json({ error: 'Failed to get stats' });
-    }
+        const staged = fs.readFileSync(HOW_IT_WORKS_STAGING_PATH);
+        fs.writeFileSync(HOW_IT_WORKS_CONFIG_PATH, staged);
+        res.json({ success: true, message: 'Published to live site!' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ==========================================
@@ -967,6 +1119,10 @@ app.get('/api/cms/how-it-works', (req, res) => {
 
 app.post('/api/cms/how-it-works', (req, res) => {
     try {
+        const config = fs.existsSync(HOW_IT_WORKS_CONFIG_PATH) ? JSON.parse(fs.readFileSync(HOW_IT_WORKS_CONFIG_PATH)) : {};
+        if (config.isLocked && !req.query.force) {
+            return res.status(403).json({ error: 'Section is locked' });
+        }
         fs.writeFileSync(HOW_IT_WORKS_CONFIG_PATH, JSON.stringify(req.body, null, 2));
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -981,6 +1137,10 @@ app.get('/api/cms/knowledge-base', (req, res) => {
 
 app.post('/api/cms/knowledge-base', (req, res) => {
     try {
+        const config = fs.existsSync(KNOWLEDGE_BASE_CONFIG_PATH) ? JSON.parse(fs.readFileSync(KNOWLEDGE_BASE_CONFIG_PATH)) : {};
+        if (config.isLocked && !req.query.force) {
+            return res.status(403).json({ error: 'Section is locked' });
+        }
         fs.writeFileSync(KNOWLEDGE_BASE_CONFIG_PATH, JSON.stringify(req.body, null, 2));
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -1009,6 +1169,194 @@ app.get('/api/events', (req, res) => {
     }
 });
 
+app.get('/api/registrations/stats', async (req, res) => {
+    try {
+        const registrationsPath = path.join(__dirname, 'data', 'registrations.json');
+        let registrations = [];
+        if (fs.existsSync(registrationsPath)) {
+            registrations = JSON.parse(fs.readFileSync(registrationsPath, 'utf8'));
+        }
+        
+        // Return some basic stats
+        res.json({
+            total: registrations.length,
+            today: registrations.filter(r => new Date(r.timestamp).toDateString() === new Date().toDateString()).length,
+            thisMonth: registrations.filter(r => new Date(r.timestamp).getMonth() === new Date().getMonth()).length,
+            all: registrations
+        });
+    } catch (err) {
+        console.error("Error fetching stats:", err);
+        res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
+
+// ==========================================
+// AI FETCHING ENDPOINTS
+// ==========================================
+
+// Helper for AI calls with multiple fallbacks
+async function callAI(prompt, systemPrompt = "You are a helpful assistant.") {
+    // Standard models to try (gemini-2.5-flash currently working)
+    const geminiModels = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-pro-latest'];
+    const openaiModel = 'gpt-4o-mini';
+    
+    // 1. Try Gemini Models (Free tier friendly)
+    for (const model of geminiModels) {
+        if (!process.env.GEMINI_API_KEY) break;
+        try {
+            console.log(`[AI] Trying Gemini (${model})...`);
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+
+            if (res.ok) {
+                const json = await res.json();
+                const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) return text;
+            } else {
+                const err = await res.json();
+                console.warn(`[AI] Gemini (${model}) failed: ${err.error?.message}`);
+            }
+        } catch (e) {
+            console.error(`[AI] Gemini (${model}) Error:`, e.message);
+        }
+    }
+
+    // 2. Try OpenAI Fallback
+    if (process.env.OPENAI_API_KEY) {
+        try {
+            console.log(`[AI] Trying OpenAI (${openaiModel})...`);
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` },
+                body: JSON.stringify({
+                    model: openaiModel,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: prompt }
+                    ],
+                    response_format: { type: "json_object" }
+                })
+            });
+
+            if (res.ok) {
+                const json = await res.json();
+                return json.choices?.[0]?.message?.content;
+            } else {
+                const err = await res.json();
+                console.warn(`[AI] OpenAI failed: ${err.error?.message || 'Unknown'}`);
+            }
+        } catch (e) {
+            console.error(`[AI] OpenAI Error:`, e.message);
+        }
+    }
+
+    return null; // All failed
+}
+
+app.post('/api/ai/fetch-book', async (req, res) => {
+    const { title, author } = req.body;
+    if (!title) return res.status(400).json({ error: 'Title is required' });
+
+    try {
+        let book;
+        const queryStr = title + (author ? ` ${author}` : '');
+        try {
+            // Try with key first
+            let googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryStr)}&key=${process.env.GOOGLE_BOOKS_API_KEY || ''}`);
+            let googleData = await googleRes.json();
+            
+            // If nothing found or error, try without key (sometimes key restricts results)
+            if (!googleData.items || googleData.items.length === 0) {
+                googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryStr)}`);
+                googleData = await googleRes.json();
+            }
+            
+            book = googleData.items?.[0]?.volumeInfo;
+        } catch (e) { console.error("Google Books Failed"); }
+
+        let aiData = {};
+        const prompt = `Return ONLY a JSON object for the book "${title}" ${author ? `by ${author}` : ''}:
+        {
+          "authorQuote": "A direct profound quote by the author",
+          "threeKeySentences": ["Insight 1", "Insight 2", "Insight 3"],
+          "shortSummary": "Impactful 50-word essence",
+          "fullSummary": "200-word deep dive analysis",
+          "finalQuote": "Final life-changing quote",
+          "author": "The author name"
+        }`;
+
+        const aiText = await callAI(prompt, "You are a world-class book curator for The Human Being Movement. Respond in JSON.");
+        if (aiText) {
+            try {
+                const cleaned = aiText.match(/\{[\s\S]*\}/)[0];
+                aiData = JSON.parse(cleaned);
+                console.log(`[AI] Success for: ${title}`);
+            } catch (e) { console.error("AI Parse Fail"); }
+        }
+
+        res.json({
+            title: book?.title || title,
+            author: aiData.author || (book?.authors ? book.authors[0] : author) || 'Unknown Author',
+            description: book?.description || aiData.shortSummary || 'No description available.',
+            coverUrl: book?.imageLinks?.thumbnail?.replace('http:', 'https:') || null,
+            authorQuote: aiData.authorQuote || '',
+            threeKeySentences: aiData.threeKeySentences || [],
+            shortSummary: aiData.shortSummary || '',
+            fullSummary: aiData.fullSummary || '',
+            finalQuote: aiData.finalQuote || '',
+            pageCount: book?.pageCount || 0,
+            infoLink: book?.infoLink || '',
+            _aiSuccess: !!aiText
+        });
+    } catch (err) {
+        console.error("Fetch Book Crash:", err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.post('/api/ai/fetch-video', async (req, res) => {
+    const { youtubeUrl } = req.body;
+    if (!youtubeUrl) return res.status(400).json({ error: 'YouTube URL is required' });
+
+    try {
+        const videoIdMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/|.*shorts\/))([^?&"'>]+)/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+        let aiData = { title: '', description: '', hashtags: [], accentColor: '#6160AB' };
+        const prompt = `Analyze this YouTube video: ${youtubeUrl}.
+        Return ONLY JSON:
+        {
+          "title": "Growth-oriented title",
+          "description": "Compelling summary",
+          "hashtags": ["#Tag1", "#Tag2", "#Tag3"],
+          "accentColor": "#HexColor"
+        }`;
+
+        const aiText = await callAI(prompt, "You are a curator. Return JSON only.");
+        if (aiText) {
+            try {
+                const parsed = JSON.parse(aiText.match(/\{[\s\S]*\}/)[0]);
+                aiData = { ...aiData, ...parsed };
+            } catch (e) { console.error("Video AI Parse Fail"); }
+        }
+
+        res.json({
+            videoId,
+            youtubeUrl,
+            thumbnail: videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null,
+            ...aiData,
+            _aiSuccess: !!aiText
+        });
+    } catch (err) {
+        console.error("Fetch Video Crash:", err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // ==========================================
 // SERVE PRODUCTION BUILD
 // ==========================================
@@ -1016,21 +1364,19 @@ app.get('/api/events', (req, res) => {
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Route all other requests to the React app (Client Side Routing)
-// MOVED AFTER API ROUTES
-
-// END CMS SECTION
-
-app.get('/{*any}', (req, res) => {
-    // Only serve index.html for non-API routes
-    if (req.path.startsWith('/api/') || req.path.startsWith('/assets/')) {
-        return res.status(404).json({ error: 'Not Found' });
-    }
+// EXCLUDE /api routes from catch-all so they return 404 JSON instead of HTML
+app.get(/^(?!\/api|\/assets).*/, (req, res) => {
     const indexPath = path.join(__dirname, 'dist', 'index.html');
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
     } else {
-        res.status(404).send('Site build not found. Run npm run build.');
+        res.status(404).json({ error: 'Not Found' });
     }
+});
+
+// Explicit 404 for API to prevent HTML responses
+app.use('/api', (req, res) => {
+    res.status(404).json({ error: 'API Endpoint not found' });
 });
 
 app.listen(PORT, '0.0.0.0', () => {

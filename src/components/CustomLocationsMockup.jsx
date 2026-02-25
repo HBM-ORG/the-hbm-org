@@ -1,99 +1,208 @@
-import { MapPin, Check, ArrowLeft } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { Check, Info, Sparkles } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useI18n, t } from '../i18n/context'
+import { siteContent } from '../data/content'
 
 export default function CustomLocationsMockup() {
   const { lang } = useI18n()
   
+  const locations = [
+    { id: 'terrace', name: { en: 'The Terrace', he: 'המרפסת' }, image: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80' },
+    { id: 'bar', name: { en: 'Wine Stand', he: 'דוכן יין' }, image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=800&q=80' },
+    { id: 'lounge', name: { en: 'Networking Lounge', he: 'מתחם הנטוורקינג' }, image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80' },
+    { id: 'lobby', name: { en: 'The Lobby', he: 'לובי הכניסה' }, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' },
+    { id: 'coffee', name: { en: 'Barista Corner', he: 'עמדת הבריסטה' }, image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80' },
+    { id: 'vip', name: { en: 'Executive Lounge', he: 'טרקלין VIP יוקרתי' }, image: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80' },
+    { id: 'hall', name: { en: 'The Hub', he: 'הספוט המרכזי' }, image: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80' },
+    { id: 'rooftop', name: { en: 'The Rooftop', he: 'הגג (Rooftop)' }, image: 'https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=800&q=80' }
+  ]
+
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [tipIndex, setTipIndex] = useState(0)
+  const [activeTab, setActiveTab] = useState('tip')
+  const [direction, setDirection] = useState(0)
+
+  const icebreakers = siteContent.home.features.iceBreakers.questions || []
+  const tips = siteContent.home.features.iceBreakers.tips || []
+
+  // Decoupled drag handlers
+  const handleDragTipEnd = (event, info) => {
+    const swipeThreshold = 50
+    if (Math.abs(info.offset.x) > swipeThreshold) {
+      if (info.offset.x > 0) {
+        setDirection(1)
+        setTipIndex((prev) => (prev + 1) % tips.length)
+      } else {
+        setDirection(-1)
+        setTipIndex((prev) => (prev - 1 + tips.length) % tips.length)
+      }
+    }
+  }
+
+  const handleDragImageEnd = (event, info) => {
+    const swipeThreshold = 50
+    if (Math.abs(info.offset.x) > swipeThreshold) {
+      if (info.offset.x > 0) {
+        setDirection(1)
+        setCurrentIndex((prev) => (prev + 1) % locations.length)
+      } else {
+        setDirection(-1)
+        setCurrentIndex((prev) => (prev - 1 + locations.length) % locations.length)
+      }
+    }
+  }
+
+  const variants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+      scale: 0.9,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+    },
+    exit: (direction) => ({
+      x: direction > 0 ? -300 : 300,
+      opacity: 0,
+      scale: 0.9,
+    }),
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      // Auto-cycle ONLY the images
+      setDirection(1)
+      setCurrentIndex((prev) => (prev + 1) % locations.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [locations.length])
+
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="relative w-full max-w-[340px] mx-auto overflow-hidden bg-[#F5F6FE] rounded-[48px] border-[12px] border-white shadow-2xl p-6 flex flex-col items-center"
-      style={{ height: '640px' }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      className="relative w-full max-w-[340px] mx-auto overflow-hidden bg-white/50 backdrop-blur-xl rounded-[48px] border-8 border-white shadow-2xl p-7 flex flex-col items-center"
     >
-      <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }}
-        whileInView={{ scale: 1, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.2 }}
-        className="text-[#6160AB] text-[42px] font-black mb-6 mt-4 tracking-tighter"
-      >
-        Go to:
-      </motion.div>
-      
-      {/* Location Image Card */}
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.4 }}
-        className="relative w-full h-[220px] rounded-[24px] overflow-hidden mb-6 shadow-xl bg-gray-900 group"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900">
-           {/* Fallback pattern / image since we want a cool vibe but don't have the exact DJ photo */}
-           <div className="absolute inset-0 opacity-40 mix-blend-luminosity bg-[url('https://images.unsplash.com/photo-1516280440502-6cfa358249cd?q=80&w=800&auto=format&fit=crop')] bg-cover bg-center group-hover:mix-blend-normal transition-all duration-700" />
-        </div>
-        <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-end">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#bbc0ff] backdrop-blur-md flex items-center justify-center text-[#6160AB] shadow-inner">
-              <MapPin size={22} strokeWidth={2.5} />
+      <h3 className="text-[32px] font-black text-[#6160AB] mb-8 font-['Sora'] tracking-tight">
+        {t({ en: 'Go to:', he: 'לכו ל:' }, lang)}
+      </h3>
+
+      {/* Main Image Card */}
+      <div className="relative w-full aspect-[4/3] rounded-[32px] overflow-hidden shadow-2xl mb-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.7 }}
+            className="absolute inset-0"
+          >
+            <img 
+              src={locations[currentIndex].image} 
+              alt={t(locations[currentIndex].name, lang)}
+              className="w-full h-full object-cover"
+            />
+            {/* Visual Overlay - Premium Dark Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent flex flex-col justify-end p-6">
+               <h4 className="text-2xl font-black text-white font-['Sora'] tracking-tight">
+                  {t(locations[currentIndex].name, lang)}
+                </h4>
             </div>
-            <span className="text-white text-2xl font-black tracking-wide text-shadow-sm">
-              {t({ en: 'DJ Zone', he: 'עמדת דיג׳יי' }, lang)}
-            </span>
-          </div>
-        </div>
-      </motion.div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-      {/* Conversation Tip Card */}
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.6 }}
-        className="w-full bg-white rounded-2xl p-5 shadow-sm border border-[#bbc0ff]/20 mb-auto relative"
-      >
-         <div className="flex items-center gap-2 mb-3">
-           <span className="text-xl">💡</span>
-           <span className="text-xs font-bold text-[#6160AB] uppercase tracking-wider">
-             {t({ en: 'Conversation Tip', he: 'טיפ לשיחה' }, lang)}
-           </span>
-         </div>
-         <p className="text-[#1a1a1a] font-medium leading-tight mb-5 text-[15px]">
-           {t({ en: 'Be genuinely curious — show real interest in the other person.', he: 'היו סקרנים באמת — הראו עניין אכפתי ואמיתי.' }, lang)}
-         </p>
-         <div className="border-t border-gray-100 pt-3 text-center text-xs text-gray-400 font-bold flex items-center justify-center gap-2">
-           <ArrowLeft size={12} className="text-gray-300" />
-           {t({ en: 'Swipe me', he: 'החליקו אותי' }, lang)}
-           <ArrowLeft size={12} className="text-gray-300 rotate-180" />
-         </div>
-      </motion.div>
+      {/* Progress Dots */}
+      <div className="flex gap-2 mb-8">
+        {locations.map((_, idx) => (
+          <div 
+            key={idx}
+            className={`h-1.5 transition-all duration-700 rounded-full ${
+              idx === currentIndex ? 'w-8 bg-[#6160AB]' : 'w-1.5 bg-[#6160AB]/10'
+            }`}
+          />
+        ))}
+      </div>
 
-      {/* Big Action Button */}
-      <motion.button 
-        initial={{ scale: 0.9, opacity: 0 }}
-        whileInView={{ scale: 1, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.8 }}
-        className="w-full py-4 bg-[#bbc0ff] hover:bg-[#a5abbf] text-white rounded-2xl font-black text-xl mb-4 mt-6 transition-colors flex justify-center items-center gap-3 shadow-md"
-      >
-        <Check size={24} strokeWidth={4} />
-        {t({ en: "I've arrived!", he: "הגעתי!" }, lang)}
-      </motion.button>
-      
-      {/* Secondary Button */}
-      <motion.button 
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 1 }}
-        className="py-3 px-10 bg-white border border-gray-200 text-gray-500 rounded-2xl font-bold hover:bg-gray-50 transition-colors shadow-sm text-sm"
-      >
-        {t({ en: 'Back', he: 'חזור' }, lang)}
-      </motion.button>
+      {/* Tip Card - Decoupled with Manual Interaction Only */}
+      <div className="relative w-full h-[220px] mb-8">
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          <motion.div 
+            key={`${tipIndex}-${activeTab}`}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: 'spring', stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 },
+              scale: { duration: 0.2 }
+            }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.7}
+            onDragEnd={handleDragTipEnd}
+            className="absolute w-full bg-white rounded-[32px] p-6 shadow-xl border-4 border-hbm-orange/10 flex flex-col cursor-grab active:cursor-grabbing"
+          >
+            {/* Card Tabs */}
+            <div className="flex gap-3 mb-6">
+              <button
+                onClick={(e) => { e.stopPropagation(); setActiveTab('icebreaker'); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black transition-all ${
+                  activeTab === 'icebreaker'
+                    ? 'bg-hbm-orange text-white shadow-md'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                <span>❄️</span>
+                {t({ en: 'ICE-BREAKER', he: 'שוברי קרח' }, lang)}
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setActiveTab('tip'); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black transition-all ${
+                  activeTab === 'tip'
+                    ? 'bg-hbm-purple text-white shadow-md'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                <span>💡</span>
+                {t({ en: 'TIP', he: 'טיפ' }, lang)}
+              </button>
+            </div>
 
+            {/* Content */}
+            <div className="min-h-[60px] flex items-center">
+              <p className="text-[14px] text-hbm-dark font-semibold font-['Sora'] leading-relaxed">
+                {activeTab === 'tip' 
+                  ? t(tips[tipIndex], lang) 
+                  : t(icebreakers[tipIndex], lang)}
+              </p>
+            </div>
+
+            {/* Swipe Hint */}
+            <div className="mt-6 flex justify-center items-center gap-2 text-[10px] text-gray-300 font-bold uppercase tracking-widest font-['Sora']">
+              <span className="opacity-50">←</span>
+              <span>{t({ en: 'Swipe me', he: 'החליקו' }, lang)}</span>
+              <span className="opacity-50">→</span>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Action Button */}
+      <button className="w-full py-5 bg-[#6160AB] text-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 shadow-lg hover:shadow-2xl transition-all duration-300 font-['Sora'] uppercase tracking-widest">
+        <Check size={20} />
+        <span>{t({ en: "I've arrived!", he: "הגעתי!" }, lang)}</span>
+      </button>
+
+      <button className="mt-5 text-[10px] font-black text-gray-400 uppercase tracking-widest font-['Sora']">
+        {t({ en: 'Back', he: 'חזרה' }, lang)}
+      </button>
     </motion.div>
   )
 }

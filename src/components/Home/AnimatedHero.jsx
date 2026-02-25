@@ -36,10 +36,10 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
               </motion.div>
             ) : (
                 <div className="flex -space-x-8 md:-space-x-10">
-                  <motion.div className="video-circle w-28 h-28 md:w-36 md:h-36 border-[6px]" style={{ borderColor: pair.leftBorder || '#bbc0ff' }}>
+                  <motion.div className="video-circle w-28 h-28 md:w-32 md:h-32 border-[6px]" style={{ borderColor: pair.leftBorder || '#bbc0ff' }}>
                     {pair.left?.endsWith('.mp4') ? <video src={pair.left} autoPlay muted loop playsInline poster={pair.leftPoster} className="w-full h-full object-cover" /> : <img src={pair.left} alt="" className="w-full h-full object-cover scale-[1.25] origin-center" />}
                   </motion.div>
-                  <motion.div className="video-circle w-28 h-28 md:w-36 md:h-36 border-[6px] relative z-10" style={{ borderColor: pair.rightBorder || '#fdb586' }}>
+                  <motion.div className="video-circle w-28 h-28 md:w-32 md:h-32 border-[6px] relative z-10" style={{ borderColor: pair.rightBorder || '#fdb586' }}>
                     {pair.right?.endsWith('.mp4') ? <video src={pair.right} autoPlay muted loop playsInline poster={pair.rightPoster} className="w-full h-full object-cover" /> : <img src={pair.right} alt="" className="w-full h-full object-cover scale-[1.25] origin-center" />}
                   </motion.div>
                 </div>
@@ -105,22 +105,22 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
         </motion.div>
 
         {/* Infinite Marquee for Video Circles */}
-        <div className="relative w-full overflow-hidden mask-gradient-x mb-12 md:mb-20">
+        <div className="relative w-full overflow-hidden mask-gradient-x mb-8 md:mb-12">
           {/* Duplicate sets for infinite loop handled safely inside MarqueeTrack now */}
           {marqueeContent}
         </div>
 
         {/* Main headline - Grid layout for strict 2 lines */}
         <motion.h1
-          className="text-4xl md:text-6xl lg:text-[7.5rem] font-bold mb-10 md:mb-16 leading-[1.1] tracking-tight"
+          className="text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[6.2rem] font-bold mb-6 md:mb-10 leading-[1.1] tracking-tight"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           dir={isHe ? 'rtl' : 'ltr'}
         >
           {/* Line 1: Prefix + Rotating Word */}
-          <div className="flex justify-center items-center gap-x-3 md:gap-x-5 mb-3 md:mb-4 whitespace-nowrap">
-            <span className="text-hbm-purple">
+          <div className="flex flex-nowrap justify-center items-center gap-x-2 md:gap-x-5 mb-2 md:mb-4 whitespace-nowrap overflow-hidden">
+            <span className="text-hbm-purple shrink-0">
               {t(titlePrefix, lang)}
             </span>
             <motion.span
@@ -143,14 +143,14 @@ export default function AnimatedHero({ imagePairs, titlePrefix, rotatingWords, r
           </div>
           
           {/* Line 2: Suffix */}
-          <div className="text-hbm-purple block">
+          <div className="text-hbm-purple block mt-1">
             {t(titleSuffix, lang)}
           </div>
         </motion.h1>
 
         {/* Subheadline */}
         <motion.p
-          className="text-lg md:text-xl text-hbm-gray max-w-2xl mx-auto mb-14 md:mb-20"
+          className="text-sm md:text-lg lg:text-xl text-hbm-gray max-w-[90%] md:max-w-2xl mx-auto mb-10 md:mb-20 px-2 md:px-0 leading-relaxed"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}

@@ -11,6 +11,7 @@ import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
 import DidYouKnowSection from '../components/Meeter/DidYouKnowSection'
 import { HowItWorks } from '../components/Home'
+import SEO from '../components/SEO'
 
 export default function MeeterWhat() {
   const { lang } = useI18n()
@@ -25,6 +26,7 @@ export default function MeeterWhat() {
 
   return (
     <div className="min-h-screen bg-hbm-cream">
+      <SEO />
 
       {/* ── S1: HERO + VIDEO TOGGLE ── */}
       <section className="bg-hbm-cream pt-20 pb-12">
@@ -43,7 +45,7 @@ export default function MeeterWhat() {
               <button onClick={() => setMode('physical')} className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${mode==='physical'?'bg-hbm-orange text-white shadow-lg':'bg-white text-hbm-gray hover:bg-gray-100 border border-transparent hover:border-gray-200'}`}>
                  {t({ en: 'Face2Face', he: 'פיזי' }, lang)}
               </button>
-              <button onClick={() => setMode('video')} className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${mode==='virtual'?'bg-hbm-purple text-white shadow-lg':'bg-white text-hbm-gray hover:bg-gray-100 border border-transparent hover:border-gray-200'}`}>
+              <button onClick={() => setMode('virtual')} className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${mode==='virtual'?'bg-hbm-purple text-white shadow-lg':'bg-white text-hbm-gray hover:bg-gray-100 border border-transparent hover:border-gray-200'}`}>
                  {t({ en: 'Video', he: 'וירטואלי' }, lang)}
               </button>
             </div>

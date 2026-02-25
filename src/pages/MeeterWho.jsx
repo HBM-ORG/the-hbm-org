@@ -11,6 +11,8 @@ import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
 import { WobbleCard } from '../components/ui/wobble-card'
 import { motion, AnimatePresence } from 'framer-motion'
+import LeadGenCTA from '../components/LeadGenCTA'
+import SEO from '../components/SEO'
 
 
 const tabs = [
@@ -184,6 +186,7 @@ export default function MeeterWho() {
 
   return (
     <div className="min-h-screen bg-hbm-cream relative transition-colors duration-700">
+      <SEO />
       
       {/* Hero */}
       <section className="relative z-10 pt-20 pb-16 flex flex-col items-center">
@@ -334,9 +337,12 @@ export default function MeeterWho() {
         </BubbleContainer>
       </section>
 
+      {/* Lead Generation CTA */}
+      <LeadGenCTA />
+
       {/* Success Stories (Classic Centered Design in Looping Marquee) */}
       {testimonialsList.length > 0 && (
-        <section className="relative z-10 py-32 bg-hbm-cream overflow-hidden">
+        <section className="relative z-10 py-32 overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 mb-16 text-center">
             <EyebrowBadge text={lang === 'he' ? 'סיפורי הצלחה' : 'SUCCESS STORIES'} />
             <h2 className="text-4xl md:text-5xl font-black text-hbm-purple mt-4">{t({en:'Real Impact.',he:'השפעה אמיתית.'},lang)}</h2>

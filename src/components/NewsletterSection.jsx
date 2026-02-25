@@ -17,7 +17,7 @@ export default function NewsletterSection() {
       const res = await fetch(`${base}/api/newsletter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, language: lang })
+        body: JSON.stringify({ email, language: lang, source: 'footer_newsletter' })
       })
 
       if (res.ok) {

@@ -5,9 +5,10 @@
       "name": "Elad Maor Hefets",
       "role": "Founder & CEO",
       "nickname": "The Visionary",
-      "imageUrl": "https://www.thehbm.org/wp-content/uploads/2025/06/1e6deea839ca22490e8568efb155ac2e1e7a58c0.png",
+      "imageUrl": "/assets/team/1764669004079.png",
       "linkedin": "https://www.linkedin.com/in/elad-hefets/",
-      "bio": "The heart behind it all. Elad is the one who saw the possibility before anyone else did—and then made it happen. A family-first kind of guy with a mind full of ideas and a whiteboard always nearby. He's the glue, the dreamer, and the reason we're all here."
+      "bio": "The heart behind it all. Elad is the one who saw the possibility before anyone else did—and then made it happen. A family-first kind of guy with a mind full of ideas and a whiteboard always nearby. He's the glue, the dreamer, and the reason we're all here.",
+      "image": "/assets/team/1764669004079.png"
     },
     {
       "id": "alex",
@@ -16,52 +17,60 @@
       "nickname": "The Architect",
       "imageUrl": "/assets/team/alex.jpg",
       "linkedin": "https://www.linkedin.com/in/shraalex/",
-      "bio": "The technical mastermind behind The HBM. Alex transforms complex visions into seamless, scalable reality. With a razor-sharp focus on architecture and user experience, he's the one making sure the magic happens reliably and beautifully."
+      "bio": "The technical mastermind behind The HBM. Alex transforms complex visions into seamless, scalable reality. With a razor-sharp focus on architecture and user experience, he's the one making sure the magic happens reliably and beautifully.",
+      "image": "/assets/team/alex.jpg"
     },
     {
       "id": "tal",
       "name": "Tal Zohar",
       "role": "CFO",
       "nickname": "The Real CEO (Don't tell Elad)",
-      "imageUrl": "https://www.thehbm.org/wp-content/uploads/2025/06/c40261069a4f345058760204cefee4e2725ed872-min-1.png",
+      "imageUrl": "/assets/team/1688974168644.jpeg",
       "linkedin": "https://www.linkedin.com/in/tal-zohar-1807311ab/",
-      "bio": "Tal's the force that keeps everything grounded, on track, and somehow still smiling. While we joke that she's the CEO in practice, no one's arguing. With a calm presence and sharp instincts, she quietly (but powerfully) makes sure things actually get done."
+      "bio": "Tal's the force that keeps everything grounded, on track, and somehow still smiling. While we joke that she's the CEO in practice, no one's arguing. With a calm presence and sharp instincts, she quietly (but powerfully) makes sure things actually get done.",
+      "image": "/assets/team/1688974168644.jpeg"
     },
     {
       "id": "michal",
       "name": "Michal Merjan",
       "role": "Office Manager",
       "nickname": "Office Manager & Team Cat Whisperer",
-      "imageUrl": "https://www.thehbm.org/wp-content/uploads/2025/06/43dd6118559ee6899554fedf7bf4f0bc3d456d40-min.png",
+      "imageUrl": "/assets/team/1764586531367.jpeg",
       "linkedin": "https://www.linkedin.com/in/michal-merjan-996004352/",
-      "bio": "More than just our office manager—Michal is the pulse, the hug, the one who remembers your birthday and your caffeine preference. Her love for cats is legendary, and honestly, we suspect they help her run the place behind the scenes."
+      "bio": "More than just our office manager—Michal is the pulse, the hug, the one who remembers your birthday and your caffeine preference. Her love for cats is legendary, and honestly, we suspect they help her run the place behind the scenes.",
+      "image": "/assets/team/1764586531367.jpeg"
     },
     {
       "id": "yuval",
       "name": "Yuval Hefets",
       "role": "Data Analyst",
       "nickname": "Turbo #1 (by 17 minutes and proud of it)",
-      "imageUrl": "https://www.thehbm.org/wp-content/uploads/2025/06/3c7a7591d92ab7c875b7c10f685c255e3f7abd31-min.png",
+      "imageUrl": "/assets/team/1755082475456.jpeg",
       "linkedin": "https://www.linkedin.com/in/yuval-meir-hefetz/",
-      "bio": "The older twin (by technicality, not by maturity), Yuval brings sharp focus and fresh curiosity into everything he does. Recently diving into data analysis, he's all about finding the hidden patterns behind how people connect. Equal parts thoughtful and turbocharged, he's proof that energy and insight make a powerful combo."
+      "bio": "The older twin (by technicality, not by maturity), Yuval brings sharp focus and fresh curiosity into everything he does. Recently diving into data analysis, he's all about finding the hidden patterns behind how people connect. Equal parts thoughtful and turbocharged, he's proof that energy and insight make a powerful combo.",
+      "image": "/assets/team/1755082475456.jpeg"
     },
     {
       "id": "liad",
       "name": "Liad Hefets",
       "role": "Marketing Manager",
       "nickname": "Turbo #2 (but definitely the louder one)",
-      "imageUrl": "https://www.thehbm.org/wp-content/uploads/2025/11/PHOTO-2025-11-24-14-47-49.jpg",
+      "imageUrl": "/assets/team/WhatsApp Image 2026-02-24 at 10.14.53.jpeg",
       "linkedin": "https://www.linkedin.com/in/liad-hefets/",
-      "bio": "If marketing had a hype squad, Liad would lead it. Bold, warm, and always two steps ahead, he's got a gift for opening doors—and conversations. While Yuval dives into data, Liad dives into people. Together, they're a force. Separately? Still unstoppable."
+      "bio": "If marketing had a hype squad, Liad would lead it. Bold, warm, and always two steps ahead, he's got a gift for opening doors—and conversations. While Yuval dives into data, Liad dives into people. Together, they're a force. Separately? Still unstoppable.",
+      "image": "/assets/team/WhatsApp Image 2026-02-24 at 10.14.53.jpeg"
     },
     {
       "id": "shon",
       "name": "Shon Hazan",
       "role": "Head of Business Development",
       "nickname": "The Connector From the North",
-      "imageUrl": "https://www.thehbm.org/wp-content/uploads/2025/11/PHOTO-2025-11-24-14-45-26.jpg",
+      "imageUrl": "/assets/team/1757250848728.jpeg",
       "linkedin": "https://www.linkedin.com/in/shon-hazan-8b2046270/",
-      "bio": "Shon came to us from Canada with a smile that feels like a warm welcome and a network that seems to span half the planet. After years in clean energy and international business, he randomly showed up at one of our Friday events and walked out with a job offer from Elad. Since then, he has been our door opener, deal starter, and the person who can turn any conversation into an opportunity."
+      "bio": "Shon came to us from Canada with a smile that feels like a warm welcome and a network that seems to span half the planet. After years in clean energy and international business, he randomly showed up at one of our Friday events and walked out with a job offer from Elad. Since then, he has been our door opener, deal starter, and the person who can turn any conversation into an opportunity.",
+      "image": "/assets/team/1757250848728.jpeg",
+      "imagePosition": "center 20%",
+      "imageScale": 1.4
     }
   ],
   "testimonials": [
@@ -88,6 +97,14 @@
       "role": "Tech CEO",
       "stars": 5,
       "companyLogo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1667px-Apple_logo_black.svg.png"
+    },
+    {
+      "quote": "tjkv sfsdgfsg",
+      "author": "Nameg 222",
+      "role": "Context4",
+      "stars": 5,
+      "companyLogo": "",
+      "id": "1771975306708"
     }
   ],
   "partners": [
@@ -105,11 +122,6 @@
       "id": "p46",
       "name": "Reichman University",
       "logoUrl": "/partner-logos/46.png"
-    },
-    {
-      "id": "p47",
-      "name": "Matam Park",
-      "logoUrl": "/partner-logos/47.png"
     },
     {
       "id": "p48",
@@ -143,8 +155,8 @@
     }
   ],
   "locks": {
-    "team": true,
-    "testimonials": true,
-    "partners": true
+    "team": false,
+    "testimonials": false,
+    "partners": false
   }
 }

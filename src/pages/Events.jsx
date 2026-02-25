@@ -10,6 +10,8 @@ import EyebrowBadge from '../components/EyebrowBadge';
 
 import FeaturedEventCard from '../components/Events/FeaturedEventCard';
 import NextVideoEvent from '../components/Home/NextVideoEvent';
+import SEO from '../components/SEO';
+
 
 const Events = () => {
   const { lang } = useI18n();
@@ -68,6 +70,7 @@ const Events = () => {
 
   return (
     <div className="min-h-screen bg-[#FAF9F5]">
+      <SEO />
       
       {/* 1. Header Section (Who We Are Style) */}
       <section className="bg-[#FAF9F5] pt-20 pb-16">

@@ -15,7 +15,7 @@ export default function BubbleContainer({
   children, 
   bgColor = '#FAF9F5', // Default: Cream
   className = '',
-  // Allow overriding min-height behavior via className if needed, but default is min-h-screen
+  fullHeight = true, // Default to min-h-screen for backwards compatibility
 }) {
   return (
     <motion.div
@@ -25,7 +25,7 @@ export default function BubbleContainer({
       transition={{ duration: 0.6 }}
       className={`
         w-full 
-        min-h-screen 
+        ${fullHeight ? 'min-h-screen' : 'min-h-0'} 
         flex flex-col items-center justify-center 
         relative 
         rounded-[60px] 

@@ -9,6 +9,7 @@ import EyebrowBadge from '../components/EyebrowBadge'
 import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
 import GlobeDemo from '../components/ui/GlobeDemo'
+import SEO from '../components/SEO'
 
 
 const { about, global } = siteContent
@@ -43,9 +44,27 @@ const values = [
   { title: { en: 'Transparency', he: 'שקיפות' }, text: { en: 'Acting with clarity so information and intentions are understood, building trust and sharing the "why".', he: 'פעולה בבהירות כך שמידע וכוונות יובנו, בניית אמון ושיתוף ה"למה".' } },
 ]
 
+// Isolated into its own component so its state doesn't cause About to re-render
+function ValuesGrid({ lang }) {
+  const [flippedCard, setFlippedCard] = useState(null)
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {values.map((v, i) => (
+        <div key={i} onClick={() => setFlippedCard(flippedCard === i ? null : i)}
+             className="cursor-pointer rounded-xl p-5 min-h-[140px] flex items-center justify-center text-center transition-all card-hover"
+             style={{ backgroundColor: flippedCard === i ? '#6160AB' : '#F5F3FF' }}>
+          {flippedCard === i ? (
+            <p className="text-white text-xs leading-relaxed font-['Sora']">{t(v.text, lang)}</p>
+          ) : (
+            <h4 className="font-bold text-hbm-purple text-lg font-['Sora']">{t(v.title, lang)}</h4>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
 export default function About() {
   const { lang } = useI18n()
-  const [flippedCard, setFlippedCard] = useState(null)
   const [selectedMember, setSelectedMember] = useState(null)
   const [teamMembers, setTeamMembers] = useState(about.team.members)
   const whatsappUrl = getWhatsappUrl(lang)
@@ -55,74 +74,121 @@ export default function About() {
     fetch(`${base}/api/site-content`)
       .then(res => res.json())
       .then(data => {
-        if (data.team && data.team.length > 0) setTeamMembers(data.team);
+        if (data.team && data.team.length > 0) {
+          const mergedTeam = data.team.map(member => {
+            const staticMatch = about.team.members.find(sm => sm.name === member.name);
+            if (!member.image && !member.imageUrl && staticMatch) {
+              member.image = staticMatch.image;
+            }
+            return member;
+          });
+          setTeamMembers(mergedTeam);
+        }
       })
       .catch(err => console.error(err));
   }, []);
 
   return (
     <div className="min-h-screen">
+      <SEO 
+        title={t({ en: 'About Us | The HBM', he: 'מי אנחנו | The HBM' }, lang)}
+        description={t({ 
+          en: 'Meet the team behind The Human Being Movement. We are dedicated to bringing people together through authentic 8-minute connections.',
+          he: 'הכירו את הצוות שמאחורי תנועת בני האדם. אנחנו פועלים לחיבור אנשים דרך שיחות אותנטיות של 8 דקות.'
+        }, lang)}
+      />
 
       {/* Hero */}
-      <section className="bg-hbm-cream pt-20 pb-12">
+      <section className="bg-hbm-cream pt-10 pb-6">
           <div className="max-w-4xl mx-auto text-center px-6">
-            <div className="mb-6 flex flex-col items-center">
-              <img src="/logos/theHBM%20LOGO@3x.png" alt="The HBM" className="h-20 w-auto object-contain mb-4" />
+            <div className="mb-4 flex flex-col items-center">
               <EyebrowBadge text="ABOUT US" />
             </div>
-            <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>
+            <h1 className="text-4xl md:text-7xl font-bold mb-2 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>
               {t(about.hero.title, lang)}
             </h1>
-            <p className="text-xl text-hbm-gray">{t(about.hero.subtitle, lang)}</p>
           </div>
       </section>
 
 
+      
+      {/* ── S1.5: WHO WE ARE BUBBLE (NEW) ── */}
+      <section className="bg-hbm-cream pb-12 pt-4">
+        <div className="max-w-4xl mx-auto px-6">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="p-8 md:p-12 rounded-[40px] border-4 border-hbm-purple/20 text-center mx-auto max-w-3xl"
+          >
+            <p className="text-xl md:text-2xl font-bold leading-relaxed font-['Sora'] text-hbm-dark">
+              {lang === 'he' ? (
+                <>
+                  <span className="text-hbm-purple font-black block mb-4 text-3xl md:text-4xl">אנחנו הופכים זרים לחברים!</span>
+                  דרך שיחות אקראיות של 8 דקות,<br/> בשידור חי באירוע עם פלטפורמת Meeter.<br/>
+                  <span className="text-black font-bold mt-4 inline-block tracking-wide">חיבור אמיתי. אנשים אמיתיים.</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-hbm-purple font-black block mb-4 text-3xl md:text-4xl">We turn strangers into friends!</span>
+                  Through 8-minute random conversations,<br/> live at the event with the Meeter platform.<br/>
+                  <span className="text-black font-bold mt-4 inline-block tracking-wide">Real connection. Real people.</span>
+                </>
+              )}
+            </p>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Vision & Mission */}
-      <section id="mission" className="bg-hbm-cream pt-16 pb-8">
+      <section id="mission" className="bg-hbm-cream pt-16 pb-16">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 px-6">
-          <div className="p-4">
-            <h3 className="text-sm font-bold text-hbm-purple uppercase tracking-widest mb-4">
-              {t({ en: 'Our Vision', he: 'החזון שלנו', es: 'Nuestra Visión', fr: 'Notre Vision', de: 'Unsere Vision', ar: 'رؤيتنا' }, lang)}
-            </h3>
-            <p className="text-lg text-hbm-dark leading-relaxed font-semibold">{t(vision, lang)}</p>
-          </div>
-          <div className="p-4">
-            <h3 className="text-sm font-bold text-hbm-orange uppercase tracking-widest mb-4">
-              {t({ en: 'Our Mission', he: 'המשימה שלנו', es: 'Nuestra Misión', fr: 'Notre Mission', de: 'Unsere Mission', ar: 'مهمتنا' }, lang)}
-            </h3>
-            <p className="text-lg text-hbm-dark leading-relaxed">{t(mission, lang)}</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="p-8 bg-white/60 rounded-[32px] border border-hbm-purple/20 flex flex-col items-center text-center shadow-sm"
+          >
+            <span className="inline-block text-xs font-black text-hbm-purple uppercase tracking-[0.2em] border border-hbm-purple/30 rounded-full px-4 py-2 mb-6 font-['Sora']">
+              {t({ en: 'Our Vision', he: 'החזון שלנו' }, lang)}
+            </span>
+            <p className="text-lg md:text-xl text-hbm-dark leading-relaxed font-semibold font-['Sora']">{t(vision, lang)}</p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="p-8 bg-white/60 rounded-[32px] border border-hbm-orange/20 flex flex-col items-center text-center shadow-sm"
+          >
+            <span className="inline-block text-xs font-black text-hbm-orange uppercase tracking-[0.2em] border border-hbm-orange/30 rounded-full px-4 py-2 mb-6 font-['Sora']">
+              {t({ en: 'Our Mission', he: 'המשימה שלנו' }, lang)}
+            </span>
+            <p className="text-lg md:text-xl text-hbm-dark leading-relaxed font-semibold font-['Sora']">{t(mission, lang)}</p>
+          </motion.div>
         </div>
       </section>
 
       {/* Interactive World Connection Section */}
-      <section className="bg-hbm-cream -mt-8 -mb-12">
+      <section className="bg-hbm-cream pt-0 pb-8 overflow-hidden">
+        {/* GlobeDemo manages its own fixed 600px height — do NOT wrap in a resizable container */}
         <GlobeDemo />
+        <div className="text-center mt-4 mb-4">
+          <p className="text-base md:text-lg font-bold text-hbm-dark/60 font-['Sora'] tracking-wide">
+            {t({ en: 'Connecting people around the world', he: 'מחברים אנשים מסביב לעולם' }, lang)}
+          </p>
+        </div>
       </section>
 
       {/* Values — Click to reveal */}
       <section id="values" className="bg-hbm-cream">
         <BubbleContainer bgColor="white">
           <div className="max-w-6xl mx-auto w-full">
-            <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-4">{t(about.values.title, lang)}</h2>
-            <p className="text-hbm-gray text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-4 font-['Sora']">{t(about.values.title, lang)}</h2>
+            <p className="text-hbm-gray text-center mb-12 font-['Sora']">
               {t({ en: 'Click to reveal each value', he: 'לחצו לחשיפת כל ערך', es: 'Haz clic para revelar', fr: 'Cliquez pour révéler', de: 'Klicken zum Aufdecken', ar: 'انقر للكشف' }, lang)}
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {values.map((v, i) => (
-                <div key={i} onClick={() => setFlippedCard(flippedCard === i ? null : i)}
-                     className="cursor-pointer rounded-xl p-5 min-h-[140px] flex items-center justify-center text-center transition-all card-hover"
-                     style={{ backgroundColor: flippedCard === i ? '#6160AB' : '#F5F3FF' }}>
-                  {flippedCard === i ? (
-                    <p className="text-white text-xs leading-relaxed">{t(v.text, lang)}</p>
-                  ) : (
-                    <h4 className="font-bold text-hbm-purple text-lg">{t(v.title, lang)}</h4>
-                  )}
-                </div>
-              ))}
-            </div>
+            {/* ValuesGrid is isolated so its state won't cause the Globe above to re-render */}
+            <ValuesGrid lang={lang} />
           </div>
         </BubbleContainer>
       </section>
@@ -139,12 +205,16 @@ export default function About() {
                   className="text-center group cursor-pointer"
                   onClick={() => setSelectedMember(member)}
                 >
-                  <div className="w-28 h-28 md:w-36 md:h-36 mx-auto rounded-full overflow-hidden mb-4 team-photo border-4 border-white shadow-lg group-hover:scale-105 transition-transform duration-300 ring-2 ring-hbm-purple/10 relative flex items-center justify-center bg-gray-100">
+                  <div className="w-32 h-32 md:w-44 md:h-44 mx-auto rounded-full overflow-hidden mb-6 team-photo border-4 border-white shadow-xl group-hover:scale-105 transition-transform duration-500 ring-2 ring-hbm-purple/10 relative flex items-center justify-center bg-gray-100">
                     {(member.image || member.imageUrl) ? (
                       <img 
                         src={member.image || member.imageUrl} 
                         alt={member.name} 
                         className="w-full h-full object-cover"
+                        style={{
+                          objectPosition: member.imagePosition || 'center center',
+                          transform: member.imageScale ? `scale(${member.imageScale})` : 'none',
+                        }}
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
@@ -166,10 +236,10 @@ export default function About() {
                       </a>
                     )}
                   </div>
-                  <h4 className="font-bold text-hbm-dark text-base md:text-lg">{member.name}</h4>
-                  <p className="text-hbm-purple text-xs md:text-sm font-semibold uppercase tracking-wider">{typeof member.role === 'string' ? member.role : t(member.role, lang)}</p>
+                  <h4 className="font-bold text-hbm-dark text-lg md:text-xl font-['Sora'] tracking-tight">{member.name}</h4>
+                  <p className="text-hbm-purple text-xs md:text-sm font-bold uppercase tracking-widest mt-1 opacity-80 font-['Sora']">{typeof member.role === 'string' ? member.role : t(member.role, lang)}</p>
                   {member.nickname && (
-                    <p className="text-hbm-gray text-xs italic mt-1 opacity-70">
+                    <p className="text-hbm-gray text-xs italic mt-2 opacity-60 font-['Sora']">
                       "{typeof member.nickname === 'string' ? member.nickname : t(member.nickname, lang)}"
                     </p>
                   )}
@@ -290,7 +360,7 @@ export default function About() {
             </h2>
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div className="flex justify-center">
-                <img src="/logos/theHBM%20LOGO@3x.png" alt="HBM Logo" className="max-w-xs w-full" />
+                <img src="/logos/file-2qgRiQ7eUZ1uhx7Xfasq3P-The HBM LOGO.png" alt="HBM Logo" className="w-40 md:w-56 h-auto drop-shadow-xl hover:scale-105 transition-transform duration-500" />
               </div>
               <div>
                 <p className="text-hbm-gray leading-relaxed mb-6">
@@ -308,17 +378,6 @@ export default function About() {
       </section>
 
 
-
-
-
-      {/* Next Page Bridge — To Knowledge */}
-      <NextPageBridge 
-        to="/knowledge"
-        eyebrow={{ en: 'Expand Your Mind', he: 'הרחיבו את הדעת' }}
-        title={{ en: 'The Wisdom Base', he: 'בסיס הידע' }}
-        description={{ en: 'Explore the books, videos, and ideas that inspire our movement.', he: 'גלו את הספרים, הסרטונים והרעיונות שמעוררים השראה בתנועה שלנו.' }}
-        buttonText={{ en: 'Explore Knowledge', he: 'גלו ידע' }}
-      />
 
 
     </div>

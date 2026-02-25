@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Mail, Zap, Clock, Smartphone, Monitor, Sparkles, Send, BarChart3,
-    Settings, Save, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft,
+    Settings, Save, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Search,
     Wand2, Activity, Users, MousePointer, Eye, RefreshCw, PlusCircle,
     Trash2, BellOff, Database, Layers, Radio, ChevronRight, ChevronDown,
     ToggleLeft, ToggleRight, Copy, Play, Pause, FlaskConical, Bell, Image as ImageIcon, Video, Calendar, X
@@ -176,8 +176,8 @@ const EmailEngine = () => {
     const [suppressionList, setSuppressionList] = useState([]);
     const [aiChat, setAiChat] = useState([{ role: 'ai', content: 'Ready to help you craft the perfect connection. What are we building today?' }]);
     const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
-    
-    const textareaRef = useRef(null);
+    const [crmSearch, setCrmSearch] = useState('');
+    const [crmFilter, setCrmFilter] = useState('all');
 
     useEffect(() => {
         fetchAll();
@@ -512,28 +512,92 @@ const EmailEngine = () => {
             {activeView === 'campaigns' && !activeFlowId && (
                 <div className="h-full p-10 overflow-y-auto">
                     <div className="flex items-center justify-between mb-8">
-                        <h3 className="text-2xl font-black text-gray-900 tracking-tighter">Manual Campaigns</h3>
+                        <div>
+                            <h3 className="text-2xl font-black text-gray-900 tracking-tighter">Broadcast Campaigns</h3>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">One-time mass emails to your CRM segments</p>
+                        </div>
                         <button onClick={createCampaign} className="bg-purple-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-700 transition-all shadow-xl flex items-center gap-2">
-                            <PlusCircle className="w-4 h-4" /> Create Broadcast
+                            <PlusCircle className="w-4 h-4" /> New Broadcast
                         </button>
                     </div>
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-4 gap-4 mb-10">
+                        {[
+                            { label: 'Total Campaigns', value: campaigns.length, icon: Send, color: 'text-purple-500 bg-purple-50' },
+                            { label: 'Emails Sent', value: campaigns.reduce((a, c) => a + (c.sentToCount || 0), 0), icon: Mail, color: 'text-blue-500 bg-blue-50' },
+                            { label: 'Active Drafts', value: campaigns.filter(c => c.status === 'draft').length, icon: Edit3, color: 'text-amber-500 bg-amber-50' },
+                            { label: 'Total Leads', value: registrations.length, icon: Users, color: 'text-emerald-500 bg-emerald-50' },
+                        ].map((s, i) => (
+                            <div key={i} className="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-sm">
+                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${s.color}`}>
+                                    <s.icon className="w-4 h-4" />
+                                </div>
+                                <p className="text-2xl font-black text-gray-900">{s.value}</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mt-1">{s.label}</p>
+                            </div>
+                        ))}
+                    </div>
+
                     {campaigns.length === 0 ? (
                         <div className="bg-white border-2 border-dashed border-gray-200 rounded-[3rem] p-20 text-center">
-                            <Send className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                            <p className="text-sm text-gray-400 font-bold">No campaigns yet. Start your first broadcast.</p>
+                            <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Send className="w-8 h-8 text-purple-300" />
+                            </div>
+                            <h4 className="text-xl font-black text-gray-700 mb-2">No Campaigns Yet</h4>
+                            <p className="text-sm text-gray-400 font-medium mb-6">Create a broadcast to send a mass email to your CRM segments.</p>
+                            <button onClick={createCampaign} className="bg-purple-600 text-white px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-purple-700 transition shadow-lg">
+                                + Create First Broadcast
+                            </button>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {campaigns.map(c => (
-                                <div key={c.id} onClick={() => setActiveFlowId(c.id)} className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm hover:shadow-lg cursor-pointer transition-all">
-                                    <h4 className="text-lg font-black text-gray-900 mb-2">{c.name}</h4>
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <span className="bg-purple-50 text-purple-600 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">{c.segment || 'all'}</span>
-                                        <span className="text-[9px] text-gray-400 font-mono uppercase tracking-widest">Sent to: {c.sentToCount || 0}</span>
-                                    </div>
-                                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                        <button onClick={() => setActiveFlowId(c.id)} className="flex-1 bg-gray-50 text-gray-900 py-3 rounded-xl text-[9px] font-black uppercase hover:bg-gray-100">Edit Draft</button>
-                                        <button onClick={() => handleBlast(c.id)} className="flex-1 bg-purple-600 text-white py-3 rounded-xl text-[9px] font-black uppercase hover:bg-purple-700">Blast Now</button>
+                                <div key={c.id} className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-lg transition-all overflow-hidden group">
+                                    {/* Status Bar */}
+                                    <div className={`h-1 w-full ${c.status === 'sent' ? 'bg-emerald-500' : c.status === 'sending' ? 'bg-blue-500 animate-pulse' : 'bg-amber-400'}`} />
+                                    <div className="p-8">
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex-1">
+                                                <h4 className="text-lg font-black text-gray-900 mb-1 leading-tight">{c.name}</h4>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                                                        c.status === 'sent' ? 'bg-emerald-50 text-emerald-600' :
+                                                        c.status === 'sending' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'
+                                                    }`}>{c.status || 'draft'}</span>
+                                                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{c.segment || 'all'} leads</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-3 mb-6 p-4 bg-gray-50 rounded-2xl">
+                                            <div className="text-center">
+                                                <p className="text-xl font-black text-gray-900">{c.sentToCount || 0}</p>
+                                                <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Sent</p>
+                                            </div>
+                                            <div className="text-center border-x border-gray-200">
+                                                <p className="text-xl font-black text-gray-900">{c.openCount || 0}</p>
+                                                <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Opened</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-xl font-black text-gray-900">{c.clickCount || 0}</p>
+                                                <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Clicked</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                            <button onClick={() => setActiveFlowId(c.id)} className="flex-1 bg-gray-900 text-white py-3 rounded-xl text-[9px] font-black uppercase hover:bg-black transition flex items-center justify-center gap-1.5">
+                                                <Edit3 className="w-3 h-3" /> Edit
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    if(window.confirm(`Send "${c.name}" to ${c.segment || 'all'} leads now?`)) handleBlast(c.id);
+                                                }} 
+                                                className="flex-1 bg-purple-600 text-white py-3 rounded-xl text-[9px] font-black uppercase hover:bg-purple-700 transition flex items-center justify-center gap-1.5"
+                                            >
+                                                <Send className="w-3 h-3" /> Launch
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -696,7 +760,35 @@ const EmailEngine = () => {
                 {/* CRM VIEW */}
                 {activeView === 'crm' && (
                     <div className="h-full p-10 overflow-y-auto">
-                        <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-8">The HBM Directory</h3>
+                        <div className="flex items-center justify-between mb-8">
+                            <div>
+                                <h3 className="text-2xl font-black text-gray-900 tracking-tighter">The HBM Directory</h3>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Manage human connections and lead status</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <Search className="w-4 h-4 text-gray-300 absolute left-4 top-1/2 -translate-y-1/2" />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search by name or email..." 
+                                        value={crmSearch}
+                                        onChange={e => setCrmSearch(e.target.value)}
+                                        className="bg-white border border-gray-100 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-purple-500/10 w-64 shadow-sm"
+                                    />
+                                </div>
+                                <select 
+                                    value={crmFilter}
+                                    onChange={e => setCrmFilter(e.target.value)}
+                                    className="bg-white border border-gray-100 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-widest outline-none shadow-sm cursor-pointer"
+                                >
+                                    <option value="all">All Channels</option>
+                                    <option value="video">Video Leads</option>
+                                    <option value="physical">Physical Leads</option>
+                                    <option value="subscriber">Subscribers</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-gray-50 border-b border-gray-100">
@@ -707,9 +799,19 @@ const EmailEngine = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {registrations.map(r => {
-                                        const isUnsub = suppressionList.includes(r.email);
-                                        const engSteps = engagementLog.filter(e => e.email === r.email).length;
+                                    {registrations
+                                        .filter(r => {
+                                            const matchesSearch = (r.name || '').toLowerCase().includes(crmSearch.toLowerCase()) || 
+                                                                  (r.email || '').toLowerCase().includes(crmSearch.toLowerCase());
+                                            const matchesFilter = crmFilter === 'all' || 
+                                                                  (crmFilter === 'video' && r.category === 'Video Lead') ||
+                                                                  (crmFilter === 'physical' && r.category === 'Event Lead') ||
+                                                                  (crmFilter === 'subscriber' && r.category === 'Subscriber');
+                                            return matchesSearch && matchesFilter;
+                                        })
+                                        .map(r => {
+                                            const isUnsub = suppressionList.includes(r.email);
+                                            const engSteps = engagementLog.filter(e => e.email === r.email).length;
                                         return (
                                             <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-8 py-6">
@@ -792,35 +894,130 @@ const EmailEngine = () => {
                 {/* SETTINGS VIEW */}
                 {activeView === 'settings' && (
                     <div className="h-full p-10 overflow-y-auto">
-                        <div className="max-w-3xl mx-auto space-y-8">
+                        <div className="max-w-4xl mx-auto space-y-8">
+                            <div>
+                                <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-1">Email Engine Setup</h3>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Configure SMTP, branding, and global sending preferences</p>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-8">
+                                {/* SMTP Config */}
                                 <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-5">
-                                    <h4 className="font-black text-gray-900 flex items-center gap-2 mb-4"><Settings className="w-4 h-4 text-purple-600" /> Infrastructure</h4>
-                                    {['host', 'user', 'pass', 'from'].map(key => (
-                                        <div key={key}>
-                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">{key}</label>
-                                            <input type={key === 'pass' ? 'password' : 'text'} value={config.smtp[key] || ''} onChange={e => setConfig(prev => ({ ...prev, smtp: { ...prev.smtp, [key]: e.target.value } }))} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center">
+                                            <Settings className="w-5 h-5 text-purple-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-black text-gray-900 text-base">SMTP Infrastructure</h4>
+                                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Outbound mail server</p>
+                                        </div>
+                                        <div className={`ml-auto flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                            config.smtp?.host ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                                        }`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${config.smtp?.host ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+                                            {config.smtp?.host ? 'Configured' : 'Not Set'}
+                                        </div>
+                                    </div>
+                                    {[
+                                        { key: 'host', label: 'SMTP Host', placeholder: 'smtp.gmail.com' },
+                                        { key: 'user', label: 'Username / Email', placeholder: 'you@gmail.com' },
+                                        { key: 'pass', label: 'Password / App Key', placeholder: '••••••••' },
+                                        { key: 'from', label: 'From Name + Email', placeholder: 'HBM Events <hello@thehbm.org>' },
+                                    ].map(field => (
+                                        <div key={field.key}>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">{field.label}</label>
+                                            <input 
+                                                type={field.key === 'pass' ? 'password' : 'text'} 
+                                                value={config.smtp?.[field.key] || ''} 
+                                                onChange={e => setConfig(prev => ({ ...prev, smtp: { ...prev.smtp, [field.key]: e.target.value } }))} 
+                                                placeholder={field.placeholder}
+                                                className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" 
+                                            />
                                         </div>
                                     ))}
-                                </div>
-                                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-6">
-                                    <h4 className="font-black text-gray-900 flex items-center gap-2 mb-4"><Sparkles className="w-4 h-4 text-pink-500" /> Branding</h4>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div><label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Primary</label><input type="color" value={config.globalStyling?.primaryColor || '#6160AB'} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, primaryColor: e.target.value } }))} className="w-full h-12 rounded-xl border-none p-0 cursor-pointer" /></div>
-                                        <div><label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Accent</label><input type="color" value={config.globalStyling?.secondaryColor || '#F07B3C'} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, secondaryColor: e.target.value } }))} className="w-full h-12 rounded-xl border-none p-0 cursor-pointer" /></div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Signature</label>
-                                        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
-                                            {config.globalStyling?.signatureUrl ? <img src={config.globalStyling.signatureUrl} className="h-10 object-contain rounded" /> : <div className="text-[10px] text-gray-300 font-bold uppercase">No Signature</div>}
-                                            <label className="bg-purple-600 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer hover:bg-purple-700">Upload <input type="file" className="hidden" onChange={handleSignatureUpload} /></label>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Port</label>
+                                            <input type="number" value={config.smtp?.port || 587} onChange={e => setConfig(prev => ({ ...prev, smtp: { ...prev.smtp, port: parseInt(e.target.value) } }))} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Encryption</label>
+                                            <select value={config.smtp?.secure ? 'ssl' : 'tls'} onChange={e => setConfig(prev => ({ ...prev, smtp: { ...prev.smtp, secure: e.target.value === 'ssl' } }))} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none">
+                                                <option value="tls">STARTTLS (587)</option>
+                                                <option value="ssl">SSL/TLS (465)</option>
+                                            </select>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Branding Config */}
+                                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-6">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-10 h-10 rounded-2xl bg-pink-50 flex items-center justify-center">
+                                            <Sparkles className="w-5 h-5 text-pink-500" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-black text-gray-900 text-base">Email Branding</h4>
+                                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Visual identity for all emails</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Primary Color</label>
+                                            <div className="flex gap-2 items-center">
+                                                <input type="color" value={config.globalStyling?.primaryColor || '#6160AB'} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, primaryColor: e.target.value } }))} className="w-12 h-12 rounded-xl border-none p-0 cursor-pointer" />
+                                                <span className="text-xs font-mono text-gray-500">{config.globalStyling?.primaryColor || '#6160AB'}</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Accent Color</label>
+                                            <div className="flex gap-2 items-center">
+                                                <input type="color" value={config.globalStyling?.secondaryColor || '#F07B3C'} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, secondaryColor: e.target.value } }))} className="w-12 h-12 rounded-xl border-none p-0 cursor-pointer" />
+                                                <span className="text-xs font-mono text-gray-500">{config.globalStyling?.secondaryColor || '#F07B3C'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Email Signature Banner</label>
+                                        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
+                                            {config.globalStyling?.signatureUrl ? (
+                                                <img src={config.globalStyling.signatureUrl} className="h-12 object-contain rounded" />
+                                            ) : (
+                                                <div className="h-12 flex items-center">
+                                                    <span className="text-[10px] text-gray-300 font-bold uppercase">No Signature Set</span>
+                                                </div>
+                                            )}
+                                            <label className="bg-purple-600 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer hover:bg-purple-700 ml-auto">
+                                                Upload <input type="file" className="hidden" onChange={handleSignatureUpload} />
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Unsubscribe URL</label>
+                                        <input type="text" value={config.globalStyling?.unsubscribeUrl || ''} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, unsubscribeUrl: e.target.value } }))} placeholder="https://thehbm.org/unsubscribe" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Global Footer Text</label>
+                                        <textarea value={config.globalStyling?.footerText || ''} onChange={e => setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, footerText: e.target.value } }))} rows={3} placeholder="© 2026 The HBM. Bringing people together." className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 resize-none placeholder:text-gray-300" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Quick Test */}
+                            <div className="bg-gradient-to-r from-purple-600 to-pink-500 rounded-[2rem] p-8 text-white">
+                                <h4 className="font-black text-lg mb-2 flex items-center gap-2"><Zap className="w-5 h-5" /> Send Test Email</h4>
+                                <p className="text-white/70 text-sm mb-4 font-medium">Verify your SMTP configuration is working correctly</p>
+                                <div className="flex gap-3">
+                                    <input type="email" value={testEmail} onChange={e => setTestEmail(e.target.value)} placeholder="recipient@email.com" className="flex-1 bg-white/20 backdrop-blur text-white placeholder:text-white/40 rounded-xl px-4 py-3 text-sm font-bold border-none outline-none focus:ring-2 focus:ring-white/30" />
+                                    <button onClick={sendTest} className="bg-white text-purple-700 px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-purple-50 transition shadow-lg">
+                                        {testStatus || '📧 Send Test'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
+
         </div>
     );
 };

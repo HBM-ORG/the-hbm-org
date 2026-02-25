@@ -2,27 +2,135 @@
   {
     "id": "next-1",
     "title": {
-      "en": "HBM event",
-      "he": "אירוע סוף חודש מרץ"
+      "en": "The HBM Community Night",
+      "he": "אירוע הקהילה של HBM"
     },
-    "date": "2026-03-14T13:32",
+    "date": "2026-03-24T19:00",
     "description": {
       "en": "Join us for meaningful 8-minute conversations that create lasting bonds.",
       "he": "הצטרפו אלינו לשיחות משמעותיות בנות 8 דקות שיוצרות קשרים מתמשכים."
     },
     "location": "Raanana",
     "locationParams": {
-      "addressText": "Rothschild Blvd 10, Tel Aviv",
-      "googleMapsEmbedUrl": "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\"></iframe><iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3376.1<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\"></iframe>386407308196!2d34.878737876406156!3d32.20049467391002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d398a1c026cf7%3A0x7f6a3c7c8abcaf5c!2sMIXER%20Campus%20Raanana!5e0!3m2!1sen!2sil!4v1771428994376!5m2!1sen!2sil\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade\"></iframe>"
+      "addressText": "Dolev 4, Raanana",
+      "googleMapsEmbedUrl": "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3376.1397762227984!2d34.883918923593654!3d32.20046407390997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d39533fcfa2f7%3A0xa1c863c1f34dd66e!2z15PXldec15EgNCwg16jXoteg16DXlA!5e0!3m2!1siw!2sil!4v1771946116433!5m2!1siw!2sil\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade\"></iframe>"
     },
     "type": "Face to Face",
     "image": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop",
-    "heroVideo": "/assets/events/march-26/1771755577856_Meeter_Com_Sub__1_.mp4",
     "registration": {
       "status": "open",
       "externalUrl": "/events/register",
       "whatsappLink": "https://wa.me/1234567890"
     },
+    "promoBubbles": [
+      {
+        "title": {
+          "en": "8-Minute Rounds",
+          "he": "סבבים של 8 דקות"
+        },
+        "desc": {
+          "en": "Perfect timing.",
+          "he": "הזמן המדויק לחיבור עמוק."
+        }
+      },
+      {
+        "title": {
+          "en": "Curated Matches",
+          "he": "שידוכים מדויקים"
+        },
+        "desc": {
+          "en": "Quality over quantity.",
+          "he": "איכות לפני כמות."
+        }
+      },
+      {
+        "title": {
+          "en": "Intimate Atmosphere",
+          "he": "אווירה אינטימית"
+        },
+        "desc": {
+          "en": "Small and focused.",
+          "he": "קבוצה קטנה וממוקדת."
+        }
+      }
+    ],
+    "whatToExpect": {
+      "boldTitle": {
+        "en": "A night of meaningful connections.",
+        "he": "לילה של חיבורים משמעותיים."
+      },
+      "points": [
+        {
+          "title": {
+            "en": "Ice-Breaking",
+            "he": "שבירת קרח"
+          },
+          "desc": {
+            "en": "We start with soft interactions.",
+            "he": "מתחילים באינטראקציות רכות ונעימות."
+          }
+        },
+        {
+          "title": {
+            "en": "Deep Conversations",
+            "he": "שיחות עומק"
+          },
+          "desc": {
+            "en": "3 rounds of 8 minutes each.",
+            "he": "3 סבבים של 8 דקות כל אחד."
+          }
+        },
+        {
+          "title": {
+            "en": "Open Networking",
+            "he": "נטוורקינג חופשי"
+          },
+          "desc": {
+            "en": "Finish with a drink and a chat.",
+            "he": "מסיימים עם דרינק ושיחה חופשית."
+          }
+        }
+      ]
+    },
+    "showPartnership": true,
+    "partnership": {
+      "title": {
+        "en": "In Collaboration with MIXER",
+        "he": "בשיתוף פעולה עם MIXER"
+      },
+      "text": {
+        "en": "We are excited to host this event at the beautiful MIXER Campus.",
+        "he": "אנחנו נרגשים לארח את האירוע בקמפוס המעוצב של מיקסר."
+      },
+      "link": "https://mixer.work"
+    },
+    "freeText": {
+      "en": "Additional details about the event will be sent to registered guests.",
+      "he": "פרטים נוספים לגבי האירוע יישלחו לנרשמים במייל ובסמס."
+    },
+    "imageBubbles": [
+      {
+        "title": {
+          "en": "The Space",
+          "he": "החלל שלנו"
+        },
+        "image": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop"
+      },
+      {
+        "title": {
+          "en": "The People",
+          "he": "האנשים"
+        },
+        "image": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&h=600&fit=crop"
+      },
+      {
+        "title": {
+          "en": "The Vibe",
+          "he": "האווירה"
+        },
+        "image": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&h=600&fit=crop"
+      }
+    ],
     "socialProof": {
       "capacity": 50,
       "attendingCount": 32
@@ -36,60 +144,39 @@
         "title": "8-Minute Rounds",
         "description": "Perfect timing to go deep without getting stuck.",
         "icon": "Clock"
-      },
-      {
-        "title": "Curated Matches",
-        "description": "Meet people who share your values.",
-        "icon": "Users"
-      },
-      {
-        "title": "Guided Prompts",
-        "description": "Skip the small talk with our question cards.",
-        "icon": "MessageCircle"
       }
     ],
     "partners": [
       {
-        "name": "Community X",
+        "name": "MIXER",
         "logo": "",
-        "website": "https://example.com"
-      },
-      {
-        "name": "55",
-        "logo": ""
-      },
-      {
-        "name": "66",
-        "logo": ""
+        "website": "https://mixer.work"
       }
     ],
     "faqs": [
       {
         "question": "Do I need to prepare anything?",
-        "answer": "Just bring yourself and an open mindgfgfg"
+        "answer": "Just bring yourself and an open mind."
       },
       {
         "question": "What is the dress code?",
-        "answer": "Smart casual. Be comfortable.fgf"
+        "answer": "Smart casual. Be comfortable."
       }
     ],
     "hostNote": {
-      "message": "Can't wait to see you there!ggggfgfgfgfgfdg",
-      "author": "",
+      "message": "Can't wait to see you there!",
+      "author": "The HBM Team",
       "avatar": ""
     },
-    "gallery": [],
     "folderName": "march-26",
-    "imageCount": 1,
-    "heroStyle": {
-      "overlayOpacity": 14
-    },
+    "imageCount": 10,
     "visuals": {
-      "brightness": 79,
-      "blur": 7,
+      "brightness": 70,
+      "blur": 0,
       "videoScale": 1,
-      "overlayOpacity": 0
-    }
+      "overlayOpacity": 30
+    },
+    "heroVideo": "/assets/events/march-26/1771960040446_Meeter_Com_Sub__1_.mp4"
   },
   {
     "id": 16,
@@ -437,8 +524,7 @@
       "https://images.unsplash.com/photo-1528605105345-5344ea20e269?w=800&h=600&fit=crop",
       "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop",
       "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&h=600&fit=crop"
-    ],
-    "isLocked": false
+    ]
   },
   {
     "id": 11,

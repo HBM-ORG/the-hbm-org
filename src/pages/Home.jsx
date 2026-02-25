@@ -12,6 +12,7 @@ import BubbleContainer from '../components/BubbleContainer'
 import NextPageBridge from '../components/NextPageBridge'
 import EyebrowBadge from '../components/EyebrowBadge'
 import { Quote, Star } from 'lucide-react'
+import SEO from '../components/SEO'
 
 
 const WP = 'https://www.thehbm.org/wp-content/uploads'
@@ -199,7 +200,14 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-hbm-cream">
+      <SEO 
+        title={t({ en: 'The HBM | Bringing People Together | 8-Minute Connections', he: 'The HBM | מחברים אנשים | שיחות של 8 דקות' }, lang)}
+        description={t({ 
+          en: 'Experience the power of 8-minute human connections. Join The HBM for real networking events and meaningful conversations.',
+          he: 'חוו את העוצמה של חיבורים אנושיים של 8 דקות. הצטרפו ל-HBM לאירועי נטוורקינג אמיתיים ושיחות משמעותיות.'
+        }, lang)}
+      />
 
       {/* ═══════════════════ HERO ═══════════════════ */}
       <AnimatedHero 
@@ -213,21 +221,20 @@ export default function Home() {
 
 
 
-
       {/* ═══════════════════ TRUSTED PARTNERS ═══════════════════ */}
-      <section id="partners" className="relative py-20 overflow-hidden bg-transparent">
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <p className="text-center text-gray-400 text-[10px] uppercase tracking-[0.3em] mb-12 font-bold opacity-60">
+      <section id="partners" className="bg-hbm-cream pb-24 overflow-hidden pt-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <p className="text-center text-gray-400 text-xs uppercase tracking-[0.2em] mb-12 font-bold">
             {t({ en: 'Trusted Partners', he: 'שותפים מהימנים' }, lang)}
           </p>
           <div className="relative w-full overflow-hidden mask-gradient-x">
-            <div className="flex gap-12 md:gap-24 items-center w-max animate-marquee" style={{ animationDuration: '40s' }}>
-              {[...partnerLogosList, ...partnerLogosList, ...partnerLogosList].map((partner, i) => (
-                <div key={i} className="flex-shrink-0 h-32 md:h-40 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity duration-300 px-4">
+            <div className="flex gap-12 md:gap-24 items-center w-max animate-marquee" style={{ paddingLeft: '2rem', animationDuration: '30s' }}>
+              {[...partnerLogosList, ...partnerLogosList, ...partnerLogosList, ...partnerLogosList].map((partner, i) => (
+                <div key={i} className="flex-shrink-0 h-32 md:h-40 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300 px-4">
                   <img 
                     src={partner.logoUrl || partner.src} 
                     alt={partner.name}
-                    className="h-full w-auto object-contain transition-all duration-300 hover:scale-105"
+                    className="h-full w-auto object-contain transition-all duration-300 hover:scale-110"
                     onError={(e) => { e.target.style.display = 'none' }}
                   />
                 </div>
@@ -235,13 +242,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-        
-        {/* Subtle background blob for partners */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-r from-transparent via-hbm-purple/5 to-transparent blur-3xl pointer-events-none" />
       </section>
 
       {/* ═══════════════════ OPPORTUNITY ROTATOR — 2X SIZE ═══════════════════ */}
-      <section className="py-32 overflow-hidden relative bg-transparent">
+      <section className="py-32 overflow-hidden relative" style={{ backgroundColor: '#FAF9F5' }}>
         {/* Aura blob for opportunity */}
         <motion.div 
           className="absolute -bottom-20 -left-20 w-96 h-96 bg-hbm-orange/5 rounded-full blur-[100px] pointer-events-none"

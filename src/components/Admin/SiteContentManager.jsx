@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, Users, Quote, Image as ImageIcon, Plus, Trash2, Edit3, X, Lock, Unlock, Star, Smartphone, BookOpen, Video, Youtube, Upload } from 'lucide-react';
+import { Save, Users, Quote, Image as ImageIcon, Plus, Trash2, Edit3, X, Lock, Unlock, Star, Smartphone, BookOpen, Video, Youtube, Upload, Sparkles, ChevronUp, ChevronDown } from 'lucide-react';
+
+const PhoneMockup = ({ children, className = "" }) => (
+    <div className={`relative mx-auto rounded-[2.5rem] border-[6px] border-gray-900 bg-gray-900 shadow-2xl overflow-hidden ${className}`} style={{ aspectRatio: '9/19.5', width: '160px' }}>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-gray-900 rounded-b-xl z-20"></div>
+        <div className="w-full h-full bg-white relative z-10 overflow-hidden">
+            {children}
+        </div>
+        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-800/20 rounded-full z-20"></div>
+    </div>
+);
 
 const SiteContentManager = () => {
     const [content, setContent] = useState({ team: [], testimonials: [], partners: [], locks: { team: false, testimonials: false, partners: false } });
@@ -91,6 +101,42 @@ const SiteContentManager = () => {
         setContent({ ...content, [section]: newArray });
     };
 
+    const moveItem = (section, index, direction) => {
+        if (content.locks?.[section]) return;
+        const newArray = [...(content[section] || [])];
+        if (direction === 'up' && index > 0) {
+            [newArray[index - 1], newArray[index]] = [newArray[index], newArray[index - 1]];
+        } else if (direction === 'down' && index < newArray.length - 1) {
+            [newArray[index + 1], newArray[index]] = [newArray[index], newArray[index + 1]];
+        }
+        setContent({ ...content, [section]: newArray });
+    };
+
+    const moveHowItWorksItem = (mode, index, direction) => {
+        if (howItWorks.isLocked) return;
+        const newHow = { ...howItWorks };
+        const key = mode === 'video' ? 'videoSteps' : 'physicalSteps';
+        const arr = newHow[key];
+        if (direction === 'up' && index > 0) {
+            [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+        } else if (direction === 'down' && index < arr.length - 1) {
+            [arr[index + 1], arr[index]] = [arr[index], arr[index + 1]];
+        }
+        setHowItWorks(newHow);
+    };
+
+    const moveKnowledgeItem = (tab, index, direction) => {
+        if (knowledgeBase.isLocked) return;
+        const newKb = { ...knowledgeBase };
+        const arr = tab === 'books' ? newKb.books : newKb.videos;
+        if (direction === 'up' && index > 0) {
+            [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+        } else if (direction === 'down' && index < arr.length - 1) {
+            [arr[index + 1], arr[index]] = [arr[index], arr[index + 1]];
+        }
+        setKnowledgeBase(newKb);
+    };
+
     const toggleLock = (section) => {
         if (section === 'how-it-works') {
             setHowItWorks(prev => ({ ...prev, isLocked: !prev.isLocked }));
@@ -132,6 +178,49 @@ const SiteContentManager = () => {
             }
         } catch (err) {
             console.error("Upload failed", err);
+        }
+    };
+
+    const magicFetchBook = async (idx) => {
+        const book = knowledgeBase.books[idx];
+        if (!book.title) return alert("Please enter a title first");
+        
+        try {
+            const res = await fetch(`${base}/api/ai/fetch-book`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: book.title, author: book.author || '' })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            const newKb = {...knowledgeBase};
+            newKb.books[idx] = { ...newKb.books[idx], ...data };
+            setKnowledgeBase(newKb);
+        } catch (err) {
+            alert("Magic Fetch failed: " + err.message);
+        }
+    };
+
+    const magicFetchVideo = async (idx) => {
+        const video = knowledgeBase.videos[idx];
+        if (!video.youtubeUrl) return alert("Please enter a YouTube URL first");
+        
+        try {
+            const res = await fetch(`${base}/api/ai/fetch-video`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ youtubeUrl: video.youtubeUrl })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            const newKb = {...knowledgeBase};
+            newKb.videos[idx] = { ...newKb.videos[idx], ...data };
+            setKnowledgeBase(newKb);
+        } catch (err) {
+            console.error("Magic Fetch Error:", err);
+            alert("🪄 Magic Fetch Issue:\n" + err.message);
         }
     };
 
@@ -213,13 +302,11 @@ const SiteContentManager = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {(content.team || []).map((member, idx) => (
                                 <div key={member.id} className={`p-6 border rounded-2xl relative group transition-all ${content.locks?.team ? 'bg-gray-50/50 opacity-90' : 'bg-gray-50'}`}>
-                                    <button 
-                                        disabled={content.locks?.team}
-                                        onClick={() => removeItem('team', idx)} 
-                                        className={`absolute top-4 right-4 p-2 transition-all ${content.locks?.team ? 'text-gray-300 cursor-not-allowed' : 'text-red-400 hover:text-red-600'}`}
-                                    >
-                                        <Trash2 className="w-4 h-4"/>
-                                    </button>
+                                    <div className={`absolute top-4 right-4 flex items-center gap-1 transition-all ${content.locks?.team ? 'text-gray-300 pointer-events-none' : 'text-gray-400'}`}>
+                                        <button onClick={() => moveItem('team', idx, 'up')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === 0}><ChevronUp className="w-4 h-4" /></button>
+                                        <button onClick={() => moveItem('team', idx, 'down')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === content.team.length - 1}><ChevronDown className="w-4 h-4" /></button>
+                                        <button onClick={() => removeItem('team', idx)} className="text-red-400 hover:text-red-600 ml-2"><Trash2 className="w-4 h-4"/></button>
+                                    </div>
                                     <div className="space-y-4">
                                         <div><label className="text-[10px] font-black uppercase text-gray-400">Name</label><input type="text" disabled={content.locks?.team} value={member.name} onChange={e => handleArrayChange('team', idx, 'name', e.target.value)} className="w-full bg-white p-3 rounded-lg border font-bold text-sm disabled:bg-gray-50 disabled:text-gray-500" /></div>
                                         <div><label className="text-[10px] font-black uppercase text-gray-400">Role / Title</label><input type="text" disabled={content.locks?.team} value={member.role} onChange={e => handleArrayChange('team', idx, 'role', e.target.value)} className="w-full bg-white p-3 rounded-lg border font-bold text-sm disabled:bg-gray-50 disabled:text-gray-500" /></div>
@@ -279,13 +366,11 @@ const SiteContentManager = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <button 
-                                        disabled={content.locks?.testimonials}
-                                        onClick={() => removeItem('testimonials', idx)} 
-                                        className={`p-2 transition-all ${content.locks?.testimonials ? 'text-gray-300 cursor-not-allowed' : 'text-red-400 hover:text-red-600'}`}
-                                    >
-                                        <Trash2 className="w-4 h-4"/>
-                                    </button>
+                                    <div className={`absolute top-4 right-4 flex items-center gap-1 transition-all ${content.locks?.testimonials ? 'text-gray-300 pointer-events-none' : 'text-gray-400'}`}>
+                                        <button onClick={() => moveItem('testimonials', idx, 'up')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === 0}><ChevronUp className="w-4 h-4" /></button>
+                                        <button onClick={() => moveItem('testimonials', idx, 'down')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === content.testimonials.length - 1}><ChevronDown className="w-4 h-4" /></button>
+                                        <button onClick={() => removeItem('testimonials', idx)} className="text-red-400 hover:text-red-600 ml-2"><Trash2 className="w-4 h-4"/></button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -316,13 +401,11 @@ const SiteContentManager = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {(content.partners || []).map((partner, idx) => (
                                 <div key={partner.id} className={`p-6 border rounded-2xl relative group transition-all ${content.locks?.partners ? 'bg-gray-50/50 opacity-90' : 'bg-gray-50'}`}>
-                                    <button 
-                                        disabled={content.locks?.partners}
-                                        onClick={() => removeItem('partners', idx)} 
-                                        className={`absolute top-4 right-4 p-2 transition-all ${content.locks?.partners ? 'text-gray-300 cursor-not-allowed' : 'text-red-400 hover:text-red-600'}`}
-                                    >
-                                        <Trash2 className="w-4 h-4"/>
-                                    </button>
+                                    <div className={`absolute top-4 right-4 flex items-center gap-1 transition-all ${content.locks?.partners ? 'text-gray-300 pointer-events-none' : 'text-gray-400'}`}>
+                                        <button onClick={() => moveItem('partners', idx, 'up')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === 0}><ChevronUp className="w-4 h-4" /></button>
+                                        <button onClick={() => moveItem('partners', idx, 'down')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === content.partners.length - 1}><ChevronDown className="w-4 h-4" /></button>
+                                        <button onClick={() => removeItem('partners', idx)} className="text-red-400 hover:text-red-600 ml-2"><Trash2 className="w-4 h-4"/></button>
+                                    </div>
                                     <div className="space-y-4 mt-4">
                                         <div><label className="text-[10px] font-black uppercase text-gray-400">Partner Name</label><input type="text" disabled={content.locks?.partners} value={partner.name} onChange={e => handleArrayChange('partners', idx, 'name', e.target.value)} className="w-full bg-white p-3 rounded-lg border font-bold text-sm disabled:bg-gray-50 disabled:text-gray-500" /></div>
                                         <div><label className="text-[10px] font-black uppercase text-gray-400">Logo Image URL</label><input type="text" disabled={content.locks?.partners} value={partner.logoUrl} onChange={e => handleArrayChange('partners', idx, 'logoUrl', e.target.value)} className="w-full bg-white p-3 rounded-lg border font-bold text-xs text-blue-600 disabled:bg-gray-50 disabled:text-gray-400" placeholder="/assets/..."/></div>
@@ -367,24 +450,48 @@ const SiteContentManager = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {((activeHowItWorksMode === 'video' ? howItWorks?.videoSteps : howItWorks?.physicalSteps) || []).map((step, idx) => (
+                            {((activeHowItWorksMode === 'video' ? howItWorks?.videoSteps : howItWorks?.physicalSteps) || []).map((step, idx, arr) => (
                                 <div key={idx} className={`p-8 border rounded-[2rem] relative group transition-all ${howItWorks.isLocked ? 'bg-gray-50/50 opacity-90' : 'bg-white shadow-sm hover:shadow-md'}`}>
-                                    <div className="flex gap-6">
-                                        <div className="w-32 aspect-[9/16] bg-gray-100 rounded-xl overflow-hidden shrink-0 border relative group/img">
-                                            {step.image ? (
-                                                <img src={step.image} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-300"><Smartphone /></div>
-                                            )}
-                                            {!howItWorks.isLocked && (
-                                                <label className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                                                    <Upload className="text-white w-6 h-6" />
-                                                    <input type="file" className="hidden" onChange={e => handleCmsImageUpload(e, 'how-it-works', activeHowItWorksMode, idx)} />
-                                                </label>
+                                    <div className={`absolute top-4 right-4 flex items-center gap-1 transition-all z-10 ${howItWorks.isLocked ? 'text-gray-300 pointer-events-none' : 'text-gray-400'}`}>
+                                        <button onClick={() => moveHowItWorksItem(activeHowItWorksMode, idx, 'up')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === 0}><ChevronUp className="w-4 h-4" /></button>
+                                        <button onClick={() => moveHowItWorksItem(activeHowItWorksMode, idx, 'down')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === arr.length - 1}><ChevronDown className="w-4 h-4" /></button>
+                                    </div>
+                                    <div className="flex gap-8 items-start">
+                                        <div className="shrink-0 flex flex-col items-center gap-3">
+                                            <div className="bg-gray-900 text-white w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black shadow-lg mb-2">
+                                                {idx + 1}
+                                            </div>
+                                            <PhoneMockup className="group-hover:scale-[1.02] transition-transform duration-500">
+                                                {step.image ? (
+                                                    <img src={step.image} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-200 p-4 text-center">
+                                                        <Smartphone className="w-8 h-8 mb-2 opacity-20" />
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">Screen Content</span>
+                                                    </div>
+                                                )}
+                                                {!howItWorks.isLocked && (
+                                                    <label className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer z-30">
+                                                        <div className="flex flex-col items-center gap-2">
+                                                            <Upload className="text-white w-6 h-6 animate-bounce" />
+                                                            <span className="text-white text-[10px] font-black uppercase tracking-tighter">Upload UI</span>
+                                                        </div>
+                                                        <input type="file" className="hidden" onChange={e => handleCmsImageUpload(e, 'how-it-works', activeHowItWorksMode, idx)} />
+                                                    </label>
+                                                )}
+                                            </PhoneMockup>
+                                            
+                                            {activeHowItWorksMode === 'video' && (
+                                                <button 
+                                                    onClick={() => removeItem('how-it-works-video', idx)}
+                                                    className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors mt-2"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
                                             )}
                                         </div>
-                                        <div className="flex-1 space-y-4">
-                                            <div className="bg-gray-900 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black mb-2">{idx + 1}</div>
+
+                                        <div className="flex-1 space-y-4 pt-10">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">Title (HE)</label>
@@ -499,21 +606,24 @@ const SiteContentManager = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {((activeKnowledgeTab === 'books' ? knowledgeBase?.books : knowledgeBase?.videos) || []).map((item, idx) => (
+                            {((activeKnowledgeTab === 'books' ? knowledgeBase?.books : knowledgeBase?.videos) || []).map((item, idx, arr) => (
                                 <div key={item.id} className={`p-6 border rounded-2xl relative transition-all ${knowledgeBase.isLocked ? 'bg-gray-50/50' : 'bg-white shadow-sm'}`}>
-                                    <button 
-                                        disabled={knowledgeBase.isLocked}
-                                        onClick={() => {
-                                            if(!window.confirm('Delete item?')) return;
-                                            const newKb = {...knowledgeBase};
-                                            if (activeKnowledgeTab === 'books') newKb.books.splice(idx, 1);
-                                            else newKb.videos.splice(idx, 1);
-                                            setKnowledgeBase(newKb);
-                                        }}
-                                        className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    <div className={`absolute top-4 right-4 flex items-center gap-1 transition-all z-10 ${knowledgeBase.isLocked ? 'text-gray-300 pointer-events-none' : 'text-gray-400'}`}>
+                                        <button onClick={() => moveKnowledgeItem(activeKnowledgeTab, idx, 'up')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === 0}><ChevronUp className="w-4 h-4" /></button>
+                                        <button onClick={() => moveKnowledgeItem(activeKnowledgeTab, idx, 'down')} className="hover:text-gray-800 disabled:opacity-30 disabled:hover:text-gray-400" disabled={idx === arr.length - 1}><ChevronDown className="w-4 h-4" /></button>
+                                        <button 
+                                            onClick={() => {
+                                                if(!window.confirm('Delete item?')) return;
+                                                const newKb = {...knowledgeBase};
+                                                if (activeKnowledgeTab === 'books') newKb.books.splice(idx, 1);
+                                                else newKb.videos.splice(idx, 1);
+                                                setKnowledgeBase(newKb);
+                                            }}
+                                            className="text-red-400 hover:text-red-600 ml-2"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                     <div className="space-y-4">
                                         {activeKnowledgeTab === 'books' && (
                                             <div className="w-20 aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden border mb-2 relative group/book">
@@ -526,20 +636,27 @@ const SiteContentManager = () => {
                                                 )}
                                             </div>
                                         )}
-                                        <div>
-                                            <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">Title</label>
-                                            <input 
+                                        <div className="flex justify-between items-end mb-1">
+                                            <label className="text-[10px] font-black uppercase text-gray-400">Title</label>
+                                            <button 
+                                                onClick={() => activeKnowledgeTab === 'books' ? magicFetchBook(idx) : magicFetchVideo(idx)} 
                                                 disabled={knowledgeBase.isLocked}
-                                                value={item.title} 
-                                                onChange={e => {
-                                                    const newKb = {...knowledgeBase};
-                                                    if (activeKnowledgeTab === 'books') newKb.books[idx].title = e.target.value;
-                                                    else newKb.videos[idx].title = e.target.value;
-                                                    setKnowledgeBase(newKb);
-                                                }}
-                                                className="w-full bg-gray-50 p-3 rounded-lg border-none font-bold text-sm" 
-                                            />
+                                                className="bg-purple-600 text-white rounded-lg px-3 py-1 font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 hover:bg-purple-700 shadow-sm transition-all disabled:opacity-50"
+                                            >
+                                                <Sparkles className="w-3 h-3" /> Magic Fetch
+                                            </button>
                                         </div>
+                                        <input 
+                                            disabled={knowledgeBase.isLocked}
+                                            value={item.title || ''} 
+                                            onChange={e => {
+                                                const newKb = {...knowledgeBase};
+                                                if (activeKnowledgeTab === 'books') newKb.books[idx].title = e.target.value;
+                                                else newKb.videos[idx].title = e.target.value;
+                                                setKnowledgeBase(newKb);
+                                            }}
+                                            className="w-full bg-gray-50 p-3 rounded-lg border-none font-bold text-sm" 
+                                        />
                                         <div>
                                             <label className="text-[10px] font-black uppercase text-gray-400 mb-1 block">{activeKnowledgeTab === 'books' ? 'Author' : 'YouTube URL'}</label>
                                             <input 
@@ -568,6 +685,113 @@ const SiteContentManager = () => {
                                                 className="w-full bg-gray-50 p-3 rounded-lg border-none font-medium text-xs h-20" 
                                             />
                                         </div>
+
+                                        {activeKnowledgeTab === 'books' && (
+                                            <div className="space-y-4 pt-4 border-t border-gray-100 mt-4">
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-purple-600 mb-1 block">Author Wisdom Quote</label>
+                                                    <textarea 
+                                                        disabled={knowledgeBase.isLocked}
+                                                        value={item.authorQuote || ''} 
+                                                        placeholder="A profound quote by the author..."
+                                                        onChange={e => {
+                                                            const newKb = {...knowledgeBase};
+                                                            newKb.books[idx].authorQuote = e.target.value;
+                                                            setKnowledgeBase(newKb);
+                                                        }}
+                                                        className="w-full bg-purple-50 p-3 rounded-lg border-none font-medium italic text-xs h-16" 
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-purple-600 mb-1 block">3 Key Insights (Sentences)</label>
+                                                    <div className="space-y-2">
+                                                        {[0, 1, 2].map(i => (
+                                                            <input 
+                                                                key={i}
+                                                                disabled={knowledgeBase.isLocked}
+                                                                value={(item.threeKeySentences && item.threeKeySentences[i]) || ''}
+                                                                placeholder={`Key insight ${i + 1}...`}
+                                                                onChange={e => {
+                                                                    const newKb = {...knowledgeBase};
+                                                                    if (!newKb.books[idx].threeKeySentences) newKb.books[idx].threeKeySentences = ['', '', ''];
+                                                                    newKb.books[idx].threeKeySentences[i] = e.target.value;
+                                                                    setKnowledgeBase(newKb);
+                                                                }}
+                                                                className="w-full bg-gray-50 p-2 rounded-lg border-none font-medium text-xs"
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-purple-600 mb-1 block">Master Summary (Short)</label>
+                                                    <textarea 
+                                                        disabled={knowledgeBase.isLocked}
+                                                        value={item.shortSummary || ''} 
+                                                        placeholder="A high-impact summary..."
+                                                        onChange={e => {
+                                                            const newKb = {...knowledgeBase};
+                                                            newKb.books[idx].shortSummary = e.target.value;
+                                                            setKnowledgeBase(newKb);
+                                                        }}
+                                                        className="w-full bg-gray-50 p-3 rounded-lg border-none font-medium text-xs h-20" 
+                                                    />
+                                                </div>
+                                                
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-purple-600 mb-1 block">Full Deep-Dive Summary</label>
+                                                    <textarea 
+                                                        disabled={knowledgeBase.isLocked}
+                                                        value={item.fullSummary || ''} 
+                                                        placeholder="A detailed exploration..."
+                                                        onChange={e => {
+                                                            const newKb = {...knowledgeBase};
+                                                            newKb.books[idx].fullSummary = e.target.value;
+                                                            setKnowledgeBase(newKb);
+                                                        }}
+                                                        className="w-full bg-gray-50 p-3 rounded-lg border-none font-medium text-xs h-40" 
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-purple-600 mb-1 block">Closing Power Quote</label>
+                                                    <textarea 
+                                                        disabled={knowledgeBase.isLocked}
+                                                        value={item.finalQuote || ''} 
+                                                        placeholder="Final life-changing quote..."
+                                                        onChange={e => {
+                                                            const newKb = {...knowledgeBase};
+                                                            newKb.books[idx].finalQuote = e.target.value;
+                                                            setKnowledgeBase(newKb);
+                                                        }}
+                                                        className="w-full bg-purple-50 p-3 rounded-lg border-none font-medium italic text-xs h-16" 
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeKnowledgeTab === 'videos' && (
+                                            <div className="space-y-3 pt-4 border-t border-gray-100 mt-4">
+                                                <div className="flex justify-between items-center">
+                                                    <label className="text-[10px] font-black uppercase text-gray-400 block">Accent Color</label>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-4 h-4 rounded-full border shadow-sm" style={{ backgroundColor: item.accentColor || '#6160AB' }}></div>
+                                                        <input 
+                                                            type="text" 
+                                                            disabled={knowledgeBase.isLocked}
+                                                            value={item.accentColor || '#6160AB'} 
+                                                            onChange={e => {
+                                                                const newKb = {...knowledgeBase};
+                                                                newKb.videos[idx].accentColor = e.target.value;
+                                                                setKnowledgeBase(newKb);
+                                                            }}
+                                                            className="text-[10px] font-mono border-none bg-transparent w-16"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}

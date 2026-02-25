@@ -205,8 +205,8 @@ export const siteContent = {
 
     features: {
       sectionTitle: { 
-        en: 'Bringing Real Conversations to Life', 
-        he: 'מביאים שיחות אמיתיות לחיים' 
+        en: 'Design & Connection', 
+        he: 'עיצוב וחיבור' 
       },
       
       iceBreakers: {
@@ -306,7 +306,7 @@ export const siteContent = {
   // ============================================================
   about: {
     hero: {
-      title: { en: 'Who We Are', he: 'מי אנחנו' },
+      title: { en: 'Who We Are?', he: 'מי אנחנו' },
       subtitle: { en: 'The HBM – The Human Being Movement', he: 'The HBM – תנועת בני האדם' },
       bigText: {
         en: 'WE HAVE ONE JOB — TO HELP PEOPLE CONNECT',
@@ -351,7 +351,7 @@ export const siteContent = {
         { 
           name: 'Elad Maor Hefets', 
           role: { en: 'Founder & CEO', he: 'מייסד ומנכ"ל' }, 
-          image: `${WP}/2025/06/1e6deea839ca22490e8568efb155ac2e1e7a58c0.png`, 
+          image: '/assets/team/1764669004079.png', 
           nickname: { en: 'The Visionary', he: 'החזון' }, 
           linkedin: 'https://www.linkedin.com/in/elad-hefets/',
           bio: { 
@@ -381,7 +381,7 @@ export const siteContent = {
         { 
           name: 'Tal Zohar', 
           role: { en: 'CFO', he: 'סמנכ"לית כספים' }, 
-          image: `${WP}/2025/06/c40261069a4f345058760204cefee4e2725ed872-min-1.png`, 
+          image: '/assets/team/1688974168644.jpeg', 
           nickname: { en: "The Real CEO (Don’t tell Elad)", he: "המנכ\"לית האמיתית (אל תגלו לאלעד)" }, 
           linkedin: 'https://www.linkedin.com/in/tal-zohar-1807311ab/',
           bio: { 
@@ -396,7 +396,7 @@ export const siteContent = {
         { 
           name: 'Michal Merjan', 
           role: { en: 'Office Manager', he: 'מנהלת משרד' }, 
-          image: `${WP}/2025/06/43dd6118559ee6899554fedf7bf4f0bc3d456d40-min.png`, 
+          image: '/assets/team/1764586531367.jpeg', 
           nickname: { en: 'Office Manager & Team Cat Whisperer', he: 'מנהלת המשרד והלוחשת לחתולים' }, 
           linkedin: 'https://www.linkedin.com/in/michal-merjan-996004352/',
           bio: { 
@@ -411,7 +411,7 @@ export const siteContent = {
         { 
           name: 'Yuval Hefets', 
           role: { en: 'Data Analyst', he: 'מנתח נתונים' }, 
-          image: `${WP}/2025/06/3c7a7591d92ab7c875b7c10f685c255e3f7abd31-min.png`, 
+          image: '/assets/team/1755082475456.jpeg', 
           nickname: { en: 'Turbo #1 (by 17 minutes and proud of it)', he: 'טורבו מס\' 1 (ב-17 דקות וגאה בזה)' }, 
           linkedin: 'https://www.linkedin.com/in/yuval-meir-hefetz/',
           bio: { 
@@ -426,7 +426,7 @@ export const siteContent = {
         { 
           name: 'Liad Hefets', 
           role: { en: 'Marketing Manager', he: 'מנהל שיווק' }, 
-          image: `${WP}/2025/11/PHOTO-2025-11-24-14-47-49.jpg`, 
+          image: '/assets/team/WhatsApp Image 2026-02-24 at 10.14.53.jpeg', 
           nickname: { en: 'Turbo #2 (but definitely the louder one)', he: 'טורבו מס\' 2 (אבל בהחלט היותר רועש)' }, 
           linkedin: 'https://www.linkedin.com/in/liad-hefets/',
           bio: { 
@@ -441,7 +441,9 @@ export const siteContent = {
         { 
           name: 'Shon Hazan', 
           role: { en: 'Head of Business Development', he: 'ראש פיתוח עסקי' }, 
-          image: `${WP}/2025/11/PHOTO-2025-11-24-14-45-26.jpg`, 
+          image: '/assets/team/1757250848728.jpeg', 
+          imagePosition: 'center 20%',
+          imageScale: 1.4,
           nickname: { en: 'The Connector From the North', he: 'המחבר מהצפון' }, 
           linkedin: 'https://www.linkedin.com/in/shon-hazan-8b2046270/',
           bio: { 

@@ -561,5 +561,39 @@ export const knowledgeData = [
     ],
     coverUrl: "https://m.media-amazon.com/images/I/81Wn2FmUqML._SL1500_.jpg",
     goldenQuote: "A journey of a thousand miles begins with a single step."
+  },
+  // --- Video Gallery ---
+  {
+    "id": "vid-1",
+    "type": "VIDEO",
+    "title": "Why 8 Minutes Changes Everything",
+    "author": "Elad Maor Hefets",
+    "description": "The science and psychology behind the 8-minute methodology and why it's the perfect duration for human connection.",
+    "youtubeUrl": "https://www.youtube.com/watch?v=R7smYF02Kjo",
+    "category": "Interviews",
+    "hashtags": ["#Methodology", "#Science", "#HBM"],
+    "accentColor": "#6160AB"
+  },
+  {
+    "id": "vid-2",
+    "type": "VIDEO",
+    "title": "Building Real Communities",
+    "author": "The HBM Team",
+    "description": "How HBM helps organizations and individuals build genuine, lasting communities through simple, deep interactions.",
+    "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "category": "Education",
+    "hashtags": ["#Community", "#Growth", "#Impact"],
+    "accentColor": "#F07B3C"
+  },
+  {
+    "id": "vid-3",
+    "type": "VIDEO",
+    "title": "The Mission of Humanity",
+    "author": "Elad Maor Hefets",
+    "description": "Elad's vision for the Human Being Movement and its role in healing modern loneliness.",
+    "youtubeUrl": "https://www.youtube.com/watch?v=cGWYgO5VEE4",
+    "category": "Vision",
+    "hashtags": ["#Vision", "#Healing", "#Connection"],
+    "accentColor": "#6160AB"
   }
 ];

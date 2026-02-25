@@ -53,7 +53,7 @@ const PhilosophyQuote = () => {
   }
 
   return (
-    <section className="section-padding bg-hbm-cream">
+    <section className="py-20 bg-hbm-cream min-h-[60vh] flex items-center justify-center">
       <div className="max-w-6xl mx-auto">
         <motion.div
           className="relative"
@@ -74,71 +74,33 @@ const PhilosophyQuote = () => {
           </motion.div>
 
           {/* Main quote card */}
-          <div className="relative p-8 md:p-12 bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 max-w-4xl mx-auto">
+          <div className="relative p-8 md:p-12 max-w-5xl mx-auto flex flex-col items-center justify-center">
             {/* Quote text */}
             <blockquote className="relative z-10 text-center">
               <motion.p
-                className="text-xl md:text-2xl font-normal text-gray-800 leading-relaxed"
-                style={{ fontFamily: 'Sofia Sans, sans-serif' }}
+                className="text-center"
+                style={{ fontFamily: 'Sora, sans-serif' }}
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
               >
-                <span className="block mb-6 font-bold text-hbm-purple italic">
-                  <AnimatedText>Digital platform designed to connect people live at the event</AnimatedText>
-                  <br />
-                  <AnimatedText>for 1 on 1 conversations.</AnimatedText>
+                <span className="block mb-6 text-[10px] md:text-xs font-black text-[#F07B3C] uppercase tracking-[0.3em] opacity-80">
+                  Did you know?
                 </span>
 
-                <span className="block mb-6">
-                  <AnimatedText>There are places that highlight the </AnimatedText>
-                  <AnimatedText className="font-bold text-gray-900">differences</AnimatedText>
-                  <br />
-                  <AnimatedText>between people and create </AnimatedText>
-                  <AnimatedText className="font-bold text-gray-900 border-b-2 border-gray-300">separation</AnimatedText>
-                  <AnimatedText>.</AnimatedText>
+                <span className="block mb-4 text-[16px] md:text-[22px] font-bold text-gray-400/80 leading-tight tracking-tight max-w-md mx-auto">
+                  95% of people <br className="hidden md:block" /> hate small talk.
                 </span>
-                
-                <span className="block">
-                  <AnimatedText>There are places that highlight the </AnimatedText>
-                  <AnimatedText className="font-bold text-gray-900">similarities</AnimatedText>
-                  <br />
-                  <AnimatedText>between people and create </AnimatedText>
-                  <AnimatedText className="font-bold text-hbm-purple border-b-2 border-hbm-purple/30">connection</AnimatedText>
-                  <AnimatedText>.</AnimatedText>
+
+                <span className="block text-[20px] md:text-[34px] font-black leading-none tracking-tighter whitespace-nowrap">
+                   <span className="bg-gradient-to-r from-[#F07B3C] via-[#6160AB] to-[#6160AB] bg-clip-text text-transparent">
+                    We fixed it.
+                  </span>
                 </span>
               </motion.p>
 
-              {/* Choose emphasis */}
-              <motion.div
-                className="mt-8 text-center"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 1.5 }}
-              >
-                <motion.span 
-                  className="block text-3xl md:text-4xl font-bold bg-gradient-to-r from-hbm-purple via-hbm-orange to-hbm-purple bg-clip-text text-transparent tracking-wide font-serif mb-6"
-                  animate={{
-                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                  }}
-                  transition={{
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                  style={{
-                    backgroundSize: '200% 200%',
-                  }}
-                >
-                  Choose.
-                </motion.span>
-                
-                <span className="block text-lg font-medium text-hbm-gray">
-                  Elad Maor Hefets, CEO of The HBM
-                </span>
-              </motion.div>
+
             </blockquote>
           </div>
 

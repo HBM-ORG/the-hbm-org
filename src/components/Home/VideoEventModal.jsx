@@ -4,6 +4,7 @@ import { X, ArrowRight, CheckCircle, ChevronDown, MonitorPlay, MapPin } from 'lu
 import { useI18n, t } from '../../i18n/context';
 import { hbmAnalytics } from '../../utils/analytics';
 import CountdownTimer from '../Events/CountdownTimer';
+import CalendarDropdown from '../Events/CalendarDropdown';
 import { MagicCard } from '../ui/MagicCard';
 
 const VideoEventModal = ({ isOpen, onClose, config }) => {
@@ -27,7 +28,8 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                     ...formState,
                     eventId: 'video-event',
                     eventName: config.title.en || config.title,
-                    language: lang
+                    language: lang,
+                    regSource: 'video_event_modal'
                 })
             });
             
@@ -73,7 +75,7 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                             <X className="w-5 h-5" />
                         </button>
 
-                        <MagicCard className="p-8 text-center rounded-[40px] shadow-2xl border-white/20 bg-black/40 backdrop-blur-xl group/card" gradientColor="#6160AB">
+                        <MagicCard className="p-8 text-center rounded-[40px] shadow-2xl border-white/20 bg-black/40 backdrop-blur-xl group/card !overflow-visible" gradientColor="#6160AB">
                             
                             {/* Header details */}
                             <div className="flex flex-col items-center gap-1 mb-6">
@@ -107,24 +109,35 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                             ) : (
                                 <form onSubmit={handleRegister} className="space-y-4">
                                 {submitStatus === 'success' ? (
-                                    <div className="text-center py-4">
-                                        <div className="w-16 h-16 bg-[#39ff14]/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                                            <CheckCircle className="w-8 h-8 text-[#39ff14]" />
+                                        <div className="text-center py-4 flex flex-col items-center">
+                                            <div className="w-16 h-16 bg-[#39ff14]/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <CheckCircle className="w-8 h-8 text-[#39ff14]" />
+                                            </div>
+                                            <h3 className="text-white font-bold text-2xl mb-1">
+                                                {t({en: "You're In!", he: "אתם בפנים!"}, lang)}
+                                            </h3>
+                                            <p className="text-white/60 text-sm mb-6">
+                                                {t({en: "Check your email for details.", he: "בדקו את המייל לפרטי ההתחברות."}, lang)}
+                                            </p>
+
+                                            <CalendarDropdown 
+                                                eventData={{
+                                                    title: t(config.title, lang),
+                                                    description: t(config.description, lang),
+                                                    location: config.location || 'Video Call',
+                                                    startTime: new Date(`${config.date.split('T')[0]}T${config.time}`),
+                                                    endTime: new Date(new Date(`${config.date.split('T')[0]}T${config.time}`).getTime() + 60 * 60 * 1000)
+                                                }}
+                                            />
+
+                                            <button 
+                                                type="button" 
+                                                onClick={onClose}
+                                                className="mt-8 text-white/40 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+                                            >
+                                                {t({en: "Close", he: "סגור"}, lang)}
+                                            </button>
                                         </div>
-                                        <h3 className="text-white font-bold text-xl mb-1">
-                                            {t({en: "You're In!", he: "אתם בפנים!"}, lang)}
-                                        </h3>
-                                        <p className="text-white/60 text-sm mb-4">
-                                            {t({en: "Check your email for details.", he: "בדקו את המייל לפרטי ההתחברות."}, lang)}
-                                        </p>
-                                        <button 
-                                            type="button" 
-                                            onClick={onClose}
-                                            className="w-full py-4 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
-                                        >
-                                            {t({en: "Close", he: "סגור"}, lang)}
-                                        </button>
-                                    </div>
                                 ) : (
                                     <>
                                         {config.registrationFields?.name !== false && (

@@ -15,19 +15,10 @@ import EventDetails from './pages/EventDetails'
 import Knowledge from './pages/Knowledge'
 import EventRegister from './pages/EventRegister'
 import AdminDashboard from './pages/AdminDashboard'
+import CookiePolicy from './pages/CookiePolicy'
 import { EventsProvider } from './context/EventsContext'
 
-import { trackPageView } from './utils/analytics'
- 
-function SEOWrapper({ children }) {
-  const location = useLocation()
- 
-  useEffect(() => {
-    trackPageView(location.pathname)
-  }, [location.pathname])
- 
-  return <><SEO path={location.pathname} />{children}</>
-}
+import { trackPageView, initAnalytics } from './utils/analytics'
 
 function ScrollToHash() {
   const { hash, pathname } = useLocation()
@@ -45,13 +36,25 @@ function ScrollToHash() {
   return null
 }
 
+function AnalyticsTracker() {
+  const location = useLocation()
+  useEffect(() => {
+    trackPageView(location.pathname)
+  }, [location.pathname])
+  return null
+}
+
 export default function App() {
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
   return (
     <I18nProvider>
       <EventsProvider>
         <BrowserRouter>
           <ScrollToHash />
-        <SEOWrapper>
+          <AnalyticsTracker />
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
@@ -64,8 +67,11 @@ export default function App() {
               <Route path="/events/register" element={<EventRegister />} />
               <Route path="/register" element={<EventRegister />} />
               <Route path="/knowledge" element={<Knowledge />} />
+              <Route path="/knowledge/:id" element={<Knowledge />} />
+              <Route path="/knowledge/:id/:slug" element={<Knowledge />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/cookie-policy" element={<CookiePolicy />} />
 
               {/* Internal Tools - Dev Only */}
               {import.meta.env.DEV && (
@@ -81,7 +87,6 @@ export default function App() {
               <Route path="/gallery" element={<Events />} />
             </Route>
           </Routes>
-        </SEOWrapper>
         </BrowserRouter>
       </EventsProvider>
     </I18nProvider>

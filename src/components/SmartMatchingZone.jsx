@@ -8,94 +8,134 @@ export default function SmartMatchingZone() {
   const navigate = useNavigate()
   const { lang } = useI18n()
   const [selectedInterests, setSelectedInterests] = useState([])
-  const interests = [
-    { en: 'Art', he: 'אמנות', color: 'bg-red-100 text-red-700 border-red-300' },
-    { en: 'Music', he: 'מוזיקה', color: 'bg-pink-100 text-pink-700 border-pink-300' },
-    { en: 'Sport', he: 'ספורט', color: 'bg-green-100 text-green-700 border-green-300' },
-    { en: 'Travel', he: 'טיולים', color: 'bg-blue-100 text-blue-700 border-blue-300' },
-    { en: 'Food & Cooking', he: 'אוכל ובישול', color: 'bg-orange-100 text-orange-700 border-orange-300' },
-    { en: 'Entrepreneurship', he: 'יזמות', color: 'bg-purple-100 text-purple-700 border-purple-300' },
-    { en: 'Movies & TV', he: 'סרטים וטלוויזיה', color: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
-    { en: 'Books', he: 'ספרים', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
-    { en: 'Gaming', he: 'גיימינג', color: 'bg-teal-100 text-teal-700 border-teal-300' },
-    { en: 'Fashion', he: 'אופנה', color: 'bg-rose-100 text-rose-700 border-rose-300' },
-    { en: 'Family', he: 'משפחה', color: 'bg-cyan-100 text-cyan-700 border-cyan-300' },
-  ]
+  const [activeCategory, setActiveCategory] = useState('hobbies')
 
-  const toggleInterest = (interest) => {
+  const categories = {
+    hobbies: {
+      label: { en: 'Hobbies', he: 'תחביבים' },
+      activeColor: 'bg-hbm-purple border-hbm-purple text-white shadow-[#6160AB]/30',
+      items: [
+        { en: 'Art', he: 'אמנות' },
+        { en: 'Music', he: 'מוזיקה' },
+        { en: 'Sport', he: 'ספורט' },
+        { en: 'Travel', he: 'טיולים' },
+        { en: 'Food & Cooking', he: 'אוכל ובישול' },
+        { en: 'Entrepreneurship', he: 'יזמות' },
+        { en: 'Movies & TV', he: 'סרטים וטלוויזיה' },
+        { en: 'Books', he: 'ספרים' },
+        { en: 'Gaming', he: 'גיימינג' },
+        { en: 'Fashion', he: 'אופנה' },
+        { en: 'Family', he: 'משפחה' },
+      ]
+    },
+    role: {
+      label: { en: 'Role', he: 'תפקיד' },
+      activeColor: 'bg-[#73C154] border-[#73C154] text-white shadow-[#73C154]/30',
+      items: [
+        { en: 'CEO / Founder', he: 'מנכ"ל / מייסד' },
+        { en: 'Developer', he: 'מפתח' },
+        { en: 'Designer', he: 'מעצב' },
+        { en: 'Marketing', he: 'שיווק' },
+        { en: 'Product Manager', he: 'מנהל מוצר' },
+        { en: 'Sales', he: 'מכירות' },
+        { en: 'Management', he: 'ניהול' },
+        { en: 'Creative', he: 'קריאייטיב' },
+      ]
+    },
+    identity: {
+      label: { en: 'Identity', he: 'זהות' },
+      activeColor: 'bg-hbm-orange border-hbm-orange text-white shadow-[#F07B3C]/30',
+      items: [
+        { en: 'Coffee Lover', he: 'חובב קפה' },
+        { en: 'Night Owl', he: 'איש לילה' },
+        { en: 'Early Bird', he: 'מקיץ מוקדם' },
+        { en: 'Pet Parent', he: 'הורה לחיות' },
+        { en: 'Optimist', he: 'אופטימי' },
+        { en: 'Techie', he: 'טכנולוגי' },
+        { en: 'Foodie', he: 'פודי' },
+        { en: 'Creator', he: 'יוצר' },
+        { en: 'Dog Person', he: 'אוהב כלבים' },
+        { en: 'Bookworm', he: 'תולעת ספרים' },
+        { en: 'Nature Lover', he: 'אוהב טבע' },
+        { en: 'Visionary', he: 'בעל חזון' },
+      ]
+    }
+  }
+
+  const toggleInterest = (interestEn) => {
     setSelectedInterests((prev) =>
-      prev.includes(interest.en)
-        ? prev.filter((i) => i !== interest.en)
-        : [...prev, interest.en]
+      prev.includes(interestEn)
+        ? prev.filter((i) => i !== interestEn)
+        : [...prev, interestEn]
     )
   }
 
   return (
     <div className="w-full max-w-lg mx-auto">
-      <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+      <div className="bg-white rounded-[32px] md:rounded-[40px] shadow-2xl p-6 md:p-10 border border-gray-100 flex flex-col items-center">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles size={20} className="text-hbm-purple" />
-            <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-              {t({ en: 'Smart Algorithm', he: 'אלגוריתם חכם' }, lang)}
+        <div className="mb-6 md:mb-8 text-center w-full">
+          <div className="flex items-center justify-center gap-2 mb-2 md:mb-3">
+            <Sparkles size={16} className="text-[#6160AB]" />
+            <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest font-['Sora']">
+              SMART ALGORITHM
             </span>
           </div>
-          <h3 className="text-2xl font-bold text-hbm-dark mb-2">
-            {t({ en: 'Select Your Interests', he: 'בחרו את תחומי העניין שלכם' }, lang)}
+          <h3 className="text-2xl md:text-[32px] font-black text-hbm-dark mb-1 md:mb-2 font-['Sora'] tracking-tight">
+            {t({ en: 'Select Your Interests', he: 'בחרו את תחומי העניין' }, lang)}
           </h3>
-          <p className="text-sm text-gray-600">
-            {t(
-              {
-                en: 'We\'ll match you with someone who shares your vibe',
-                he: 'נתאים אתכם עם מישהו שחולק את האווירה שלכם',
-              },
-              lang
-            )}
+          <p className="text-[12px] md:text-[14px] text-gray-500 font-medium font-['Sora']">
+            {t({ en: "We'll match you with someone who shares your vibe", he: 'נתאים אתכם עם מישהו שחולק את האווירה שלכם' }, lang)}
           </p>
         </div>
 
-        {/* Interest Tags */}
-        <div className="flex flex-wrap gap-3 mb-8">
-          {interests.map((interest, idx) => (
+        {/* Category Selector */}
+        <div className="flex bg-[#F5F6FE] p-1 md:p-1.5 rounded-xl md:rounded-2xl mb-6 md:mb-8 w-fit">
+          {Object.entries(categories).map(([key, cat]) => (
             <button
-              key={idx}
-              onClick={() => toggleInterest(interest)}
-              className={`px-5 py-2.5 rounded-full font-semibold text-sm border-2 transition-all duration-200 hover:scale-105 ${
-                selectedInterests.includes(interest.en)
-                  ? interest.color + ' shadow-md'
-                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+              key={key}
+              onClick={() => setActiveCategory(key)}
+              className={`px-3 md:px-6 py-1.5 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-300 font-['Sora'] ${
+                activeCategory === key
+                  ? 'bg-white text-hbm-dark shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              {t(interest, lang)}
+              {t(cat.label, lang)}
             </button>
           ))}
+        </div>
+
+        {/* Interests Grid */}
+        <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-8 md:mb-12 min-h-[120px] md:min-h-[160px] content-start">
+          {categories[activeCategory].items.map((item, idx) => {
+            const isSelected = selectedInterests.includes(item.en)
+            return (
+              <button
+                key={idx}
+                onClick={() => toggleInterest(item.en)}
+                className={`px-4 md:px-6 py-2 md:py-3 rounded-full font-bold text-[11px] md:text-[13px] border-2 transition-all duration-300 font-['Sora'] whitespace-nowrap min-w-[100px] md:min-w-[140px] text-center ${
+                  isSelected
+                    ? `${categories[activeCategory].activeColor} scale-105 shadow-lg`
+                    : 'bg-white text-gray-400 border-gray-100 hover:border-gray-300 hover:text-gray-600'
+                }`}
+              >
+                {t(item, lang)}
+              </button>
+            )
+          })}
         </div>
 
         {/* CTA Button */}
         <button 
           onClick={() => navigate(siteContent.global.ctaUrl)}
-          className="w-full bg-gradient-to-r from-hbm-purple to-hbm-orange text-white font-bold py-4 px-6 rounded-2xl hover:shadow-xl transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2 group">
-          <span className="text-lg">
+          className="w-full bg-gradient-to-r from-[#6160AB] to-[#F07B3C] text-white font-black py-4 md:py-5 px-6 md:px-8 rounded-2xl md:rounded-3xl transition-all duration-300 hover:scale-[1.02] shadow-xl flex items-center justify-center gap-3 group font-['Sora'] uppercase tracking-widest text-sm"
+        >
+          <span>
             {t({ en: 'Start Your 8 Minutes', he: 'התחילו את 8 הדקות שלכם' }, lang)}
           </span>
-          <span className="group-hover:translate-x-1 transition-transform">→</span>
+          <span className="group-hover:translate-x-1 transition-transform text-xl md:text-2xl">→</span>
         </button>
-
-        {/* Match Count */}
-        <div className="h-6 mt-4">
-          {selectedInterests.length > 0 && (
-            <p className="text-center text-sm text-gray-500 animate-fade-in">
-              {t(
-                {
-                  en: `${selectedInterests.length} interests selected • Finding your perfect match...`,
-                  he: `${selectedInterests.length} תחומי עניין נבחרו • מחפשים את ההתאמה המושלמת...`,
-                },
-                lang
-              )}
-            </p>
-          )}
-        </div>
       </div>
     </div>
   )

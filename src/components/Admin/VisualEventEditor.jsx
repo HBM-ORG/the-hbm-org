@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, Upload, X, MapPin, Calendar, Image as ImageIcon, Video, Sun, Droplets, Eye, ArrowLeft, Trash2, GripVertical } from 'lucide-react';
+import { Settings, Save, Upload, X, MapPin, Calendar, Image as ImageIcon, Video, Sun, Droplets, Eye, ArrowLeft, Trash2, GripVertical, Sparkles } from 'lucide-react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import NextEventHero from '../Events/NextEventHero';
 
@@ -217,9 +217,117 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
                         </div>
                     )}
                     {activeTab === 'content' && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                            {/* Host Note */}
+                        <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500 pb-20">
+                            {/* 1. PROMO CARDS */}
                             <div className="space-y-4">
+                                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#F07B3C] border-b pb-2">Promo Cards (Top 3)</h4>
+                                {(event.promoBubbles || []).slice(0, 3).map((promo, idx) => (
+                                    <div key={idx} className="bg-gray-50 border border-gray-100 rounded-2xl p-5 space-y-4">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-[10px] font-black text-gray-400">Card #{idx + 1}</span>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Title (EN/HE)</label>
+                                                <input value={promo.title?.en} onChange={(e) => {
+                                                    const newPromos = [...event.promoBubbles];
+                                                    newPromos[idx] = { ...newPromos[idx], title: { ...newPromos[idx].title, en: e.target.value } };
+                                                    onUpdate('promoBubbles', newPromos);
+                                                }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs mb-2" placeholder="EN Title" />
+                                                <input value={promo.title?.he} dir="rtl" onChange={(e) => {
+                                                    const newPromos = [...event.promoBubbles];
+                                                    newPromos[idx] = { ...newPromos[idx], title: { ...newPromos[idx].title, he: e.target.value } };
+                                                    onUpdate('promoBubbles', newPromos);
+                                                }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-right" placeholder="כותרת בעברית" />
+                                            </div>
+                                            <div>
+                                                <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Description (EN/HE)</label>
+                                                <textarea value={promo.desc?.en} onChange={(e) => {
+                                                    const newPromos = [...event.promoBubbles];
+                                                    newPromos[idx] = { ...newPromos[idx], desc: { ...newPromos[idx].desc, en: e.target.value } };
+                                                    onUpdate('promoBubbles', newPromos);
+                                                }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs mb-2 resize-none" rows="2" placeholder="EN Desc" />
+                                                <textarea value={promo.desc?.he} dir="rtl" onChange={(e) => {
+                                                    const newPromos = [...event.promoBubbles];
+                                                    newPromos[idx] = { ...newPromos[idx], desc: { ...newPromos[idx].desc, he: e.target.value } };
+                                                    onUpdate('promoBubbles', newPromos);
+                                                }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-right resize-none" rows="2" placeholder="תיאור בעברית" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* 2. WHAT AWAITS YOU (Section Details) */}
+                            <div className="space-y-4 pt-4 border-t border-gray-100">
+                                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#6160AB] border-b pb-2">Experience Highlights (Center)</h4>
+                                <div>
+                                    <label className="text-[9px] font-bold text-gray-400 uppercase block mb-1">Bold Introduction (EN/HE)</label>
+                                    <input value={event.whatToExpect?.boldTitle?.en} onChange={(e) => {
+                                        onUpdate('whatToExpect', { ...event.whatToExpect, boldTitle: { ...event.whatToExpect.boldTitle, en: e.target.value } });
+                                    }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs mb-2" placeholder="EN Intro" />
+                                    <input value={event.whatToExpect?.boldTitle?.he} dir="rtl" onChange={(e) => {
+                                        onUpdate('whatToExpect', { ...event.whatToExpect, boldTitle: { ...event.whatToExpect.boldTitle, he: e.target.value } });
+                                    }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-right" placeholder="פתיח בעברית" />
+                                </div>
+                                
+                                <div className="space-y-4 pt-4">
+                                    {(event.whatToExpect?.points || []).map((point, idx) => (
+                                        <div key={idx} className="bg-[#6160AB]/5 border border-[#6160AB]/10 rounded-2xl p-5 space-y-3">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-[10px] font-black text-[#6160AB]">Point #{idx + 1}</span>
+                                            </div>
+                                            <input value={point.title?.en} onChange={(e) => {
+                                                const newPoints = [...event.whatToExpect.points];
+                                                newPoints[idx] = { ...newPoints[idx], title: { ...newPoints[idx].title, en: e.target.value } };
+                                                onUpdate('whatToExpect.points', newPoints);
+                                            }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs" placeholder="EN Point Title" />
+                                            <textarea value={point.desc?.en} onChange={(e) => {
+                                                const newPoints = [...event.whatToExpect.points];
+                                                newPoints[idx] = { ...newPoints[idx], desc: { ...newPoints[idx].desc, en: e.target.value } };
+                                                onUpdate('whatToExpect.points', newPoints);
+                                            }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs resize-none" rows="2" placeholder="EN Point Desc" />
+                                            <input value={point.title?.he} dir="rtl" onChange={(e) => {
+                                                const newPoints = [...event.whatToExpect.points];
+                                                newPoints[idx] = { ...newPoints[idx], title: { ...newPoints[idx].title, he: e.target.value } };
+                                                onUpdate('whatToExpect.points', newPoints);
+                                            }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-right" placeholder="כותרת בעברית" />
+                                            <textarea value={point.desc?.he} dir="rtl" onChange={(e) => {
+                                                const newPoints = [...event.whatToExpect.points];
+                                                newPoints[idx] = { ...newPoints[idx], desc: { ...newPoints[idx].desc, he: e.target.value } };
+                                                onUpdate('whatToExpect.points', newPoints);
+                                            }} className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-right resize-none" rows="2" placeholder="תיאור בעברית" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 3. FREE TEXT */}
+                            <div className="space-y-4 pt-4 border-t border-gray-100">
+                                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">Bottom Free Text</h4>
+                                <textarea 
+                                    value={event.freeText?.en || (typeof event.freeText === 'string' ? event.freeText : '')} 
+                                    onChange={(e) => {
+                                        const newValue = typeof event.freeText === 'object' ? { ...event.freeText, en: e.target.value } : { en: e.target.value, he: '' };
+                                        onUpdate('freeText', newValue);
+                                    }}
+                                    className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 text-sm h-32 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/20 shadow-sm"
+                                    placeholder="Additional English details..."
+                                />
+                                <textarea 
+                                    value={event.freeText?.he || ''} 
+                                    dir="rtl"
+                                    onChange={(e) => {
+                                        const newValue = typeof event.freeText === 'object' ? { ...event.freeText, he: e.target.value } : { en: '', he: e.target.value };
+                                        onUpdate('freeText', newValue);
+                                    }}
+                                    className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 text-sm h-32 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/20 shadow-sm text-right"
+                                    placeholder="פרטים נוספים בעברית..."
+                                />
+                            </div>
+
+                            {/* Original Host Note */}
+                            <div className="space-y-4 pt-4 border-t border-gray-100">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Host Note</h4>
                                 <div className="group">
                                     <label className="text-[10px] font-bold text-gray-400 uppercase mb-2 block">Message</label>
@@ -239,51 +347,6 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
                                         className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all shadow-sm focus:bg-white"
                                         placeholder="Name of the host"
                                     />
-                                </div>
-                            </div>
-
-                            {/* FAQs Manager (Reduced) */}
-                            <div className="space-y-4 pt-4 border-t border-gray-100">
-                                <div className="flex justify-between items-center">
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">FAQs</h4>
-                                    <button 
-                                        onClick={() => onUpdate('faqs', [...(event.faqs || []), { question: '', answer: '' }])}
-                                        className="text-[10px] font-black uppercase text-blue-600 hover:text-blue-700"
-                                    >
-                                        + Add
-                                    </button>
-                                </div>
-                                <div className="space-y-3">
-                                    {(event.faqs || []).map((faq, idx) => (
-                                        <div key={idx} className="bg-gray-50 border border-gray-100 rounded-xl p-4 space-y-3">
-                                            <input 
-                                                value={faq.question}
-                                                onChange={(e) => {
-                                                    const newFaqs = [...event.faqs];
-                                                    newFaqs[idx].question = e.target.value;
-                                                    onUpdate('faqs', newFaqs);
-                                                }}
-                                                className="w-full bg-transparent text-xs font-bold border-b border-transparent focus:border-blue-500 outline-none"
-                                                placeholder="Question"
-                                            />
-                                            <textarea 
-                                                value={faq.answer}
-                                                onChange={(e) => {
-                                                    const newFaqs = [...event.faqs];
-                                                    newFaqs[idx].answer = e.target.value;
-                                                    onUpdate('faqs', newFaqs);
-                                                }}
-                                                className="w-full bg-transparent text-xs text-gray-500 min-h-[60px] resize-none border-b border-transparent focus:border-blue-500 outline-none"
-                                                placeholder="Answer"
-                                            />
-                                            <button 
-                                                onClick={() => onUpdate('faqs', event.faqs.filter((_, i) => i !== idx))}
-                                                className="text-gray-300 hover:text-red-500 transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -427,60 +490,98 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
                     )}
 
                     {activeTab === 'partners' && (
-                        <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-4">
-                            <div className="flex justify-between items-center">
-                                <h4 className="font-bold text-gray-700">Partners</h4>
-                                <button onClick={() => {
-                                    const newPartners = [...(event.partners || []), { name: 'New Partner', logo: '', link: '' }];
-                                    onUpdate('partners', newPartners);
-                                }} className="text-blue-600 text-xs font-bold flex items-center gap-1">+ Add</button>
-                            </div>
-                            
-                            {(event.partners || []).map((partner, idx) => (
-                                <div key={idx} className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex gap-3 items-center">
-                                    <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 relative group overflow-hidden flex-shrink-0">
-                                         {partner.logo ? (
-                                             <img src={partner.logo} className="w-full h-full object-contain p-1" alt="" />
-                                         ) : (
-                                             <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                                 <ImageIcon className="w-4 h-4" />
-                                             </div>
-                                         )}
-                                         <label className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
-                                             <Upload className="w-4 h-4 text-white drop-shadow-md" />
-                                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, `partners.${idx}.logo`, 'partners')} />
-                                         </label>
-                                    </div>
-                                    <div className="flex-1 space-y-1">
-                                        <input 
-                                            value={partner.name} 
-                                            onChange={(e) => {
-                                                const newPartners = [...event.partners];
-                                                newPartners[idx].name = e.target.value;
-                                                onUpdate('partners', newPartners);
-                                            }}
-                                            className="w-full bg-transparent font-bold text-sm border-b border-transparent focus:border-blue-500 outline-none" 
-                                            placeholder="Name"
-                                        />
-                                        <input 
-                                            value={partner.link}
-                                            onChange={(e) => {
-                                                const newPartners = [...event.partners];
-                                                newPartners[idx].link = e.target.value;
-                                                onUpdate('partners', newPartners);
-                                            }}
-                                            className="w-full bg-transparent text-xs text-gray-500 border-b border-transparent focus:border-blue-500 outline-none" 
-                                            placeholder="https://..."
-                                        />
-                                    </div>
-                                    <button onClick={() => {
-                                        const newPartners = event.partners.filter((_, i) => i !== idx);
-                                        onUpdate('partners', newPartners);
-                                    }} className="text-gray-400 hover:text-red-500">
-                                        <Trash2 className="w-4 h-4" />
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-8 pb-32">
+                            {/* PARTNERSHIP BLOCK SETTINGS */}
+                            <div className="bg-gray-50 border border-gray-100 p-6 rounded-3xl space-y-6">
+                                <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+                                    <h4 className="text-sm font-black uppercase text-gray-700">Partnership Block</h4>
+                                    <button 
+                                        onClick={() => onUpdate('showPartnership', !event.showPartnership)}
+                                        className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${event.showPartnership ? 'bg-orange-500 text-white shadow-lg shadow-orange-100' : 'bg-gray-200 text-gray-400'}`}
+                                    >
+                                        {event.showPartnership ? 'ACTIVE' : 'OFF'}
                                     </button>
                                 </div>
-                            ))}
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase block mb-1">Section Title (EN/HE)</label>
+                                        <input value={event.partnership?.title?.en} onChange={(e) => onUpdate('partnership', { ...event.partnership, title: { ...event.partnership.title, en: e.target.value } })} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs mb-2" placeholder="EN Title" />
+                                        <input value={event.partnership?.title?.he} dir="rtl" onChange={(e) => onUpdate('partnership', { ...event.partnership, title: { ...event.partnership.title, he: e.target.value } })} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs text-right" placeholder="כותרת בעברית" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase block mb-1">Description Text (EN/HE)</label>
+                                        <textarea value={event.partnership?.text?.en} onChange={(e) => onUpdate('partnership', { ...event.partnership, text: { ...event.partnership.text, en: e.target.value } })} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs mb-2 h-24 resize-none" placeholder="EN Description" />
+                                        <textarea value={event.partnership?.text?.he} dir="rtl" onChange={(e) => onUpdate('partnership', { ...event.partnership, text: { ...event.partnership.text, he: e.target.value } })} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs text-right h-24 resize-none" placeholder="תיאור בעברית" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase block mb-1">Redirect Link (Website)</label>
+                                        <input value={event.partnership?.link} onChange={(e) => onUpdate('partnership', { ...event.partnership, link: e.target.value })} className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs" placeholder="https://..." />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* PARTNERS LOGO LIST */}
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center px-1">
+                                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Logo Stream</h4>
+                                    <button onClick={() => {
+                                        const newPartners = [...(event.partners || []), { name: 'New Partner', logo: '', link: '' }];
+                                        onUpdate('partners', newPartners);
+                                    }} className="bg-[#6160AB] text-white text-[10px] font-black uppercase px-3 py-1.5 rounded-lg shadow-lg shadow-[#6160AB]/20 flex items-center gap-1">+ Add Logo</button>
+                                </div>
+                                
+                                {(event.partners || []).map((partner, idx) => (
+                                    <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-4 flex gap-4 items-center shadow-sm">
+                                        <div className="w-16 h-16 bg-gray-50 rounded-xl border border-gray-100 relative group overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                             {partner.logo ? (
+                                                 <img src={partner.logo} className="w-full h-full object-contain p-2" alt="" />
+                                             ) : (
+                                                 <Sparkles className="w-6 h-6 text-gray-200" />
+                                             )}
+                                             <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                                                 <Upload className="w-5 h-5 text-white" />
+                                                 <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, `partners.${idx}.logo`, 'partners')} />
+                                             </label>
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                            <input 
+                                                value={partner.name} 
+                                                onChange={(e) => {
+                                                    const newPartners = [...event.partners];
+                                                    newPartners[idx].name = e.target.value;
+                                                    onUpdate('partners', newPartners);
+                                                }}
+                                                className="w-full bg-transparent font-black text-xs border-b border-transparent focus:border-[#6160AB] outline-none" 
+                                                placeholder="Partner Name"
+                                            />
+                                            <input 
+                                                value={partner.link}
+                                                onChange={(e) => {
+                                                    const newPartners = [...event.partners];
+                                                    newPartners[idx].link = e.target.value;
+                                                    onUpdate('partners', newPartners);
+                                                }}
+                                                className="w-full bg-transparent text-[10px] text-gray-400 border-b border-transparent focus:border-[#6160AB] outline-none font-mono" 
+                                                placeholder="Link (optional)"
+                                            />
+                                        </div>
+                                        <button onClick={() => {
+                                            const newPartners = event.partners.filter((_, i) => i !== idx);
+                                            onUpdate('partners', newPartners);
+                                        }} className="text-gray-200 hover:text-red-500 transition-colors">
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                ))}
+
+                                {(event.partners || []).length === 0 && (
+                                    <div className="text-center py-12 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-200">
+                                        <Sparkles className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                                        <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">No independent logos added yet</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 

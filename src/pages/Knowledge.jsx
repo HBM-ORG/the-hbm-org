@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { Search, X, BookOpen, Youtube, ExternalLink, Star, ChevronRight, PlayCircle, Library, Sparkles, Quote, ArrowUpRight } from 'lucide-react'
 import { knowledgeData, knowledgeCategories } from '../data/knowledgeConfig'
 import { useBookData } from '../hooks/useBookData'
 import EyebrowBadge from '../components/EyebrowBadge'
+import SEO from '../components/SEO'
+import { useI18n, t } from '../i18n/context'
 
 // --- Components ---
 
-const VideoCard = React.memo(({ item }) => {
+const VideoCard = React.memo(({ item, index }) => {
   const getEmbedUrl = (url) => {
     try {
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -17,15 +20,17 @@ const VideoCard = React.memo(({ item }) => {
   };
 
   const embedUrl = getEmbedUrl(item.youtubeUrl);
+  const isLarge = index % 5 === 0; // Bento logic: every 5th video is large
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="group relative bg-[#FCFAF7] rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-2xl hover:shadow-hbm-purple/10 transition-all duration-700 flex flex-col h-full"
+      className={`group relative bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 transition-all duration-700 flex flex-col ${isLarge ? 'md:col-span-2 md:row-span-2' : ''}`}
+      style={{ '--accent': item.accentColor || '#6160AB' }}
     >
-      <div className="aspect-video relative overflow-hidden bg-black/5">
+      <div className={`relative overflow-hidden bg-black/5 ${isLarge ? 'aspect-[16/10]' : 'aspect-video'}`}>
         {embedUrl ? (
           <iframe
             src={embedUrl}
@@ -40,62 +45,53 @@ const VideoCard = React.memo(({ item }) => {
           </div>
         )}
         
-        {/* Decorative corner tag */}
-        <div className="absolute top-4 left-4 z-10">
-          <span className="text-[9px] font-black tracking-widest text-white uppercase bg-hbm-purple/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/20">
+        <div className="absolute top-4 left-4 z-10 flex gap-2">
+          <span className="text-[9px] font-black tracking-widest text-white uppercase bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/20">
             {item.category || 'Discovery'}
           </span>
         </div>
       </div>
-      
-      <div className="p-8 flex flex-col flex-1">
-        <h3 className="text-2xl font-black text-hbm-dark mb-2 tracking-tight leading-tight group-hover:text-hbm-purple transition-colors">{item.title}</h3>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="h-0.5 w-6 bg-hbm-orange rounded-full" />
-          <p className="text-xs text-hbm-gray font-black uppercase tracking-[0.2em]">{item.author}</p>
+
+      <div className="p-4 md:p-6 flex flex-col">
+        <div className="flex flex-wrap gap-2 mb-2">
+          {(item.hashtags || []).map(tag => (
+            <span key={tag} className="text-[9px] font-bold text-[var(--accent)] uppercase tracking-wider">{tag}</span>
+          ))}
         </div>
-        <p className="text-base text-gray-600 font-medium leading-relaxed line-clamp-3 mb-6">
+        <h3 className={`font-black text-hbm-dark mb-1.5 tracking-tight leading-tight group-hover:text-[var(--accent)] transition-colors ${isLarge ? 'text-xl md:text-3xl' : 'text-base md:text-lg'}`}>{item.title}</h3>
+        <p className={`text-gray-600 font-medium leading-relaxed line-clamp-2 md:line-clamp-3 ${isLarge ? 'text-sm md:text-base' : 'text-xs md:text-sm'}`}>
           {item.description}
         </p>
-        
-        <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
-           <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Knowledge Video</span>
-           <PlayCircle className="w-6 h-6 text-hbm-purple opacity-20 group-hover:opacity-100 transition-all transform group-hover:scale-110" />
-        </div>
       </div>
     </motion.div>
   );
 });
 
-const KnowledgeCard = React.memo(({ item, onClick }) => {
-  // Pass manualCoverUrl (from item.coverUrl) to hook
+const KnowledgeCard = React.memo(({ item, onClick, index }) => {
   const { cover, rating, isLoading } = useBookData(item.title, item.author, item.type, item.coverUrl)
-
-  // Image Error Handling (Silver Bullet for 403/404/Dead Links)
   const [imageError, setImageError] = React.useState(false);
 
-  // STRICT FILTER: If not loading and (no cover OR image error), do NOT render.
-  if (!isLoading && (!cover || imageError)) return null;
+  const hasValidCover = cover && !imageError;
+
+  const isFeatured = item.featured || index === 0; // First item or explicitly featured
 
   return (
     <motion.div
       layoutId={`card-${item.id}`}
       onClick={() => onClick(item)}
-      className="group relative cursor-pointer"
+      className={`group relative cursor-pointer ${isFeatured ? 'md:col-span-2 md:row-span-2' : ''}`}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "50px" }}
       whileHover={{ y: -8, transition: { duration: 0.3, ease: "easeOut" } }}
     >
-      {/* 3D Tilt Container */}
-      <div className="relative aspect-[2/3] rounded-2xl overflow-hidden shadow-lg bg-white/50 backdrop-blur-sm border border-white/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-hbm-purple/20 group-hover:-rotate-1 group-hover:scale-[1.02]">
+      <div className={`relative rounded-2xl overflow-hidden shadow-lg bg-white/50 backdrop-blur-sm border border-white/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-hbm-purple/20 group-hover:-rotate-1 group-hover:scale-[1.02] ${isFeatured ? 'aspect-[2/3] md:aspect-auto h-full' : 'aspect-[2/3]'}`}>
         
-        {/* Cover Image */}
         {isLoading ? (
           <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center">
              <BookOpen className="text-gray-300 w-12 h-12" />
           </div>
-        ) : (
+        ) : hasValidCover ? (
           <img 
             src={cover} 
             alt={item.title} 
@@ -103,30 +99,26 @@ const KnowledgeCard = React.memo(({ item, onClick }) => {
             onError={() => setImageError(true)}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
+        ) : (
+          <div className="w-full h-full bg-hbm-dark flex flex-col items-center justify-center p-6 text-center transition-transform duration-700 group-hover:scale-110">
+             <BookOpen className="text-white/10 w-24 h-24 mb-4" />
+          </div>
         )}
 
-        {/* Gradient Overlay */}
         <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
 
-        {/* Content */}
-        <div className="absolute bottom-0 left-0 p-5 w-full text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-           <div className="flex gap-2 mb-2">
-             <span className="text-[10px] font-bold tracking-widest text-hbm-purple-light uppercase bg-black/40 backdrop-blur px-2 py-1 rounded-md border border-white/10">
+        <div className="absolute bottom-0 left-0 p-6 w-full text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+           <div className="flex gap-2 mb-3">
+             <span className="text-[10px] font-bold tracking-widest text-[#FDFBF7] uppercase bg-hbm-purple/80 backdrop-blur px-2 py-1 rounded-md border border-white/10">
                {item.category}
              </span>
-             {item.type === 'FIGURE' && (
-                <span className="text-[10px] font-bold tracking-widest text-blue-200 uppercase bg-blue-900/40 backdrop-blur px-2 py-1 rounded-md border border-blue-500/30">
-                  Figure
-                </span>
-             )}
            </div>
            
-           <h3 className="text-lg font-bold leading-tight mb-1 line-clamp-2 text-shadow-sm">{item.title}</h3>
-           <p className="text-sm opacity-90 font-medium text-gray-200 line-clamp-1">{item.author}</p>
+           <h3 className={`${isFeatured ? 'text-lg md:text-3xl' : 'text-base md:text-lg'} font-black leading-tight mb-1 line-clamp-2 text-shadow-sm`}>{item.title}</h3>
+           <p className="text-[10px] md:text-sm opacity-90 font-bold text-gray-200 line-clamp-1 uppercase tracking-wider">{item.author}</p>
            
-           {/* Rating Badge - Only for Books */}
            {!isLoading && rating && item.type !== 'FIGURE' && (
-             <div className="flex items-center gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75">
+             <div className="flex items-center gap-1 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75">
                <div className="flex gap-0.5">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className={`w-3 h-3 ${i < Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-600 text-gray-600'}`} />
@@ -144,11 +136,26 @@ const KnowledgeCard = React.memo(({ item, onClick }) => {
 const LibraryDrawer = ({ item, onClose }) => {
   if (!item) return null
   // Pass manualCoverUrl here too
-  const { cover, description, rating, pageCount, infoLink } = useBookData(item.title, item.author, item.type, item.coverUrl)
+  const { cover, description: fetchedDescription, rating, pageCount, infoLink } = useBookData(item.title, item.author, item.type, item.coverUrl)
   
   // Direct Book Access
   // Use explicit fullBookUrl if available, otherwise search Archive.org
   const bookUrl = item.fullBookUrl || `https://archive.org/search.php?query=${encodeURIComponent(item.title + ' ' + item.author)}`;
+
+  // Book Schema for SEO
+  const bookSchema = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": item.title,
+    "author": {
+      "@type": "Person",
+      "name": item.author
+    },
+    "description": item.essence || item.description || fetchedDescription,
+    "image": cover,
+    "genre": item.category,
+    "numberOfPages": pageCount
+  };
 
   // Scroll Progress Logic
   const [scrollProgress, setScrollProgress] = useState(0)
@@ -169,6 +176,12 @@ const LibraryDrawer = ({ item, onClose }) => {
 
   return (
     <>
+      <SEO 
+        title={`${item.title} by ${item.author} | HBM Growth Library`}
+        description={item.essence || item.description || fetchedDescription}
+        image={cover}
+        schema={bookSchema}
+      />
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -208,7 +221,13 @@ const LibraryDrawer = ({ item, onClose }) => {
                {/* Header Section */}
                <div className="flex flex-col md:flex-row gap-8 mb-10 items-start">
                   <div className="w-40 md:w-48 shrink-0 aspect-[2/3] rounded-xl shadow-2xl overflow-hidden relative rotate-1 border-4 border-white transform hover:rotate-0 transition-transform duration-500">
-                     <img src={cover} alt={item.title} className="w-full h-full object-cover" />
+                     {cover ? (
+                        <img src={cover} alt={item.title} className="w-full h-full object-cover" />
+                     ) : (
+                        <div className="w-full h-full bg-hbm-dark flex flex-col items-center justify-center p-4 text-center">
+                           <BookOpen className="text-white/20 w-12 h-12" />
+                        </div>
+                     )}
                   </div>
                   <div className="flex-1">
                      <div className="flex flex-wrap gap-2 mb-4">
@@ -253,87 +272,71 @@ const LibraryDrawer = ({ item, onClose }) => {
                {/* NEW: Value-First Content Structure */}
                <div id="insights-section" className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   
-                  {/* 1. One-Sentence Essence */}
-                  {item.essence && (
-                    <div className="relative p-10 rounded-2xl bg-white border border-hbm-purple/10 shadow-xl shadow-hbm-purple/5 overflow-hidden">
-                       <div className="absolute top-0 right-0 p-32 bg-gradient-to-bl from-hbm-purple/5 to-transparent rounded-bl-full" />
-                       <Quote className="absolute top-8 left-8 text-hbm-purple/20 w-12 h-12" />
-                       <p className="relative z-10 text-2xl md:text-3xl font-serif italic text-hbm-dark text-center leading-relaxed">
-                          "{item.essence}"
+                  {/* 1. Author Wisdom Quote */}
+                  {item.authorQuote && (
+                    <div className="relative p-10 rounded-2xl bg-white border border-purple-100 shadow-xl shadow-purple-500/5 overflow-hidden">
+                       <Quote className="absolute top-8 left-8 text-purple-200 w-12 h-12" />
+                       <p className="relative z-10 text-2xl md:text-3xl font-serif italic text-gray-800 text-center leading-relaxed">
+                          "{item.authorQuote}"
                        </p>
+                       <div className="text-center mt-4 text-purple-400 font-bold uppercase tracking-widest text-[10px]">Author Wisdom</div>
                     </div>
                   )}
 
-                  {/* 2. Key Takeaways */}
-                  {item.takeaways && item.takeaways.length > 0 && (
+                  {/* 2. 3 Key Insights */}
+                  {item.threeKeySentences && item.threeKeySentences.length > 0 && (
                     <div>
                        <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-hbm-dark uppercase tracking-wider">
                           <Sparkles className="text-yellow-500 fill-yellow-500" size={18} />
-                          3 Key Takeaways
+                          Core insights
                        </h3>
                        <div className="grid gap-4">
-                          {item.takeaways.map((takeaway, i) => (
-                             <div key={i} className="flex gap-4 p-6 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+                          {item.threeKeySentences.map((sentence, i) => (
+                             <div key={i} className="flex gap-4 p-6 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all">
                                 <div className="shrink-0 w-8 h-8 rounded-full bg-hbm-purple/10 flex items-center justify-center text-hbm-purple font-bold text-sm">
                                   {i + 1}
                                 </div>
-                                <p className="text-gray-700 font-medium leading-relaxed text-lg">{takeaway}</p>
+                                <p className="text-gray-700 font-medium leading-relaxed text-lg">{sentence}</p>
                              </div>
                           ))}
                        </div>
                     </div>
                   )}
 
-                  {/* 3. Deep Dive Summary (New) */}
-                  {/* 3. Deep Dive Summary (New) */}
-                  {/* 3. Deep Dive Summary (New) */}
-                  {(() => {
-                     const summary = item.fullSummary 
-                        ? item.fullSummary 
-                        : (description && description.length > 100 ? description : (item.description && item.description.length > 100 ? item.description : null));
-                     
-                     if (!summary) return null;
+                   {/* 3. Deep Dive Summary (New) */}
+                   {(() => {
+                      const summary = item.fullSummary || fetchedDescription || item.description || item.essence;
+                      if (!summary || summary.length < 10) return null;
 
-                     return (
-                        <div>
-                           <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-900 uppercase tracking-wider">
-                              <BookOpen size={18} className="text-hbm-purple" />
-                              Deep Dive Summary
-                           </h3>
-                           <div className="prose prose-lg prose-gray max-w-none bg-white p-8 rounded-2xl border border-gray-100 shadow-sm leading-8">
-                              <p className="whitespace-pre-line">{summary.replace(/<[^>]*>?/gm, '')}</p>
-                           </div>
-                        </div>
-                     );
-                  })()}
+                      return (
+                         <div>
+                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-900 uppercase tracking-wider">
+                               <BookOpen size={18} className="text-hbm-purple" />
+                               Deep Dive Summary
+                            </h3>
+                          <div className="space-y-6">
+                             <h3 className="text-xl font-black text-hbm-dark uppercase tracking-widest border-b-2 border-hbm-dark w-fit pb-1">Master Summary</h3>
+                             <div className="prose prose-xl prose-gray max-w-none bg-[#FCFAF7] p-10 rounded-2xl border border-gray-200 shadow-inner leading-relaxed font-serif text-gray-800 italic">
+                                <p className="whitespace-pre-line leading-10 text-xl md:text-2xl">{summary.replace(/<[^>]*>?/gm, '')}</p>
+                             </div>
+                          </div>
+                         </div>
+                      );
+                   })()}
 
-                   {/* 4. Golden Quote (New) */}
-                   {item.goldenQuote && (
-                     <div className="my-10 p-10 bg-hbm-dark text-white rounded-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-                        <Quote className="absolute top-6 left-6 text-white/20 w-16 h-16 transform -scale-x-100" />
-                        <blockquote className="relative z-10 text-center font-serif text-2xl md:text-3xl italic leading-relaxed">
-                           "{item.goldenQuote}"
-                        </blockquote>
-                        <div className="relative z-10 text-center mt-6 text-white/60 font-sans text-sm font-bold uppercase tracking-widest">
-                           — {item.author}
-                        </div>
-                     </div>
-                  )}
-
-                  {/* 5. The HBM Perspective */}
-                  {item.hbmPerspective && (
-                    <div className="p-8 rounded-xl bg-gradient-to-r from-hbm-purple/10 to-transparent border-l-4 border-hbm-purple">
-                       <h3 className="text-sm font-bold text-hbm-purple uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <Library size={16} />
-                          The HBM Perspective
-                       </h3>
-                       <p className="text-hbm-dark font-medium text-lg leading-relaxed italic">
-                          "{item.hbmPerspective}"
-                       </p>
+                  {/* 4. Closing Power Quote */}
+                  {item.finalQuote && (
+                    <div className="my-10 p-10 bg-hbm-dark text-white rounded-2xl relative overflow-hidden group">
+                       <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                       <Quote className="absolute top-6 left-6 text-white/20 w-16 h-16 transform -scale-x-100" />
+                       <blockquote className="relative z-10 text-center font-serif text-2xl md:text-3xl italic leading-relaxed">
+                          "{item.finalQuote}"
+                       </blockquote>
+                       <div className="relative z-10 text-center mt-6 text-white/40 font-sans text-sm font-bold uppercase tracking-widest">
+                          — Closing Thought
+                       </div>
                     </div>
                   )}
-
                </div>
             </div>
          </div>
@@ -343,31 +346,91 @@ const LibraryDrawer = ({ item, onClose }) => {
 }
 
 export default function Knowledge() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { lang } = useI18n()
   const [selectedBook, setSelectedBook] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('books') // 'books' | 'videos'
   const [cmsData, setCmsData] = useState(null)
 
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || ''}/api/cms/knowledge-base`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && (data.books || data.videos)) {
-          setCmsData(data);
-        }
-      })
-      .catch(err => console.error('CMS Fetch Error:', err));
-  }, []);
+   const books = useMemo(() => cmsData?.books || knowledgeData, [cmsData]);
+   const videos = useMemo(() => cmsData?.videos || [], [cmsData]);
 
-  const books = cmsData?.books || knowledgeData;
-  const videos = cmsData?.videos || [];
+   // Load CMS Data
+   useEffect(() => {
+     const ports = ['3001', '3000', '5000', '8080'];
+     const tryFetch = async (port) => {
+        try {
+            const apiBase = port ? `http://${window.location.hostname}:${port}` : '';
+            const res = await fetch(`${apiBase}/api/cms/knowledge-base`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && (data.books || data.videos)) {
+                    setCmsData(data);
+                    return true;
+                }
+            }
+        } catch(e) { return false; }
+        return false;
+     };
+
+     const init = async () => {
+         // 1. Try relative path (standard production)
+         const okRelative = await tryFetch('');
+         if (okRelative) return;
+
+         // 2. Try current port (hybrid)
+         const okCurrent = await tryFetch(window.location.port);
+         if (okCurrent) return;
+
+         // 3. Try common dev ports
+         for (const p of ports) {
+             if (await tryFetch(p)) return;
+         }
+     };
+     init();
+   }, []);
+
+   // Sync state with URL params
+   useEffect(() => {
+     if (id) {
+       const book = books.find(b => b.id === id || String(b.id) === id);
+       if (book) {
+         setSelectedBook(book);
+         setActiveTab('books');
+       } else {
+         const video = videos.find(v => v.id === id || String(v.id) === id);
+         if (video) {
+           setActiveTab('videos');
+         }
+       }
+     } else {
+       setSelectedBook(null);
+     }
+   }, [id, books, videos]);
+
+  const handleSelectBook = (book) => {
+    if (book) {
+      const slug = book.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+      navigate(`/knowledge/${book.id}/${slug}`);
+    } else {
+      navigate('/knowledge');
+    }
+  };
+
+  const handleCloseDrawer = () => {
+    navigate('/knowledge');
+  };
 
   const filteredData = (activeTab === 'books' ? books : videos).filter(item => {
     if (!item || !item.title) return false;
-    const author = item.author || '';
-    const matchesSearch = (item.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
-                          (author.toLowerCase()).includes(searchQuery.toLowerCase())
-    return matchesSearch
+    const searchLow = searchQuery.toLowerCase();
+    const titleMatch = (item.title?.toLowerCase() || '').includes(searchLow);
+    const authorMatch = (item.author?.toLowerCase() || '').includes(searchLow);
+    const descMatch = (item.description?.toLowerCase() || '').includes(searchLow);
+    
+    return titleMatch || authorMatch || descMatch;
   })
 
   // Prevent scrolling when drawer is open
@@ -381,6 +444,22 @@ export default function Knowledge() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] font-sans text-hbm-dark pb-20 selection:bg-hbm-purple selection:text-white">
+      <SEO 
+        title={selectedBook ? `${selectedBook.title} | ${t({ en: 'Knowledge', he: 'בסיס הידע' }, lang)}` : t({ en: 'The Growth Library | Wisdom & Insights', he: 'בסיס הידע | תובנות וחוכמה' }, lang)}
+        description={selectedBook ? (selectedBook.fullSummary || selectedBook.description || selectedBook.essence) : t({ 
+          en: 'Explore our collection of curated books and videos for personal growth and human connection.',
+          he: 'גלו את אוסף הספרים והסרטונים שלנו לצמיחה אישית וחיבור אנושי.'
+        }, lang)}
+        image={selectedBook?.coverImage}
+        schema={selectedBook ? {
+          "@context": "https://schema.org",
+          "@type": "Book",
+          "name": selectedBook.title,
+          "author": { "@type": "Person", "name": selectedBook.author },
+          "description": selectedBook.fullSummary || selectedBook.description || selectedBook.essence,
+          "image": selectedBook.coverImage
+        } : undefined}
+      />
       
       {/* Visual Alignment Header (Matches Who We Are) */}
       <section className="bg-hbm-cream pt-20 pb-16 border-b border-gray-200/50">
@@ -389,7 +468,7 @@ export default function Knowledge() {
               <EyebrowBadge text="KNOWLEDGE" />
             </div>
             <h1 className="text-4xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent" style={{letterSpacing:'-2px'}}>
-               HBM Recommended Books
+               The Growth Library
             </h1>
             <p className="text-xl text-hbm-gray max-w-2xl mx-auto">
                A carefully curated collection of timeless wisdom for the modern mind. From personal development and entrepreneurship to psychology and philosophy.
@@ -424,17 +503,17 @@ export default function Knowledge() {
       </div>
 
       {/* Grid */}
-      <div className="max-w-screen-2xl mx-auto px-6 md:px-12">
+      <div className="max-w-7xl mx-auto px-6">
         {filteredData.length > 0 ? (
            <motion.div 
              layout
-             className={`grid gap-6 md:gap-10 ${activeTab === 'books' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}
+             className={`grid gap-4 md:gap-6 grid-flow-dense ${activeTab === 'books' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}
            >
              <AnimatePresence mode='popLayout'>
-               {filteredData.map((item) => (
+               {filteredData.map((item, idx) => (
                    activeTab === 'books' 
-                    ? <KnowledgeCard key={item.id} item={item} onClick={setSelectedBook} />
-                    : <VideoCard key={item.id} item={item} />
+                    ? <KnowledgeCard key={item.id} item={item} onClick={handleSelectBook} index={idx} />
+                    : <VideoCard key={item.id} item={item} index={idx} />
                ))}
              </AnimatePresence>
            </motion.div>
@@ -460,7 +539,7 @@ export default function Knowledge() {
           <LibraryDrawer 
              key="drawer" 
              item={selectedBook} 
-             onClose={() => setSelectedBook(null)} 
+             onClose={handleCloseDrawer} 
           />
         )}
       </AnimatePresence>

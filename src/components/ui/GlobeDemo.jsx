@@ -392,16 +392,16 @@ export default function GlobeDemo() {
   ];
 
   return (
-    <div className="flex flex-row items-center justify-center py-10 md:py-20 h-auto relative w-full overflow-hidden">
-      <div className="max-w-7xl mx-auto w-full relative h-[400px] md:h-[600px] px-4">
-        <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-hbm-purple/50">Loading World...</div>}>
-          <div className="absolute w-full top-0 h-full z-10">
+    <div style={{ width: '100%', height: '600px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <Suspense fallback={<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading World...</div>}>
+          <div style={{ position: 'absolute', width: '100%', top: 0, height: '100%', zIndex: 10 }}>
             <World data={sampleArcs} globeConfig={globeConfig} />
           </div>
         </Suspense>
         
         {/* Subtle Gradient Overlays to help it blend */}
-        <div className="absolute inset-0 pointer-events-none z-20 bg-gradient-to-b from-hbm-cream via-transparent to-hbm-cream opacity-50" />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 20, background: 'linear-gradient(to bottom, var(--color-hbm-cream), transparent 30%, transparent 70%, var(--color-hbm-cream))', opacity: 0.5 }} />
       </div>
     </div>
   );

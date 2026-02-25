@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, MapPin, Edit3, Trash2, Plus, GripVertical, Image as ImageIcon, Video,
   Contrast, Heart, History, Users, Star, ArrowLeft, Palette, HelpCircle, Download, Database, BarChart3,
-  ExternalLink, Save, Copy, Settings, Eye, Upload, Mail, Smartphone, Monitor, Sparkles, CheckCircle2, AlertCircle, Wand2, Zap, X, MonitorPlay, Lock, Unlock, AlignLeft
+  ExternalLink, Save, Copy, Settings, Eye, Upload, Mail, Smartphone, Monitor, Sparkles, CheckCircle2, AlertCircle, Wand2, Zap, X, MonitorPlay, Lock, Unlock, AlignLeft, Activity, Flame
 } from 'lucide-react';
 import VisualEventEditor from '../components/Admin/VisualEventEditor';
 import EmailEngine from '../components/Admin/EmailEngine';
 import SiteContentManager from '../components/Admin/SiteContentManager';
+import AnalyticsDashboard from '../components/Admin/AnalyticsDashboard';
+import CookieConsentLogs from '../components/Admin/CookieConsentLogs';
 import { useEvents } from '../context/EventsContext';
 
 const AdminDashboard = () => {
@@ -478,6 +480,20 @@ const AdminDashboard = () => {
                 >
                     <AlignLeft className="w-4 h-4" /> Site Content
                 </button>
+                <div className="w-px h-8 bg-gray-200 mx-2 self-center"></div>
+                <button 
+                    onClick={() => setTopView('analytics')}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${topView === 'analytics' ? 'bg-white text-orange-500 shadow-xl' : 'text-gray-400 hover:text-orange-400'}`}
+                >
+                    <Activity className="w-4 h-4" /> Analytics
+                </button>
+                <div className="w-px h-8 bg-gray-200 mx-2 self-center"></div>
+                <button 
+                    onClick={() => setTopView('cookies')}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${topView === 'cookies' ? 'bg-white text-blue-600 shadow-xl' : 'text-gray-400 hover:text-blue-500'}`}
+                >
+                    <ShieldCheck className="w-4 h-4" /> Cookie Logs
+                </button>
             </div>
         )}
 
@@ -492,8 +508,17 @@ const AdminDashboard = () => {
                     <EmailEngine />
                 </div>
             )}
-
-            {!isEditing && topView === 'events' && (
+            {topView === 'analytics' && !isEditing && (
+                <div className="h-[calc(100vh-250px)] animate-in fade-in slide-in-from-bottom-4 duration-500 bg-white rounded-[2rem] shadow-xl overflow-hidden">
+                    <AnalyticsDashboard />
+                </div>
+            )}
+            {topView === 'cookies' && !isEditing && (
+                <div className="h-[calc(100vh-250px)] animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <CookieConsentLogs />
+                </div>
+            )}
+           {!isEditing && topView === 'events' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
                     {events.map((event, idx) => (
                         <div key={event.id} className={`bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border group ${idx === 0 ? 'border-amber-400 ring-4 ring-amber-400/20 scale-[1.02]' : 'border-gray-100'}`}>
