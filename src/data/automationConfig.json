@@ -1,10 +1,11 @@
 {
   "smtp": {
-    "host": "",
+    "host": "smtp.office365.com",
     "port": 587,
-    "user": "",
+    "user": "office@thehbm.org",
     "pass": "",
-    "from": "The HBM <office@thehbm.org>"
+    "from": "The HBM <office@thehbm.org>",
+    "secure": false
   },
   "globalStyling": {
     "primaryColor": "#6160AB",

@@ -3,7 +3,7 @@
     "id": "22344256-f07c-4c54-bd4b-461f3c05465f",
     "sequenceId": "welcome_journey",
     "stepIndex": 0,
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771843969016,
     "data": {
       "id": 1771843969015,
@@ -17,7 +17,8 @@
       "status": "confirmed"
     },
     "stepType": "email",
-    "flowId": "registration_confirmed"
+    "flowId": "registration_confirmed",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "970d8c39-d8dc-4fa5-8c2e-10cff69967e8",
@@ -42,7 +43,7 @@
     "id": "1014ad45-632c-4247-aef0-b488eb66dd4f",
     "sequenceId": "welcome_journey",
     "stepIndex": 2,
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771930369016,
     "data": {
       "id": 1771843969015,
@@ -56,7 +57,8 @@
       "status": "confirmed"
     },
     "stepType": "email",
-    "flowId": "check_in_curiosity"
+    "flowId": "check_in_curiosity",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "d694f99e-d6c3-489f-9c68-210858722806",
@@ -81,7 +83,7 @@
     "id": "f4fdb3a6-86e6-4e81-ade8-b58956575d7a",
     "sequenceId": "welcome_journey",
     "stepIndex": 4,
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772016769016,
     "data": {
       "id": 1771843969015,
@@ -95,11 +97,12 @@
       "status": "confirmed"
     },
     "stepType": "email",
-    "flowId": "post_event_warmth"
+    "flowId": "post_event_warmth",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "81777772-7ae2-4081-a1ae-d614e2280d27",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771854850845,
     "data": {
       "name": "Test User",
@@ -111,11 +114,12 @@
       "language": "en"
     },
     "stepType": "email",
-    "flowId": "flow_1771844992584_onPhysicalRegistration"
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "873960d2-9b7d-4b8b-b9a7-f0125f7fc498",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771863982847,
     "data": {
       "name": "Test User",
@@ -126,11 +130,12 @@
       "id": "TEST-123",
       "language": "en"
     },
-    "stepType": "email"
+    "stepType": "email",
+    "error": "Source flow/campaign not found"
   },
   {
     "id": "299e0d5e-4fdb-4b75-acbf-eafdf3e77be5",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771864411816,
     "data": {
       "name": "Test User",
@@ -142,11 +147,12 @@
       "language": "en"
     },
     "stepType": "email",
-    "flowId": "flow_1771844992584_onPhysicalRegistration"
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "193837d2-2596-406d-8840-a499df914f12",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771868875200,
     "data": {
       "id": 1771868875199,
@@ -161,11 +167,12 @@
       "status": "confirmed"
     },
     "stepType": "email",
-    "flowId": "eight_minute_funnel"
+    "flowId": "eight_minute_funnel",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "4622ed29-86a3-4a06-8e1b-c03282d8d560",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771919063341,
     "data": {
       "id": 1771919063341,
@@ -179,11 +186,12 @@
       "status": "confirmed"
     },
     "stepType": "email",
-    "flowId": "flow_1771844992584_onPhysicalRegistration"
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "2470bb7c-c693-4b91-8ceb-f04d12ba131a",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771928244786,
     "data": {
       "id": 1771928244785,
@@ -197,11 +205,12 @@
       "status": "confirmed"
     },
     "stepType": "email",
-    "flowId": "flow_1771844992584_onNewsletterSignup"
+    "flowId": "flow_1771844992584_onNewsletterSignup",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "d3000116-521a-4708-941a-56bc85fbcbc7",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771928411384,
     "data": {
       "name": "Test User",
@@ -213,11 +222,12 @@
       "language": "he"
     },
     "stepType": "email",
-    "flowId": "flow_1771844992584_onPhysicalRegistration"
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "177e9753-5f2a-46a1-b568-912af6778edf",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771928412325,
     "data": {
       "name": "Test User",
@@ -229,11 +239,12 @@
       "language": "he"
     },
     "stepType": "email",
-    "flowId": "flow_1771844992584_onPhysicalRegistration"
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "eade3884-c795-4da8-834f-369f554cad5e",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1771941484568,
     "data": {
       "id": 1771941484568,
@@ -247,11 +258,12 @@
       "status": "confirmed"
     },
     "stepType": "email",
-    "flowId": "flow_1771844992584_onNewsletterSignup"
+    "flowId": "flow_1771844992584_onNewsletterSignup",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "aab53907-4d9f-4fe3-9fac-431f8569a67a",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772025775561,
     "data": {
       "id": 1772025775560,
@@ -277,11 +289,12 @@
     },
     "stepType": "email",
     "flowId": "flow_1771844992584_onPhysicalRegistration",
-    "attempts": 0
+    "attempts": 0,
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "cd3c1c87-b1f3-4450-98b9-e394e3abe5dc",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772025775561,
     "data": {
       "id": 1772025775560,
@@ -308,7 +321,8 @@
     "stepType": "email",
     "flowId": "registration_confirmed",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "c357ddcb-65eb-4d09-86c4-17f4d294518b",
@@ -374,7 +388,7 @@
   },
   {
     "id": "bb0a6da9-7313-432a-9181-11c9ae55c15c",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772025775562,
     "data": {
       "id": 1772025775560,
@@ -400,11 +414,12 @@
     },
     "stepType": "email",
     "flowId": "eight_minute_funnel",
-    "attempts": 0
+    "attempts": 0,
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "c906f192-873c-49c4-a5c6-8c515207d979",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772026152070,
     "data": {
       "id": 1772026152069,
@@ -430,11 +445,12 @@
     },
     "stepType": "email",
     "flowId": "flow_1771844992584_onVideoRegistration",
-    "attempts": 0
+    "attempts": 0,
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "9126f573-1fdb-4404-99a6-5d0d7a162206",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772026152070,
     "data": {
       "id": 1772026152069,
@@ -461,7 +477,8 @@
     "stepType": "email",
     "flowId": "registration_confirmed",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "1f7da158-13f4-4ee8-9850-bdf5835d8c45",
@@ -527,7 +544,7 @@
   },
   {
     "id": "6428892c-592f-4ca3-a650-1473cb65112e",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772026152070,
     "data": {
       "id": 1772026152069,
@@ -553,11 +570,12 @@
     },
     "stepType": "email",
     "flowId": "eight_minute_funnel",
-    "attempts": 0
+    "attempts": 0,
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "1b9832d8-598d-4e2a-a58d-81cef3cebfd6",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772030005155,
     "data": {
       "id": 1772030005155,
@@ -583,11 +601,12 @@
     },
     "stepType": "email",
     "flowId": "flow_1771844992584_onPhysicalRegistration",
-    "attempts": 0
+    "attempts": 0,
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "41a9e93b-35f9-4b39-b721-15b6cbfa86ae",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772030005156,
     "data": {
       "id": 1772030005155,
@@ -614,7 +633,8 @@
     "stepType": "email",
     "flowId": "registration_confirmed",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "9ad901c0-9561-4418-b7f4-b59b8dd2dab0",
@@ -680,7 +700,7 @@
   },
   {
     "id": "74bff201-d114-400d-8cfa-fc9e0d52be82",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772030005157,
     "data": {
       "id": 1772030005155,
@@ -706,11 +726,12 @@
     },
     "stepType": "email",
     "flowId": "eight_minute_funnel",
-    "attempts": 0
+    "attempts": 0,
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "24fca19e-c65a-47d6-9eaf-2108a6269c00",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772030183345,
     "data": {
       "id": 1772030005155,
@@ -741,11 +762,12 @@
     },
     "stepType": "email",
     "flowId": "flow_1771844992584_onNewsletterSignup",
-    "attempts": 0
+    "attempts": 0,
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "30c6c5d9-d9a6-4f4e-8620-695072cab01c",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772030229663,
     "data": {
       "id": 1772030229662,
@@ -771,11 +793,12 @@
     },
     "stepType": "email",
     "flowId": "flow_1771844992584_onPhysicalRegistration",
-    "attempts": 0
+    "attempts": 0,
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "da31eec1-57c1-4856-a3fb-62c5b465157c",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772030229665,
     "data": {
       "id": 1772030229662,
@@ -802,7 +825,8 @@
     "stepType": "email",
     "flowId": "registration_confirmed",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "Missing credentials for \"LOGIN\""
   },
   {
     "id": "2c2151a2-b8b3-4970-94e2-9ae1048dd960",
@@ -868,7 +892,7 @@
   },
   {
     "id": "b668308e-5369-49d7-8a5a-fbfa01dde522",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772030229666,
     "data": {
       "id": 1772030229662,
@@ -894,6 +918,7 @@
     },
     "stepType": "email",
     "flowId": "eight_minute_funnel",
-    "attempts": 0
+    "attempts": 0,
+    "error": "Missing credentials for \"LOGIN\""
   }
 ]
