@@ -1075,13 +1075,25 @@ app.post("/api/ai/improve-copy", async (req, res) => {
       });
     }
 
-    const raw =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ??
-      data.candidates?.[0]?.output ||
-      (data.candidates?.[0]?.content?.parts?.[0] && typeof data.candidates[0].content.parts[0] === "string"
-        ? data.candidates[0].content.parts[0]
-        : null);
-    const improvedText = raw ? String(raw).trim() : getSimulation(text, tone, goal, language, prompt);
+    let raw = null;
+    if (data.candidates && Array.isArray(data.candidates) && data.candidates[0]) {
+      const c0 = data.candidates[0];
+      const part = c0.content && c0.content.parts && c0.content.parts[0];
+      if (part != null) {
+        if (typeof part === "string") {
+          raw = part;
+        } else if (typeof part.text !== "undefined") {
+          raw = part.text;
+        }
+      }
+      if (raw == null && c0.output != null) {
+        raw = c0.output;
+      }
+    }
+    const improvedText =
+      raw != null && String(raw).trim() !== ""
+        ? String(raw).trim()
+        : getSimulation(text, tone, goal, language, prompt);
     res.json({ text: improvedText });
   } catch (err) {
     console.error("[AI Exception]", err);
