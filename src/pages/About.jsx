@@ -385,7 +385,7 @@ export default function About() {
       {/* ── Team Bio Modal ── */}
       <AnimatePresence>
         {selectedMember && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -395,12 +395,12 @@ export default function About() {
               className="absolute inset-0 bg-hbm-dark/40 backdrop-blur-md"
             />
 
-            {/* Modal Content */}
+            {/* Modal Content — max-h on mobile so bio doesn't overflow; scroll inside */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+              className="relative w-full max-w-2xl max-h-[90vh] md:max-h-none bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
             >
               {/* Close Button — left side so LinkedIn (top-right of image) doesn't hide it */}
               <button
@@ -411,9 +411,9 @@ export default function About() {
                 <X size={20} />
               </button>
 
-              {/* Profile Image (Side) — fixed aspect ratio so the photo doesn't squash */}
+              {/* Profile Image (Side) — smaller on mobile so bio fits on screen */}
               <div className="w-full md:w-2/5 md:max-w-sm shrink-0 bg-gray-100 relative flex items-start justify-center md:min-h-0">
-                <div className="w-full aspect-[3/4] max-h-[420px] md:max-h-none md:aspect-square md:h-full overflow-hidden">
+                <div className="w-full aspect-[3/4] max-h-[260px] sm:max-h-[320px] md:max-h-none md:aspect-square md:h-full overflow-hidden">
                 {selectedMember.image || selectedMember.imageUrl ? (
                   <img
                     src={selectedMember.image || selectedMember.imageUrl}
@@ -459,8 +459,8 @@ export default function About() {
                 )}
               </div>
 
-              {/* Bio Content (Main) — show Bio prominently, same size; Fun Fact optional below */}
-              <div className="w-full md:w-3/5 p-8 md:p-10">
+              {/* Bio Content (Main) — scrollable on mobile if needed */}
+              <div className="w-full md:w-3/5 p-6 md:p-10 overflow-y-auto min-h-0 flex-1">
                 {selectedMember.nickname && (
                   <p className="text-hbm-dark font-black italic text-lg mb-4">
                     {t(selectedMember.nickname, lang)}:
