@@ -275,5 +275,45 @@
         "message": "Registered for The HBM Community Night"
       }
     ]
+  },
+  {
+    "id": 1772140823964,
+    "name": "Subscriber",
+    "email": "yuvak17040@gmail.com",
+    "phone": "",
+    "source": "footer_newsletter",
+    "category": "Subscriber",
+    "date": "2026-02-26T21:20:23.964Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "subscription",
+        "date": "2026-02-26T21:20:23.964Z",
+        "message": "Subscribed to Newsletter"
+      }
+    ]
+  },
+  {
+    "id": 1772140853972,
+    "name": "yuvak1",
+    "email": "yuvak17040@gmail.com",
+    "phone": "0587654436",
+    "acquisitionSource": "social",
+    "registrationSource": "video_event_modal",
+    "source": "video_event_modal",
+    "category": "Video Lead",
+    "eventId": "video-event",
+    "eventName": "Video Event",
+    "date": "2026-02-26T21:20:53.972Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "registration",
+        "date": "2026-02-26T21:20:53.972Z",
+        "message": "Registered for Video Event"
+      }
+    ]
   }
 ]

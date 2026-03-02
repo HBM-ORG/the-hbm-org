@@ -326,7 +326,7 @@
   },
   {
     "id": "c357ddcb-65eb-4d09-86c4-17f4d294518b",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772198575561,
     "data": {
       "id": 1772025775560,
@@ -353,11 +353,12 @@
     "stepType": "email",
     "flowId": "check_in_curiosity",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "8e977fd5-1c69-47ff-80b6-4bb85940bdcd",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772457775561,
     "data": {
       "id": 1772025775560,
@@ -384,7 +385,8 @@
     "stepType": "email",
     "flowId": "post_event_warmth",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "bb0a6da9-7313-432a-9181-11c9ae55c15c",
@@ -482,7 +484,7 @@
   },
   {
     "id": "1f7da158-13f4-4ee8-9850-bdf5835d8c45",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772198952070,
     "data": {
       "id": 1772026152069,
@@ -509,7 +511,8 @@
     "stepType": "email",
     "flowId": "check_in_curiosity",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "59ee8965-f1fc-491f-84e6-d377030fca3f",
@@ -638,7 +641,7 @@
   },
   {
     "id": "9ad901c0-9561-4418-b7f4-b59b8dd2dab0",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772202805156,
     "data": {
       "id": 1772030005155,
@@ -665,7 +668,8 @@
     "stepType": "email",
     "flowId": "check_in_curiosity",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "9e9b78cc-0e95-4b4e-a0e7-4452def51b42",
@@ -830,7 +834,7 @@
   },
   {
     "id": "2c2151a2-b8b3-4970-94e2-9ae1048dd960",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772203029665,
     "data": {
       "id": 1772030229662,
@@ -857,7 +861,8 @@
     "stepType": "email",
     "flowId": "check_in_curiosity",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "21cffd03-d0cf-46d9-91c8-42309c708710",
@@ -1003,7 +1008,7 @@
   },
   {
     "id": "29da58e1-db13-4bb1-90e0-071748c887bd",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772210697494,
     "data": {
       "id": 1772037897492,
@@ -1030,7 +1035,8 @@
     "stepType": "email",
     "flowId": "check_in_curiosity",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "37b2470d-f6d6-46e6-acfb-e9268630cdbf",
@@ -1159,7 +1165,7 @@
   },
   {
     "id": "cfebd7fa-59e7-4078-ba51-9f83ed03d36a",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772211683303,
     "data": {
       "id": 1772038883301,
@@ -1186,7 +1192,8 @@
     "stepType": "email",
     "flowId": "check_in_curiosity",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "d9a15017-665c-4d90-91f1-322143ee73f7",
@@ -1248,6 +1255,224 @@
     "stepType": "email",
     "flowId": "eight_minute_funnel",
     "attempts": 0,
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "bed2f727-bad6-4d8a-91cc-d5ea54c66bec",
+    "status": "failed",
+    "scheduledFor": 1772140823965,
+    "data": {
+      "id": 1772140823964,
+      "name": "Subscriber",
+      "email": "yuvak17040@gmail.com",
+      "phone": "",
+      "source": "footer_newsletter",
+      "category": "Subscriber",
+      "date": "2026-02-26T21:20:23.964Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "subscription",
+          "date": "2026-02-26T21:20:23.964Z",
+          "message": "Subscribed to Newsletter"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onNewsletterSignup",
+    "attempts": 0,
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "40927646-4e8c-49db-aaa8-866489847f56",
+    "status": "failed",
+    "scheduledFor": 1772140853973,
+    "data": {
+      "id": 1772140853972,
+      "name": "yuvak1",
+      "email": "yuvak17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-26T21:20:53.972Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-26T21:20:53.972Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onVideoRegistration",
+    "attempts": 0,
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "41bd67a5-cdbe-49dd-aa32-3a59c50f6217",
+    "status": "failed",
+    "scheduledFor": 1772140853974,
+    "data": {
+      "id": 1772140853972,
+      "name": "yuvak1",
+      "email": "yuvak17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-26T21:20:53.972Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-26T21:20:53.972Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "registration_confirmed",
+    "attempts": 0,
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "c9327f2a-783b-4cf5-99a6-77ac5edb1a4d",
+    "status": "failed",
+    "scheduledFor": 1772313653974,
+    "data": {
+      "id": 1772140853972,
+      "name": "yuvak1",
+      "email": "yuvak17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-26T21:20:53.972Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-26T21:20:53.972Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "check_in_curiosity",
+    "attempts": 0,
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "897ac5f8-ca72-4536-b76e-c644e31340b0",
+    "status": "pending",
+    "scheduledFor": 1772572853974,
+    "data": {
+      "id": 1772140853972,
+      "name": "yuvak1",
+      "email": "yuvak17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-26T21:20:53.972Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-26T21:20:53.972Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "post_event_warmth",
+    "attempts": 0,
+    "sequenceId": "welcome_journey"
+  },
+  {
+    "id": "6883712c-37bc-481f-a658-4333a9682bb0",
+    "status": "failed",
+    "scheduledFor": 1772140853976,
+    "data": {
+      "id": 1772140853972,
+      "name": "yuvak1",
+      "email": "yuvak17040@gmail.com",
+      "phone": "0587654436",
+      "acquisitionSource": "social",
+      "registrationSource": "video_event_modal",
+      "source": "video_event_modal",
+      "category": "Video Lead",
+      "eventId": "video-event",
+      "eventName": "Video Event",
+      "date": "2026-02-26T21:20:53.972Z",
+      "language": "en",
+      "status": "confirmed",
+      "history": [
+        {
+          "type": "registration",
+          "date": "2026-02-26T21:20:53.972Z",
+          "message": "Registered for Video Event"
+        }
+      ]
+    },
+    "stepType": "email",
+    "flowId": "eight_minute_funnel",
+    "attempts": 0,
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "e04a9a3e-ceff-4afd-b7ac-1cec1030d9d5",
+    "status": "failed",
+    "scheduledFor": 1772140960802,
+    "data": {
+      "name": "Test User",
+      "email": "yuvak17040@gmail.com",
+      "eventName": "HBM Live Demo",
+      "date": "2026-02-26T21:22:40.802Z",
+      "location": "Tel Aviv Hub",
+      "id": "TEST-331",
+      "language": "en"
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
+  },
+  {
+    "id": "8dc7fb24-67a0-496b-98f1-f4336ebe6011",
+    "status": "failed",
+    "scheduledFor": 1772365218729,
+    "data": {
+      "name": "Test User",
+      "email": "yuval17040@gmail.com",
+      "eventName": "HBM Live Demo",
+      "date": "2026-03-01T11:40:18.728Z",
+      "location": "Tel Aviv Hub",
+      "id": "TEST-856",
+      "language": "en"
+    },
+    "stepType": "email",
+    "flowId": "flow_1771844992584_onPhysicalRegistration",
     "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   }
 ]

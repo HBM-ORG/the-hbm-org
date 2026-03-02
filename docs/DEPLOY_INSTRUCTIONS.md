@@ -15,9 +15,9 @@ npm run build
 ```
 
 ## 3. Run with PM2 (Always Up)
-Use the included `ecosystem` file to start the server. This ensures that if the server crashes or the computer restarts, HBM will come back online automatically.
+Use the ecosystem file in `config/` to start the server. This ensures that if the server crashes or the computer restarts, HBM will come back online automatically.
 ```bash
-pm2 start ecosystem.config.cjs
+pm2 start config/ecosystem.config.cjs
 pm2 save
 pm2 startup
 ```

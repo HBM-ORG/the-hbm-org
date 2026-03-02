@@ -1,7 +1,8 @@
 /**
- * Single source of truth for API base URL.
- * Returns "" so all /api calls are same-origin (Vite proxy in dev, same host in production).
+ * API base URL: dev = same-origin (Vite proxies /api to admin server 3001); production = Render backend.
  */
 export function getApiBase() {
-  return "";
+  if (typeof window === "undefined") return "";
+  if (import.meta.env.DEV) return import.meta.env.VITE_API_BASE || "";
+  return import.meta.env.VITE_API_BASE || "https://thehbm-backend.onrender.com";
 }

@@ -2,7 +2,20 @@
 
 This guide outlines the standard operating procedures for developing, testing, and deploying The HBM platform.
 
+## 📁 Project structure
+
+- **`/config`** — PM2 and deploy config (e.g. `ecosystem.config.cjs`)
+- **`/docs`** — All documentation (deploy, Hostinger, Render, QA, sitemap); see [docs/README.md](docs/README.md)
+- **`/data`** — Runtime data and local DB files (gitignored)
+- **`/scripts`** — Build and utility scripts (sitemap, migrate, email diagnostics)
+- **`/src`** — React frontend (Vite)
+- **`/public`** — Static assets and `dist` output
+
+Full layout and stack: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
 ## 🛠 1. Environment Setup
+Node **18+** (recommended: 20; see `.nvmrc`). Use `nvm use` if you use nvm.
+
 Always ensure your local environment is synchronized with the latest dependencies.
 ```bash
 # Clean install (if you encounter strange bugs)

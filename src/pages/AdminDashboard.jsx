@@ -122,6 +122,13 @@ const AdminDashboard = () => {
   const [crmViewMode, setCrmViewMode] = useState("byPerson"); // 'byPerson' | 'byRegistration'
   const [crmSortBy, setCrmSortBy] = useState("countDesc"); // countDesc | countAsc | name | lastDateDesc | lastDateAsc
 
+  // Sync local events when context updates (e.g. after API fetch on load) so list doesn't revert
+  useEffect(() => {
+    if (!isEditing && Array.isArray(initialEvents)) {
+      setEvents(initialEvents);
+    }
+  }, [initialEvents, isEditing]);
+
   useEffect(() => {
     const base = getApiBase();
 
@@ -308,6 +315,10 @@ const AdminDashboard = () => {
   };
 
   const handleDuplicate = (event) => {
+    if (event.isLocked) {
+      alert("This event is locked. Unlock it first to duplicate.");
+      return;
+    }
     const newId = Math.max(...events.map((e) => Number(e.id) || 0)) + 1;
     const duplicatedEvent = {
       ...event,
@@ -425,7 +436,7 @@ const AdminDashboard = () => {
     try {
       const base = import.meta.env.DEV
         ? `http://${window.location.hostname}:3001`
-        : "";
+        : getApiBase();
       const apiUrl = `${base}/api/save-events`;
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -449,7 +460,7 @@ const AdminDashboard = () => {
     try {
       const base = import.meta.env.DEV
         ? `http://${window.location.hostname}:3001`
-        : "";
+        : getApiBase();
       const response = await fetch(`${base}/api/video-event`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -470,7 +481,7 @@ const AdminDashboard = () => {
     try {
       const base = import.meta.env.DEV
         ? `http://${window.location.hostname}:3001`
-        : "";
+        : getApiBase();
       const res = await fetch(`${base}/api/images/${folderName}`);
       const data = await res.json();
       setGalleryImages(data.images || []);
@@ -498,7 +509,7 @@ const AdminDashboard = () => {
     try {
       const base = import.meta.env.DEV
         ? `http://${window.location.hostname}:3001`
-        : "";
+        : getApiBase();
       const res = await fetch(`${base}/api/upload-image`, {
         method: "POST",
         body: formData,
@@ -520,7 +531,7 @@ const AdminDashboard = () => {
     try {
       const base = import.meta.env.DEV
         ? `http://${window.location.hostname}:3001`
-        : "";
+        : getApiBase();
       const res = await fetch(`${base}/api/delete-image`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -545,7 +556,7 @@ const AdminDashboard = () => {
     try {
       const base = import.meta.env.DEV
         ? `http://${window.location.hostname}:3001`
-        : "";
+        : getApiBase();
       const res = await fetch(`${base}/api/upload-asset`, {
         method: "POST",
         body: formData,
@@ -815,13 +826,20 @@ const AdminDashboard = () => {
                       }
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute top-4 right-4 flex gap-2">
+                    <div className="absolute top-4 right-4 flex gap-2 items-center">
                       <button
                         onClick={() => handleEdit(event, "visual")}
-                        className="bg-white/90 backdrop-blur p-2 rounded-lg shadow-sm hover:bg-white transition-all"
+                        className={`bg-white/90 backdrop-blur p-2 rounded-lg shadow-sm transition-all ${event.isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-white"}`}
+                        disabled={event.isLocked}
+                        title={event.isLocked ? "Event is locked" : "Visual edit"}
                       >
                         <Palette className="w-4 h-4 text-purple-600" />
                       </button>
+                      {event.isLocked && (
+                        <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-amber-100 text-amber-800 flex items-center gap-1">
+                          <Lock className="w-3 h-3" /> Locked
+                        </span>
+                      )}
                       <span
                         className={`px-2 py-1 rounded text-[10px] font-black uppercase ${event.status === "published" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}
                       >
@@ -1851,7 +1869,7 @@ const AdminDashboard = () => {
                                       formData.append("asset", file);
                                       const base = import.meta.env.DEV
                                         ? `http://${window.location.hostname}:3001`
-                                        : "";
+                                        : getApiBase();
                                       fetch(`${base}/api/upload-asset`, {
                                         method: "POST",
                                         body: formData,

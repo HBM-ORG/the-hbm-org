@@ -235,15 +235,19 @@ const SiteContentManager = () => {
         const key = `books-${idx}`;
         setMagicFetching(key);
         try {
-            const res = await fetch(`${base}/api/ai/fetch-book`, {
+            const url = `${base}/api/ai/fetch-book`;
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: book.title, author: book.author || '' })
+                body: JSON.stringify({ title: book.title.trim(), author: (book.author || '').trim() })
             });
             const raw = await res.text();
             let data;
-            try { data = JSON.parse(raw); } catch (_) { throw new Error("Invalid response from server"); }
+            try { data = JSON.parse(raw); } catch (_) {
+                throw new Error(res.ok ? "Invalid response from server" : `Server ${res.status}: ${raw.slice(0, 120)}`);
+            }
             if (data.error) throw new Error(data.error);
+            if (!res.ok) throw new Error(`Server ${res.status}: ${data.error || raw.slice(0, 80)}`);
 
             const newKb = { ...knowledgeBase };
             const existing = newKb.books[idx] || {};
@@ -255,8 +259,15 @@ const SiteContentManager = () => {
                 threeKeySentences: Array.isArray(data.threeKeySentences) ? data.threeKeySentences : (existing.threeKeySentences || ['', '', ''])
             };
             setKnowledgeBase(newKb);
+            if (data._aiSuccess === false && !data.description?.trim()) {
+                console.warn("Magic Fetch: No description/AI data. Add GEMINI_API_KEY to .env and restart the server.");
+            }
         } catch (err) {
-            alert("Magic Fetch failed: " + (err.message || "Network error"));
+            const msg = err.message || "Network error";
+            const hint = (import.meta.env.DEV && (msg.includes("Failed") || msg.includes("Network") || msg.includes("fetch")))
+                ? "\n\nRun: npm run dev (both Vite + admin server). After changing .env, restart (Ctrl+C then npm run dev again)."
+                : "";
+            alert("Magic Fetch failed: " + msg + hint);
         } finally {
             setMagicFetching(null);
         }

@@ -22,38 +22,11 @@ try {
 
 import fetch from "node-fetch";
 import crypto from "crypto";
-import Database from "better-sqlite3";
+import { PrismaClient } from "@prisma/client";
+import { Client as FtpClient } from "basic-ftp";
+import { Readable } from "stream";
 
-const dbPath = process.env.DATABASE_URL
-  ? (process.env.DATABASE_URL || "./dev.db").replace("file:", "")
-  : "./dev.db";
-const db = new Database(dbPath);
-db.pragma("journal_mode = WAL");
-
-// Initialize tables if they don't exist (schema: choice, settings, hashedIp, timestamp)
-db.exec(`
-  CREATE TABLE IF NOT EXISTS "CookieConsentLog" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "timestamp" TEXT NOT NULL DEFAULT (datetime('now')),
-    "choice" TEXT NOT NULL,
-    "settings" TEXT NOT NULL,
-    "hashedIp" TEXT NOT NULL
-  );
-`);
-// Migration: if old schema (data column exists, no choice), add new columns
-try {
-  const info = db.prepare("PRAGMA table_info(CookieConsentLog)").all();
-  const hasChoice = info.some((c) => c.name === "choice");
-  const hasData = info.some((c) => c.name === "data");
-  if (!hasChoice && hasData) {
-    db.exec(`ALTER TABLE "CookieConsentLog" ADD COLUMN "choice" TEXT;`);
-    db.exec(`ALTER TABLE "CookieConsentLog" ADD COLUMN "settings" TEXT;`);
-    db.exec(`ALTER TABLE "CookieConsentLog" ADD COLUMN "hashedIp" TEXT;`);
-    console.log("[CookieConsentLog] Migrated table to new schema");
-  }
-} catch (e) {
-  // ignore if table doesn't exist yet
-}
+const prisma = new PrismaClient();
 
 // Define triggerAutomation function
 const triggerAutomation = async (flowId) => {
@@ -69,9 +42,22 @@ const app = express();
 // Trust reverse proxy (Hostinger)
 app.set("trust proxy", 1);
 
-// Middleware — Manual CORS (most reliable with Express 5)
+// CORS: allow frontend on Hostinger (admin + main site); credentials for auth
+const ALLOWED_ORIGINS = [
+  "http://localhost:4200",
+  "https://admin.thehbm.org",
+  "https://www.admin.thehbm.org",
+  "https://thehbm.org",
+  "https://www.thehbm.org",
+  "http://localhost:4200",
+  "http://127.0.0.1:4200",
+];
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, OPTIONS, PUT, DELETE",
@@ -163,6 +149,51 @@ const KNOWLEDGE_BASE_CONFIG_PATH = path.join(
 );
 const ASSETS_DIR = path.join(__dirname, "public", "assets", "events");
 const CMS_ASSETS_DIR = path.join(__dirname, "public", "assets", "cms");
+
+// FTP upload to Hostinger (public_html/assets/). Returns public URL or null on failure.
+const ASSETS_BASE_URL = (process.env.ASSETS_BASE_URL || "https://thehbm.org").replace(/\/$/, "");
+const FTP_REMOTE_BASE = "public_html/assets";
+
+async function uploadBufferViaFtp(buffer, remotePath) {
+  const host = process.env.FTP_HOST;
+  const user = process.env.FTP_USER;
+  const pass = process.env.FTP_PASS;
+  if (!host || !user || pass === undefined) {
+    console.error(
+      "[FTP] Image not uploaded to Hostinger: FTP_HOST, FTP_USER, or FTP_PASS is missing. Add them to .env on Render."
+    );
+    return null;
+  }
+  const client = new FtpClient(20000);
+  client.ftp.verbose = false;
+  try {
+    const secure = process.env.FTP_SECURE === "1" || process.env.FTP_SECURE === "true";
+    await client.access({
+      host,
+      user,
+      password: pass,
+      secure: secure ? "implicit" : false,
+      ...(secure && { secureOptions: { rejectUnauthorized: false } }),
+    });
+    const dir = path.posix.dirname(remotePath);
+    if (dir !== ".") await client.ensureDir(dir);
+    const stream = Readable.from(buffer);
+    await client.uploadFrom(stream, remotePath);
+    return true;
+  } catch (err) {
+    console.error(
+      "[FTP] Upload to Hostinger failed. Image did not reach permanent storage. Remote path:",
+      remotePath,
+      "Error:",
+      err.message
+    );
+    return null;
+  } finally {
+    try {
+      client.close();
+    } catch (_) {}
+  }
+}
 if (!fs.existsSync(CMS_ASSETS_DIR))
   fs.mkdirSync(CMS_ASSETS_DIR, { recursive: true });
 const LOG_FILE = path.join(__dirname, "src", "data", "server-errors.log");
@@ -219,34 +250,45 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+// Email image upload: disk first (then optionally FTP to Hostinger)
+const EMAIL_ASSETS_DIR = path.join(__dirname, "public", "assets", "emails");
+if (!fs.existsSync(EMAIL_ASSETS_DIR)) fs.mkdirSync(EMAIL_ASSETS_DIR, { recursive: true });
+const emailStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, EMAIL_ASSETS_DIR),
+  filename: (_req, file, cb) =>
+    cb(null, Date.now() + "_" + file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_")),
+});
+const uploadEmail = multer({ storage: emailStorage });
+
+// Memory storage for other FTP uploads
+const memoryStorage = multer.memoryStorage();
+const uploadMemoryAsset = multer({ storage: memoryStorage }).single("asset");
+
 // ==========================================
 // IMAGE ENDPOINTS
 // ==========================================
 
-// Dedicated Email Image Upload
-const EMAIL_ASSETS_DIR = path.join(__dirname, "public", "assets", "emails");
-if (!fs.existsSync(EMAIL_ASSETS_DIR))
-  fs.mkdirSync(EMAIL_ASSETS_DIR, { recursive: true });
-
-const emailStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, EMAIL_ASSETS_DIR),
-  filename: (req, file, cb) =>
-    cb(
-      null,
-      Date.now() + "_" + file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_"),
-    ),
-});
-const uploadEmail = multer({ storage: emailStorage });
-
-app.post("/api/upload-email-image", uploadEmail.single("image"), (req, res) => {
+// Dedicated Email Image Upload: FTP to Hostinger when configured, else local (dev)
+app.post("/api/upload-email-image", uploadEmail.single("image"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  const filename = req.file.filename;
+  const hasFtp = process.env.FTP_HOST && process.env.FTP_USER && process.env.FTP_PASS !== undefined;
+  if (hasFtp) {
+    const buffer = fs.readFileSync(req.file.path);
+    const remotePath = `${FTP_REMOTE_BASE}/emails/${filename}`;
+    const ok = await uploadBufferViaFtp(buffer, remotePath);
+    try { fs.unlinkSync(req.file.path); } catch (_) {}
+    if (!ok) {
+      return res.status(500).json({
+        error: "Upload to Hostinger failed. Set FTP_HOST, FTP_USER, FTP_PASS on Render.",
+      });
+    }
+    const url = `${ASSETS_BASE_URL}/assets/emails/${filename}`;
+    return res.json({ success: true, url });
+  }
   const fullUrl =
-    req.protocol +
-    "://" +
-    req.get("host") +
-    "/assets/emails/" +
-    req.file.filename;
-  res.json({ success: true, url: fullUrl }); // Return absolute URL for email compatibility
+    req.protocol + "://" + req.get("host") + "/assets/emails/" + filename;
+  res.json({ success: true, url: fullUrl });
 });
 
 // Dedicated CMS Image Upload
@@ -298,20 +340,18 @@ app.post("/api/cookie-consent-log", async (req, res) => {
     .digest("hex");
 
   try {
-    const stmt = db.prepare(`
-            INSERT INTO "CookieConsentLog" ("timestamp", "choice", "settings", "hashedIp")
-            VALUES (datetime('now'), ?, ?, ?)
-        `);
-    const result = stmt.run(
-      choice || "custom",
-      JSON.stringify(settings || {}),
-      hashedIp,
-    );
+    const row = await prisma.cookieConsentLog.create({
+      data: {
+        choice: choice || "custom",
+        settings: JSON.stringify(settings || {}),
+        hashedIp,
+      },
+    });
     console.log("[Cookie Consent] Logged:", {
       choice,
       ip: hashedIp.substring(0, 16),
     });
-    res.json({ success: true, id: result.lastInsertRowid });
+    res.json({ success: true, id: row.id });
   } catch (error) {
     console.error("[Cookie Consent POST Error]", error);
     logError("CookieConsentLog.POST", error);
@@ -323,12 +363,10 @@ app.post("/api/cookie-consent-log", async (req, res) => {
 
 app.get("/api/cookie-consent-logs", async (req, res) => {
   try {
-    const stmt = db.prepare(`
-            SELECT * FROM "CookieConsentLog"
-            ORDER BY "timestamp" DESC
-            LIMIT 100
-        `);
-    const logs = stmt.all();
+    const logs = await prisma.cookieConsentLog.findMany({
+      orderBy: { timestamp: "desc" },
+      take: 100,
+    });
     console.log("[Cookie Consent] Fetched logs count:", logs.length);
     res.json(logs);
   } catch (error) {
@@ -340,42 +378,49 @@ app.get("/api/cookie-consent-logs", async (req, res) => {
   }
 });
 
-// 2b. Upload General Asset (Video, Partners, etc.)
-// Uses 'asset' field name. 'subfolder' in body.
-app.post("/api/upload-asset", upload.single("asset"), (req, res) => {
-  if (!req.file) {
+// 2b. Upload General Asset (Video, Partners, etc.) — FTP to Hostinger
+// Uses 'asset' field name. 'folderName' and optional 'subfolder' in body.
+app.post("/api/upload-asset", uploadMemoryAsset, async (req, res) => {
+  if (!req.file || !req.file.buffer)
     return res.status(400).json({ error: "No file uploaded" });
+
+  let folderName = req.body.folderName;
+  if (!folderName) {
+    console.warn(
+      'Multer: No folderName in body. Defaulting to "general".'
+    );
+    folderName = "general";
+  }
+  const subfolder = req.body.subfolder; // e.g. 'partners', 'hero'
+  const sanitized = req.file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+  const savedFilename = Date.now() + "_" + sanitized;
+
+  const remoteDir = subfolder
+    ? `${FTP_REMOTE_BASE}/events/${folderName}/${subfolder}`
+    : `${FTP_REMOTE_BASE}/events/${folderName}`;
+  const remotePath = `${remoteDir}/${savedFilename}`;
+
+  const ok = await uploadBufferViaFtp(req.file.buffer, remotePath);
+  if (!ok) {
+    return res.status(500).json({
+      error: "Upload to permanent storage (Hostinger) failed. See server logs.",
+    });
   }
 
-  // Move file if subfolder is requested
-  // Multer upload default is to root of event folder (from destination function)
-  const folderName = req.body.folderName;
-  const subfolder = req.body.subfolder; // e.g., 'partners', 'hero' (optional mainly for org)
+  const urlPath = subfolder
+    ? `events/${folderName}/${subfolder}/${savedFilename}`
+    : `events/${folderName}/${savedFilename}`;
+  const fullUrl = `${ASSETS_BASE_URL}/assets/${urlPath}`;
 
   if (subfolder) {
-    const currentPath = req.file.path;
-    const subfolderDir = path.join(ASSETS_DIR, folderName, subfolder);
-    if (!fs.existsSync(subfolderDir)) {
-      fs.mkdirSync(subfolderDir, { recursive: true });
-    }
-    const savedFilename = req.file.filename; // Use the version with timestamp
-    const newPath = path.join(subfolderDir, savedFilename);
-
-    // If file exists, overwrite (unlikely with timestamp but safe)
-    if (fs.existsSync(newPath)) {
-      fs.unlinkSync(newPath);
-    }
-
-    fs.renameSync(currentPath, newPath);
-
-    // Return relative path for frontend to use
     res.json({
       success: true,
       path: `${subfolder}/${savedFilename}`,
       filename: savedFilename,
+      url: fullUrl,
     });
   } else {
-    res.json({ success: true, filename: req.file.filename });
+    res.json({ success: true, filename: savedFilename, url: fullUrl });
   }
 });
 
@@ -430,12 +475,7 @@ app.post("/api/save-events", (req, res) => {
 // ==========================================
 // REGISTRATION ENDPOINT
 // ==========================================
-// Ensure registrations file exists
-if (!fs.existsSync(REGISTRATIONS_FILE_PATH)) {
-  fs.writeFileSync(REGISTRATIONS_FILE_PATH, "[]", "utf8");
-}
-
-app.post("/api/register", (req, res) => {
+app.post("/api/register", async (req, res) => {
   try {
     const { name, email, phone, source, eventId, eventName, language } =
       req.body;
@@ -449,42 +489,49 @@ app.post("/api/register", (req, res) => {
       return res.status(400).json({ error: "Invalid email format" });
     }
 
-    let registrations = [];
-    if (fs.existsSync(REGISTRATIONS_FILE_PATH)) {
-      registrations = JSON.parse(
-        fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"),
-      );
-    }
+    const history = [
+      {
+        type: "registration",
+        date: new Date().toISOString(),
+        message: `Registered for ${eventName || "General"}`,
+      },
+    ];
 
-    // Professional Lead Object
+    const row = await prisma.registration.create({
+      data: {
+        name,
+        email,
+        phone,
+        acquisitionSource: req.body.source || "Direct",
+        registrationSource: req.body.regSource || "website_general",
+        source: req.body.regSource || req.body.source || "Direct Web",
+        category: eventId === "video-event" ? "Video Lead" : "Event Lead",
+        eventId: eventId || "general",
+        eventName: eventName || "General Registration",
+        date: new Date(),
+        language: language || "en",
+        status: "confirmed",
+        history,
+      },
+    });
+
+    // Shape expected by Email Architect / automation (id, date as ISO, history)
     const newRegistration = {
-      id: Date.now(),
-      name,
-      email,
-      phone,
-      acquisitionSource: req.body.source || "Direct", // How they heard about us
-      registrationSource: req.body.regSource || "website_general", // Where they clicked
-      source: req.body.regSource || req.body.source || "Direct Web", // Legacy support
-      category: eventId === "video-event" ? "Video Lead" : "Event Lead",
-      eventId: eventId || "general",
-      eventName: eventName || "General Registration",
-      date: new Date().toISOString(),
-      language: language || "en",
-      status: "confirmed",
-      history: [
-        {
-          type: "registration",
-          date: new Date().toISOString(),
-          message: `Registered for ${eventName || "General"}`,
-        },
-      ],
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      acquisitionSource: row.acquisitionSource,
+      registrationSource: row.registrationSource,
+      source: row.source,
+      category: row.category,
+      eventId: row.eventId,
+      eventName: row.eventName,
+      date: row.date.toISOString(),
+      language: row.language,
+      status: row.status,
+      history: row.history || history,
     };
-
-    registrations.push(newRegistration);
-    fs.writeFileSync(
-      REGISTRATIONS_FILE_PATH,
-      JSON.stringify(registrations, null, 2),
-    );
 
     console.log(
       `[CRM] New registration: ${name} (${email}) | Event: ${eventName} | Source: ${source}`,
@@ -492,20 +539,19 @@ app.post("/api/register", (req, res) => {
     res.json({
       success: true,
       message: "Registration successful",
-      leadId: newRegistration.id,
+      leadId: row.id,
     });
 
-    // Trigger automations asynchronously so email failures never block or fail the response
-    setImmediate(() => {
+    setImmediate(async () => {
       try {
         if (eventId === "video-event")
-          triggerAutomationByEvent("onVideoRegistration", newRegistration);
+          await triggerAutomationByEvent("onVideoRegistration", newRegistration);
         else
-          triggerAutomationByEvent("onPhysicalRegistration", newRegistration);
+          await triggerAutomationByEvent("onPhysicalRegistration", newRegistration);
         if (source === "8min_journey")
-          triggerAutomationByEvent("on8MinJourney", newRegistration);
-        triggerAutomationByEvent("registration", newRegistration);
-        triggerAutomationByEvent("site_signup", newRegistration);
+          await triggerAutomationByEvent("on8MinJourney", newRegistration);
+        await triggerAutomationByEvent("registration", newRegistration);
+        await triggerAutomationByEvent("site_signup", newRegistration);
       } catch (e) {
         console.error("[Email] Registration automation trigger error:", e);
       }
@@ -516,7 +562,7 @@ app.post("/api/register", (req, res) => {
   }
 });
 
-app.post("/api/newsletter", (req, res) => {
+app.post("/api/newsletter", async (req, res) => {
   try {
     const { email, name, language, source } = req.body;
     if (!email) return res.status(400).json({ error: "Missing email" });
@@ -526,58 +572,80 @@ app.post("/api/newsletter", (req, res) => {
       return res.status(400).json({ error: "Invalid email format" });
     }
 
-    let registrations = [];
-    if (fs.existsSync(REGISTRATIONS_FILE_PATH)) {
-      registrations = JSON.parse(
-        fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"),
-      );
-    }
+    const existing = await prisma.registration.findFirst({
+      where: { email },
+    });
 
-    const existing = registrations.find((r) => r.email === email);
     if (!existing) {
-      const newRegistration = {
-        id: Date.now(),
-        name: name || "Subscriber",
-        email,
-        phone: "",
-        source: source || "Newsletter Footer",
-        category: "Subscriber",
-        date: new Date().toISOString(),
-        language: language || "en",
-        status: "confirmed",
-        history: [
-          {
-            type: "subscription",
-            date: new Date().toISOString(),
-            message: "Subscribed to Newsletter",
-          },
-        ],
-      };
-      registrations.push(newRegistration);
-      fs.writeFileSync(
-        REGISTRATIONS_FILE_PATH,
-        JSON.stringify(registrations, null, 2),
-      );
-      triggerAutomationByEvent("onNewsletterSignup", newRegistration);
-    } else {
-      // Just update or trigger if it's a new subscription attempt
-      existing.category =
-        existing.category === "Lead" ? "Lead + Subscriber" : existing.category;
-      if (!existing.history) existing.history = [];
-      existing.history.push({
-        type: "subscription",
-        date: new Date().toISOString(),
-        message: "Re-subscribed to Newsletter",
+      const row = await prisma.registration.create({
+        data: {
+          name: name || "Subscriber",
+          email,
+          phone: "",
+          acquisitionSource: null,
+          registrationSource: null,
+          source: source || "Newsletter Footer",
+          category: "Subscriber",
+          eventId: "newsletter",
+          eventName: "Newsletter Subscription",
+          date: new Date(),
+          language: language || "en",
+          status: "confirmed",
+          history: [
+            {
+              type: "subscription",
+              date: new Date().toISOString(),
+              message: "Subscribed to Newsletter",
+            },
+          ],
+        },
       });
-      fs.writeFileSync(
-        REGISTRATIONS_FILE_PATH,
-        JSON.stringify(registrations, null, 2),
-      );
-      triggerAutomationByEvent("onNewsletterSignup", existing);
+      const newRegistration = {
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        phone: row.phone,
+        source: row.source,
+        category: row.category,
+        date: row.date.toISOString(),
+        language: row.language,
+        status: row.status,
+        history: row.history,
+      };
+      await triggerAutomationByEvent("onNewsletterSignup", newRegistration);
+    } else {
+      const newHistory = [
+        ...(Array.isArray(existing.history) ? existing.history : []),
+        {
+          type: "subscription",
+          date: new Date().toISOString(),
+          message: "Re-subscribed to Newsletter",
+        },
+      ];
+      const category =
+        existing.category === "Lead" ? "Lead + Subscriber" : (existing.category || "Subscriber");
+      await prisma.registration.update({
+        where: { id: existing.id },
+        data: { category, history: newHistory },
+      });
+      const forTrigger = {
+        id: existing.id,
+        name: existing.name,
+        email: existing.email,
+        phone: existing.phone,
+        source: existing.source,
+        category,
+        date: existing.date.toISOString(),
+        language: existing.language,
+        status: existing.status,
+        history: newHistory,
+      };
+      await triggerAutomationByEvent("onNewsletterSignup", forTrigger);
     }
 
     res.json({ success: true, message: "Newsletter signup successful" });
   } catch (error) {
+    console.error("Newsletter error:", error);
     res.status(500).json({ error: "Failed" });
   }
 });
@@ -644,22 +712,19 @@ const getEmailTemplate = (body, config, trackingId, email, language) => {
     `;
 };
 
-const triggerAutomationByEvent = (triggerType, userData) => {
+const triggerAutomationByEvent = async (triggerType, userData) => {
   try {
     if (!fs.existsSync(AUTOMATION_CONFIG_PATH)) return;
     const config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH));
 
-    const queue = fs.existsSync(EMAIL_QUEUE_PATH)
-      ? JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH))
-      : [];
+    const toCreate = [];
     const now = Date.now();
-    let queuedCount = 0;
 
     // 1. Process Individual Flows
     const activeFlows = (config.flows || []).filter(
       (f) => f.active && f.trigger === triggerType,
     );
-    activeFlows.forEach((flow) => {
+    for (const flow of activeFlows) {
       let scheduledFor = now;
       if (flow.delayValue && flow.delayUnit) {
         const multiplier =
@@ -670,49 +735,48 @@ const triggerAutomationByEvent = (triggerType, userData) => {
               : 60000;
         scheduledFor += parseInt(flow.delayValue) * multiplier;
       }
-      queue.push({
+      toCreate.push({
         id: uuidv4(),
         status: "pending",
-        scheduledFor,
+        scheduledFor: new Date(scheduledFor),
         data: userData,
         stepType: "email",
         flowId: flow.id,
         attempts: 0,
       });
-      queuedCount++;
-    });
+    }
 
     // 2. Process Sequences (Journeys)
     const activeSequences = (config.sequences || []).filter(
       (s) => s.active && s.trigger === triggerType,
     );
-    activeSequences.forEach((seq) => {
+    for (const seq of activeSequences) {
       let cumulativeDelay = 0;
-      seq.steps.forEach((step) => {
+      for (let stepIndex = 0; stepIndex < seq.steps.length; stepIndex++) {
+        const step = seq.steps[stepIndex];
         if (step.type === "wait") {
           cumulativeDelay += parseDelay(step.duration);
         } else if (step.type === "email") {
-          // Note: If the email has its own duration (e.g. '24h'), add it
           const stepDelay = step.duration ? parseDelay(step.duration) : 0;
-          queue.push({
+          toCreate.push({
             id: uuidv4(),
             status: "pending",
-            scheduledFor: now + cumulativeDelay + stepDelay,
+            scheduledFor: new Date(now + cumulativeDelay + stepDelay),
             data: userData,
             stepType: "email",
             flowId: step.flowId,
             attempts: 0,
             sequenceId: seq.id,
+            stepIndex,
           });
-          queuedCount++;
         }
-      });
-    });
+      }
+    }
 
-    if (queuedCount > 0) {
-      fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
+    if (toCreate.length > 0) {
+      await prisma.emailQueue.createMany({ data: toCreate });
       console.log(
-        `🚀 [Email] Queued ${queuedCount} items for trigger [${triggerType}] -> ${userData.email}`,
+        `🚀 [Email] Queued ${toCreate.length} items for trigger [${triggerType}] -> ${userData.email}`,
       );
       processQueue().catch((err) =>
         console.error("[Email] Immediate process failed:", err),
@@ -737,11 +801,33 @@ const parseDelay = (str) => {
   return 0;
 };
 
+// Normalize SMTP for Office 365: always use smtp.office365.com and port 587
+function normalizeSmtpConfig(smtp) {
+  if (!smtp || !smtp.host) return smtp;
+  const host = String(smtp.host).toLowerCase();
+  if (host.includes("office365") || host.includes("outlook")) {
+    return {
+      ...smtp,
+      host: "smtp.office365.com",
+      port: 587,
+      secure: false,
+    };
+  }
+  return { ...smtp, host: smtp.host.trim().toLowerCase(), port: parseInt(smtp.port) || 587 };
+}
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(email) {
+  return typeof email === "string" && EMAIL_REGEX.test(email.trim());
+}
+
+let processQueueRunning = false;
+
 const processQueue = async (specificItemId = null) => {
+  if (processQueueRunning) return false;
+  processQueueRunning = true;
   try {
-    if (!fs.existsSync(EMAIL_QUEUE_PATH)) return false;
-    const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH));
-    const now = Date.now();
+    const now = new Date();
     let config;
     try {
       config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH));
@@ -749,6 +835,7 @@ const processQueue = async (specificItemId = null) => {
       console.error("[Email] processQueue: failed to load config", e);
       return false;
     }
+    config.smtp = normalizeSmtpConfig(config.smtp);
     const suppressionList = fs.existsSync(SUPPRESSION_LIST_PATH)
       ? JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH))
       : [];
@@ -774,17 +861,35 @@ const processQueue = async (specificItemId = null) => {
       return false;
     }
 
+    const where = {
+      status: "pending",
+      stepType: "email",
+      scheduledFor: { lte: now },
+    };
+    if (specificItemId) where.id = specificItemId;
+
+    const items = await prisma.emailQueue.findMany({ where });
     let success = true;
-    for (let item of queue) {
-    if (specificItemId && item.id !== specificItemId) continue;
-    if (
-      item.status === "pending" &&
-      item.scheduledFor <= now &&
-      item.stepType === "email"
-    ) {
-      // Check suppression
-      if (suppressionList.includes(item.data.email)) {
-        item.status = "suppressed";
+    const baseUrl = BASE_URL || "http://localhost:3001";
+
+    for (const item of items) {
+      const data = item.data;
+
+      if (suppressionList.includes(data?.email)) {
+        await prisma.emailQueue.update({
+          where: { id: item.id },
+          data: { status: "suppressed" },
+        });
+        continue;
+      }
+
+      if (!isValidEmail(data?.email)) {
+        await prisma.emailQueue.update({
+          where: { id: item.id },
+          data: { status: "failed", error: "Invalid email format" },
+        });
+        console.log("[Email] Skipped (invalid email):", data?.email);
+        success = false;
         continue;
       }
 
@@ -799,19 +904,21 @@ const processQueue = async (specificItemId = null) => {
           : null;
 
         if (!flow && !campaign) {
-          item.status = "failed";
-          item.error = "Source flow/campaign not found";
+          await prisma.emailQueue.update({
+            where: { id: item.id },
+            data: { status: "failed", error: "Source flow/campaign not found" },
+          });
+          success = false;
           continue;
         }
 
         const source = flow || campaign;
         const trackingId = item.id;
-
-        const lang = item.data.language || "en";
+        const lang = data.language || "en";
         const renderData = {
-          ...item.data,
-          eventDate: item.data.date
-            ? new Date(item.data.date).toLocaleDateString()
+          ...data,
+          eventDate: data.date
+            ? new Date(data.date).toLocaleDateString()
             : "",
           year: 2026,
         };
@@ -830,31 +937,33 @@ const processQueue = async (specificItemId = null) => {
           rawBody.replace(/\n/g, "<br>"),
           renderData,
         );
+        // Make image and asset URLs absolute so they display in email clients
+        body = body.replace(/\s(src|href)="\/(?!\/)/g, ` $1="${baseUrl}/`);
 
         const html = await inlineCss(
-          getEmailTemplate(body, config, trackingId, item.data.email, lang),
-          { url: "http://localhost:3001" },
+          getEmailTemplate(body, config, trackingId, data.email, lang),
+          { url: baseUrl },
         );
 
         const mailOptions = {
           from: config.smtp.from,
-          to: item.data.email,
-          subject: subject,
-          html: html,
+          to: data.email,
+          subject,
+          html,
         };
 
         if (source.includeCalendar) {
           const { value } = ics.createEvent({
             start: [
-              new Date(item.data.date).getFullYear(),
-              new Date(item.data.date).getMonth() + 1,
-              new Date(item.data.date).getDate(),
+              new Date(data.date).getFullYear(),
+              new Date(data.date).getMonth() + 1,
+              new Date(data.date).getDate(),
               19,
               0,
             ],
             duration: { hours: 3 },
-            title: item.data.eventName || "HBM Event",
-            location: item.data.location || "Tel Aviv",
+            title: data.eventName || "HBM Event",
+            location: data.location || "Tel Aviv",
           });
           if (value)
             mailOptions.attachments = [
@@ -863,29 +972,46 @@ const processQueue = async (specificItemId = null) => {
         }
 
         await transporter.sendMail(mailOptions);
-        item.status = "sent";
-        item.sentAt = new Date().toISOString();
 
-        logEngagement(trackingId, "sent", item.data.email);
+        await prisma.emailQueue.update({
+          where: { id: item.id },
+          data: { status: "sent", sentAt: new Date() },
+        });
+        logEngagement(trackingId, "sent", data.email);
+        console.log("[Email] Sent successfully to", data.email);
       } catch (err) {
         logError("SMTP/Queue", err);
-        item.status = "failed";
         let errMsg = err.message || String(err);
         const host = (config.smtp?.host || "").toLowerCase();
-        if (/535|auth|login|invalid credentials/i.test(errMsg) && (host.includes("office365") || host.includes("outlook"))) {
+        const isAuthError = /535|auth|login|invalid credentials/i.test(errMsg);
+        if (isAuthError && (host.includes("office365") || host.includes("outlook"))) {
           errMsg = "SMTP auth failed. For Office 365 use an App Password (Security → App passwords), not your account password.";
+          console.log("[Email] Failed (auth):", data?.email, "—", errMsg);
+        } else {
+          console.log("[Email] Failed to send to", data?.email, "—", errMsg);
         }
-        item.error = errMsg;
+        const attempts = (item.attempts || 0) + 1;
+        const maxAttempts = 3;
+        const status = attempts >= maxAttempts ? "failed" : "pending";
+        await prisma.emailQueue.update({
+          where: { id: item.id },
+          data: {
+            status,
+            error: errMsg,
+            attempts,
+            ...(status === "pending" ? { scheduledFor: new Date(Date.now() + 60000) } : {}),
+          },
+        });
         success = false;
       }
     }
-  }
 
-    fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
     return success;
   } catch (err) {
     console.error("[Email] processQueue error:", err);
     return false;
+  } finally {
+    processQueueRunning = false;
   }
 };
 
@@ -903,19 +1029,22 @@ const logEngagement = (id, type, email, metadata = {}) => {
   fs.writeFileSync(ENGAGEMENT_LOG_PATH, JSON.stringify(log, null, 2));
 };
 
-// CRON-LIKE INTERVAL
-setInterval(processQueue, 60000); // Process every minute
+// CRON-LIKE INTERVAL (skip if previous run still in progress to avoid race)
+setInterval(() => {
+  if (!processQueueRunning) processQueue().catch((err) => console.error("[Email] Interval run failed:", err));
+}, 60000);
 
 // ==========================================
 // TRACKING & WEBHOOKS
 // ==========================================
 
-app.get("/api/track/open/:id", (req, res) => {
+app.get("/api/track/open/:id", async (req, res) => {
   let email = "unknown";
   try {
-    const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH, "utf8"));
-    const item = queue.find((i) => i.id === req.params.id);
-    if (item) email = item.data.email;
+    const item = await prisma.emailQueue.findUnique({
+      where: { id: req.params.id },
+    });
+    if (item?.data?.email) email = item.data.email;
   } catch (e) {}
 
   logEngagement(req.params.id, "open", email);
@@ -931,12 +1060,13 @@ app.get("/api/track/open/:id", (req, res) => {
     .end(pixel);
 });
 
-app.get("/api/track/click/:id", (req, res) => {
+app.get("/api/track/click/:id", async (req, res) => {
   let email = "unknown";
   try {
-    const queue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH, "utf8"));
-    const item = queue.find((i) => i.id === req.params.id);
-    if (item) email = item.data.email;
+    const item = await prisma.emailQueue.findUnique({
+      where: { id: req.params.id },
+    });
+    if (item?.data?.email) email = item.data.email;
   } catch (e) {}
 
   logEngagement(req.params.id, "click", email);
@@ -962,21 +1092,27 @@ app.get("/api/engagement", (req, res) => {
   }
 });
 
-// GET Email Queue
-app.get("/api/email-queue", (req, res) => {
+// GET Email Queue (from MySQL)
+app.get("/api/email-queue", async (req, res) => {
   try {
-    if (!fs.existsSync(EMAIL_QUEUE_PATH)) return res.json([]);
-    res.json(JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH, "utf8")));
-  } catch {
+    const items = await prisma.emailQueue.findMany({
+      orderBy: { scheduledFor: "asc" },
+    });
+    res.json(items);
+  } catch (e) {
+    console.error("[Email] GET queue error:", e);
     res.json([]);
   }
 });
 
 // POST SMTP Check (real connectivity test)
 app.post("/api/smtp-check", async (req, res) => {
-  const { host, port, user, pass, secure } = req.body;
+  let { host, port, user, pass, secure } = req.body;
   if (!host || !user)
     return res.json({ success: false, message: "SMTP not configured" });
+  const normalized = normalizeSmtpConfig({ host, port, secure });
+  host = normalized.host || host;
+  port = normalized.port || port;
   const portNum = parseInt(port) || 587;
   const useSecure =
     typeof secure === "boolean" ? secure : portNum === 465;
@@ -1135,7 +1271,7 @@ app.get("/api/automation-settings", (req, res) => {
       config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH, "utf8"));
     }
     config.flows = Array.isArray(config.flows) ? config.flows : AUTOMATION_SETTINGS_DEFAULT_FLOWS;
-    config.smtp = config.smtp || {};
+    config.smtp = normalizeSmtpConfig(config.smtp || {}) || {};
     config.globalStyling = config.globalStyling || {};
     config.sequences = Array.isArray(config.sequences) ? config.sequences : [];
     res.json(config);
@@ -1183,7 +1319,9 @@ app.post("/api/video-event", (req, res) => {
 
 app.post("/api/automation-settings", (req, res) => {
   try {
-    fs.writeFileSync(AUTOMATION_CONFIG_PATH, JSON.stringify(req.body, null, 2));
+    const body = { ...req.body };
+    if (body.smtp) body.smtp = normalizeSmtpConfig(body.smtp);
+    fs.writeFileSync(AUTOMATION_CONFIG_PATH, JSON.stringify(body, null, 2));
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Failed to save settings" });
@@ -1202,21 +1340,19 @@ app.post("/api/test-flow", async (req, res) => {
       id: "TEST-" + Math.floor(Math.random() * 1000),
       language: language || "en",
     };
-    const queue = fs.existsSync(EMAIL_QUEUE_PATH)
-      ? JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH))
-      : [];
     const itemId = uuidv4();
-    queue.push({
-      id: itemId,
-      status: "pending",
-      scheduledFor: Date.now(),
-      data: testUser,
-      stepType: "email",
-      flowId: flowId,
+    await prisma.emailQueue.create({
+      data: {
+        id: itemId,
+        status: "pending",
+        scheduledFor: new Date(),
+        data: testUser,
+        stepType: "email",
+        flowId: flowId || null,
+        attempts: 0,
+      },
     });
-    fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
 
-    // Immediate attempt with feedback
     const success = await processQueue(itemId);
 
     if (success) {
@@ -1225,9 +1361,9 @@ app.post("/api/test-flow", async (req, res) => {
         message: "Test email delivered successfully!",
       });
     } else {
-      // Re-read queue to find error
-      const updatedQueue = JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH));
-      const failedItem = updatedQueue.find((i) => i.id === itemId);
+      const failedItem = await prisma.emailQueue.findUnique({
+        where: { id: itemId },
+      });
       res
         .status(500)
         .json({ error: failedItem?.error || "Unknown delivery failure" });
@@ -1278,7 +1414,7 @@ app.post("/api/campaigns/save-all", (req, res) => {
   }
 });
 
-app.post("/api/campaigns/send", (req, res) => {
+app.post("/api/campaigns/send", async (req, res) => {
   const { campaignId, segment } = req.body;
   try {
     if (!fs.existsSync(CAMPAIGNS_FILE_PATH)) return res.status(404).json({ error: "No campaigns file" });
@@ -1286,29 +1422,42 @@ app.post("/api/campaigns/send", (req, res) => {
     const campaign = campaigns.find((c) => c.id === campaignId);
     if (!campaign) return res.status(404).json({ error: "Campaign not found" });
 
-    const regs = fs.existsSync(REGISTRATIONS_FILE_PATH)
-      ? JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"))
-      : [];
-    const targets =
-      segment === "all" ? regs : regs.filter((r) => (r.source || r.registrationSource || "").toLowerCase() === String(segment).toLowerCase());
+    let regs = await prisma.registration.findMany({ orderBy: { createdAt: "desc" } });
+    if (segment !== "all") {
+      const seg = String(segment).toLowerCase();
+      regs = regs.filter(
+        (r) => (r.source || r.registrationSource || "").toLowerCase() === seg,
+      );
+    }
 
-    const queue = fs.existsSync(EMAIL_QUEUE_PATH)
-      ? JSON.parse(fs.readFileSync(EMAIL_QUEUE_PATH, "utf8"))
-      : [];
-    targets.forEach((user) => {
-      queue.push({
-        id: uuidv4(),
-        status: "pending",
-        scheduledFor: Date.now(),
-        data: user,
-        stepType: "email",
-        flowId: campaignId,
-        isCampaign: true,
-      });
-    });
+    const toCreate = regs.map((r) => ({
+      id: uuidv4(),
+      status: "pending",
+      scheduledFor: new Date(),
+      data: {
+        id: r.id,
+        name: r.name,
+        email: r.email,
+        phone: r.phone,
+        source: r.source,
+        registrationSource: r.registrationSource,
+        category: r.category,
+        eventId: r.eventId,
+        eventName: r.eventName,
+        date: r.date.toISOString(),
+        language: r.language,
+        status: r.status,
+        history: r.history,
+      },
+      stepType: "email",
+      flowId: campaignId,
+      attempts: 0,
+    }));
 
-    fs.writeFileSync(EMAIL_QUEUE_PATH, JSON.stringify(queue, null, 2));
-    res.json({ success: true, count: targets.length });
+    if (toCreate.length > 0) {
+      await prisma.emailQueue.createMany({ data: toCreate });
+    }
+    res.json({ success: true, count: toCreate.length });
     processQueue();
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -1364,86 +1513,124 @@ app.post("/api/suppression/toggle", (req, res) => {
   }
 });
 
-app.delete("/api/registrations/:id", (req, res) => {
+app.delete("/api/registrations/:id", async (req, res) => {
   try {
-    let regs = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"));
-    regs = regs.filter((r) => r.id.toString() !== req.params.id.toString());
-    fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(regs, null, 2));
+    const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+    await prisma.registration.delete({ where: { id } });
     res.json({ success: true });
   } catch (err) {
+    if (err.code === "P2025") return res.status(404).json({ error: "Not found" });
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET Registration Stats
-app.get("/api/registrations", (req, res) => {
+// GET Registrations (from MySQL)
+app.get("/api/registrations", async (req, res) => {
   try {
-    if (!fs.existsSync(REGISTRATIONS_FILE_PATH)) {
-      return res.json([]);
-    }
-    const data = fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8");
-    res.json(JSON.parse(data));
+    const rows = await prisma.registration.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    const list = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      phone: r.phone,
+      acquisitionSource: r.acquisitionSource,
+      registrationSource: r.registrationSource,
+      source: r.source,
+      category: r.category,
+      eventId: r.eventId,
+      eventName: r.eventName,
+      date: r.date.toISOString(),
+      language: r.language,
+      status: r.status,
+      history: r.history,
+    }));
+    res.json(list);
   } catch (err) {
     console.error("Error reading registrations:", err);
     res.status(500).json({ error: "Failed to read registrations" });
   }
 });
 
-// Professional Lead Management
-app.get("/api/crm/leads", (req, res) => {
+// Professional Lead Management (from MySQL)
+app.get("/api/crm/leads", async (req, res) => {
   try {
-    if (!fs.existsSync(REGISTRATIONS_FILE_PATH)) return res.json([]);
-    const leads = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"));
+    const rows = await prisma.registration.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    const leads = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      phone: r.phone,
+      acquisitionSource: r.acquisitionSource,
+      registrationSource: r.registrationSource,
+      source: r.source,
+      category: r.category,
+      eventId: r.eventId,
+      eventName: r.eventName,
+      date: r.date.toISOString(),
+      language: r.language,
+      status: r.status,
+      history: r.history,
+    }));
     res.json(leads);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.patch("/api/crm/leads/:id/status", (req, res) => {
+app.patch("/api/crm/leads/:id/status", async (req, res) => {
   try {
+    const id = parseInt(req.params.id, 10);
     const { status } = req.body;
-    let leads = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"));
-    const leadIndex = leads.findIndex(
-      (l) => l.id.toString() === req.params.id.toString(),
-    );
-    if (leadIndex === -1)
-      return res.status(404).json({ error: "Lead not found" });
-
-    leads[leadIndex].status = status;
-    if (!leads[leadIndex].history) leads[leadIndex].history = [];
-    leads[leadIndex].history.push({
-      type: "status_change",
-      date: new Date().toISOString(),
-      message: `Status changed to ${status}`,
+    if (Number.isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+    const lead = await prisma.registration.findUnique({ where: { id } });
+    if (!lead) return res.status(404).json({ error: "Lead not found" });
+    const newHistory = [
+      ...(Array.isArray(lead.history) ? lead.history : []),
+      { type: "status_change", date: new Date().toISOString(), message: `Status changed to ${status}` },
+    ];
+    const updated = await prisma.registration.update({
+      where: { id },
+      data: { status, history: newHistory },
     });
-
-    fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(leads, null, 2));
-    res.json({ success: true, lead: leads[leadIndex] });
+    res.json({
+      success: true,
+      lead: {
+        ...updated,
+        date: updated.date.toISOString(),
+      },
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post("/api/crm/leads/:id/note", (req, res) => {
+app.post("/api/crm/leads/:id/note", async (req, res) => {
   try {
+    const id = parseInt(req.params.id, 10);
     const { note } = req.body;
-    let leads = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"));
-    const leadIndex = leads.findIndex(
-      (l) => l.id.toString() === req.params.id.toString(),
-    );
-    if (leadIndex === -1)
-      return res.status(404).json({ error: "Lead not found" });
-
-    if (!leads[leadIndex].history) leads[leadIndex].history = [];
-    leads[leadIndex].history.push({
-      type: "note",
-      date: new Date().toISOString(),
-      message: note,
+    if (Number.isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+    const lead = await prisma.registration.findUnique({ where: { id } });
+    if (!lead) return res.status(404).json({ error: "Lead not found" });
+    const newHistory = [
+      ...(Array.isArray(lead.history) ? lead.history : []),
+      { type: "note", date: new Date().toISOString(), message: note },
+    ];
+    const updated = await prisma.registration.update({
+      where: { id },
+      data: { history: newHistory },
     });
-
-    fs.writeFileSync(REGISTRATIONS_FILE_PATH, JSON.stringify(leads, null, 2));
-    res.json({ success: true, lead: leads[leadIndex] });
+    res.json({
+      success: true,
+      lead: {
+        ...updated,
+        date: updated.date.toISOString(),
+      },
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1604,22 +1791,32 @@ app.get("/api/events", (req, res) => {
 
 app.get("/api/registrations/stats", async (req, res) => {
   try {
-    let registrations = [];
-    if (fs.existsSync(REGISTRATIONS_FILE_PATH)) {
-      registrations = JSON.parse(fs.readFileSync(REGISTRATIONS_FILE_PATH, "utf8"));
-    }
-
-    // Return some basic stats
+    const all = await prisma.registration.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    const now = new Date();
+    const todayStr = now.toDateString();
+    const thisMonth = now.getMonth();
+    const list = all.map((r) => ({
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      phone: r.phone,
+      source: r.source,
+      category: r.category,
+      eventId: r.eventId,
+      eventName: r.eventName,
+      date: r.date.toISOString(),
+      timestamp: r.createdAt.toISOString(),
+      language: r.language,
+      status: r.status,
+      history: r.history,
+    }));
     res.json({
-      total: registrations.length,
-      today: registrations.filter(
-        (r) =>
-          new Date(r.timestamp).toDateString() === new Date().toDateString(),
-      ).length,
-      thisMonth: registrations.filter(
-        (r) => new Date(r.timestamp).getMonth() === new Date().getMonth(),
-      ).length,
-      all: registrations,
+      total: all.length,
+      today: all.filter((r) => r.createdAt.toDateString() === todayStr).length,
+      thisMonth: all.filter((r) => r.createdAt.getMonth() === thisMonth).length,
+      all: list,
     });
   } catch (err) {
     console.error("Error fetching stats:", err);
@@ -1703,12 +1900,23 @@ async function callAI(prompt, systemPrompt = "You are a helpful assistant.") {
   return null; // All failed
 }
 
-// Prefer largest available book cover URL and force https
+// Strip HTML tags for plain-text description (Google Books often returns HTML)
+function stripHtml(html) {
+  if (typeof html !== "string") return "";
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+// Prefer largest/original cover: extraLarge first, then large, etc. Force https.
 function getBookCoverUrl(volumeInfo) {
   const links = volumeInfo?.imageLinks;
   if (!links) return null;
   const url =
-    links.large || links.medium || links.small || links.thumbnail || links.smallThumbnail;
+    links.extraLarge ||
+    links.large ||
+    links.medium ||
+    links.small ||
+    links.thumbnail ||
+    links.smallThumbnail;
   if (!url) return null;
   return url.replace(/^http:\/\//i, "https://");
 }
@@ -1726,38 +1934,55 @@ async function fetchOpenLibraryCover(title, author) {
     const olid = work.cover_edition_key || work.edition_key?.[0];
     const isbn = work.isbn?.[0];
     if (olid)
-      return `https://covers.openlibrary.org/b/olid/${olid}-M.jpg`;
+      return `https://covers.openlibrary.org/b/olid/${olid}-L.jpg`;
     if (isbn)
-      return `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
+      return `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
     return null;
   } catch (e) {
     return null;
   }
 }
 
+// Simple health check so frontend can verify admin API is reachable (e.g. open http://localhost:3001/api/ai/ping)
+app.get("/api/ai/ping", (req, res) => res.json({ ok: true, service: "fetch-book" }));
+
 app.post("/api/ai/fetch-book", async (req, res) => {
   const { title, author } = req.body;
   if (!title) return res.status(400).json({ error: "Title is required" });
+  console.log("[fetch-book] Request:", title, author || "(no author)");
 
   try {
     let book;
     const queryStr = title + (author ? ` ${author}` : "");
+    const booksBase = "https://www.googleapis.com/books/v1/volumes?q=" + encodeURIComponent(queryStr);
     try {
-      let googleRes = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryStr)}&key=${process.env.GOOGLE_BOOKS_API_KEY || ""}`,
-      );
-      let googleData = await googleRes.json();
-
-      if (!googleData.items || googleData.items.length === 0) {
-        googleRes = await fetch(
-          `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryStr)}`,
-        );
+      // Use API key only if set; empty key can cause 400 from Google
+      const key = process.env.GOOGLE_BOOKS_API_KEY?.trim();
+      const url = key ? `${booksBase}&key=${key}` : booksBase;
+      const googleRes = await fetch(url);
+      let googleData;
+      try {
         googleData = await googleRes.json();
+      } catch (parseErr) {
+        console.warn("[fetch-book] Google Books response not JSON:", parseErr.message);
+        googleData = {};
       }
 
-      book = googleData.items?.[0]?.volumeInfo;
+      if (googleData && googleData.error) {
+        console.warn("[fetch-book] Google Books error:", googleData.error.message);
+        googleData.items = null;
+      }
+      if (!googleData?.items?.length && key) {
+        try {
+          const fallbackRes = await fetch(booksBase);
+          googleData = await fallbackRes.json().catch(() => ({}));
+        } catch (_) {}
+      }
+
+      book = googleData?.items?.[0]?.volumeInfo;
+      if (book) console.log("[fetch-book] Google Books found:", book.title);
     } catch (e) {
-      console.error("Google Books Failed:", e.message);
+      console.error("[fetch-book] Google Books Failed:", e.message);
     }
 
     let coverUrl = getBookCoverUrl(book);
@@ -1786,6 +2011,8 @@ app.post("/api/ai/fetch-book", async (req, res) => {
       } catch (e) {
         console.error("AI Parse Fail:", e.message);
       }
+    } else if (!process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY) {
+      console.warn("[fetch-book] No AI data. Add GEMINI_API_KEY (or OPENAI_API_KEY) to .env and restart for summaries/quotes.");
     }
 
     res.json({
@@ -1795,7 +2022,7 @@ app.post("/api/ai/fetch-book", async (req, res) => {
         (book?.authors ? book.authors[0] : author) ||
         "Unknown Author",
       description:
-        book?.description || aiData.shortSummary || "No description available.",
+        stripHtml(book?.description) || aiData.shortSummary || "No description available.",
       coverUrl: coverUrl || null,
       authorQuote: aiData.authorQuote || "",
       threeKeySentences: Array.isArray(aiData.threeKeySentences) ? aiData.threeKeySentences : [],
@@ -1889,12 +2116,13 @@ const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 HBM Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`📁 Serving dist from: ${path.join(__dirname, "dist")}`);
+  console.log(`📚 Magic Fetch: GEMINI_API_KEY=${process.env.GEMINI_API_KEY ? "set" : "NOT SET"}, GOOGLE_BOOKS_API_KEY=${process.env.GOOGLE_BOOKS_API_KEY ? "set" : "NOT SET"}`);
 });
 
 // Graceful shutdown
 process.on("SIGINT", () => {
   console.log("\n⏹️  Shutting down gracefully...");
-  db.close();
+  prisma.$disconnect();
   server.close(() => {
     console.log("✅ Database and server closed");
     process.exit(0);

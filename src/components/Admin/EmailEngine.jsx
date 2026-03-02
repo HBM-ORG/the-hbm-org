@@ -415,8 +415,12 @@ const EmailEngine = () => {
             const d = await r.json().catch(() => ({}));
             if (d.success) setTestStatus('✅ Sent!');
             else throw new Error(d.error || (r.status ? `HTTP ${r.status}` : 'Failed'));
-        } catch (e) { setTestStatus(`❌ ${e.message}`); }
-        setTimeout(() => setTestStatus(''), 8000);
+        } catch (e) {
+            const msg = e.message || 'Send failed';
+            setTestStatus(`❌ ${msg}`);
+            if (msg.toLowerCase().includes('app password')) setTestStatus(`❌ ${msg} (Check Automation → SMTP)`);
+        }
+        setTimeout(() => setTestStatus(''), 10000);
     };
 
     const toggleSuppression = async (email) => {

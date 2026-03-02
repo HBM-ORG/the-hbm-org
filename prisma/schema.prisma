@@ -1,18 +1,53 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+// This is your Prisma schema file.
+// For MySQL on Render: set DATABASE_URL=mysql://... in Render env; run prisma migrate deploy in Build.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model CookieConsentLog {
   id        Int      @id @default(autoincrement())
   timestamp DateTime @default(now())
   choice    String   // 'accept_all', 'decline_all', 'custom'
-  settings  String   // JSON string of settings: {analytics: boolean, marketing: boolean}
+  settings  String   @db.Text // JSON string of settings
   hashedIp  String
+}
+
+/// Replaces emailQueue.json — email queue for automation/campaigns
+model EmailQueue {
+  id           String    @id @default(uuid())
+  status       String    // pending | sent | failed | suppressed
+  scheduledFor DateTime
+  data         Json      // payload: { email, name, ... }
+  stepType     String    // email | wait
+  flowId       String?
+  sequenceId   String?
+  stepIndex    Int?
+  attempts     Int       @default(0)
+  error        String?   @db.Text
+  sentAt       DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+/// Replaces registrations.json — event/newsletter signups and leads
+model Registration {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  email              String
+  phone              String?
+  acquisitionSource  String?
+  registrationSource String?
+  source             String?
+  category           String?
+  eventId            String?
+  eventName          String?
+  date               DateTime
+  language           String?
+  status             String?
+  history            Json?    // [{ type, date, message }]
+  createdAt          DateTime @default(now())
 }
