@@ -1,6 +1,6 @@
-# The HBM - Visual Sitemap & User Flow
+# 🗺️ Visual Sitemap & User Flow
 
-This document visualizes the structure of the new HBM website, showing how users navigate through the experience.
+High-level structure of the HBM site and how users move through it.
 
 ## 🗺️ Strategic Architecture Map (v8.0)
 
@@ -86,3 +86,7 @@ Quick links for marketing purposes:
 *   `/b2b` → Goes to **Who Is It For?**
 *   `/gallery` → Goes to **Events**
 *   `/faq` → Goes to **The Meeter**
+
+---
+
+**See also:** [ARCHITECTURE.md](ARCHITECTURE.md) · [README](../README.md)

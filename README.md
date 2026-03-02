@@ -1,20 +1,23 @@
-# 👑 The HBM - Professional Development Flow
+# 👑 The HBM – Professional Development Flow
 
-This guide outlines the standard operating procedures for developing, testing, and deploying The HBM platform.
+Standard procedures for developing, testing, and deploying the platform. **Handoff:** see [docs/](docs/) (especially [ARCHITECTURE](docs/ARCHITECTURE.md) and [EMAIL_SYSTEM](docs/EMAIL_SYSTEM.md)) for structure and email setup.
 
 ## 📁 Project structure
 
-- **`/config`** — PM2 and deploy config (e.g. `ecosystem.config.cjs`)
+Root is kept to **7 files** (package.json, package-lock.json, .gitignore, README.md, index.html, vite.config.js, prisma.config.ts). All other config and server code live in subfolders.
+
+- **`/config`** — PM2, ESLint, env template, Railway (e.g. `ecosystem.config.cjs`, `.env.example`, `.nvmrc`, `railway.toml`). For Railway: set start command to `node server/admin-server.js` or copy `config/railway.toml` to root.
 - **`/docs`** — All documentation (deploy, Hostinger, Render, QA, sitemap); see [docs/README.md](docs/README.md)
 - **`/data`** — Runtime data and local DB files (gitignored)
 - **`/scripts`** — Build and utility scripts (sitemap, migrate, email diagnostics)
+- **`/server`** — Express API (admin-server.js)
 - **`/src`** — React frontend (Vite)
 - **`/public`** — Static assets and `dist` output
 
 Full layout and stack: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## 🛠 1. Environment Setup
-Node **18+** (recommended: 20; see `.nvmrc`). Use `nvm use` if you use nvm.
+Node **18+** (recommended: 20; see `config/.nvmrc`). Copy `config/.env.example` to `.env` and fill in values.
 
 Always ensure your local environment is synchronized with the latest dependencies.
 ```bash
@@ -55,10 +58,15 @@ npm run preview
 
 ## 📊 4. Admin Protocol
 - **Admin Dashboard**: Accessible via `/admin`
-- **Access Key**: Distributed via internal secure channels (`hbm2026`)
-- **Intelligence Sync**: Ensure `node admin-server.js` is running (automatic in `dev:admin`)
+- **Access**: Credentials via internal secure channels
+- **Intelligence Sync**: Ensure the admin server is running (automatic in `dev:admin`; runs `server/admin-server.js`)
 
-## 🚢 5. Deployment Flow
+## 📧 5. Email (Handoff)
+Transactional and campaign emails use **SMTP** (nodemailer). To enable:
+- Set **SMTP** in Admin → Email Architect → Automation Settings, **or** set `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` in env (server falls back to env if config is empty).
+- Full overview, checklist, and Mailchimp/Bravo options: **[docs/EMAIL_SYSTEM.md](docs/EMAIL_SYSTEM.md)**.
+
+## 🚢 6. Deployment Flow
 1. **Lint**: `npm run lint` (Ensure code quality)
 2. **Build**: `npm run build`
 3. **Commit**: `git add . && git commit -m "feat: description"`

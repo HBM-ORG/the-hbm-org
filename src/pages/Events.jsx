@@ -185,7 +185,7 @@ const EventCard = ({ event, index, onClick, lang }) => {
     >
       <div className="relative h-full bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100">
         
-        {/* Image — never use empty src (causes console error and re-download) */}
+        {/* Image or Video — prefer thumbnail/image, else hero video */}
         <div className="relative h-64 overflow-hidden bg-gray-100">
           {(event.thumbnail || event.image) ? (
             <motion.img
@@ -194,6 +194,15 @@ const EventCard = ({ event, index, onClick, lang }) => {
               className="w-full h-full object-cover"
               whileHover={{ scale: 1.1 }}
               transition={{ duration: 0.7 }}
+            />
+          ) : event.heroVideo ? (
+            <video
+              src={event.heroVideo}
+              className="w-full h-full object-cover"
+              muted
+              loop
+              playsInline
+              autoPlay
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-300">

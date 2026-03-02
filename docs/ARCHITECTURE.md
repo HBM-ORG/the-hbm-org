@@ -1,11 +1,14 @@
-# Project Architecture
+# 🏗 Project Architecture
 
-Full-stack monorepo: React (Vite) frontend + Express API server, Prisma, and static assets.
+Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prisma**, and static assets.
+
+---
 
 ## Directory layout
 
 ```
-├── admin-server.js       # Express API (events, uploads, email, Prisma)
+├── server/
+│   └── admin-server.js   # Express API (events, uploads, email, Prisma)
 ├── index.html            # Vite entry
 ├── package.json
 ├── vite.config.js
@@ -16,13 +19,13 @@ Full-stack monorepo: React (Vite) frontend + Express API server, Prisma, and sta
 │   ├── site-configs.json
 │   └── *.db              # SQLite (local) – production uses MySQL
 ├── docs/                 # All project documentation
-│   ├── DEPLOY_*.md, HOSTINGER_GUIDE.md, RENDER_ENV.md, QA_REPORT.md, VISUAL_SITEMAP.md
+│   ├── ARCHITECTURE.md, DEPLOY_*.md, EMAIL_SYSTEM.md, HOSTINGER_GUIDE.md, …
 │   └── notes/
 ├── generated/            # Prisma client (generated)
 ├── logs/                 # PM2 / server logs (gitignored)
 ├── prisma/
 │   └── schema.prisma
-├── public/               # Static assets and built site (dist served from here in prod)
+├── public/               # Static assets and built site (dist served here in prod)
 │   ├── assets/           # Events, emails, CMS images (FTP to Hostinger in prod)
 │   └── data/             # events.json etc.
 ├── scripts/              # One-off and build scripts
@@ -30,7 +33,7 @@ Full-stack monorepo: React (Vite) frontend + Express API server, Prisma, and sta
 │   ├── migrate-data.js
 │   ├── smtp-diagnostics.js
 │   ├── test-email-engine.js
-│   └── output/           # Script outputs (e.g. lint_results.json)
+│   └── output/
 ├── src/                  # React app (Vite)
 │   ├── components/
 │   ├── pages/
@@ -39,6 +42,8 @@ Full-stack monorepo: React (Vite) frontend + Express API server, Prisma, and sta
 │   └── utils/
 └── src-backup-v6/        # Legacy backup (optional)
 ```
+
+---
 
 ## Stack
 
@@ -50,8 +55,16 @@ Full-stack monorepo: React (Vite) frontend + Express API server, Prisma, and sta
 | Assets   | FTP upload to Hostinger `public_html/assets/` |
 | Deploy   | Render (API), Hostinger (static/site), PM2 (self-hosted) |
 
+---
+
 ## Entry points
 
-- **Dev:** `npm run dev:admin` → Vite :4200 + Express :3001
-- **Prod:** `node admin-server.js` (serves `dist/` + API)
-- **PM2:** `pm2 start config/ecosystem.config.cjs`
+| Context | Command |
+|---------|---------|
+| **Dev** | `npm run dev:admin` → Vite :4200 + Express :3001 |
+| **Prod** | `node server/admin-server.js` or `npm start` (serves `dist/` + API) |
+| **PM2** | `pm2 start config/ecosystem.config.cjs` |
+
+---
+
+**See also:** [README](../README.md) · [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) · [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md)

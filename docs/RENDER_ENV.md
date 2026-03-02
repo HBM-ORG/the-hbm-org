@@ -1,4 +1,4 @@
-# Environment Variables for Render
+# ⚙️ Environment Variables (Render / Production)
 
 Set these in **Render Dashboard → Your Service → Environment** so the HBM admin, email queue, and automations work end-to-end.
 
@@ -41,7 +41,7 @@ SMTP can be configured in the **Admin → Email Architect → Automation Setting
 | `SMTP_PASS` | App password (Office 365) or mailbox password | (secret) |
 | `SMTP_FROM` | From header | `The HBM <office@thehbm.org>` |
 
-*Note: Automation config in the DB/JSON can override these; the server uses the config saved in the admin.*
+*Note: The server uses SMTP from Admin (automationConfig) first; if none is set there, it falls back to these env vars.*
 
 ## FTP – Hostinger (email images & assets)
 
@@ -81,4 +81,8 @@ Ensure **Hostinger MySQL** is created. On first deploy, run migrations from Rend
 - If you have a migration folder: `npx prisma migrate deploy`
 - To sync schema without migration history: `npx prisma db push`
 
-Then start the app with `node admin-server.js` (or your start command).
+Then start the app with `node server/admin-server.js` or `npm start` (or your start command).
+
+---
+
+**See also:** [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) · [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md) · [config/.env.example](../config/.env.example)

@@ -5,9 +5,9 @@ import NextEventHero from '../Events/NextEventHero';
 
 // This component wraps the public NextEventHero but injects "Edit Mode" props
 const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUpload, stats, registrations }) => {
-    
+    const isPastEvent = event?.date && new Date(event.date) < new Date();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [activeTab, setActiveTab] = useState('logistics'); // logistics, visuals, gallery, partners
+    const [activeTab, setActiveTab] = useState('logistics'); // logistics, content, visuals, gallery, partners
 
     // Listen for keyboard shortcut (Cmd+S)
     useEffect(() => {
@@ -80,10 +80,13 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
             {/* MAIN PREVIEW AREA (Large) */}
             <div className="flex-1 relative h-full bg-white shadow-2xl z-10 flex flex-col">
                 
-                {/* Visual Edit Toolbar (Floating) */}
-                <div className="absolute top-6 left-6 z-50 flex gap-2">
-                    <button onClick={onClose} className="bg-white/90 backdrop-blur text-gray-800 p-3 rounded-full shadow-lg hover:bg-white transition-all border border-gray-200 group">
-                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                {/* Visual Edit Toolbar (Floating) – Back button prominent */}
+                <div className="absolute top-6 left-6 z-50 flex gap-2 items-center">
+                    <button
+                        onClick={onClose}
+                        className="bg-white backdrop-blur text-gray-800 px-5 py-3 rounded-2xl shadow-lg hover:bg-gray-50 transition-all border-2 border-gray-200 flex items-center gap-2 font-black uppercase text-xs tracking-widest hover:border-purple-400"
+                    >
+                        <ArrowLeft className="w-5 h-5" /> Back
                     </button>
                     <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border border-gray-200 flex items-center gap-2 text-sm font-bold text-gray-500">
                         <Eye className="w-4 h-4" /> Preview Mode
@@ -115,10 +118,16 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
             {/* SETTINGS DRAWER (Side Panel) */}
             <div className={`w-[400px] bg-white/80 backdrop-blur-3xl border-l border-white/20 shadow-2xl transition-all duration-500 flex flex-col h-full ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full absolute right-0 h-full'}`}>
                 
-                {/* Drawer Header */}
-                <div className="p-6 border-b border-gray-200/50 flex justify-between items-center bg-white/40">
-                    <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Settings</h2>
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-black/5 rounded-lg transition-colors">
+                {/* Drawer Header – Back button visible in sidebar */}
+                <div className="p-6 border-b border-gray-200/50 flex items-center justify-between gap-3 bg-white/40">
+                    <button
+                        onClick={onClose}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 text-white font-black uppercase text-[10px] tracking-widest hover:bg-gray-800 transition-all shrink-0"
+                    >
+                        <ArrowLeft className="w-4 h-4" /> Back
+                    </button>
+                    <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent truncate">Settings</h2>
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-black/5 rounded-lg transition-colors shrink-0">
                         <X className="w-5 h-5 text-gray-500" />
                     </button>
                 </div>
@@ -126,7 +135,7 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
                 {/* Visual Tabs */}
                 <div className="px-6 pt-6">
                     <div className="flex bg-gray-100/50 p-1 rounded-xl mb-2 border border-gray-200/50">
-                        {['logistics', 'content', 'visuals', 'gallery', 'partners'].map(tab => (
+                        {(isPastEvent ? ['logistics', 'gallery'] : ['logistics', 'content', 'visuals', 'gallery', 'partners']).map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -150,7 +159,28 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
 
                     {activeTab === 'logistics' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                             {/* Status Toggle */}
+                             {/* Experience Title & Description (English) */}
+                             <div className="group">
+                                 <label className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Experience Title</label>
+                                 <input
+                                     type="text"
+                                     value={event.title?.en ?? event.title ?? ''}
+                                     onChange={(e) => onUpdate('title', { ...(event.title || {}), en: e.target.value })}
+                                     className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-black focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                                     placeholder="e.g. Community Evening"
+                                 />
+                             </div>
+                             <div className="group">
+                                 <label className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Brief Description</label>
+                                 <textarea
+                                     value={event.description?.en ?? (typeof event.description === 'string' ? event.description : '')}
+                                     onChange={(e) => onUpdate('description', { ...(event.description || {}), en: e.target.value })}
+                                     className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                                     placeholder="Short description"
+                                 />
+                             </div>
+                             {/* Status Toggle – only for upcoming events (gold button) */}
+                             {!isPastEvent && (
                              <div className="bg-gray-100/50 p-4 rounded-2xl border border-gray-200/50 flex items-center justify-between">
                                  <div>
                                      <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Event Status</h4>
@@ -158,11 +188,12 @@ const VisualEventEditor = ({ event, onUpdate, onSave, onClose, uploading, onUplo
                                  </div>
                                  <button 
                                      onClick={() => onUpdate('status', event.status === 'published' ? 'draft' : 'published')}
-                                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all ${event.status === 'published' ? 'bg-green-500 text-white shadow-lg shadow-green-200' : 'bg-amber-400 text-white shadow-lg shadow-amber-200'}`}
+                                     className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all bg-amber-400 text-white shadow-lg shadow-amber-200 hover:bg-amber-500"
                                  >
                                      Make {event.status === 'published' ? 'Draft' : 'Public'}
                                  </button>
                              </div>
+                             )}
 
                              {/* Date & Location Inputs */}
                             <div className="group">

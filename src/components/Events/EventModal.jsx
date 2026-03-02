@@ -9,10 +9,18 @@ const EventModal = ({ event, isOpen, onClose }) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const { lang } = useI18n();
   
-  // Reset selected image when modal opens or event changes
+  // Only show thumbnails that exist in Media Gallery (filter out empty/invalid)
+  const gallery = (event?.gallery || []).filter((item) => item && String(item).trim());
+
+  // Reset selected image when modal opens or event changes; clamp if gallery shrunk
   useEffect(() => {
     if (isOpen) setSelectedImage(0);
   }, [isOpen, event]);
+  useEffect(() => {
+    if (gallery.length > 0 && selectedImage >= gallery.length) {
+      setSelectedImage(Math.max(0, gallery.length - 1));
+    }
+  }, [gallery.length, selectedImage]);
 
   if (!event) return null;
 
@@ -98,8 +106,8 @@ const EventModal = ({ event, isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Gallery (for past events) */}
-                {event.gallery && event.gallery.length > 0 && (
+                {/* Gallery (for past events) – only items from Media Gallery */}
+                {gallery.length > 0 && (
                   <div className="mb-8">
                     <h3 className="text-2xl font-bold text-gray-900 mb-6 font-['Sora']">
                       {t({ en: 'Event Gallery', he: 'גלריית האירוע' }, lang)}
@@ -112,7 +120,7 @@ const EventModal = ({ event, isOpen, onClose }) => {
                     >
                       <img
                         src={(() => {
-                            const img = event.gallery[selectedImage];
+                            const img = gallery[selectedImage];
                             if (!img) return '';
                             return img.startsWith('http') || img.startsWith('/assets') ? img : `/assets/events/${event.folderName || 'general'}/${img}`;
                         })()}
@@ -122,7 +130,7 @@ const EventModal = ({ event, isOpen, onClose }) => {
 
                       {/* Navigation dots */}
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                        {event.gallery.map((_, index) => (
+                        {gallery.map((_, index) => (
                           <button
                             key={index}
                             onClick={() => setSelectedImage(index)}
@@ -136,9 +144,9 @@ const EventModal = ({ event, isOpen, onClose }) => {
                       </div>
                     </motion.div>
 
-                    {/* Thumbnail grid */}
+                    {/* Thumbnail grid – only Media Gallery items */}
                     <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                      {event.gallery.map((img, index) => (
+                      {gallery.map((img, index) => (
                         <motion.button
                           key={index}
                           onClick={() => setSelectedImage(index)}

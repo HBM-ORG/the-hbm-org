@@ -346,7 +346,7 @@ const AdminDashboard = () => {
       id: newId,
       title: { en: "New Event", he: "אירוע חדש" },
       date: "2026-01-01",
-      location: "TBD",
+      location: "HBM office, Raanana",
       description: { en: "Description here...", he: "תיאור כאן..." },
       image: "",
       folderName: folderName,
@@ -374,12 +374,17 @@ const AdminDashboard = () => {
 
   const handleSaveEvent = (e) => {
     if (e) e.preventDefault();
-    let updatedEvents;
+    const existing = events.find((ev) => ev.id === currentEvent.id);
+    // Preserve isLocked and other meta from existing event so lock survives save/refresh
     const eventToSave = {
       ...currentEvent,
       imageCount: galleryImages.length,
+      ...(existing && {
+        isLocked: existing.isLocked,
+      }),
     };
-    if (events.find((ev) => ev.id === eventToSave.id)) {
+    let updatedEvents;
+    if (existing) {
       updatedEvents = events.map((ev) =>
         ev.id === eventToSave.id ? eventToSave : ev,
       );
@@ -490,36 +495,56 @@ const AdminDashboard = () => {
     }
   };
 
+  const MEDIA_GALLERY_MAX = 20;
+
   const handleGalleryUpload = async (e) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    // Auto-generate folderName if missing
+    const currentCount = (currentEvent.gallery || []).length;
+    if (currentCount >= MEDIA_GALLERY_MAX) {
+      alert(`Media Gallery is limited to ${MEDIA_GALLERY_MAX} items. Remove some to add more.`);
+      e.target.value = "";
+      return;
+    }
+
     let folderName = currentEvent.folderName;
     if (!folderName) {
       folderName = `event-${currentEvent.id || Date.now()}`;
       handleChange("folderName", folderName);
     }
 
-    const formData = new FormData();
-    formData.append("folderName", folderName);
-    for (let i = 0; i < files.length; i++) formData.append("images", files[i]);
-
+    const base = import.meta.env.DEV
+      ? `http://${window.location.hostname}:3001`
+      : getApiBase();
     setUploading(true);
+    const addedPaths = [];
     try {
-      const base = import.meta.env.DEV
-        ? `http://${window.location.hostname}:3001`
-        : getApiBase();
-      const res = await fetch(`${base}/api/upload-image`, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.success) {
+      const maxToAdd = MEDIA_GALLERY_MAX - currentCount;
+      for (let i = 0; i < Math.min(files.length, maxToAdd); i++) {
+        const formData = new FormData();
+        formData.append("folderName", folderName);
+        formData.append("asset", files[i]);
+        const res = await fetch(`${base}/api/upload-asset`, {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.success && data.filename) {
+          const fullPath = `/assets/events/${folderName}/${data.path || data.filename}`;
+          addedPaths.push(fullPath);
+        }
+      }
+      if (addedPaths.length > 0) {
+        const newGallery = [...(currentEvent.gallery || []), ...addedPaths].slice(0, MEDIA_GALLERY_MAX);
+        handleChange("gallery", newGallery);
         await fetchGalleryImages(folderName);
       }
+      if (files.length > maxToAdd && maxToAdd > 0) {
+        alert(`Only ${maxToAdd} item(s) added. Media Gallery max is ${MEDIA_GALLERY_MAX}.`);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Bulk upload error:", err);
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -563,7 +588,7 @@ const AdminDashboard = () => {
       });
       const data = await res.json();
       if (data.success) {
-        const fullPath = `/assets/events/${folderName}/${data.filename}`;
+        const fullPath = data.url || `/assets/events/${folderName}/${data.path || data.filename}`;
 
         // Handle general event uploads
         if (currentEvent && currentEvent.folderName) {
@@ -1401,21 +1426,21 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <div className="flex gap-2 bg-gray-100 p-1 rounded-2xl">
-                    {[
-                      "essentials",
-                      "media",
-                      "content",
-                      "settings",
-                      "registrations",
-                    ].map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all ${activeTab === tab ? "bg-white text-gray-900 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
-                      >
-                        {tab}
-                      </button>
-                    ))}
+                    {(() => {
+                      const isPastEvent = currentEvent?.date && new Date(currentEvent.date) < new Date();
+                      const tabs = isPastEvent
+                        ? ["essentials", "media"]
+                        : ["essentials", "media", "content", "settings", "registrations"];
+                      return tabs.map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setActiveTab(tab)}
+                          className={`px-4 py-2 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all ${activeTab === tab ? "bg-white text-gray-900 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+                        >
+                          {tab}
+                        </button>
+                      ));
+                    })()}
                   </div>
                 </div>
 
@@ -1425,28 +1450,16 @@ const AdminDashboard = () => {
                       <div className="space-y-6">
                         <div>
                           <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
-                            Experience Title (EN)
+                            Experience Title
                           </label>
                           <input
                             type="text"
-                            value={currentEvent.title.en || currentEvent.title}
+                            value={currentEvent.title?.en ?? currentEvent.title ?? ""}
                             onChange={(e) =>
                               handleChange("title", e.target.value, "en")
                             }
                             className="w-full p-4 bg-gray-50 rounded-2xl border-none font-black text-gray-900"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
-                            Experience Title (HE)
-                          </label>
-                          <input
-                            type="text"
-                            value={currentEvent.title.he || ""}
-                            onChange={(e) =>
-                              handleChange("title", e.target.value, "he")
-                            }
-                            className="w-full p-4 bg-gray-50 rounded-2xl border-none font-black text-gray-900 text-right"
+                            placeholder="e.g. Community Evening"
                           />
                         </div>
                         <div>
@@ -1479,18 +1492,19 @@ const AdminDashboard = () => {
                         </div>
                         <div>
                           <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
-                            Brief Description (EN)
+                            Brief Description
                           </label>
                           <textarea
                             rows="5"
                             value={
-                              currentEvent.description.en ||
-                              currentEvent.description
+                              currentEvent.description?.en ??
+                              (typeof currentEvent.description === "string" ? currentEvent.description : "")
                             }
                             onChange={(e) =>
                               handleChange("description", e.target.value, "en")
                             }
                             className="w-full p-4 bg-gray-50 rounded-2xl border-none font-bold text-gray-700 leading-relaxed"
+                            placeholder="Short description of the event"
                           />
                         </div>
                       </div>
@@ -1942,15 +1956,31 @@ const AdminDashboard = () => {
                             placeholder="/assets/events/.../hero.mp4"
                           />
                           <label className="cursor-pointer bg-white text-gray-900 px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-gray-100 transition-all">
-                            Upload MP4
+                            Upload video (MP4 / WebM)
                             <input
                               type="file"
                               className="hidden"
-                              accept="video/mp4"
+                              accept="video/mp4,video/webm,video/quicktime"
                               onChange={(e) => handleAssetUpload(e, "hero")}
                             />
                           </label>
                         </div>
+                        {currentEvent.heroVideo && (
+                          <div className="mt-6 rounded-2xl overflow-hidden bg-black/50 aspect-video max-h-64">
+                            <video
+                              key={currentEvent.heroVideo}
+                              src={
+                                currentEvent.heroVideo.startsWith("http")
+                                  ? currentEvent.heroVideo
+                                  : currentEvent.heroVideo
+                              }
+                              controls
+                              preload="auto"
+                              className="w-full h-full object-contain"
+                              playsInline
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -1978,6 +2008,7 @@ const AdminDashboard = () => {
                             </label>
                           </div>
                         </div>
+                        {currentEvent?.date && new Date(currentEvent.date) >= new Date() && (
                         <div>
                           <label className="block text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">
                             Card Thumbnail (List)
@@ -2004,6 +2035,7 @@ const AdminDashboard = () => {
                             </label>
                           </div>
                         </div>
+                        )}
                       </div>
 
                       <div className="bg-gray-50 p-8 rounded-3xl border border-dashed border-gray-200">
@@ -2011,8 +2043,17 @@ const AdminDashboard = () => {
                           <h3 className="text-xl font-black flex items-center gap-2">
                             <ImageIcon className="w-5 h-5 text-gray-400" />{" "}
                             Media Gallery
+                            <span className="text-xs font-bold text-gray-400 normal-case tracking-normal">
+                              (max 20)
+                            </span>
                           </h3>
-                          <label className="cursor-pointer bg-gray-900 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center gap-2 hover:bg-black transition-all">
+                          <label
+                            className={`cursor-pointer px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center gap-2 transition-all ${
+                              (galleryImages.length >= 20 || uploading)
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "bg-gray-900 text-white hover:bg-black"
+                            }`}
+                          >
                             {uploading ? (
                               "Processing..."
                             ) : (
@@ -2026,7 +2067,7 @@ const AdminDashboard = () => {
                               accept="image/*,video/*"
                               multiple
                               onChange={handleGalleryUpload}
-                              disabled={uploading}
+                              disabled={uploading || galleryImages.length >= 20}
                             />
                           </label>
                         </div>

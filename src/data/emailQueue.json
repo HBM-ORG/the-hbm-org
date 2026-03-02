@@ -516,7 +516,7 @@
   },
   {
     "id": "59ee8965-f1fc-491f-84e6-d377030fca3f",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772458152070,
     "data": {
       "id": 1772026152069,
@@ -543,7 +543,8 @@
     "stepType": "email",
     "flowId": "post_event_warmth",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "6428892c-592f-4ca3-a650-1473cb65112e",
@@ -673,7 +674,7 @@
   },
   {
     "id": "9e9b78cc-0e95-4b4e-a0e7-4452def51b42",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772462005156,
     "data": {
       "id": 1772030005155,
@@ -700,7 +701,8 @@
     "stepType": "email",
     "flowId": "post_event_warmth",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "74bff201-d114-400d-8cfa-fc9e0d52be82",
@@ -866,7 +868,7 @@
   },
   {
     "id": "21cffd03-d0cf-46d9-91c8-42309c708710",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772462229665,
     "data": {
       "id": 1772030229662,
@@ -893,7 +895,8 @@
     "stepType": "email",
     "flowId": "post_event_warmth",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "b668308e-5369-49d7-8a5a-fbfa01dde522",
@@ -1040,7 +1043,7 @@
   },
   {
     "id": "37b2470d-f6d6-46e6-acfb-e9268630cdbf",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772469897494,
     "data": {
       "id": 1772037897492,
@@ -1067,7 +1070,8 @@
     "stepType": "email",
     "flowId": "post_event_warmth",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "f2efee94-0086-46ab-b3f4-2b43c6dba51f",
@@ -1197,7 +1201,7 @@
   },
   {
     "id": "d9a15017-665c-4d90-91f1-322143ee73f7",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772470883303,
     "data": {
       "id": 1772038883301,
@@ -1224,7 +1228,8 @@
     "stepType": "email",
     "flowId": "post_event_warmth",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "6058157b-522f-4077-9618-26ee20581c19",

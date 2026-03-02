@@ -175,36 +175,34 @@
       "blur": 0,
       "videoScale": 1,
       "overlayOpacity": 30
-    }
+    },
+    "isLocked": true
   },
   {
-    "id": 17,
+    "id": 18,
     "title": {
-      "en": "New Event",
+      "en": "New Eventyh",
       "he": "אירוע חדש"
     },
     "date": "2026-01-01",
-    "location": "TBD",
+    "location": "HBM office, Raanana",
     "description": {
-      "en": "Description here...",
+      "en": "Description here...j",
       "he": "תיאור כאן..."
     },
     "image": "",
-    "folderName": "event-1771494140494",
-    "imageCount": 0,
+    "folderName": "event-1772467096439",
+    "imageCount": 3,
     "registrationLink": "",
-    "gallery": [],
+    "gallery": [
+      "/assets/events/event-1772467096439/1772467112042_4_YouTube.png",
+      "/assets/events/event-1772467096439/1772467112067_45-DSC_6460__1_.jpg"
+    ],
     "participants": 0,
     "tags": [],
     "status": "draft",
-    "heroVideo": "",
-    "partners": [
-      {
-        "name": "New PartnerTest Partner",
-        "logo": "",
-        "link": ""
-      }
-    ],
+    "heroVideo": "/assets/events/event-1772467096439/1772467106453_Meeter_New1.mp4",
+    "partners": [],
     "faqs": [],
     "highlights": [],
     "socialProof": {

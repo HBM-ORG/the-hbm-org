@@ -109,6 +109,7 @@ const NextEventHero = ({
               autoPlay
               loop
               muted
+              playsInline
               className="w-full h-full object-cover transition-all duration-300"
               style={{
                 filter: `brightness(${brightness}%) blur(${blur}px)`,

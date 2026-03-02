@@ -1,8 +1,7 @@
-# 🎯 HBM Organization Platform - QA Report
+# 🎯 QA Report (The HBM)
 
-**Generated:** February 25, 2026  
-**Last Updated:** February 25, 2026 (pre-launch QA)  
-**Status:** ✅ **READY FOR HOSTINGER DEPLOYMENT**
+**Status:** ✅ Ready for deployment (Hostinger / Render)  
+**Last updated:** February 2026
 
 ---
 
@@ -17,7 +16,7 @@ The HBM platform has successfully completed comprehensive QA testing. All critic
 - ✅ Production build artifact complete (`npm run build` succeeds)
 - ⚠️ Minor Tailwind linting issues (cosmetic, non-blocking)
 
-**Deployment Recommendation:** PROCEED with Hostinger deployment after addressing one critical security issue below.
+**Deployment:** Proceed after setting env (see [RENDER_ENV.md](RENDER_ENV.md)) and SMTP for email ([EMAIL_SYSTEM.md](EMAIL_SYSTEM.md)).
 
 ---
 
@@ -252,14 +251,14 @@ File Breakdown:
 ```bash
 # 1. Upload files to Hostinger
 scp -r dist/* your-user@admin.thehbm.org:/public_html/
-scp admin-server.js your-user@admin.thehbm.org:/app/
+scp -r server your-user@admin.thehbm.org:/app/
 scp .env your-user@admin.thehbm.org:/app/ (secure method)
 
 # 2. Install dependencies
 ssh your-user@admin.thehbm.org "cd /app && npm install"
 
 # 3. Start admin server
-npm start  # or pm2 start admin-server.js
+npm start  # or pm2 start server/admin-server.js
 
 # 4. Configure reverse proxy (via Hostinger panel)
 Target: http://localhost:3001
