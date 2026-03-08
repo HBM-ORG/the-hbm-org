@@ -81,7 +81,10 @@ const Events = () => {
 
   return (
     <div className="min-h-screen bg-[#FAF9F5] overflow-x-hidden">
-      <SEO title={t(ui.events.seoTitle, lang)} description={t(ui.events.seoDesc, lang)} />
+      <SEO
+        title={t(ui.events.seoTitle, lang)}
+        description={t(ui.events.seoDesc, lang)}
+      />
 
       {/* 1. Header Section (Who We Are Style) */}
       <section className="bg-[#FAF9F5] pt-20 pb-16">
@@ -188,7 +191,7 @@ const Events = () => {
         eyebrow={{ en: "Go deeper", he: "העמיקו" }}
         title={{ en: "Explore the Growth Library", he: "גלו את ספריית הצמיחה" }}
         description={{
-          en: "Books, podcasts, and videos for personal growth and human connection.",
+          en: "Books, and videos for personal growth and human connection.",
           he: "ספרים, פודקאסטים וסרטונים לצמיחה אישית וחיבור אנושי.",
         }}
         buttonText={{ en: "Explore Knowledge", he: "גלו את הידע" }}
