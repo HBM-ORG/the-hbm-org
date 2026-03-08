@@ -1,0 +1,13 @@
+---
+description: Local is source of truth; mirror to production without changing local state
+alwaysApply: true
+---
+
+# Local environment is the sole source of truth
+
+- **Source of truth**: The local environment (localhost:4200) is the sole source of truth.
+- **Do not modify** unless explicitly instructed to update content:
+  - `src/pages/Events.jsx`
+  - `src/data/eventsConfig.js`
+  - Any local data files
+- **Your job**: Mirror the local state to production by **removing API dependencies**, not to change the local state itself.

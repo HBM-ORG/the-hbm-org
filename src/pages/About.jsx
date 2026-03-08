@@ -183,7 +183,7 @@ export default function About() {
   return (
     <div className="min-h-screen">
       <SEO
-        title={t({ en: "About Us | The HBM", he: "מי אנחנו | The HBM" }, lang)}
+        title={t({ en: "The HBM - About Us", he: "The HBM - עלינו" }, lang)}
         description={t(
           {
             en: "Meet the team behind The Human Being Movement. We are dedicated to bringing people together through authentic 8-minute connections.",
@@ -504,23 +504,30 @@ export default function About() {
                     <p className="text-sm font-bold text-hbm-orange">
                       {lang === "he" ? "ביו" : "Bio"}:{" "}
                     </p>
-                    {typeof selectedMember.bio === "string" ? (
-                      <p className="text-sm text-gray-500 leading-relaxed break-words">
-                        {selectedMember.bio}
-                      </p>
-                    ) : (
-                      (Array.isArray(t(selectedMember.bio, lang))
-                        ? t(selectedMember.bio, lang)
-                        : []
-                      ).map((para, idx) => (
+                    {(() => {
+                      const bioVal = t(selectedMember.bio, lang);
+                      const paras = Array.isArray(bioVal)
+                        ? bioVal
+                        : bioVal != null && String(bioVal).trim()
+                          ? [String(bioVal)]
+                          : [];
+                      if (paras.length === 0)
+                        return (
+                          <p className="text-sm text-gray-500 leading-relaxed break-words">
+                            {typeof selectedMember.bio === "string"
+                              ? selectedMember.bio
+                              : ""}
+                          </p>
+                        );
+                      return paras.map((para, idx) => (
                         <p
                           key={idx}
                           className="text-sm text-gray-500 leading-relaxed mb-2 break-words"
                         >
                           {para}
                         </p>
-                      ))
-                    )}
+                      ));
+                    })()}
                   </div>
                   {/* Fun Fact (optional, secondary) */}
                   {(() => {
@@ -553,7 +560,10 @@ export default function About() {
                           :{" "}
                         </p>
                         {facts.map((fact, idx) => (
-                          <p key={idx} className="text-sm text-gray-500 italic break-words">
+                          <p
+                            key={idx}
+                            className="text-sm text-gray-500 italic break-words"
+                          >
                             {fact}
                           </p>
                         ))}

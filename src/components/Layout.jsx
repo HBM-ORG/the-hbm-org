@@ -40,9 +40,9 @@ export default function Layout() {
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col w-full">
+    <div className="min-h-screen flex flex-col w-full bg-hbm-cream">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 bg-hbm-cream">
         <PageErrorBoundary>
           <Outlet />
         </PageErrorBoundary>

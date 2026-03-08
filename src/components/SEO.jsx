@@ -3,8 +3,8 @@ import { useLocation } from 'react-router-dom';
 
 // Canonical production origin for OG tags, canonical URLs, and absolute image resolution (Hostinger).
 const siteUrl = 'https://www.thehbm.org';
-// Default OG image: use 1200×630 for rich previews on WhatsApp/social. Custom OG images should also be 1200×630.
-const defaultImage = 'https://www.thehbm.org/wp-content/uploads/2025/06/Logo-and-Tagline.png';
+// Default OG image: 1200×630 served from same origin so link previews always show an image. File: public/og-default.png
+const defaultImage = siteUrl + '/og-default.png';
 
 /** Ensures og:image is always an absolute URL. Missing/empty image → defaultImage (fallback so link preview is never broken). */
 function ensureAbsoluteImage(url) {
@@ -16,80 +16,80 @@ function ensureAbsoluteImage(url) {
 
 const pageSEO = {
   '/': {
-    title: 'The HBM | The Human Being Movement | 8-Minute Connections',
-    description: 'The engine for human connection. HBM creates meaningful 8-minute conversations and networking events.',
-    keywords: 'HBM, Human Being Movement, Networking Israel, Tel Aviv Events, 8 Minute Conversations',
+    title: 'The HBM - Bringing People Together',
+    description: 'Discover a movement dedicated to authentic human interaction. We create spaces where meaningful stories are shared and real bonds are formed.',
+    keywords: 'HBM, Human Being Movement, Networking Israel, Tel Aviv Events, Human Connection',
     image: defaultImage,
   },
   '/about': {
-    title: 'About The HBM | Our Mission to Connect Humanity',
-    description: 'Founded by Elad Maor Hefets, HBM believes connection is a need. Learn about our vision to end loneliness.',
+    title: 'The HBM - Our Mission & Vision',
+    description: 'Meet the people behind the movement. We believe that genuine interaction is the fundamental antidote to modern loneliness.',
     keywords: 'HBM Founders, Mission for Connection, Social Impact Israel',
     image: defaultImage,
   },
   '/meeter': {
-    title: 'The Meeter Experience | Redefining Networking Tech',
-    description: 'Discover the science behind The Meeter. Authentic professional and personal connections in 8 minutes.',
-    keywords: 'Networking Psychology, 8 Minute Rule, Connection Technology',
+    title: 'The HBM - The Meeter Experience',
+    description: 'A new way to interact. Our guided format turns brief encounters into lasting relationships through structured, high-impact dialogue.',
+    keywords: 'Networking Psychology, Connection Technology, The Meeter',
     image: defaultImage,
   },
   '/meeter/who': {
-    title: 'Who Is The Meeter For? | Universities, Companies, Hotels',
-    description: 'The Meeter for organizations: universities, companies, and hotels. Meaningful 8-minute connections at scale.',
+    title: 'The HBM - For Organizations',
+    description: 'Empower your community. Tailored solutions for universities, innovative workplaces, and hotels looking to foster deeper social layers.',
     keywords: 'B2B Networking, Corporate Events, University Networking, Hotel Experiences',
     image: defaultImage,
   },
   '/meeter/features': {
-    title: 'The Meeter Features | How 8-Minute Connections Work',
-    description: 'Smart matching, guided prompts, and real feedback. See how The Meeter creates authentic connections.',
-    keywords: 'Networking App, Connection Technology, 8 Minute Meetings',
+    title: 'The HBM - Behind the Science',
+    description: 'From psychological prompts to smart matching. See how we facilitate the perfect atmosphere for people to truly open up.',
+    keywords: 'Networking App, Connection Technology, Guided Dialogue',
     image: defaultImage,
   },
   '/knowledge': {
-    title: 'The Growth Library | HBM Knowledge Base & Insights',
-    description: 'Dive deep into human behavior, connectivity, and social science. Resources for community builders.',
+    title: 'The HBM - Wisdom & Insights',
+    description: 'Explore curated resources on human behavior, community building, and the art of hosting impactful social experiences.',
     keywords: 'Connection Science, Social Dynamics, Community Building Blog',
     image: defaultImage,
   },
   '/events': {
-    title: 'HBM Networking Events | Israel 2025-2026 Experience',
-    description: 'Join the next HBM experience. Browse our gallery and book your spot for upcoming networking meetups.',
+    title: 'The HBM - Join an Experience',
+    description: 'Step out of your comfort zone. Browse our upcoming gatherings and find your next unforgettable encounter in an HBM event.',
     keywords: 'Upcoming Events Tel Aviv, Israel Networking Calendar, Event Gallery',
     image: defaultImage,
   },
   '/events/register': {
-    title: 'Register for HBM Event | Reserve Your Spot',
-    description: 'Reserve your spot at the next HBM networking event. 8-minute connections that matter.',
+    title: 'The HBM - Register',
+    description: 'Join us for an evening of structured interaction. Reserve your place for a night of real stories and high-quality human time.',
     keywords: 'Event Registration, HBM Events, Networking Registration',
     image: defaultImage,
   },
   '/register': {
-    title: 'Register for HBM Event | Reserve Your Spot',
-    description: 'Reserve your spot at the next HBM networking event. 8-minute connections that matter.',
+    title: 'The HBM - Register',
+    description: 'Join us for an evening of structured interaction. Reserve your place for a night of real stories and high-quality human time.',
     keywords: 'Event Registration, HBM Events, Networking Registration',
     image: defaultImage,
   },
   '/contact': {
-    title: 'Contact The HBM | Get in Touch',
-    description: 'Reach out to The HBM team. Questions, partnerships, or just say hello—we\'re here for human connection.',
+    title: 'The HBM - Let\'s Connect',
+    description: 'Have a question or a partnership idea? Reach out to our team and let\'s explore how we can bring your community closer together.',
     keywords: 'Contact HBM, Get in Touch, Partnership, Support',
     image: defaultImage,
   },
   '/cookie-policy': {
-    title: 'Cookie Policy | The HBM',
-    description: 'How The HBM uses cookies and similar technologies. Your privacy matters.',
+    title: 'The HBM - Cookie Policy',
+    description: 'Transparency in how we use cookies and similar technologies to enhance your experience within our community.',
     keywords: 'Cookie Policy, Privacy, The HBM',
     image: defaultImage,
   },
   '/termsofuse': {
-    title: 'Terms of Use | The HBM',
-    description: 'Terms of use for The HBM website and services. Please read before using our site.',
+    title: 'The HBM - Terms of Use',
+    description: 'Please read our terms of use carefully before engaging with our website and services.',
     keywords: 'Terms of Use, Legal, The HBM',
     image: defaultImage,
   },
   '/privacypolicy': {
-    title: 'Privacy Policy | The HBM',
-    description: 'The HBM privacy policy. How we collect, use, and protect your personal information.',
+    title: 'The HBM - Privacy Policy',
+    description: 'Your privacy matters. Learn how we protect your personal information while you focus on building real relationships.',
     keywords: 'Privacy Policy, Data Protection, The HBM',
     image: defaultImage,
   },
@@ -122,7 +122,8 @@ export default function SEO({
 
   const resolvedTitle = titleProp || seo.title;
   const resolvedDescription = descProp || seo.description;
-  const resolvedImage = ensureAbsoluteImage(imageProp || seo.image || defaultImage);
+  // Locked for production: og:image always https://www.thehbm.org/og-default.png
+  const resolvedImage = defaultImage;
   const canonicalUrl = `${siteUrl}${safePath}`;
 
   // Organization Schema (Global)
