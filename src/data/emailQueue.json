@@ -1386,7 +1386,7 @@
   },
   {
     "id": "897ac5f8-ca72-4536-b76e-c644e31340b0",
-    "status": "pending",
+    "status": "failed",
     "scheduledFor": 1772572853974,
     "data": {
       "id": 1772140853972,
@@ -1413,7 +1413,8 @@
     "stepType": "email",
     "flowId": "post_event_warmth",
     "attempts": 0,
-    "sequenceId": "welcome_journey"
+    "sequenceId": "welcome_journey",
+    "error": "getaddrinfo ENOTFOUND smtp.office365.com"
   },
   {
     "id": "6883712c-37bc-481f-a658-4333a9682bb0",

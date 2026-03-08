@@ -66,23 +66,23 @@ export default function Layout() {
             <div className="relative bg-white rounded-2xl shadow-xl px-4 py-3 max-w-[200px] border border-gray-100">
               <button
                 onClick={() => setShowTooltip(false)}
-                className="absolute -top-2 -right-2 w-5 h-5 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors"
+                className="absolute -top-2 -right-2 w-5 h-5 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors rtl:right-auto rtl:-left-2"
               >
                 <X className="w-3 h-3 text-gray-500" />
               </button>
-              <p className="text-xs font-semibold text-hbm-dark leading-snug">
+              <p className="text-xs font-semibold text-hbm-dark leading-snug" dir="auto">
                 {t({
                   en: 'Is your next opportunity one click away?',
                   he: 'ההזדמנות הבאה שלך במרחק קליק אחד? 🌿'
                 }, lang)}
               </p>
               {/* Speech bubble tail */}
-              <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white border-r border-b border-gray-100 rotate-45" />
+              <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white border-r border-b border-gray-100 rotate-45 rtl:right-auto rtl:left-6" />
             </div>
           </div>
         )}
 
-        <span className="whatsapp-label">Contact Us</span>
+        <span className="whatsapp-label" dir="auto">{t({ en: 'Contact Us', he: 'צרו קשר', es: 'Contáctanos', fr: 'Contactez-nous', de: 'Kontakt', ar: 'اتصل بنا' }, lang)}</span>
         <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
           className="whatsapp-float" aria-label="Contact us on WhatsApp">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

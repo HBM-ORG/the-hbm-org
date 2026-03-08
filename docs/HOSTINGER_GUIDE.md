@@ -21,8 +21,13 @@ This generates the `dist/` folder.
 | `dist/` | Static frontend | `public_html/` or app root |
 | `server/` (admin-server.js) | Backend Node server | Application root |
 | `package.json` | Dependencies | Application root |
-| `public/logos/`, `public/assets/` | Brand and media | Same structure under `public/` |
+| `public/logos/`, `public/assets/` | Brand and media (incl. **event images**) | Same structure under `public/` |
+| `public/data/events.json` | **Events + gallery paths** (must match assets on server) | `public/data/` |
 | `src/data/` | JSON data (CMS, regs) | Same structure under `src/data/` |
+
+**Important for event images:** Upload the entire `public/assets/events/` folder (all event subfolders with their JPG/PNG/MP4 files). Include every event folder and subfolders such as `cards/` (used by the "Important Details" 3 cards). The site and admin load images from `/assets/events/...`. If you ran `node scripts/convert-heic-to-jpg.js`, upload both the converted JPGs and the updated `public/data/events.json` so the live site shows all gallery images.
+
+**Checklist so everything looks like local:** After deploy, ensure `public/assets/events/<eventFolder>/` contains all images (gallery, hero, cards). If you use FTP (FTP_HOST, FTP_USER, FTP_PASS in production), new uploads from the admin go straight to Hostinger; for existing local uploads, upload the same `public/assets/events/` tree to the server.
 
 **Do not upload `.env`.** Set all secrets in the Hostinger panel (see below).
 

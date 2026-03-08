@@ -65,6 +65,14 @@ export const getEventsByYear = (data = eventsConfig) => {
  */
 export const getEventDateParts = (dateStr) => {
     const date = parseDate(dateStr);
+    if (Number.isNaN(date.getTime())) {
+        const fallback = new Date();
+        return {
+            month: fallback.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
+            day: fallback.getDate().toString(),
+            year: fallback.getFullYear().toString(),
+        };
+    }
     const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
     const day = date.getDate().toString();
     const year = date.getFullYear().toString();

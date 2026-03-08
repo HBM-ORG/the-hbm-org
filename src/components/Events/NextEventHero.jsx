@@ -24,8 +24,12 @@ const NextEventHero = ({
   onUpdate = () => {},
   onUpload = () => {},
   visuals = {},
+  /** When set (e.g. in admin preview), asset paths are loaded from this origin so images show correctly */
+  assetBase = "",
 }) => {
   const { lang } = useI18n();
+  /** When true, the entire event registration page is shown in English only (no Hebrew). */
+  const effectiveLang = event?.contentEnglishOnly ? "en" : lang;
   const [activeFaq, setActiveFaq] = useState(null);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [formState, setFormState] = useState({
@@ -42,6 +46,9 @@ const NextEventHero = ({
   const imageBubbles = event.imageBubbles || [];
   const freeText = event.freeText || "";
   const showPartnership = event.showPartnership ?? true;
+
+  const resolveAsset = (url) =>
+    url && assetBase && String(url).startsWith("/") ? assetBase + url : url;
 
   // Visuals from props or defaults
   const brightness = visuals.brightness || 100;
@@ -105,7 +112,7 @@ const NextEventHero = ({
         <div className="absolute inset-0 z-0 h-full w-full bg-gray-900">
           {event.heroVideo ? (
             <video
-              src={event.heroVideo}
+              src={resolveAsset(event.heroVideo)}
               autoPlay
               loop
               muted
@@ -118,7 +125,7 @@ const NextEventHero = ({
             />
           ) : (
             <img
-              src={event.heroImage || event.image || "/assets/default-hero.jpg"}
+              src={resolveAsset(event.heroImage || event.image) || "/assets/default-hero.jpg"}
               alt="Event Background"
               className="w-full h-full object-cover transition-all duration-300"
               style={{
@@ -162,8 +169,8 @@ const NextEventHero = ({
           >
             <div className="px-5 py-2 rounded-full border border-white/30 bg-white/10 backdrop-blur-md text-white text-xs font-bold tracking-widest uppercase shadow-lg">
               {isPast
-                ? t({ en: "PAST EVENT", he: "אירוע עבר" }, lang)
-                : t({ en: "UPCOMING EXPERIENCE", he: "החוויה הבאה" }, lang)}
+                ? t({ en: "PAST EVENT", he: "אירוע עבר" }, effectiveLang)
+                : t({ en: "UPCOMING EXPERIENCE", he: "החוויה הבאה" }, effectiveLang)}
             </div>
           </motion.div>
 
@@ -173,7 +180,7 @@ const NextEventHero = ({
             animate={{ opacity: 1, scale: 1 }}
             className="text-6xl md:text-8xl font-black text-white mb-2 tracking-tighter drop-shadow-2xl relative group"
           >
-            {t(event.title, lang)}
+            {t(event.title, effectiveLang)}
           </motion.h1>
 
           <motion.p
@@ -182,7 +189,7 @@ const NextEventHero = ({
             transition={{ delay: 0.1 }}
             className="text-xl md:text-2xl text-white/90 font-medium mb-12 max-w-2xl mx-auto drop-shadow-lg leading-relaxed relative"
           >
-            {t(event.description, lang)}
+            {t(event.description, effectiveLang)}
           </motion.p>
 
           {/* Countdown & Registration - BUBBLE DESIGN RESTORED */}
@@ -207,7 +214,7 @@ const NextEventHero = ({
                   <div className="flex flex-col items-center">
                     <h3 className="text-2xl font-black text-white mb-2 tracking-tight">
                       {new Date(event.date).toLocaleDateString(
-                        lang === "he" ? "he-IL" : "en-US",
+                        effectiveLang === "he" ? "he-IL" : "en-US",
                         { day: "numeric", month: "long", year: "numeric" },
                       )}
                     </h3>
@@ -225,7 +232,7 @@ const NextEventHero = ({
                       }}
                       className="w-full py-5 rounded-2xl font-black text-white text-xl shadow-xl flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95 border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-xl"
                     >
-                      {t({ en: "Reserve My Spot", he: "שריין מקום" }, lang)}
+                      {t({ en: "Reserve My Spot", he: "שריין מקום" }, effectiveLang)}
                       <ArrowRight className="w-6 h-6" />
                     </button>
                   </div>
@@ -237,7 +244,7 @@ const NextEventHero = ({
                           <CheckCircle className="w-8 h-8 text-[#39ff14]" />
                         </div>
                         <h3 className="text-white font-bold text-2xl mb-1">
-                          {t({ en: "You're In!", he: "אתם בפנים!" }, lang)}
+                          {t({ en: "You're In!", he: "אתם בפנים!" }, effectiveLang)}
                         </h3>
                         <p className="text-white/60 text-sm mb-6">
                           {t(
@@ -245,14 +252,14 @@ const NextEventHero = ({
                               en: "Check your email for details.",
                               he: "בדקו את המייל לפרטי הרישום.",
                             },
-                            lang,
+                            effectiveLang,
                           )}
                         </p>
 
                         <CalendarDropdown
                           eventData={{
-                            title: t(event.title, lang),
-                            description: t(event.description, lang),
+                            title: t(event.title, effectiveLang),
+                            description: t(event.description, effectiveLang),
                             location:
                               event.locationParams?.addressText ||
                               event.location,
@@ -269,7 +276,7 @@ const NextEventHero = ({
                           onClick={() => setIsRegisterOpen(false)}
                           className="mt-8 text-white/40 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
                         >
-                          {t({ en: "Close", he: "סגור" }, lang)}
+                          {t({ en: "Close", he: "סגור" }, effectiveLang)}
                         </button>
                       </div>
                     ) : (
@@ -279,7 +286,7 @@ const NextEventHero = ({
                             type="text"
                             placeholder={t(
                               { en: "Full Name", he: "שם מלא" },
-                              lang,
+                              effectiveLang,
                             )}
                             required
                             className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm"
@@ -295,7 +302,7 @@ const NextEventHero = ({
                             type="tel"
                             placeholder={t(
                               { en: "Phone Number", he: "מספר טלפון" },
-                              lang,
+                              effectiveLang,
                             )}
                             required
                             className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm"
@@ -312,7 +319,7 @@ const NextEventHero = ({
                           type="email"
                           placeholder={t(
                             { en: "Email Address", he: "כתובת אימייל" },
-                            lang,
+                            effectiveLang,
                           )}
                           required
                           className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm"
@@ -343,19 +350,19 @@ const NextEventHero = ({
                                   en: "How did you hear about us?",
                                   he: "איך שמעת עלינו?",
                                 },
-                                lang,
+                                effectiveLang,
                               )}
                             </option>
                             <option value="social" className="text-black">
                               {t(
                                 { en: "Social Networks", he: "רשתות חברתיות" },
-                                lang,
+                                effectiveLang,
                               )}
                             </option>
                             <option value="whatsapp" className="text-black">
                               {t(
                                 { en: "WhatsApp Group", he: "קבוצת וואטסאפ" },
-                                lang,
+                                effectiveLang,
                               )}
                             </option>
                             <option value="friend" className="text-black">
@@ -364,14 +371,14 @@ const NextEventHero = ({
                                   en: "Friend / Word of Mouth",
                                   he: "חבר / מפה לאוזן",
                                 },
-                                lang,
+                                effectiveLang,
                               )}
                             </option>
                             <option value="staff" className="text-black">
                               HBM Staff
                             </option>
                             <option value="other" className="text-black">
-                              {t({ en: "Other", he: "אחר" }, lang)}
+                              {t({ en: "Other", he: "אחר" }, effectiveLang)}
                             </option>
                           </select>
                           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
@@ -435,7 +442,7 @@ const NextEventHero = ({
                                     </>
                                   ),
                                 },
-                                lang,
+                                effectiveLang,
                               )}
                             </span>
                           </label>
@@ -452,7 +459,7 @@ const NextEventHero = ({
                                   en: "Keep me updated with community news and events via email and SMS.",
                                   he: "אשמח לקבל עדכונים על אירועי הקהילה וחדשות ב-SMS ובמייל.",
                                 },
-                                lang,
+                                effectiveLang,
                               )}
                             </span>
                           </label>
@@ -470,14 +477,14 @@ const NextEventHero = ({
                           {submitStatus === "submitting"
                             ? t(
                                 { en: "Reserving...", he: "שריינו לי..." },
-                                lang,
+                                effectiveLang,
                               )
                             : t(
                                 {
                                   en: "Complete Registration",
                                   he: "השלם הרשמה",
                                 },
-                                lang,
+                                effectiveLang,
                               )}
                         </button>
                       </>
@@ -503,10 +510,10 @@ const NextEventHero = ({
                   <Star className="w-6 h-6 text-[#6160AB]" />
                 </div>
                 <h3 className="text-2xl font-black text-hbm-dark mb-3 font-['Sora'] tracking-tight">
-                  {t(bubble.title, lang)}
+                  {t(bubble.title, effectiveLang)}
                 </h3>
                 <p className="text-hbm-gray text-base leading-relaxed font-['Sofia_Sans'] font-medium">
-                  {t(bubble.desc, lang)}
+                  {t(bubble.desc, effectiveLang)}
                 </p>
               </div>
             ))}
@@ -519,7 +526,7 @@ const NextEventHero = ({
         <div className="max-w-4xl mx-auto px-6 text-center">
           <div className="mb-20">
             <h4 className="text-[12px] font-black text-[#F07B3C] uppercase tracking-[0.5em] mb-6">
-              {t({ en: "THE EXPERIENCE", he: "החוויה" }, lang)}
+              {t({ en: "THE EXPERIENCE", he: "החוויה" }, effectiveLang)}
             </h4>
             <h2 className="text-5xl md:text-7xl font-black text-hbm-dark tracking-tighter mb-8 leading-[0.9]">
               {t(
@@ -527,12 +534,12 @@ const NextEventHero = ({
                   en: "What awaits you at the event?",
                   he: "מה מחכה לכם באירוע?",
                 },
-                lang,
+                effectiveLang,
               )}
             </h2>
             {whatToExpect.boldTitle && (
               <p className="text-2xl md:text-3xl font-bold text-[#6160AB] font-['Sora'] mt-4">
-                {t(whatToExpect.boldTitle, lang)}
+                {t(whatToExpect.boldTitle, effectiveLang)}
               </p>
             )}
           </div>
@@ -545,10 +552,10 @@ const NextEventHero = ({
                 </div>
                 <div className="text-center">
                   <h3 className="text-2xl font-black text-hbm-dark mb-4 font-['Sora'] tracking-tight">
-                    {t(point.title, lang)}
+                    {t(point.title, effectiveLang)}
                   </h3>
                   <p className="text-hbm-gray text-lg font-['Sofia_Sans'] leading-relaxed font-medium px-4">
-                    {t(point.desc, lang)}
+                    {t(point.desc, effectiveLang)}
                   </p>
                 </div>
               </div>
@@ -567,7 +574,7 @@ const NextEventHero = ({
 
             <div className="relative z-10">
               <h4 className="text-[12px] font-black text-[#F07B3C] uppercase tracking-[0.5em] mb-10">
-                {t({ en: "IN PARTNERSHIP WITH", he: "בשיתוף פעולה עם" }, lang)}
+                {t({ en: "IN PARTNERSHIP WITH", he: "בשיתוף פעולה עם" }, effectiveLang)}
               </h4>
               <h3 className="text-4xl md:text-5xl font-black text-hbm-dark mb-8 tracking-tighter">
                 {t(
@@ -575,7 +582,7 @@ const NextEventHero = ({
                     en: "Our Community Partners",
                     he: "השותפים הקהילתיים שלנו",
                   },
-                  lang,
+                  effectiveLang,
                 )}
               </h3>
               <p className="text-xl text-hbm-gray mb-12 max-w-2xl mx-auto font-['Sofia_Sans'] font-medium leading-relaxed">
@@ -584,7 +591,7 @@ const NextEventHero = ({
                     en: "We unite forces with the best communities to bring you the highest quality networking.",
                     he: "אנחנו מאחדים כוחות עם הקהילות הטובות ביותר כדי להביא לכם את הנטוורקינג האיכותי ביותר.",
                   },
-                  lang,
+                  effectiveLang,
                 )}
               </p>
 
@@ -636,7 +643,7 @@ const NextEventHero = ({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-3 bg-[#6160AB] text-white px-10 py-5 rounded-2xl font-black text-lg hover:scale-[1.05] transition-all shadow-xl shadow-[#6160AB]/20"
                 >
-                  {t({ en: "Visit Partner Website", he: "לאתר השותף" }, lang)}
+                  {t({ en: "Visit Partner Website", he: "לאתר השותף" }, effectiveLang)}
                   <ArrowRight className="w-5 h-5" />
                 </a>
               )}
@@ -645,24 +652,29 @@ const NextEventHero = ({
         </div>
       )}
 
-      {/* 5. FREE TEXT - Section 4 (Plain Text, No Bubble) */}
-      {freeText && (
+      {/* 5. IMPORTANT DETAILS – label + heading + optional free text */}
+      {(freeText || imageBubbles.length > 0 || (event.importantDetailsHeading && (event.importantDetailsHeading.en || event.importantDetailsHeading.he))) && (
         <div className="max-w-5xl mx-auto px-6 py-24 text-center">
           <h4 className="text-[12px] font-black text-[#F07B3C] uppercase tracking-[0.5em] mb-6">
-            {t({ en: "IMPORTANT DETAILS", he: "פרטים נוספים" }, lang)}
+            {t(
+              event.importantDetailsSectionLabel || { en: "IMPORTANT DETAILS", he: "פרטים נוספים" },
+              effectiveLang,
+            )}
           </h4>
           <h3 className="text-4xl md:text-5xl font-black text-hbm-dark mb-10 tracking-tighter">
             {t(
-              {
+              event.importantDetailsHeading || {
                 en: "Good to know before you come",
-                he: "חשוב לדעת לפנ״י שמגיעים",
+                he: "חשוב לדעת לפני שמגיעים",
               },
-              lang,
+              effectiveLang,
             )}
           </h3>
-          <p className="text-xl md:text-2xl text-hbm-gray font-medium leading-relaxed font-['Sofia_Sans'] max-w-4xl mx-auto">
-            {t(freeText, lang)}
-          </p>
+          {freeText && (
+            <p className="text-xl md:text-2xl text-hbm-gray font-medium leading-relaxed font-['Sofia_Sans'] max-w-4xl mx-auto">
+              {t(freeText, effectiveLang)}
+            </p>
+          )}
         </div>
       )}
 
@@ -679,15 +691,20 @@ const NextEventHero = ({
               >
                 <div className="h-48 w-full overflow-hidden">
                   <img
-                    src={bubble.image}
-                    alt={t(bubble.title, lang)}
+                    src={resolveAsset(bubble.image)}
+                    alt={t(bubble.title, effectiveLang)}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                 </div>
                 <div className="p-6 text-center bg-white border-t border-gray-50">
                   <h3 className="text-lg font-bold text-hbm-dark font-['Sora']">
-                    {t(bubble.title, lang)}
+                    {t(bubble.title, effectiveLang)}
                   </h3>
+                  {bubble.desc && (t(bubble.desc, effectiveLang) || "").trim() && (
+                    <p className="mt-2 text-sm text-hbm-gray font-['Sofia_Sans'] leading-relaxed">
+                      {t(bubble.desc, effectiveLang)}
+                    </p>
+                  )}
                 </div>
               </BubbleContainer>
             ))}
@@ -733,43 +750,23 @@ const NextEventHero = ({
             </div>
           </div>
 
-          {/* Host Note */}
+          {/* Host Note – ציטוט + שם המחבר, ללא עיטורים */}
           {event.hostNote?.message && (
-            <div className="max-w-3xl mx-auto mb-24 relative">
-              <div className="absolute -top-12 -left-4 text-9xl font-black text-[#F07B3C]/5 font-serif select-none">
-                "
-              </div>
+            <div className="max-w-3xl mx-auto mb-24">
               <BubbleContainer
                 bgColor="white"
                 fullHeight={false}
-                className="p-12 !rounded-[3rem] border border-white shadow-xl relative overflow-hidden"
+                className="p-12 !rounded-[3rem] border border-white shadow-xl"
               >
-                <div className="absolute top-0 right-0 p-8 opacity-10">
-                  <Star className="w-24 h-24 text-[#6160AB]" />
-                </div>
-                <p className="text-2xl font-medium text-hbm-dark leading-relaxed mb-8 relative z-10 text-center">
+                <p className="text-2xl font-medium text-[#6160AB] leading-relaxed mb-6 text-center whitespace-pre-line">
                   {event.hostNote.message}
                 </p>
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#6160AB] to-[#F07B3C] p-0.5 shadow-lg">
-                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                      {event.hostNote.avatar ? (
-                        <img
-                          src={event.hostNote.avatar}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Sparkles className="w-8 h-8 text-[#6160AB]/30" />
-                      )}
-                    </div>
+                <div className="text-center">
+                  <div className="font-black text-hbm-dark text-sm uppercase tracking-[0.2em]">
+                    {event.hostNote.author || "The HBM Team"}
                   </div>
-                  <div className="text-center">
-                    <div className="font-black text-hbm-dark text-sm uppercase tracking-[0.2em]">
-                      {event.hostNote.author || "The HBM Team"}
-                    </div>
-                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
-                      Event Host
-                    </div>
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+                    {t({ en: "Marketing Manager at The HBM", he: "מנהל שיווק ב-The HBM" }, effectiveLang)}
                   </div>
                 </div>
               </BubbleContainer>
@@ -787,7 +784,7 @@ const NextEventHero = ({
                   Common Questions
                 </h2>
               </div>
-              <div className="space-y-4" dir={lang === "he" ? "rtl" : "ltr"}>
+              <div className="space-y-4" dir={effectiveLang === "he" ? "rtl" : "ltr"}>
                 {event.faqs.map((faq, idx) => (
                   <div
                     key={idx}
@@ -800,7 +797,9 @@ const NextEventHero = ({
                       <span
                         className={`font-extrabold tracking-tight transition-colors ${activeFaq === idx ? "text-[#6160AB]" : "text-hbm-dark"}`}
                       >
-                        {faq.question}
+                        {typeof faq.question === "object" && faq.question !== null
+                        ? t(faq.question, effectiveLang)
+                        : faq.question}
                       </span>
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${activeFaq === idx ? "bg-[#6160AB] text-white rotate-180" : "bg-gray-100 text-gray-400"}`}
@@ -816,7 +815,9 @@ const NextEventHero = ({
                           exit={{ height: 0, opacity: 0 }}
                         >
                           <div className="p-8 pt-0 text-hbm-gray font-medium leading-relaxed border-t border-gray-100/30">
-                            {faq.answer}
+                            {typeof faq.answer === "object" && faq.answer !== null
+                              ? t(faq.answer, effectiveLang)
+                              : faq.answer}
                           </div>
                         </motion.div>
                       )}

@@ -4,55 +4,68 @@ High-level structure of the HBM site and how users move through it.
 
 ## 🗺️ Strategic Architecture Map (v8.0)
 
+**Main flows & CTAs:**
+- **Home** → Hero CTA "What Is It?" → `/meeter` · Nav CTA "Your 8 Min" → `/events#register-video` · Scroll to explore → Meeter section
+- **Discovery:** What Is It? (`/meeter`) → Click Next → Who Is It For? (`/meeter/who`) → Click Next → Features (`/meeter/features`) → CTA "Start Your 8 Minutes" → **Events**
+- **Events** (`/events`) → Click Upcoming → Event Details (`/events/:id`) → CTA "Reserve My Spot" → Registration Form / WhatsApp · Click Past → Event Gallery Modal
+- **Trust:** Knowledge (`/knowledge`) → Read Full → External Book · About (`/about`) · Contact (`/contact`)
+
 ```mermaid
 graph TD
-    %% Main Entry
     Home["🏠 HOME PAGE"]
+    NavCTA["Nav CTA: Your 8 Min → /events#register-video"]
+    HeroCTA["Hero CTA: What Is It? → /meeter"]
     
-    %% Product Discovery Box
-    subgraph Discovery ["🔍 PRODUCT DISCOVERY"]
-        Meeter["THE MEETER"]
-        Who["WHO IS IT FOR"]
-        Features["FEATURES"]
-        
-        Meeter --> Who
-        Who --> Features
+    subgraph Discovery ["🔍 PRODUCT DISCOVERY (THE MEETER)"]
+        Meeter["1. WHAT IS IT? /meeter"]
+        Who["2. WHO IS IT FOR? /meeter/who"]
+        Features["3. FEATURES /meeter/features"]
+        DiscoveryCTA["CTA: Start Your 8 Minutes → Events"]
     end
 
-    %% The Backstage Box
+    subgraph Brand ["🌟 BRAND & AUTHORITY"]
+        Knowledge["KNOWLEDGE /knowledge"]
+        About["ABOUT US /about"]
+        Contact["CONTACT /contact"]
+    end
+    ExtBook["External Full Book / PDF"]
+
+    subgraph Conversion ["🔥 CONVERSION ENGINE"]
+        Events["EVENTS LIST /events"]
+        EventDetails["EVENT DETAILS /events/:id"]
+        ReserveCTA["CTA: Reserve My Spot"]
+        Form["Registration Form / WhatsApp"]
+        PastGallery["Event Gallery Modal"]
+    end
+
     subgraph Backstage ["✨ THE BACKSTAGE"]
         ContentManager["CONTENT MANAGER"]
-        AdminDashboard["ADMIN DASHBOARD"]
-        VisualEditor["VISUAL EVENT EDITOR"]
+        AdminDashboard["ADMIN DASHBOARD /admin-dashboard"]
     end
 
-    %% Brand & Authority Box
-    subgraph Brand ["💡 BRAND & AUTHORITY"]
-        Knowledge["KNOWLEDGE"]
-        About["ABOUT US"]
-    end
+    Home -->|Scroll to explore| Meeter
+    Home -->|Click What Is It?| HeroCTA
+    HeroCTA --> Meeter
+    Home --> NavCTA
+    NavCTA --> Events
+    
+    Meeter -->|Click Next| Who
+    Who -->|Click Next| Features
+    Features --> DiscoveryCTA
+    DiscoveryCTA --> Events
 
-    %% Conversion Engine Box
-    subgraph Conversion ["🔥 CONVERSION ENGINE"]
-        Events["EVENTS CALENDAR"]
-        Checkout["CHECKOUT"]
-        
-        Events --> Checkout
-    end
-
-    %% Strategic Flows
-    Home --> Discovery
-    Home --> Events
+    Events -->|Click Upcoming| EventDetails
+    Events -->|View Past| PastGallery
+    EventDetails --> ReserveCTA
+    ReserveCTA --> Form
     
-    Discovery --> Events
+    Knowledge -.->|Read Full| ExtBook
+    About --> Contact
     
-    ContentManager -- "Manages" --> Brand
-    AdminDashboard -- "Controls" --> Conversion
-    VisualEditor -- "Creates" --> Events
+    ContentManager -- "Manages Events & Media" --> Events
+    ContentManager -- "Updates" --> Knowledge
+    AdminDashboard -- "Controls Config" --> EventDetails
     
-    Brand -.-> Events
-    
-    %% Styling
     style Discovery fill:#f0f7ff,stroke:#007bff,stroke-width:2px
     style Backstage fill:#f8f9fe,stroke:#6160AB,stroke-width:2px
     style Brand fill:#fdfaff,stroke:#a855f7,stroke-width:2px

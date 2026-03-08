@@ -6,7 +6,7 @@ Standard procedures for developing, testing, and deploying the platform. **Hando
 
 Root is kept to **7 files** (package.json, package-lock.json, .gitignore, README.md, index.html, vite.config.js, prisma.config.ts). All other config and server code live in subfolders.
 
-- **`/config`** — PM2, ESLint, env template, Railway (e.g. `ecosystem.config.cjs`, `.env.example`, `.nvmrc`, `railway.toml`). For Railway: set start command to `node server/admin-server.js` or copy `config/railway.toml` to root.
+- **`/config`** — PM2, ESLint, env template (e.g. `ecosystem.config.cjs`, `.env.example`, `.nvmrc`).
 - **`/docs`** — All documentation (deploy, Hostinger, Render, QA, sitemap); see [docs/README.md](docs/README.md)
 - **`/data`** — Runtime data and local DB files (gitignored)
 - **`/scripts`** — Build and utility scripts (sitemap, migrate, email diagnostics)

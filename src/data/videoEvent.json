@@ -3,10 +3,10 @@
     "en": "Video Event",
     "he": "אירוע וידאו "
   },
-  "date": "2026-03-03T00:00:00.000Z",
+  "date": "2026-03-12T00:00:00.000Z",
   "time": "12:00",
   "location": "HBM Platform",
-  "image": "/assets/events/video-event/1772046121643_1_YouTube.png",
+  "image": "/assets/events/video-event/1772911144823_Screenshot_2026-03-07_at_21.17.59.png",
   "registrationFields": {
     "name": true,
     "email": true,

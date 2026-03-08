@@ -74,6 +74,7 @@ export default function Navbar() {
   }, [])
 
   const isActive = (path) => location.pathname === path || (path !== "/" && location.pathname.startsWith(path))
+  const isRtl = lang === 'he' || lang === 'ar'
 
   const [expandedItems, setExpandedItems] = useState(['meeter']) // Expand meeter by default on mobile
 
@@ -199,12 +200,13 @@ export default function Navbar() {
             onClick={() => setMobileOpen(false)}
           >
             <motion.div
-              initial={{ x: '-100%' }}
+              initial={{ x: isRtl ? '100%' : '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
+              exit={{ x: isRtl ? '100%' : '-100%' }}
               transition={{ type: "spring", damping: 28, stiffness: 220, mass: 1 }}
-              className="bg-white w-[85%] max-w-sm h-full shadow-2xl flex flex-col pt-24 px-8 overflow-y-auto"
+              className={`bg-white w-[85%] max-w-sm h-full shadow-2xl flex flex-col pt-24 px-8 overflow-y-auto ${isRtl ? 'ml-auto' : ''}`}
               onClick={(e) => e.stopPropagation()}
+              dir={isRtl ? 'rtl' : 'ltr'}
             >
               <nav className="flex flex-col gap-4 w-full">
                 {navStructure.map((item, idx) => (

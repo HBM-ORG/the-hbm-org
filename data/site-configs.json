@@ -75,36 +75,28 @@
   ],
   "testimonials": [
     {
-      "id": "t1",
-      "quote": "החוויה המשמעותית ביותר שעברתי השנה. החיבור האנושי ב-8 דקות הוא פשוט קסם.",
-      "author": "איילת לוי",
-      "role": "מנהלת קהילה",
-      "stars": 5,
-      "companyLogo": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png"
-    },
-    {
-      "id": "t2",
-      "quote": "The most authentic networking event I have ever attended.",
-      "author": "Jessica M.",
-      "role": "EVENT PLANNER",
+      "id": "milos-hotel",
+      "quote": "The Meeter event in the hotel lobby was simply incredible! As a hotel, we're always looking for ways to create a unique experience and added value for our guests, and that's exactly what happened. Within minutes the atmosphere in the lobby changed - guests stopped looking at their phones and started talking, laughing, and getting to know each other. Beyond the amazing social experience, it was also felt directly on the bottom line: people stayed in the lobby, the energy was high, and bar sales jumped significantly. It turned the evening from just a hotel stay into an unforgettable community experience.",
+      "author": "Eden Alfasi",
+      "role": "Hotel Manager, Milos Hotel",
       "stars": 5,
       "companyLogo": ""
     },
     {
-      "id": "t3",
-      "quote": "Finally, real conversations. No sales pitches, just pure human presence.",
-      "author": "Mark Thompson",
-      "role": "Tech CEO",
+      "id": "dale-carnegie",
+      "quote": "At Dale Carnegie we teach people how to build connections, and HBM gives the perfect platform to put that into practice. Our collaboration, both at our alumni events and at the High-Tech Park in Tel Aviv, proved that when you combine quality content with smart technology, the magic happens. Participants didn't just 'learn' about networking - they experienced it in real time in the most effective way possible.",
+      "author": "Gilad Newman",
+      "role": "CEO, Dale Carnegie Israel",
       "stars": 5,
-      "companyLogo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1667px-Apple_logo_black.svg.png"
+      "companyLogo": ""
     },
     {
-      "quote": "tjkv sfsdgfsg",
-      "author": "Nameg 222",
-      "role": "Context4",
+      "id": "reichman-hila",
+      "quote": "As someone responsible for alumni events of the various schools at Reichman University, my challenge is to ensure that meaningful connections are created at events - the kind that lead to new and exciting opportunities. Meeter allowed us to connect alumni in a new way. Instead of alumni looking for familiar faces and connecting only with people they knew before, they went straight into 8-minute deep conversations with people they hadn't met before, from different years or diverse study tracks. It's a refreshing tool for anyone who wants to create light, door-opening networking at their event.",
+      "author": "Hila",
+      "role": "Alumni Events and Community Manager, Reichman University",
       "stars": 5,
-      "companyLogo": "",
-      "id": "1771975306708"
+      "companyLogo": ""
     }
   ],
   "partners": [

@@ -53,4 +53,4 @@ The server serves both the API and static files. Saves in the admin update JSON/
 
 ---
 
-**See also:** [ARCHITECTURE.md](ARCHITECTURE.md) · [RENDER_ENV.md](RENDER_ENV.md) · [HOSTINGER_GUIDE.md](HOSTINGER_GUIDE.md)
+**See also:** [ARCHITECTURE.md](ARCHITECTURE.md) · [RENDER_ENV.md](RENDER_ENV.md) · [HOSTINGER_GUIDE.md](HOSTINGER_GUIDE.md).

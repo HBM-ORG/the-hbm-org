@@ -262,12 +262,12 @@ export default function About() {
         </div>
       </section>
 
-      {/* Interactive World Connection Section — fixed height so globe never resizes when modal opens */}
-      <section className="bg-hbm-cream pt-0 pb-8 overflow-hidden" style={{ minHeight: '600px' }}>
-        <div className="h-[600px] w-full" aria-hidden="true">
+      {/* Interactive World Connection Section — globe + sentence right below */}
+      <section className="bg-hbm-cream pt-0 pb-8 overflow-hidden">
+        <div className="h-[360px] sm:h-[400px] md:h-[420px] w-full flex items-end justify-center" aria-hidden="true">
           <GlobeDemo key="about-globe" />
         </div>
-        <div className="text-center mt-4 mb-4 px-4">
+        <div className="text-center mt-2 mb-4 px-4 -translate-y-2">
           <p className="text-sm md:text-base lg:text-lg font-bold text-hbm-dark/60 font-['Sora'] tracking-wide break-words">
             {t(
               {

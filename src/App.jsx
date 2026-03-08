@@ -16,6 +16,7 @@ import Knowledge from './pages/Knowledge'
 import EventRegister from './pages/EventRegister'
 import AdminDashboard from './pages/AdminDashboard'
 import CookiePolicy from './pages/CookiePolicy'
+import LegalPage from './pages/LegalPage'
 import { EventsProvider } from './context/EventsContext'
 
 import { trackPageView, initAnalytics } from './utils/analytics'
@@ -72,6 +73,10 @@ export default function App() {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
+              <Route path="/termsofuse" element={<LegalPage type="terms" />} />
+              <Route path="/termsofuse/" element={<LegalPage type="terms" />} />
+              <Route path="/privacypolicy" element={<LegalPage type="privacy" />} />
+              <Route path="/privacypolicy/" element={<LegalPage type="privacy" />} />
 
               {/* Admin Dashboard - available when site is live (protected by password) */}
               <Route path="/admin" element={<AdminDashboard />} />

@@ -464,6 +464,8 @@ export default function MeeterWho() {
   const currentTab = tabs.find((t) => t.id === activeTab);
   const [testimonialsList, setTestimonialsList] = useState([]);
   const [partnerLogosList, setPartnerLogosList] = useState(partnerLogos);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const TESTIMONIAL_AUTO_ADVANCE_MS = 15000; // 15 seconds per card
 
   useEffect(() => {
     fetch(`${getApiBase()}/api/site-content`)
@@ -474,6 +476,15 @@ export default function MeeterWho() {
       })
       .catch(() => {});
   }, []);
+
+  // Static carousel: advance testimonial every 15 seconds
+  useEffect(() => {
+    if (testimonialsList.length <= 1) return;
+    const id = setInterval(() => {
+      setTestimonialIndex((prev) => (prev + 1) % testimonialsList.length);
+    }, TESTIMONIAL_AUTO_ADVANCE_MS);
+    return () => clearInterval(id);
+  }, [testimonialsList.length]);
 
   // Load SociableKIT script (with error handling so failed load doesn't break the page)
   useEffect(() => {
@@ -707,7 +718,7 @@ export default function MeeterWho() {
       {/* Lead Generation CTA */}
       <LeadGenCTA />
 
-      {/* Success Stories (Classic Centered Design in Looping Marquee) */}
+      {/* Success Stories – mobile: static carousel; desktop: marquee */}
       {testimonialsList.length > 0 && (
         <section className="relative z-10 py-32 overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 mb-16 text-center">
@@ -719,7 +730,81 @@ export default function MeeterWho() {
             </h2>
           </div>
 
-          <div className="relative w-full overflow-hidden mask-gradient-x">
+          {/* Mobile only: static carousel, one card, 15s advance */}
+          <div className="relative w-full max-w-2xl mx-auto px-4 min-h-[320px] flex flex-col items-center justify-center md:hidden">
+            <AnimatePresence mode="wait">
+              {testimonialsList[testimonialIndex] && (() => {
+                const r = testimonialsList[testimonialIndex].role || "";
+                const commaAt = r.indexOf(", ");
+                const roleLine = commaAt >= 0 ? r.slice(0, commaAt).trim() : r;
+                const placeLine = commaAt >= 0 ? r.slice(commaAt + 2).trim() : "";
+                return (
+                  <motion.div
+                    key={testimonialIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="w-full max-w-[400px] bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col items-center text-center"
+                  >
+                    <div className="flex gap-1 mb-6 justify-center">
+                      {[...Array(testimonialsList[testimonialIndex].stars || 5)].map((_, idx) => (
+                        <Star
+                          key={idx}
+                          size={18}
+                          className="text-hbm-orange fill-hbm-orange"
+                        />
+                      ))}
+                    </div>
+                    <p className="text-hbm-dark font-medium italic mb-8 leading-relaxed font-['Sofia_Pro'] text-lg">
+                      "{testimonialsList[testimonialIndex].quote}"
+                    </p>
+                    <div className="w-full h-px bg-gray-100 mb-6" />
+                    <div className="flex flex-col items-center">
+                      <h4 className="font-bold text-hbm-dark text-lg font-['Sora']">
+                        {testimonialsList[testimonialIndex].author}
+                      </h4>
+                      <p className="text-xs text-hbm-gray uppercase tracking-widest font-['Sofia_Pro'] mt-1">
+                        {roleLine}
+                        {placeLine && (
+                          <>
+                            <br />
+                            {placeLine}
+                          </>
+                        )}
+                      </p>
+                    </div>
+                    {testimonialsList[testimonialIndex].companyLogo && (
+                      <img
+                        src={testimonialsList[testimonialIndex].companyLogo}
+                        alt="Company"
+                        className="h-4 object-contain opacity-20 grayscale mt-4"
+                      />
+                    )}
+                  </motion.div>
+                );
+              })()}
+            </AnimatePresence>
+
+            {testimonialsList.length > 1 && (
+              <div className="flex gap-2 mt-8 justify-center">
+                {testimonialsList.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={lang === "he" ? `ציטוט ${i + 1}` : `Testimonial ${i + 1}`}
+                    onClick={() => setTestimonialIndex(i)}
+                    className={`h-2 rounded-full transition-all ${
+                      i === testimonialIndex ? "w-8 bg-hbm-purple" : "w-2 bg-gray-300 hover:bg-gray-400"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop only: horizontal marquee (as before) */}
+          <div className="hidden md:block relative w-full overflow-hidden mask-gradient-x">
             <div
               className="flex gap-8 w-max animate-marquee hover:[animation-play-state:paused]"
               style={{ animationDuration: "50s" }}
@@ -729,50 +814,53 @@ export default function MeeterWho() {
                 ...testimonialsList,
                 ...testimonialsList,
                 ...testimonialsList,
-              ].map((t, i) => (
-                <div
-                  key={i}
-                  className="w-[320px] md:w-[400px] bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col items-center text-center shrink-0"
-                >
-                  {/* Centered Stars */}
-                  <div className="flex gap-1 mb-6 justify-center">
-                    {[...Array(5)].map((_, idx) => (
-                      <Star
-                        key={idx}
-                        size={18}
-                        className="text-hbm-orange fill-hbm-orange"
-                      />
-                    ))}
-                  </div>
-
-                  {/* Centered Quote */}
-                  <p className="text-hbm-dark font-medium italic mb-8 leading-relaxed font-['Sofia_Pro'] text-lg">
-                    "{t.quote}"
-                  </p>
-
-                  {/* Divider */}
-                  <div className="w-full h-px bg-gray-100 mb-6" />
-
-                  {/* Centered Author Info */}
-                  <div className="flex flex-col items-center">
-                    <h4 className="font-bold text-hbm-dark text-lg font-['Sora']">
-                      {t.author}
-                    </h4>
-                    <p className="text-xs text-hbm-gray uppercase tracking-widest font-['Sofia_Pro'] mt-1">
-                      {t.role}
+              ].map((item, i) => {
+                const r = item.role || "";
+                const commaAt = r.indexOf(", ");
+                const roleLine = commaAt >= 0 ? r.slice(0, commaAt).trim() : r;
+                const placeLine = commaAt >= 0 ? r.slice(commaAt + 2).trim() : "";
+                return (
+                  <div
+                    key={i}
+                    className="w-[320px] md:w-[400px] bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col items-center text-center shrink-0"
+                  >
+                    <div className="flex gap-1 mb-6 justify-center">
+                      {[...Array(item.stars || 5)].map((_, idx) => (
+                        <Star
+                          key={idx}
+                          size={18}
+                          className="text-hbm-orange fill-hbm-orange"
+                        />
+                      ))}
+                    </div>
+                    <p className="text-hbm-dark font-medium italic mb-8 leading-relaxed font-['Sofia_Pro'] text-lg">
+                      "{item.quote}"
                     </p>
+                    <div className="w-full h-px bg-gray-100 mb-6" />
+                    <div className="flex flex-col items-center">
+                      <h4 className="font-bold text-hbm-dark text-lg font-['Sora']">
+                        {item.author}
+                      </h4>
+                      <p className="text-xs text-hbm-gray uppercase tracking-widest font-['Sofia_Pro'] mt-1">
+                        {roleLine}
+                        {placeLine && (
+                          <>
+                            <br />
+                            {placeLine}
+                          </>
+                        )}
+                      </p>
+                    </div>
+                    {item.companyLogo && (
+                      <img
+                        src={item.companyLogo}
+                        alt="Company"
+                        className="h-4 object-contain opacity-20 grayscale mt-4"
+                      />
+                    )}
                   </div>
-
-                  {/* Optional Company Logo - Small and discrete at the bottom if exists */}
-                  {t.companyLogo && (
-                    <img
-                      src={t.companyLogo}
-                      alt="Company"
-                      className="h-4 object-contain opacity-20 grayscale mt-4"
-                    />
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

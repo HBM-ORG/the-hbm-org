@@ -1,5 +1,4 @@
 {
-  "isLocked": false,
   "books": [
     {
       "id": "per-1",
@@ -273,34 +272,6 @@
   ],
   "videos": [
     {
-      "id": "vid-1",
-      "title": "Why 8 Minutes Changes Everything",
-      "author": "Elad Maor Hefets",
-      "description": "The science and psychology behind the 8-minute methodology and why it's the perfect duration for human connection.",
-      "youtubeUrl": "https://www.youtube.com/watch?v=R7smYF02Kjo",
-      "category": "Interviews",
-      "hashtags": [
-        "#Methodology",
-        "#Science",
-        "#HBM"
-      ],
-      "accentColor": "#6160AB"
-    },
-    {
-      "id": "vid-2",
-      "title": "Building Real Communities",
-      "author": "The HBM Team",
-      "description": "How HBM helps organizations and individuals build genuine, lasting communities through simple, deep interactions.",
-      "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "category": "Education",
-      "hashtags": [
-        "#Community",
-        "#Growth",
-        "#Impact"
-      ],
-      "accentColor": "#F07B3C"
-    },
-    {
       "id": "vid-3",
       "title": "The Mission of Humanity",
       "author": "Elad Maor Hefets",
@@ -315,6 +286,28 @@
       "accentColor": "#6160AB"
     },
     {
+      "id": "vid-1",
+      "title": "Why 8 Minutes Changes Everything",
+      "author": "Elad Maor Hefets",
+      "description": "The science and psychology behind the 8-minute methodology and why it's the perfect duration for human connection.",
+      "youtubeUrl": "https://www.youtube.com/watch?v=R7smYF02Kjo",
+      "category": "Interviews",
+      "hashtags": [
+        "#Methodology",
+        "#Science",
+        "#HBM"
+      ],
+      "accentColor": "#6160AB"
+    },
+    {
+      "id": 1772967644685,
+      "title": "From Strangers to friends | Meeter by The HBM",
+      "author": "",
+      "youtubeUrl": "https://youtu.be/k25yEgseJ9s?si=IH-PHVPLlHSBo1s9",
+      "category": "Interview",
+      "description": "Meeter's mission is simple: connect people at events and in their communities. Because in a room full of people, no one should ever feel alone."
+    },
+    {
       "id": 1771972363971,
       "title": "The Speech that will Change Your Life - Jim Rohn",
       "author": "",
@@ -325,26 +318,29 @@
       "accentColor": "#6160AB"
     },
     {
-      "id": 1771973038765,
-      "title": "",
+      "id": 1772967645076,
+      "title": "Always Do Your Best: The Four Agreements Explained",
       "author": "",
-      "youtubeUrl": "https://youtu.be/rfUoQ2rHpAQ?si=Nr-GktiVJzVRhxLE",
+      "youtubeUrl": "https://youtu.be/4cv8vC7wM_A?si=h5c2HbpfDOYwdHQh",
       "category": "Interview",
-      "description": "",
-      "hashtags": [],
-      "accentColor": "#6160AB"
+      "description": "In this video, we focus on the Fourth Agreement from Don Miguel Ruiz’s renowned book, \"The Four Agreements.\"\n\nThe message is simple yet powerful: when we know we have done our absolute best in every moment-aligned with our current abilities and circumstances we free ourselves from guilt, self-criticism, and unnecessary regret."
     },
     {
-      "id": 1771973451476,
-      "title": "",
+      "id": 1772967645448,
+      "title": "Do you have 8 minutes?",
       "author": "",
-      "youtubeUrl": "https://youtu.be/4cv8vC7wM_A?si=HFamZs3jz1W6S5rc",
+      "youtubeUrl": "https://youtu.be/1LnLwZblIWI?si=n5vQnmimRjhA7EoQ",
       "category": "Interview",
-      "description": "",
-      "hashtags": [],
-      "accentColor": "#6160AB",
-      "thumbnail": "https://img.youtube.com/vi/4cv8vC7wM_A/maxresdefault.jpg",
-      "videoId": "4cv8vC7wM_A"
+      "description": "Simon Sinek on his experience, when somebody is struggling. 8 minutes of help and support from friends and loved once is enough to get back on track.\n"
+    },
+    {
+      "id": 1772968381934,
+      "title": "The Secret Power of Friendship",
+      "author": "",
+      "youtubeUrl": "https://youtu.be/6l2FD0K4Xck?si=OuVmVMnJQV62-jQG",
+      "category": "Interview",
+      "description": "\nIn a world where there's an industry for everything, from leadership to parenting to fitness, why is there no industry to help us be better friends? \n\nSimon dives into the importance of friendship and how it can be the key to solving many of our modern challenges. From mental health to addiction, Sinek explains why friendship is the ultimate bio-hack and how putting in the effort to be a good friend pays back in dividends. Discover the true power of friendship and how it can improve our lives in ways we never imagined.\n"
     }
-  ]
+  ],
+  "isLocked": false
 }

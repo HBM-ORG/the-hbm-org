@@ -209,51 +209,69 @@
             classDef cta fill:#F07B3C,stroke:#ea580c,stroke-width:2px,color:white,font-weight:bold;
 
             %% NODES
-            Home["🏠 HOME PAGE<br><small>Visual hero, Explainer, Testimonials</small>"]:::landing
-            NavCTA["Nav CTA: 'Your 8 Min'"]:::cta
+            Home["🏠 HOME PAGE<br><small>Visual hero, Explainer, Testimonials, Conversation Cards</small>"]:::landing
+            NavCTA["Nav CTA: Your 8 Min<br><small>→ /events#register-video</small>"]:::cta
+            HeroCTA["Hero CTA: What Is It?"]:::cta
             
             subgraph DISCOVERY ["🔍 PRODUCT DISCOVERY (THE MEETER)"]
-                Meeter["1. WHAT IS IT?<br><small>Concept & Value</small>"]:::product
-                Who["2. WHO IS IT FOR?<br><small>Universities, Companies, Hotels</small>"]:::product
-                Features["3. FEATURES & UX<br><small>App Mockups, Interactive Demos</small>"]:::product
-                DiscoveryCTA["CTA: Start Your 8 Minutes"]:::cta
+                Meeter["1. WHAT IS IT?<br><small>Concept & Value · /meeter</small>"]:::product
+                Who["2. WHO IS IT FOR?<br><small>Universities, Companies, Hotels · /meeter/who</small>"]:::product
+                Features["3. FEATURES & UX<br><small>App Mockups, Interactive Demos · /meeter/features</small>"]:::product
+                DiscoveryCTA["CTA: Start Your 8 Minutes<br><small>→ Events</small>"]:::cta
             end
             
             subgraph TRUST ["🌟 BRAND & AUTHORITY"]
-                Knowledge["KNOWLEDGE<br><small>Books, Podcasts, Videos</small>"]:::content
-                About["ABOUT US<br><small>Team & Manifesto</small>"]:::content
+                Knowledge["KNOWLEDGE<br><small>Books, Podcasts, Videos · /knowledge</small>"]:::content
+                About["ABOUT US<br><small>Team & Manifesto · /about</small>"]:::content
+                Contact["CONTACT<br><small>/contact</small>"]:::content
                 ExtBook["External Full Book / PDF"]:::content
             end
 
             subgraph CONVERSION ["🔥 CONVERSION ENGINE"]
-                Events["EVENTS CALENDAR<br><small>Past Galleries & Future Dates</small>"]:::action
-                NextVideo["NEXT VIDEO EVENT<br><small>The HBM Flagship Form</small>"]:::action
+                Events["EVENTS LIST<br><small>Upcoming + Past · /events</small>"]:::action
+                EventDetails["EVENT DETAILS<br><small>Next Event Hero · /events/:id</small>"]:::action
+                ReserveCTA["CTA: Reserve My Spot"]:::cta
                 Form["Registration Form / WhatsApp"]:::action
+                PastGallery["Event Gallery Modal<br><small>View past event photos</small>"]:::action
             end
 
             subgraph MAGIC ["✨ THE BACKSTAGE (Admin)"]
-                Dashboard["ADMIN DASHBOARD<br><small>Analytics, Settings</small>"]:::admin
-                CMS["CONTENT MANAGER<br><small>Events, Video Config</small>"]:::admin
+                Dashboard["ADMIN DASHBOARD<br><small>Analytics, Settings · /admin-dashboard</small>"]:::admin
+                CMS["CONTENT MANAGER<br><small>Events, Galleries, Video Config</small>"]:::admin
             end
 
-            %% FLOWS
+            Controls["Config / View Past"]:::content
+
+            %% FLOWS — Home
+            Home -->|"Scroll to explore"| Meeter
+            Home -->|"Click What Is It?"| HeroCTA
+            HeroCTA --> Meeter
             Home --> NavCTA
-            Home -->|"Scrolls down"| Meeter
+            NavCTA -->|"→ /events#register-video"| Events
             
+            %% FLOWS — Discovery
             Meeter -->|"Click Next"| Who 
             Who -->|"Click Next"| Features
             Features --> DiscoveryCTA
-
             DiscoveryCTA --> Events
-            NavCTA --> NextVideo
-            Events --> NextVideo
-            NextVideo --> Form
-            Events -->|"View Past"| PastGallery["Event Gallery Modal"]:::action
+
+            %% FLOWS — Events & Conversion
+            Events -->|"Click Upcoming Event"| EventDetails
+            Events -->|"View Past Event"| PastGallery
+            EventDetails --> ReserveCTA
+            ReserveCTA --> Form
             
-            Knowledge -.->|"Click 'Read Full'"| ExtBook
-            
-            Dashboard -.->|Controls Config| NextVideo
+            %% FLOWS — Trust
+            Knowledge -.->|"Click Read Full"| ExtBook
+            About --> Contact
+
+            %% FLOWS — Admin
+            Controls --> Events
+            Controls -.->|Config| EventDetails
+            Controls -.->|View Past| PastGallery
+            Dashboard -.->|Controls Config| EventDetails
             CMS -.->|Updates| Knowledge
+            CMS -.->|Manages Events & Media| Events
 
             %% LINKS
             click Dashboard "/admin-dashboard" "View Admin"

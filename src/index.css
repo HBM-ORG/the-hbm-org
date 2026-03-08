@@ -129,6 +129,10 @@ html { scroll-behavior: smooth; }
   align-items: center;
   gap: 6px;
 }
+[dir="rtl"] .whatsapp-float-container {
+  right: auto;
+  left: 1.5rem;
+}
 
 .whatsapp-label {
   font-family: var(--font-display);

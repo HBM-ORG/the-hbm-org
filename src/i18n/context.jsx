@@ -35,8 +35,19 @@ export function useI18n() {
   return useContext(I18nContext)
 }
 
-// Translation helper - returns translated text or falls back to English
+// Translation helper - returns translated text or falls back to English, then Hebrew, then first available
 export function t(translations, lang) {
   if (typeof translations === 'string') return translations
-  return translations?.[lang] || translations?.en || translations?.he || ''
+  if (!translations || typeof translations !== 'object') return ''
+  return (
+    translations[lang] ||
+    translations.en ||
+    translations.he ||
+    translations.ar ||
+    translations.es ||
+    translations.fr ||
+    translations.de ||
+    Object.values(translations)[0] ||
+    ''
+  )
 }
