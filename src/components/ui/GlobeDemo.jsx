@@ -1,10 +1,13 @@
 "use client";
 import React, { Suspense, lazy } from "react";
 import { motion } from "framer-motion";
+import { useI18n, t } from "../../i18n/context";
+import { ui } from "../../i18n/translations";
 
 const World = lazy(() => import("./Globe").then((m) => ({ default: m.World })));
 
 function GlobeDemo() {
+  const { lang } = useI18n();
   const globeConfig = {
     pointSize: 4,
     globeColor: "#062056",
@@ -421,7 +424,7 @@ function GlobeDemo() {
                 justifyContent: "center",
               }}
             >
-              Loading World...
+              {t(ui.common.loadingWorld, lang)}
             </div>
           }
         >

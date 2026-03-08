@@ -1,5 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useI18n, t } from '../i18n/context';
+import { ui } from '../i18n/translations';
+
+function ErrorFallback() {
+  const { lang } = useI18n();
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center px-6 py-16 bg-[#FAF9F5]">
+      <div className="max-w-md w-full text-center">
+        <h1 className="text-2xl font-black text-gray-800 mb-2">{t(ui.common.errorTitle, lang)}</h1>
+        <p className="text-gray-500 text-sm mb-8">
+          {t(ui.common.errorMessage, lang)}
+        </p>
+        <Link
+          to="/"
+          className="inline-block px-8 py-4 bg-[#6160AB] text-white font-bold rounded-xl hover:bg-[#5050a0] transition-colors"
+        >
+          {t(ui.common.backToHome, lang)}
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Catches render errors in any page so we show a message instead of a blank white screen.
@@ -18,22 +40,7 @@ class PageErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      return (
-        <div className="min-h-[60vh] flex flex-col items-center justify-center px-6 py-16 bg-[#FAF9F5]">
-          <div className="max-w-md w-full text-center">
-            <h1 className="text-2xl font-black text-gray-800 mb-2">Something went wrong</h1>
-            <p className="text-gray-500 text-sm mb-8">
-              This page could not load. Please try again or go back home.
-            </p>
-            <Link
-              to="/"
-              className="inline-block px-8 py-4 bg-[#6160AB] text-white font-bold rounded-xl hover:bg-[#5050a0] transition-colors"
-            >
-              Back to Home
-            </Link>
-          </div>
-        </div>
-      );
+      return <ErrorFallback />;
     }
     return this.props.children;
   }

@@ -9,6 +9,7 @@ import MeeterWho from './pages/MeeterWho'
 import MeeterFeatures from './pages/MeeterFeatures'
 
 import About from './pages/About'
+import TeamMember from './pages/TeamMember'
 import Contact from './pages/Contact'
 import Events from './pages/Events'
 import EventDetails from './pages/EventDetails'
@@ -71,6 +72,7 @@ export default function App() {
               <Route path="/knowledge/:id" element={<Knowledge />} />
               <Route path="/knowledge/:id/:slug" element={<Knowledge />} />
               <Route path="/about" element={<About />} />
+              <Route path="/about/team/:slug" element={<TeamMember />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
               <Route path="/termsofuse" element={<LegalPage type="terms" />} />

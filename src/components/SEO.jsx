@@ -1,8 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
+// Canonical production origin for OG tags, canonical URLs, and absolute image resolution (Hostinger).
 const siteUrl = 'https://www.thehbm.org';
-// Default OG image: use 1200×630 for rich previews on WhatsApp/social. Must be absolute URL; crawlers need public access.
+// Default OG image: use 1200×630 for rich previews on WhatsApp/social. Custom OG images should also be 1200×630.
 const defaultImage = 'https://www.thehbm.org/wp-content/uploads/2025/06/Logo-and-Tagline.png';
 
 /** Ensures og:image is always an absolute URL. Missing/empty image → defaultImage (fallback so link preview is never broken). */
@@ -100,6 +101,7 @@ function getBasePath(pathname) {
   const segments = pathname.replace(/^\/|\/$/g, '').split('/');
   if (segments[0] === 'events' && segments.length > 1) return '/events';
   if (segments[0] === 'knowledge') return '/knowledge';
+  if (segments[0] === 'about') return '/about';
   const base = '/' + segments[0];
   return pageSEO[base] ? base : pathname in pageSEO ? pathname : '/';
 }

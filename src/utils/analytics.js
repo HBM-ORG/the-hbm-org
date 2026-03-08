@@ -55,7 +55,9 @@ export const initAnalytics = () => {
         'environment': 'production'
     });
 
-    console.log("🦅 HBM Global Analytics: Initialization Complete (Respecting Consent)");
+    if (import.meta.env.DEV) {
+        console.log("🦅 HBM Global Analytics: Initialization Complete (Respecting Consent)");
+    }
 };
 
 const loadGoogleAnalytics = () => {
@@ -190,7 +192,9 @@ export const trackEvent = (actionName, params = {}) => {
         });
     }
 
-    console.log(`🎯 ENTERPRISE DATA CAPTURED: [${actionName}]`, params);
+    if (import.meta.env.DEV) {
+        console.log(`🎯 ENTERPRISE DATA CAPTURED: [${actionName}]`, params);
+    }
 };
 
 /**

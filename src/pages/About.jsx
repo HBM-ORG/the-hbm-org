@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { siteContent } from "../data/content";
 import { useI18n, t } from "../i18n/context";
+import { ui } from "../i18n/translations";
 import { getWhatsappUrl } from "../components/Layout";
 import { ArrowRight, X, Linkedin, User } from "lucide-react";
 import EyebrowBadge from "../components/EyebrowBadge";
@@ -179,7 +180,7 @@ export default function About() {
       <section className="bg-hbm-cream pt-10 pb-6">
         <div className="max-w-4xl mx-auto text-center px-6">
           <div className="mb-4 flex flex-col items-center">
-            <EyebrowBadge text="ABOUT US" />
+            <EyebrowBadge text={t(ui.about.eyebrow, lang)} />
           </div>
           <h1
             className="text-4xl md:text-7xl font-bold mb-2 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent"
@@ -533,6 +534,7 @@ export default function About() {
             </h2>
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div className="flex justify-center">
+                {/* Logo path must exist in public/logos/ at build/deploy (Hostinger). Root-relative paths are correct for production. */}
                 <img
                   src="/logos/file-2qgRiQ7eUZ1uhx7Xfasq3P-The HBM LOGO.png"
                   alt="HBM Logo"

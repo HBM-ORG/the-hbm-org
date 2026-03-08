@@ -831,6 +831,26 @@ app.post("/api/newsletter", async (req, res) => {
   }
 });
 
+// Contact form submission (public)
+app.post("/api/contact", async (req, res) => {
+  try {
+    const { name, email, message, type } = req.body;
+    if (!email || !message) {
+      return res.status(400).json({ error: "Missing email or message" });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(String(email).trim())) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
+    // Log for now; can later store in DB or forward to EmailQueue
+    console.log("[Contact]", { name: name || "", email: email.trim(), message: (message || "").slice(0, 200), type: type ?? null });
+    res.json({ success: true, message: "Message received" });
+  } catch (err) {
+    console.error("Contact form error:", err);
+    res.status(500).json({ error: "Failed to submit" });
+  }
+});
+
 // ==========================================
 // ENTERPRISE EMAIL ENGINE (THE MONSTER)
 // ==========================================

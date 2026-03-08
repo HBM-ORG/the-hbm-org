@@ -1,6 +1,7 @@
 import React from 'react';
 import { legalContent } from '../data/legal';
 import { useI18n, t } from '../i18n/context';
+import { ui } from '../i18n/translations';
 import SEO from '../components/SEO';
 
 /**
@@ -24,7 +25,7 @@ export default function LegalPage({ type }) {
 
   return (
     <div className="min-h-screen bg-hbm-cream pt-20 pb-20">
-      <SEO path={path} title={title} description={type === 'terms' ? 'Terms of use for The HBM website and services.' : 'The HBM privacy policy. How we collect, use, and protect your personal information.'} />
+      <SEO path={path} title={title} description={type === 'terms' ? t(ui.common.termsSeoDesc, lang) : t(ui.common.privacySeoDesc, lang)} />
       <article className="max-w-3xl mx-auto px-6">
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
           <header className="p-8 md:p-12 border-b border-gray-100">

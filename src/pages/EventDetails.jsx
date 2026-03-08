@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useEvents } from '../context/EventsContext';
 import NextEventHero from '../components/Events/NextEventHero';
 import { ArrowLeft } from 'lucide-react';
 import SEO from '../components/SEO';
+import { useI18n, t } from '../i18n/context';
+import { ui } from '../i18n/translations';
 
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { lang } = useI18n();
   const { events, loading } = useEvents();
   const [event, setEvent] = useState(null);
   const [notFound, setNotFound] = useState(false);
@@ -30,7 +32,7 @@ const EventDetails = () => {
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-          <p className="text-white/50 text-sm font-bold uppercase tracking-widest">Loading Event...</p>
+          <p className="text-white/50 text-sm font-bold uppercase tracking-widest">{t(ui.events.loadingEvent, lang)}</p>
         </div>
       </div>
     );
@@ -42,9 +44,9 @@ const EventDetails = () => {
       <div className="min-h-screen bg-hbm-cream flex items-center justify-center">
         <div className="text-center">
           <div className="text-8xl font-black text-gray-200 mb-4">404</div>
-          <h1 className="text-2xl font-black text-gray-700 mb-6">Event Not Found</h1>
+          <h1 className="text-2xl font-black text-gray-700 mb-6">{t(ui.events.eventNotFound, lang)}</h1>
           <button onClick={() => navigate('/events')} className="bg-[#6160AB] text-white px-8 py-3 rounded-full font-bold hover:bg-[#5150aa] transition-all">
-            Back to Events
+            {t(ui.events.backToEvents, lang)}
           </button>
         </div>
       </div>
@@ -54,8 +56,8 @@ const EventDetails = () => {
   return (
     <>
       <SEO
-        title={`${event.title?.en || event.title} | The HBM`}
-        description={event.description?.en || event.description}
+        title={`${event.title?.[lang] || event.title?.en || event.title} | The HBM`}
+        description={event.description?.[lang] || event.description?.en || event.description}
         image={event.heroImage || event.image || event.thumbnail}
         type="article"
       />

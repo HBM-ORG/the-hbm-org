@@ -23,6 +23,7 @@ import NextVideoEvent from "../components/Home/NextVideoEvent";
 import NextPageBridge from "../components/NextPageBridge";
 import SEO from "../components/SEO";
 import { getApiBase } from "../utils/api";
+import { ui } from "../i18n/translations";
 
 const Events = () => {
   const { lang } = useI18n();
@@ -80,7 +81,7 @@ const Events = () => {
 
   return (
     <div className="min-h-screen bg-[#FAF9F5] overflow-x-hidden">
-      <SEO />
+      <SEO title={t(ui.events.seoTitle, lang)} description={t(ui.events.seoDesc, lang)} />
 
       {/* 1. Header Section (Who We Are Style) */}
       <section className="bg-[#FAF9F5] pt-20 pb-16">

@@ -44,6 +44,21 @@ export const ui = {
     pastEvent:  { en: 'Past Event', he: 'אירוע עבר', es: 'Evento pasado', fr: 'Événement passé', de: 'Vergangenes Event', ar: 'فعالية سابقة' },
     upcomingExp: { en: 'Upcoming Experience', he: 'החוויה הבאה', es: 'Próxima experiencia', fr: 'Prochaine expérience', de: 'Kommendes Erlebnis', ar: 'التجربة القادمة' },
     gallery:    { en: 'Event Gallery', he: 'גלריית האירוע', es: 'Galería del evento', fr: "Galerie de l'événement", de: 'Event-Galerie', ar: 'معرض الفعالية' },
+    seoTitle:  { en: 'HBM Networking Events | Israel 2025-2026 Experience', he: 'אירועי HBM | חוויה ישראל 2025-2026', es: 'Eventos HBM | Experiencia Israel', fr: 'Événements HBM | Expérience Israel', de: 'HBM Events | Israel Erlebnis', ar: 'فعاليات HBM | تجربة إسرائيل' },
+    seoDesc:   { en: 'Join the next HBM experience. Browse our gallery and book your spot for upcoming networking meetups.', he: 'הצטרפו לחוויה הבאה של HBM. עיינו בגלריה והזמינו מקום באירועי networking.', es: 'Únete a la próxima experiencia HBM. Navega la galería y reserva tu lugar.', fr: 'Rejoignez la prochaine expérience HBM. Parcourez la galerie et réservez.', de: 'Nimm am nächsten HBM-Erlebnis teil. Galerie durchsuchen und Platz buchen.', ar: 'انضم لتجربة HBM القادمة. تصفح المعرض واحجز مكانك.' },
+    loadingEvent: { en: 'Loading Event...', he: 'טוען אירוע...', es: 'Cargando evento...', fr: 'Chargement de l\'événement...', de: 'Event wird geladen...', ar: 'جاري تحميل الفعالية...' },
+    eventNotFound: { en: 'Event Not Found', he: 'האירוע לא נמצא', es: 'Evento no encontrado', fr: 'Événement introuvable', de: 'Event nicht gefunden', ar: 'الفعالية غير موجودة' },
+    backToEvents: { en: 'Back to Events', he: 'חזרה לאירועים', es: 'Volver a eventos', fr: 'Retour aux événements', de: 'Zurück zu Events', ar: 'العودة إلى الفعاليات' },
+  },
+  common: {
+    backToHome: { en: 'Back to Home', he: 'חזרה לדף הבית', es: 'Volver al inicio', fr: 'Retour à l\'accueil', de: 'Zurück zur Startseite', ar: 'العودة للصفحة الرئيسية' },
+    loadingWorld: { en: 'Loading World...', he: 'טוען עולם...', es: 'Cargando mundo...', fr: 'Chargement du monde...', de: 'Welt wird geladen...', ar: 'جاري تحميل العالم...' },
+    errorTitle: { en: 'Something went wrong', he: 'משהו השתבש', es: 'Algo salió mal', fr: 'Une erreur s\'est produite', de: 'Etwas ist schiefgelaufen', ar: 'حدث خطأ ما' },
+    errorMessage: { en: 'This page could not load. Please try again or go back home.', he: 'הדף לא נטען. נסו שוב או חזרו לדף הבית.', es: 'Esta página no pudo cargarse. Intenta de nuevo o vuelve al inicio.', fr: 'Cette page n\'a pas pu se charger. Réessayez ou retournez à l\'accueil.', de: 'Diese Seite konnte nicht geladen werden. Bitte erneut versuchen oder zur Startseite zurückkehren.', ar: 'تعذر تحميل هذه الصفحة. حاول مرة أخرى أو ارجع للصفحة الرئيسية.' },
+    cookieSeoTitle: { en: 'Cookie Policy | The HBM', he: 'מדיניות עוגיות | The HBM', es: 'Política de cookies | The HBM', fr: 'Politique des cookies | The HBM', de: 'Cookie-Richtlinie | The HBM', ar: 'سياسة ملفات تعريف الارتباط | The HBM' },
+    cookieSeoDesc:  { en: 'How The HBM uses cookies and similar technologies. Your privacy matters.', he: 'כיצד The HBM משתמש בעוגיות. הפרטיות שלכם חשובה.', es: 'Cómo The HBM usa cookies. Tu privacidad importa.', fr: 'Comment The HBM utilise les cookies. Votre vie privée compte.', de: 'Wie The HBM Cookies nutzt. Deine Privatsphäre zählt.', ar: 'كيف تستخدم The HBM ملفات تعريف الارتباط. خصوصيتك تهمنا.' },
+    termsSeoDesc:   { en: 'Terms of use for The HBM website and services. Please read before using our site.', he: 'תנאי שימוש באתר ובשירותי The HBM. קראו לפני השימוש.', es: 'Términos de uso del sitio y servicios The HBM.', fr: 'Conditions d\'utilisation du site et des services The HBM.', de: 'Nutzungsbedingungen der The HBM Website und Dienste.', ar: 'شروط استخدام موقع وخدمات The HBM.' },
+    privacySeoDesc: { en: 'The HBM privacy policy. How we collect, use, and protect your personal information.', he: 'מדיניות הפרטיות של The HBM. איך אנחנו אוספים ומגנים על המידע שלכם.', es: 'Política de privacidad de The HBM.', fr: 'Politique de confidentialité The HBM.', de: 'Datenschutzrichtlinie von The HBM.', ar: 'سياسة خصوصية The HBM.' },
   },
   form: {
     fullName:   { en: 'Full Name', he: 'שם מלא', es: 'Nombre completo', fr: 'Nom complet', de: 'Vollständiger Name', ar: 'الاسم الكامل' },
@@ -58,6 +73,8 @@ export const ui = {
     reserving:  { en: 'Reserving...', he: 'שומר מקום...', es: 'Reservando...', fr: 'Réservation...', de: 'Wird reserviert...', ar: 'جارٍ الحجز...' },
     youreIn:    { en: "You're In!", he: 'אתם בפנים!', es: '¡Ya estás dentro!', fr: 'Vous êtes inscrit !', de: 'Du bist dabei!', ar: 'أنت داخل!' },
     checkEmail: { en: 'Check your email for details.', he: 'בדקו את המייל לפרטים.', es: 'Revisa tu correo para más detalles.', fr: 'Vérifiez votre e-mail pour les détails.', de: 'Prüfe deine E-Mail für Details.', ar: 'تحقق من بريدك الإلكتروني للتفاصيل.' },
+    regSeoTitle: { en: 'Register for HBM Event | Reserve Your Spot', he: 'הרשמה לאירוע HBM | שריין מקום', es: 'Registro evento HBM', fr: 'Inscription événement HBM', de: 'Für HBM Event anmelden', ar: 'التسجيل لفعالية HBM' },
+    regSeoDesc:  { en: 'Reserve your spot at the next HBM networking event. 8-minute connections that matter.', he: 'שריינו מקום באירוע ה-networking הבא של HBM. חיבורים של 8 דקות שמשנים.', es: 'Reserva tu lugar en el próximo evento HBM.', fr: 'Réservez votre place au prochain événement HBM.', de: 'Reserviere deinen Platz beim nächsten HBM-Event.', ar: 'احجز مكانك في فعالية HBM القادمة.' },
     termsAgree: {
       en: "I approve that I have read and agree to the Terms of Use and Privacy Policy.",
       he: 'אני מאשר/ת שקראתי והסכמתי לתנאי השימוש ולמדיניות הפרטיות.',
@@ -85,6 +102,8 @@ export const ui = {
   contact: {
     title:    { en: 'Contact Us', he: 'צרו קשר', es: 'Contáctanos', fr: 'Contactez-nous', de: 'Kontakt', ar: 'اتصل بنا' },
     subtitle: { en: "We'd love to hear from you", he: 'נשמח לשמוע מכם', es: 'Nos encantaría saber de ti', fr: 'Nous serions ravis de vous entendre', de: 'Wir freuen uns von euch zu hören', ar: 'يسعدنا الاستماع إليك' },
+    seoTitle: { en: 'Contact The HBM | Get in Touch', he: 'צרו קשר | The HBM', es: 'Contactar The HBM', fr: 'Contact The HBM', de: 'Kontakt The HBM', ar: 'اتصل بـ The HBM' },
+    seoDesc:  { en: 'Reach out to The HBM team. Questions, partnerships, or just say hello—we\'re here for human connection.', he: 'צרו קשר עם צוות The HBM. שאלות, שותפויות או פשוט לומר שלום.', es: 'Contacta al equipo de The HBM. Preguntas, asociaciones o simplemente di hola.', fr: 'Contactez l\'équipe The HBM. Questions, partenariats ou dites bonjour.', de: 'Kontaktiere das The HBM Team. Fragen, Partnerschaften oder sag einfach Hallo.', ar: 'تواصل مع فريق The HBM. أسئلة أو شراكات أو قل مرحباً.' },
     whatsapp: { en: 'Message us on WhatsApp', he: 'שלחו לנו הודעה בוואטסאפ', es: 'Escríbenos por WhatsApp', fr: 'Écrivez-nous sur WhatsApp', de: 'Schreib uns auf WhatsApp', ar: 'راسلنا على واتساب' },
     emailUs:  { en: 'Email us', he: 'שלחו לנו מייל', es: 'Envíanos un correo', fr: 'Envoyez-nous un e-mail', de: 'Schreib uns eine E-Mail', ar: 'راسلنا بالبريد الإلكتروني' },
     name:     { en: 'Name', he: 'שם', es: 'Nombre', fr: 'Nom', de: 'Name', ar: 'الاسم' },
@@ -104,6 +123,8 @@ export const ui = {
     minRead:  { en: 'min read', he: 'דקות קריאה', es: 'min de lectura', fr: 'min de lecture', de: 'Min. Lesezeit', ar: 'دقيقة للقراءة' },
   },
   about: {
+    eyebrow:  { en: 'ABOUT US', he: 'אודות', es: 'SOBRE NOSOTROS', fr: 'À PROPOS', de: 'ÜBER UNS', ar: 'من نحن' },
+    backToAbout: { en: 'Back to About', he: 'חזרה לאודות', es: 'Volver a Nosotros', fr: 'Retour à À propos', de: 'Zurück zu Über uns', ar: 'العودة إلى من نحن' },
     team:     { en: 'Meet The Team', he: 'הכירו את הצוות', es: 'Conoce al equipo', fr: "Rencontrez l'équipe", de: 'Das Team', ar: 'تعرّف على الفريق' },
     values:   { en: 'Our Values', he: 'הערכים שלנו', es: 'Nuestros valores', fr: 'Nos valeurs', de: 'Unsere Werte', ar: 'قيمنا' },
     vision:   { en: 'Our Vision', he: 'החזון שלנו', es: 'Nuestra visión', fr: 'Notre vision', de: 'Unsere Vision', ar: 'رؤيتنا' },
