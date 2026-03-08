@@ -1,26 +1,33 @@
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
 import { I18nProvider } from './i18n/context'
 import Layout from './components/Layout'
-import SEO from './components/SEO'
 import Home from './pages/Home'
-import MeeterWhat from './pages/MeeterWhat'
-import MeeterWho from './pages/MeeterWho'
-import MeeterFeatures from './pages/MeeterFeatures'
-
-import About from './pages/About'
-import TeamMember from './pages/TeamMember'
-import Contact from './pages/Contact'
-import Events from './pages/Events'
-import EventDetails from './pages/EventDetails'
-import Knowledge from './pages/Knowledge'
-import EventRegister from './pages/EventRegister'
-import AdminDashboard from './pages/AdminDashboard'
-import CookiePolicy from './pages/CookiePolicy'
-import LegalPage from './pages/LegalPage'
 import { EventsProvider } from './context/EventsContext'
-
 import { trackPageView, initAnalytics } from './utils/analytics'
+
+// Lazy-load all non-initial routes for faster first load and smaller initial bundle
+const MeeterWhat = lazy(() => import('./pages/MeeterWhat'))
+const MeeterWho = lazy(() => import('./pages/MeeterWho'))
+const MeeterFeatures = lazy(() => import('./pages/MeeterFeatures'))
+const About = lazy(() => import('./pages/About'))
+const TeamMember = lazy(() => import('./pages/TeamMember'))
+const Contact = lazy(() => import('./pages/Contact'))
+const Events = lazy(() => import('./pages/Events'))
+const EventDetails = lazy(() => import('./pages/EventDetails'))
+const Knowledge = lazy(() => import('./pages/Knowledge'))
+const EventRegister = lazy(() => import('./pages/EventRegister'))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const CookiePolicy = lazy(() => import('./pages/CookiePolicy'))
+const LegalPage = lazy(() => import('./pages/LegalPage'))
+
+function PageLoader() {
+  return (
+    <div className="min-h-[40vh] flex items-center justify-center" aria-hidden="true">
+      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
 
 function ScrollToHash() {
   const { hash, pathname } = useLocation()
@@ -48,8 +55,13 @@ function AnalyticsTracker() {
 
 export default function App() {
   useEffect(() => {
-    initAnalytics();
-  }, []);
+    const runAnalytics = () => initAnalytics()
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(runAnalytics, { timeout: 2500 })
+    } else {
+      setTimeout(runAnalytics, 500)
+    }
+  }, [])
 
   return (
     <I18nProvider>
@@ -60,34 +72,32 @@ export default function App() {
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
-              <Route path="/meeter" element={<MeeterWhat />} />
-              <Route path="/meeter/who" element={<MeeterWho />} />
-              <Route path="/meeter/features" element={<MeeterFeatures />} />
+              <Route path="/meeter" element={<Suspense fallback={<PageLoader />}><MeeterWhat /></Suspense>} />
+              <Route path="/meeter/who" element={<Suspense fallback={<PageLoader />}><MeeterWho /></Suspense>} />
+              <Route path="/meeter/features" element={<Suspense fallback={<PageLoader />}><MeeterFeatures /></Suspense>} />
 
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/:id" element={<EventDetails />} />
-              <Route path="/events/register" element={<EventRegister />} />
-              <Route path="/register" element={<EventRegister />} />
-              <Route path="/knowledge" element={<Knowledge />} />
-              <Route path="/knowledge/:id" element={<Knowledge />} />
-              <Route path="/knowledge/:id/:slug" element={<Knowledge />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/about/team/:slug" element={<TeamMember />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/cookie-policy" element={<CookiePolicy />} />
-              <Route path="/termsofuse" element={<LegalPage type="terms" />} />
-              <Route path="/termsofuse/" element={<LegalPage type="terms" />} />
-              <Route path="/privacypolicy" element={<LegalPage type="privacy" />} />
-              <Route path="/privacypolicy/" element={<LegalPage type="privacy" />} />
+              <Route path="/events" element={<Suspense fallback={<PageLoader />}><Events /></Suspense>} />
+              <Route path="/events/:id" element={<Suspense fallback={<PageLoader />}><EventDetails /></Suspense>} />
+              <Route path="/events/register" element={<Suspense fallback={<PageLoader />}><EventRegister /></Suspense>} />
+              <Route path="/register" element={<Suspense fallback={<PageLoader />}><EventRegister /></Suspense>} />
+              <Route path="/knowledge" element={<Suspense fallback={<PageLoader />}><Knowledge /></Suspense>} />
+              <Route path="/knowledge/:id" element={<Suspense fallback={<PageLoader />}><Knowledge /></Suspense>} />
+              <Route path="/knowledge/:id/:slug" element={<Suspense fallback={<PageLoader />}><Knowledge /></Suspense>} />
+              <Route path="/about" element={<Suspense fallback={<PageLoader />}><About /></Suspense>} />
+              <Route path="/about/team/:slug" element={<Suspense fallback={<PageLoader />}><TeamMember /></Suspense>} />
+              <Route path="/contact" element={<Suspense fallback={<PageLoader />}><Contact /></Suspense>} />
+              <Route path="/cookie-policy" element={<Suspense fallback={<PageLoader />}><CookiePolicy /></Suspense>} />
+              <Route path="/termsofuse" element={<Suspense fallback={<PageLoader />}><LegalPage type="terms" /></Suspense>} />
+              <Route path="/termsofuse/" element={<Suspense fallback={<PageLoader />}><LegalPage type="terms" /></Suspense>} />
+              <Route path="/privacypolicy" element={<Suspense fallback={<PageLoader />}><LegalPage type="privacy" /></Suspense>} />
+              <Route path="/privacypolicy/" element={<Suspense fallback={<PageLoader />}><LegalPage type="privacy" /></Suspense>} />
 
-              {/* Admin Dashboard - available when site is live (protected by password) */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
+              <Route path="/admin-dashboard" element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
 
-              {/* Redirects */}
-              <Route path="/b2b" element={<MeeterWho />} />
-              <Route path="/faq" element={<MeeterWhat />} />
-              <Route path="/gallery" element={<Events />} />
+              <Route path="/b2b" element={<Suspense fallback={<PageLoader />}><MeeterWho /></Suspense>} />
+              <Route path="/faq" element={<Suspense fallback={<PageLoader />}><MeeterWhat /></Suspense>} />
+              <Route path="/gallery" element={<Suspense fallback={<PageLoader />}><Events /></Suspense>} />
             </Route>
           </Routes>
         </BrowserRouter>

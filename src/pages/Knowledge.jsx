@@ -78,14 +78,15 @@ const VideoCard = React.memo(({ item, index }) => {
         )}
       </div>
 
-      <div className="p-4 md:p-6 flex flex-col">
+      <div className="p-4 md:p-6 flex flex-col flex-shrink-0">
         <h3
           className={`font-black text-hbm-dark mb-1.5 tracking-tight leading-tight group-hover:text-[var(--accent)] transition-colors ${isLarge ? "text-xl md:text-3xl" : "text-base md:text-lg"}`}
         >
           {item.title}
         </h3>
         <p
-          className={`text-gray-600 font-medium leading-relaxed line-clamp-2 md:line-clamp-3 ${isLarge ? "text-sm md:text-base" : "text-xs md:text-sm"}`}
+          className={`text-gray-600 font-medium leading-relaxed overflow-visible whitespace-normal ${isLarge ? "text-sm md:text-base" : "text-xs md:text-sm"}`}
+          style={{ WebkitLineClamp: "unset", display: "block" }}
         >
           {item.description}
         </p>
@@ -148,11 +149,11 @@ const KnowledgeCard = React.memo(({ item, onClick, index }) => {
           </div>
 
           <h3
-            className={`${isFeatured ? "text-lg md:text-3xl" : "text-base md:text-lg"} font-black leading-tight mb-1 line-clamp-2 text-shadow-sm`}
+            className={`${isFeatured ? "text-lg md:text-3xl" : "text-base md:text-lg"} font-black leading-tight mb-1 text-shadow-sm`}
           >
             {item.title}
           </h3>
-          <p className="text-[10px] md:text-sm opacity-90 font-bold text-gray-200 line-clamp-1 uppercase tracking-wider">
+          <p className="text-[10px] md:text-sm opacity-90 font-bold text-gray-200 uppercase tracking-wider">
             {item.author}
           </p>
 
@@ -586,19 +587,19 @@ export default function Knowledge() {
         }
       />
 
-      {/* Visual Alignment Header (Matches Who We Are) */}
-      <section className="bg-hbm-cream pt-20 pb-16 border-b border-gray-200/50">
-        <div className="max-w-4xl mx-auto text-center px-6">
-          <div className="mb-6">
+      {/* Visual Alignment Header – מובייל: צמוד למעלה כמו דסקטופ */}
+      <section className="bg-hbm-cream pt-4 pb-2 md:pt-12 md:pb-6 border-b border-gray-200/50">
+        <div className="max-w-4xl mx-auto text-center px-4 md:px-6">
+          <div className="mb-2 md:mb-6">
             <EyebrowBadge text="KNOWLEDGE" />
           </div>
           <h1
-            className="text-4xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent"
+            className="text-2xl font-bold mb-2 md:text-7xl md:mb-4 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] bg-clip-text text-transparent"
             style={{ letterSpacing: "-2px" }}
           >
             The Growth Library
           </h1>
-          <p className="text-xl text-hbm-gray max-w-2xl mx-auto">
+          <p className="hidden md:block text-xl text-hbm-gray max-w-2xl mx-auto">
             A carefully curated collection of timeless wisdom for the modern
             mind. From personal development and entrepreneurship to psychology
             and philosophy.
@@ -606,9 +607,9 @@ export default function Knowledge() {
         </div>
       </section>
 
-      {/* Sticky Search Bar (No categories as per request) */}
-      <div className="sticky top-20 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 mb-12 shadow-sm transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-center gap-6">
+      {/* Sticky Tab Bar – צמוד ללמעלה */}
+      <div className="sticky top-20 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 mb-4 shadow-sm transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-2 md:py-3 flex flex-col md:flex-row items-center justify-center gap-6">
           {/* Tab Switcher */}
           <div className="flex bg-gray-100/50 p-1 rounded-2xl border border-gray-200/50">
             <button

@@ -719,11 +719,23 @@ const NextEventHero = ({
           <div className="mb-24">
             <div className="text-center mb-8">
               <h4 className="text-[10px] font-black text-[#F07B3C] uppercase tracking-[0.4em] mb-3">
-                Finding Us
+                {t({ en: "Finding Us", he: "איך מגיעים" }, effectiveLang)}
               </h4>
-              <h3 className="text-3xl font-black text-hbm-dark tracking-tighter">
-                {event.locationParams?.addressText || "Dolev 4, Raanana"}
-              </h3>
+              {(() => {
+                const address = event.locationParams?.addressText || "Dolev 4, Raanana";
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+                return (
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="event-maps-link inline-flex items-center gap-2 text-2xl md:text-3xl font-black tracking-tighter underline underline-offset-4 transition-colors"
+                  >
+                    <MapPin className="w-6 h-6 shrink-0" />
+                    {address}
+                  </a>
+                );
+              })()}
             </div>
             <div className="rounded-[2.5rem] overflow-hidden shadow-2xl border border-white h-[450px] relative group">
               <iframe
@@ -738,15 +750,11 @@ const NextEventHero = ({
                   }
                   return url;
                 })()}
-                className="w-full h-full grayscale group-hover:grayscale-0 transition-all duration-700"
+                className="w-full h-full"
                 loading="lazy"
                 allowFullScreen
                 title="Event Location"
               ></iframe>
-              <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-4 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center gap-2 pointer-events-none">
-                <MapPin className="w-3 h-3 text-hbm-orange" />{" "}
-                {event.location || "Raanana"}
-              </div>
             </div>
           </div>
 

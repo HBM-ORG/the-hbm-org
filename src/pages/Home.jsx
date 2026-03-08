@@ -1,22 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MacbookScroll } from "../components/ui/MacbookScroll";
 import { siteContent } from "../data/content";
 import { useI18n, t } from "../i18n/context";
-import { ui } from "../i18n/translations";
 import { getWhatsappUrl } from "../components/Layout";
 import { ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import {
   AnimatedHero,
   Why8Minutes,
-  QuoteCarousel,
   InteractiveCard,
-  PhilosophyQuote,
-  ManifestoSection,
-  Guidelines,
-  HowItWorks,
 } from "../components/Home";
+// Below-the-fold heavy components: load in separate chunks for faster first paint
+const QuoteCarousel = lazy(() => import("../components/Home/QuoteCarousel").then((m) => ({ default: m.default })));
+const Guidelines = lazy(() => import("../components/Home/Guidelines").then((m) => ({ default: m.default })));
 import BubbleContainer from "../components/BubbleContainer";
 import NextPageBridge from "../components/NextPageBridge";
 import EyebrowBadge from "../components/EyebrowBadge";
@@ -292,7 +288,9 @@ export default function Home() {
     fetch(`${getApiBase()}/api/site-content`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.partners?.length) setPartnerLogosList(data.partners);
+        if (data?.partners?.length) {
+          setPartnerLogosList(data.partners);
+        }
         if (data?.testimonials?.length) setTestimonialsList(data.testimonials);
       })
       .catch(() => {});
@@ -432,11 +430,15 @@ export default function Home() {
       <Why8Minutes />
 
       {/* ═══════════════════ REAL IMPACT TESTIMONIALS REMOVED PER USER REQUEST ═══════════════════ */}
-      {/* ═══════════════════ DAILY INSPIRATION — QUOTE CAROUSEL ═══════════════════ */}
-      <QuoteCarousel />
+      {/* ═══════════════════ DAILY INSPIRATION — QUOTE CAROUSEL (lazy) ═══════════════════ */}
+      <Suspense fallback={<div className="min-h-[280px] bg-hbm-cream" aria-hidden="true" />}>
+        <QuoteCarousel />
+      </Suspense>
 
-      {/* ═══════════════════ WHAT MAKES THIS WORK — Guidelines ═══════════════════ */}
-      <Guidelines />
+      {/* ═══════════════════ WHAT MAKES THIS WORK — Guidelines (lazy) ═══════════════════ */}
+      <Suspense fallback={<div className="min-h-[320px] bg-hbm-cream" aria-hidden="true" />}>
+        <Guidelines />
+      </Suspense>
 
       <NextPageBridge
         to="/meeter"

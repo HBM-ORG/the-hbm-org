@@ -472,7 +472,9 @@ export default function MeeterWho() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.testimonials?.length) setTestimonialsList(data.testimonials);
-        if (data?.partners?.length) setPartnerLogosList(data.partners);
+        if (data?.partners?.length) {
+          setPartnerLogosList(data.partners);
+        }
       })
       .catch(() => {});
   }, []);

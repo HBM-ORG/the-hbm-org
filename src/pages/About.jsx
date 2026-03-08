@@ -131,7 +131,9 @@ function ValuesGrid({ lang }) {
     </div>
   );
 }
-const defaultTeam = Array.isArray(siteContent?.about?.team?.members) ? siteContent.about.team.members : [];
+const defaultTeam = Array.isArray(siteContent?.about?.team?.members)
+  ? siteContent.about.team.members
+  : [];
 
 export default function About() {
   const { lang } = useI18n();
@@ -150,10 +152,25 @@ export default function About() {
               (sm) => sm && sm.name === member.name,
             );
             if (staticMatch) {
-              if (!member.image && !member.imageUrl) member.image = staticMatch.image;
-              if (member.bio === undefined || member.bio === '') member.bio = staticMatch.bio;
-              if (member.funFact === undefined || member.funFact === '') member.funFact = staticMatch.funFact;
-              if (member.funFacts === undefined && staticMatch.funFacts) member.funFacts = staticMatch.funFacts;
+              if (!member.image && !member.imageUrl)
+                member.image = staticMatch.image;
+              // Always fallback to static bio/funFact when API has none (so production shows content even if backend has old JSON)
+              if (
+                !member.bio ||
+                (typeof member.bio === "string" && !member.bio.trim())
+              )
+                member.bio = staticMatch.bio;
+              if (
+                !member.funFact ||
+                (typeof member.funFact === "string" && !member.funFact.trim())
+              )
+                member.funFact = staticMatch.funFact;
+              if (member.funFacts === undefined && staticMatch.funFacts)
+                member.funFacts = staticMatch.funFacts;
+              if (!member.role && staticMatch.role)
+                member.role = staticMatch.role;
+              if (!member.nickname && staticMatch.nickname)
+                member.nickname = staticMatch.nickname;
             }
             return member;
           });
@@ -219,7 +236,8 @@ export default function About() {
                     We turn strangers into friends!
                   </span>
                   Through 8-minute random conversations,
-                  <br /> live at the event with the Meeter platform.
+                  <br /> live at the event or in a video call on the Meeter
+                  platform.
                   <br />
                   <span className="text-black font-bold mt-4 inline-block tracking-wide">
                     Real connection. Real people.
@@ -265,7 +283,10 @@ export default function About() {
 
       {/* Interactive World Connection Section — globe + sentence right below */}
       <section className="bg-hbm-cream pt-0 pb-8 overflow-hidden">
-        <div className="h-[360px] sm:h-[400px] md:h-[420px] w-full flex items-end justify-center" aria-hidden="true">
+        <div
+          className="h-[360px] sm:h-[400px] md:h-[420px] w-full flex items-end justify-center"
+          aria-hidden="true"
+        >
           <GlobeDemo key="about-globe" />
         </div>
         <div className="text-center mt-2 mb-4 px-4 -translate-y-2">
@@ -286,7 +307,10 @@ export default function About() {
         <BubbleContainer bgColor="white">
           <div className="max-w-6xl mx-auto w-full">
             <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-4 font-['Sora']">
-              {t(about?.values?.title ?? { en: "Our Values", he: "הערכים שלנו" }, lang)}
+              {t(
+                about?.values?.title ?? { en: "Our Values", he: "הערכים שלנו" },
+                lang,
+              )}
             </h2>
             <p className="text-hbm-gray text-center mb-12 font-['Sora']">
               {t(
@@ -312,7 +336,13 @@ export default function About() {
         <BubbleContainer bgColor="white">
           <div className="max-w-6xl mx-auto w-full relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold text-hbm-dark text-center mb-12">
-              {t(about?.team?.title ?? { en: "Meet The Team", he: "הכירו את הצוות" }, lang)}
+              {t(
+                about?.team?.title ?? {
+                  en: "Meet The Team",
+                  he: "הכירו את הצוות",
+                },
+                lang,
+              )}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
               {(teamMembers || [])
@@ -415,17 +445,17 @@ export default function About() {
               {/* Profile Image (Side) — smaller on mobile so bio fits on screen */}
               <div className="w-full md:w-2/5 md:max-w-sm shrink-0 bg-gray-100 relative flex items-start justify-center md:min-h-0">
                 <div className="w-full aspect-[3/4] max-h-[260px] sm:max-h-[320px] md:max-h-none md:aspect-square md:h-full overflow-hidden">
-                {selectedMember.image || selectedMember.imageUrl ? (
-                  <img
-                    src={selectedMember.image || selectedMember.imageUrl}
-                    alt={selectedMember.name}
-                    className="w-full h-full object-cover object-center"
-                  />
-                ) : (
-                  <div className="w-full h-full min-h-[200px] flex items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40">
-                    <User size={80} />
-                  </div>
-                )}
+                  {selectedMember.image || selectedMember.imageUrl ? (
+                    <img
+                      src={selectedMember.image || selectedMember.imageUrl}
+                      alt={selectedMember.name}
+                      className="w-full h-full object-cover object-center"
+                    />
+                  ) : (
+                    <div className="w-full h-full min-h-[200px] flex items-center justify-center bg-gradient-to-br from-hbm-purple/10 to-hbm-orange/10 text-hbm-purple/40">
+                      <User size={80} />
+                    </div>
+                  )}
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent text-white pointer-events-none">
                   <h3 className="text-3xl font-black text-white tracking-tight mb-1">
@@ -460,8 +490,8 @@ export default function About() {
                 )}
               </div>
 
-              {/* Bio Content (Main) — fixed max height so card size stays "בול"; long bio scrolls inside */}
-              <div className="w-full md:w-3/5 p-6 md:p-10 overflow-y-auto min-h-0 flex-1 max-h-[45vh] md:max-h-[55vh]">
+              {/* Bio Content (Main) — break-words so long text doesn't overflow on mobile */}
+              <div className="w-full md:w-3/5 p-6 md:p-10 overflow-y-auto min-h-0 flex-1 max-h-[45vh] md:max-h-[55vh] break-words">
                 {selectedMember.nickname && (
                   <p className="text-hbm-dark font-black italic text-lg mb-4">
                     {t(selectedMember.nickname, lang)}:
@@ -475,10 +505,18 @@ export default function About() {
                       {lang === "he" ? "ביו" : "Bio"}:{" "}
                     </p>
                     {typeof selectedMember.bio === "string" ? (
-                      <p className="text-sm text-gray-500 leading-relaxed">{selectedMember.bio}</p>
+                      <p className="text-sm text-gray-500 leading-relaxed break-words">
+                        {selectedMember.bio}
+                      </p>
                     ) : (
-                      (Array.isArray(t(selectedMember.bio, lang)) ? t(selectedMember.bio, lang) : []).map((para, idx) => (
-                        <p key={idx} className="text-sm text-gray-500 leading-relaxed mb-2">
+                      (Array.isArray(t(selectedMember.bio, lang))
+                        ? t(selectedMember.bio, lang)
+                        : []
+                      ).map((para, idx) => (
+                        <p
+                          key={idx}
+                          className="text-sm text-gray-500 leading-relaxed mb-2 break-words"
+                        >
                           {para}
                         </p>
                       ))
@@ -488,20 +526,34 @@ export default function About() {
                   {(() => {
                     let facts = [];
                     if (Array.isArray(selectedMember.funFacts)) {
-                      facts = selectedMember.funFacts.map((f) => (typeof f === "string" ? f : t(f, lang)));
+                      facts = selectedMember.funFacts.map((f) =>
+                        typeof f === "string" ? f : t(f, lang),
+                      );
                     } else if (selectedMember.funFact) {
                       const v = selectedMember.funFact;
                       const str = typeof v === "string" ? v : t(v, lang);
-                      facts = str ? str.split(/\n/).map((s) => s.trim()).filter(Boolean) : [];
+                      facts = str
+                        ? str
+                            .split(/\n/)
+                            .map((s) => s.trim())
+                            .filter(Boolean)
+                        : [];
                     }
                     if (facts.length === 0) return null;
                     return (
                       <div className="pt-4 border-t border-gray-100 space-y-2">
                         <p className="text-sm font-bold text-hbm-orange">
-                          {facts.length > 1 ? (lang === "he" ? "עובדות מהנות" : "Fun Facts") : (lang === "he" ? "עובדה מהנה" : "Fun Fact")}:{" "}
+                          {facts.length > 1
+                            ? lang === "he"
+                              ? "עובדות מהנות"
+                              : "Fun Facts"
+                            : lang === "he"
+                              ? "עובדה מהנה"
+                              : "Fun Fact"}
+                          :{" "}
                         </p>
                         {facts.map((fact, idx) => (
-                          <p key={idx} className="text-sm text-gray-500 italic">
+                          <p key={idx} className="text-sm text-gray-500 italic break-words">
                             {fact}
                           </p>
                         ))}

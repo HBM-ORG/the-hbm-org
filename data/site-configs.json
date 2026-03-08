@@ -8,6 +8,7 @@
       "imageUrl": "/assets/team/1764669004079.png",
       "linkedin": "https://www.linkedin.com/in/elad-hefets/",
       "bio": "The heart behind it all. Elad is the one who saw the possibility before anyone else did—and then made it happen. A family-first kind of guy with a mind full of ideas and a whiteboard always nearby. He's the glue, the dreamer, and the reason we're all here.",
+      "funFact": "Came up with HBM's entire vision during a long meditation. We're not saying he's a prophet, but we're not not saying it either.",
       "image": "/assets/team/1764669004079.png"
     },
     {
@@ -18,6 +19,7 @@
       "imageUrl": "/assets/team/alex.jpg",
       "linkedin": "https://www.linkedin.com/in/shraalex/",
       "bio": "The technical mastermind behind The HBM. Alex transforms complex visions into seamless, scalable reality. With a razor-sharp focus on architecture and user experience, he's the one making sure the magic happens reliably and beautifully.",
+      "funFact": "Can debug code in his sleep, and probably builds servers as a hobby. If it's technical, Alex has the answer.",
       "image": "/assets/team/alex.jpg"
     },
     {
@@ -28,6 +30,7 @@
       "imageUrl": "/assets/team/1688974168644.jpeg",
       "linkedin": "https://www.linkedin.com/in/tal-zohar-1807311ab/",
       "bio": "Tal's the force that keeps everything grounded, on track, and somehow still smiling. While we joke that she's the CEO in practice, no one's arguing. With a calm presence and sharp instincts, she quietly (but powerfully) makes sure things actually get done.",
+      "funFact": "Technically CFO. Spiritually? CEO, HR, and probably building maintenance too.",
       "image": "/assets/team/1688974168644.jpeg"
     },
     {
@@ -38,6 +41,7 @@
       "imageUrl": "/assets/team/1764586531367.jpeg",
       "linkedin": "https://www.linkedin.com/in/michal-merjan-996004352/",
       "bio": "More than just our office manager—Michal is the pulse, the hug, the one who remembers your birthday and your caffeine preference. Her love for cats is legendary, and honestly, we suspect they help her run the place behind the scenes.",
+      "funFact": "Knows something's up before you do. It's kind of spooky, but in a comforting way.",
       "image": "/assets/team/1764586531367.jpeg"
     },
     {
@@ -48,6 +52,7 @@
       "imageUrl": "/assets/team/1755082475456.jpeg",
       "linkedin": "https://www.linkedin.com/in/yuval-meir-hefetz/",
       "bio": "The older twin (by technicality, not by maturity), Yuval brings sharp focus and fresh curiosity into everything he does. Recently diving into data analysis, he's all about finding the hidden patterns behind how people connect. Equal parts thoughtful and turbocharged, he's proof that energy and insight make a powerful combo.",
+      "funFact": "Born 17 minutes before Liad, which he brings up exactly every 17 days.",
       "image": "/assets/team/1755082475456.jpeg"
     },
     {
@@ -58,6 +63,7 @@
       "imageUrl": "/assets/team/WhatsApp Image 2026-02-24 at 10.14.53.jpeg",
       "linkedin": "https://www.linkedin.com/in/liad-hefets/",
       "bio": "If marketing had a hype squad, Liad would lead it. Bold, warm, and always two steps ahead, he's got a gift for opening doors—and conversations. While Yuval dives into data, Liad dives into people. Together, they're a force. Separately? Still unstoppable.",
+      "funFact": "Once pitched HBM to a stranger in an elevator. It wasn't a short building.",
       "image": "/assets/team/WhatsApp Image 2026-02-24 at 10.14.53.jpeg"
     },
     {
@@ -68,6 +74,7 @@
       "imageUrl": "/assets/team/1757250848728.jpeg",
       "linkedin": "https://www.linkedin.com/in/shon-hazan-8b2046270/",
       "bio": "Shon came to us from Canada with a smile that feels like a warm welcome and a network that seems to span half the planet. After years in clean energy and international business, he randomly showed up at one of our Friday events and walked out with a job offer from Elad. Since then, he has been our door opener, deal starter, and the person who can turn any conversation into an opportunity.",
+      "funFact": "He got hired before he figured out where the snacks were. Rumor has it he is still not sure how it happened.",
       "image": "/assets/team/1757250848728.jpeg",
       "imagePosition": "center 20%",
       "imageScale": 1.4
@@ -102,47 +109,47 @@
   "partners": [
     {
       "id": "p44",
-      "name": "Milos",
+      "name": "Gav yam",
       "logoUrl": "/partner-logos/44.png"
     },
     {
       "id": "p45",
-      "name": "Herbert Samuel Hotels",
+      "name": "Dale",
       "logoUrl": "/partner-logos/45.png"
     },
     {
       "id": "p46",
-      "name": "Reichman University",
+      "name": "Redler",
       "logoUrl": "/partner-logos/46.png"
     },
     {
       "id": "p48",
-      "name": "Google",
+      "name": "point of you ",
       "logoUrl": "/partner-logos/48.png"
     },
     {
       "id": "p49",
-      "name": "Apple",
+      "name": "Milos",
       "logoUrl": "/partner-logos/49.png"
     },
     {
       "id": "p52",
-      "name": "Meta",
+      "name": "MATAM",
       "logoUrl": "/partner-logos/52.png"
     },
     {
       "id": "p50",
-      "name": "Amazon",
+      "name": "Herbert Samuel Hotels",
       "logoUrl": "/partner-logos/50.png"
     },
     {
       "id": "p51",
-      "name": "Microsoft",
+      "name": "Reichman",
       "logoUrl": "/partner-logos/51.png"
     },
     {
       "id": "p53",
-      "name": "Tesla",
+      "name": "STG",
       "logoUrl": "/partner-logos/53.png"
     }
   ],

@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   build: {
-    // Increase warning threshold to 1MB (Globe.js is large by design)
+    target: "es2020",
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {

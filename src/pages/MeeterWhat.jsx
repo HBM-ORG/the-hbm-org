@@ -74,7 +74,7 @@ export default function MeeterWhat() {
                 ) : (
                   <iframe 
                     key={`${mode}-play`}
-                    src={`${mode === 'virtual' ? "https://www.youtube.com/embed/PaElS1jAVEo" : "https://www.youtube.com/embed/Zkym_6Kd-lo"}?autoplay=1&mute=1&rel=0`} 
+                    src={`${mode === 'virtual' ? "https://www.youtube.com/embed/PaElS1jAVEo" : "https://www.youtube.com/embed/Zkym_6Kd-lo"}?autoplay=1&mute=0&rel=0`} 
                     title="HBM Video" 
                     className="absolute inset-0 w-full h-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -84,11 +84,6 @@ export default function MeeterWhat() {
               </div>
             </div>
             <p className="text-hbm-gray mt-6 italic text-sm">{t({ en: 'See how 8 minutes change everything.', he: 'ראו איך 8 דקות משנות הכל.' }, lang)}</p>
-            {isPlaying && (
-              <p className="text-hbm-gray mt-2 text-xs">
-                {t({ en: 'Video starts muted — click the speaker icon in the player for sound.', he: 'הסרטון מתחיל בהשתקה — לחצו על אייקון הרמקול בנגן לשמע.' }, lang)}
-              </p>
-            )}
           </div>
       </section>
 

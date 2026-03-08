@@ -10,7 +10,7 @@
     "dev": "concurrently \"vite --host 0.0.0.0 --port 4200\" \"node server/admin-server.js\"",
     "dev:admin": "npm run dev",
     "start": "node server/admin-server.js",
-    "build": "vite build",
+    "build": "vite build && node scripts/copy-data-to-dist.js",
     "lint": "eslint . --config config/eslint.config.js",
     "preview": "vite preview",
     "generate-sitemap": "node scripts/generate-sitemap.js"

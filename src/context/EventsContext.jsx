@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { eventsConfig as fallbackEvents } from "../data/eventsConfig";
 import { getApiBase } from "../utils/api";
 
@@ -12,29 +12,24 @@ export const EventsProvider = ({ children }) => {
     const fetchEvents = async () => {
       try {
         const apiUrl = `${getApiBase()}/api/events`;
-
         const response = await fetch(apiUrl);
         if (response.ok) {
           const data = await response.json();
-          if (Array.isArray(data)) {
-            setEvents(data);
-          }
+          if (Array.isArray(data)) setEvents(data);
         }
       } catch (error) {
-        console.warn(
-          "Could not fetch live events, using build-time data.",
-          error,
-        );
+        console.warn("Could not fetch live events, using build-time data.", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchEvents();
   }, []);
 
+  const value = useMemo(() => ({ events, setEvents, loading }), [events, loading]);
+
   return (
-    <EventsContext.Provider value={{ events, setEvents, loading }}>
+    <EventsContext.Provider value={value}>
       {children}
     </EventsContext.Provider>
   );
