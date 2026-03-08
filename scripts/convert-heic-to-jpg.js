@@ -38,10 +38,12 @@ function replaceHeicWithJpgInObject(obj) {
     if (/\.heic$/i.test(obj)) return obj.replace(/\.heic$/i, ".jpg");
     return obj;
   }
-  if (Array.isArray(obj)) return obj.map((item) => replaceHeicWithJpgInObject(item));
+  if (Array.isArray(obj))
+    return obj.map((item) => replaceHeicWithJpgInObject(item));
   if (obj && typeof obj === "object") {
     const out = {};
-    for (const k of Object.keys(obj)) out[k] = replaceHeicWithJpgInObject(obj[k]);
+    for (const k of Object.keys(obj))
+      out[k] = replaceHeicWithJpgInObject(obj[k]);
     return out;
   }
   return obj;
@@ -49,7 +51,9 @@ function replaceHeicWithJpgInObject(obj) {
 
 async function main() {
   const heicFiles = [...walkHeicFiles(ASSETS_DIR)];
-  console.log(`Found ${heicFiles.length} .heic file(s) in public/assets/events`);
+  console.log(
+    `Found ${heicFiles.length} .heic file(s) in public/assets/events`,
+  );
 
   for (const heicPath of heicFiles) {
     const jpgPath = heicPath.replace(/\.heic$/i, ".jpg");
@@ -59,9 +63,15 @@ async function main() {
     }
     try {
       const input = fs.readFileSync(heicPath);
-      const output = await heicConvert({ buffer: input, format: "JPEG", quality: 0.9 });
+      const output = await heicConvert({
+        buffer: input,
+        format: "JPEG",
+        quality: 0.9,
+      });
       fs.writeFileSync(jpgPath, Buffer.from(output));
-      console.log(`Converted: ${path.relative(ASSETS_DIR, heicPath)} -> ${path.basename(jpgPath)}`);
+      console.log(
+        `Converted: ${path.relative(ASSETS_DIR, heicPath)} -> ${path.basename(jpgPath)}`,
+      );
     } catch (err) {
       console.error(`Failed ${heicPath}:`, err.message);
     }
