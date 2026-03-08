@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { MessageCircle, Mail, Send } from 'lucide-react'
 import { siteContent } from '../data/content'
 import { useT } from '../i18n/useT'
+import SEO from '../components/SEO'
 
 const { contact, global: g } = siteContent
 
@@ -12,6 +13,7 @@ export default function Contact() {
 
   return (
     <section className="section-padding bg-white min-h-screen">
+      <SEO path="/contact" />
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl md:text-5xl font-[var(--font-display)] text-hbm-blue text-center mb-4">{t(contact.title)}</h1>
         <p className="text-center text-hbm-gray max-w-2xl mx-auto mb-12">{t(contact.subtitle)}</p>

@@ -53,9 +53,11 @@ const EventDetails = () => {
 
   return (
     <>
-      <SEO 
-        title={`${event.title?.en || event.title} | The HBM`} 
-        description={event.description?.en || event.description} 
+      <SEO
+        title={`${event.title?.en || event.title} | The HBM`}
+        description={event.description?.en || event.description}
+        image={event.heroImage || event.image || event.thumbnail}
+        type="article"
       />
       {/* Back Button Overlay */}
       <div className="fixed top-24 left-6 z-50">

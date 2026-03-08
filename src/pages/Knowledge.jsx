@@ -69,11 +69,13 @@ const VideoCard = React.memo(({ item, index }) => {
           </div>
         )}
 
-        <div className="absolute top-4 left-4 z-10 flex gap-2">
-          <span className="text-[9px] font-black tracking-widest text-white uppercase bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/20">
-            {item.category || "Discovery"}
-          </span>
-        </div>
+        {item.category && item.category !== "Interview" && item.category !== "Interviews" && (
+          <div className="absolute top-4 left-4 z-10 flex gap-2">
+            <span className="text-[9px] font-black tracking-widest text-white uppercase bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/20">
+              {item.category}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="p-4 md:p-6 flex flex-col">
@@ -311,9 +313,11 @@ const LibraryDrawer = ({ item, onClose }) => {
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="inline-block px-3 py-1 rounded-full bg-hbm-purple/10 text-hbm-purple text-xs font-bold tracking-wide uppercase">
-                    {item.category}
-                  </span>
+                  {item.category && item.category !== "Interview" && item.category !== "Interviews" && (
+                    <span className="inline-block px-3 py-1 rounded-full bg-hbm-purple/10 text-hbm-purple text-xs font-bold tracking-wide uppercase">
+                      {item.category}
+                    </span>
+                  )}
                   {item.type === "FIGURE" && (
                     <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase">
                       Figure

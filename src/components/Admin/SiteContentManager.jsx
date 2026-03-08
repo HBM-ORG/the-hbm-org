@@ -673,7 +673,7 @@ const SiteContentManager = () => {
                                     if (activeKnowledgeTab === 'books') {
                                         setKnowledgeBase(p => ({...p, books: [...p.books, { id: Date.now(), title: 'New Book', author: '', description: '', coverUrl: '', category: 'General' }]}));
                                     } else {
-                                        setKnowledgeBase(p => ({...p, videos: [...p.videos, { id: Date.now(), title: 'New Video', author: '', youtubeUrl: '', category: 'Interview' }]}));
+                                        setKnowledgeBase(p => ({...p, videos: [...p.videos, { id: Date.now(), title: 'New Video', author: '', youtubeUrl: '', category: 'Video' }]}));
                                     }
                                 }}
                                 className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 ${knowledgeBase.isLocked ? 'bg-gray-100 text-gray-400' : 'bg-gray-900 text-white hover:bg-black'}`}

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const EventRegister = () => {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ const EventRegister = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-hbm-cream">
+            <SEO path="/events/register" />
             <p>Redirecting to events...</p>
         </div>
     );

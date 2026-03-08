@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import EyebrowBadge from '../components/EyebrowBadge';
 import BubbleContainer from '../components/BubbleContainer';
+import SEO from '../components/SEO';
 
 const cookieData = [
     { category: 'Essential', name: 'hbm_session', provider: 'The HBM', purpose: 'Maintains user session state.', expiry: 'Session' },
@@ -14,6 +15,7 @@ const cookieData = [
 const CookiePolicy = () => {
     return (
         <div className="min-h-screen bg-hbm-cream pt-20 pb-20">
+            <SEO path="/cookie-policy" />
             <div className="max-w-5xl mx-auto px-6">
                 <div className="text-center mb-16">
                     <EyebrowBadge text="PRIVACY & TRANSPARENCY" />

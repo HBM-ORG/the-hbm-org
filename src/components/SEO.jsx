@@ -2,58 +2,124 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
 const siteUrl = 'https://www.thehbm.org';
+// Default OG image: use 1200×630 for rich previews on WhatsApp/social. Must be absolute URL; crawlers need public access.
 const defaultImage = 'https://www.thehbm.org/wp-content/uploads/2025/06/Logo-and-Tagline.png';
+
+function ensureAbsoluteImage(url) {
+  if (!url || typeof url !== 'string') return defaultImage;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  return siteUrl + (trimmed.startsWith('/') ? trimmed : '/' + trimmed);
+}
 
 const pageSEO = {
   '/': {
     title: 'The HBM | The Human Being Movement | 8-Minute Connections',
     description: 'The engine for human connection. HBM creates meaningful 8-minute conversations and networking events.',
     keywords: 'HBM, Human Being Movement, Networking Israel, Tel Aviv Events, 8 Minute Conversations',
-    image: defaultImage
+    image: defaultImage,
   },
   '/about': {
     title: 'About The HBM | Our Mission to Connect Humanity',
     description: 'Founded by Elad Maor Hefets, HBM believes connection is a need. Learn about our vision to end loneliness.',
     keywords: 'HBM Founders, Mission for Connection, Social Impact Israel',
-    image: 'https://www.thehbm.org/wp-content/uploads/2025/06/Logo-and-Tagline.png'
+    image: defaultImage,
   },
   '/meeter': {
     title: 'The Meeter Experience | Redefining Networking Tech',
     description: 'Discover the science behind The Meeter. Authentic professional and personal connections in 8 minutes.',
     keywords: 'Networking Psychology, 8 Minute Rule, Connection Technology',
-    image: defaultImage
+    image: defaultImage,
+  },
+  '/meeter/who': {
+    title: 'Who Is The Meeter For? | Universities, Companies, Hotels',
+    description: 'The Meeter for organizations: universities, companies, and hotels. Meaningful 8-minute connections at scale.',
+    keywords: 'B2B Networking, Corporate Events, University Networking, Hotel Experiences',
+    image: defaultImage,
+  },
+  '/meeter/features': {
+    title: 'The Meeter Features | How 8-Minute Connections Work',
+    description: 'Smart matching, guided prompts, and real feedback. See how The Meeter creates authentic connections.',
+    keywords: 'Networking App, Connection Technology, 8 Minute Meetings',
+    image: defaultImage,
   },
   '/knowledge': {
     title: 'The Growth Library | HBM Knowledge Base & Insights',
     description: 'Dive deep into human behavior, connectivity, and social science. Resources for community builders.',
     keywords: 'Connection Science, Social Dynamics, Community Building Blog',
-    image: defaultImage
+    image: defaultImage,
   },
   '/events': {
     title: 'HBM Networking Events | Israel 2025-2026 Experience',
     description: 'Join the next HBM experience. Browse our gallery and book your spot for upcoming networking meetups.',
     keywords: 'Upcoming Events Tel Aviv, Israel Networking Calendar, Event Gallery',
-    image: defaultImage
-  }
+    image: defaultImage,
+  },
+  '/events/register': {
+    title: 'Register for HBM Event | Reserve Your Spot',
+    description: 'Reserve your spot at the next HBM networking event. 8-minute connections that matter.',
+    keywords: 'Event Registration, HBM Events, Networking Registration',
+    image: defaultImage,
+  },
+  '/register': {
+    title: 'Register for HBM Event | Reserve Your Spot',
+    description: 'Reserve your spot at the next HBM networking event. 8-minute connections that matter.',
+    keywords: 'Event Registration, HBM Events, Networking Registration',
+    image: defaultImage,
+  },
+  '/contact': {
+    title: 'Contact The HBM | Get in Touch',
+    description: 'Reach out to The HBM team. Questions, partnerships, or just say hello—we\'re here for human connection.',
+    keywords: 'Contact HBM, Get in Touch, Partnership, Support',
+    image: defaultImage,
+  },
+  '/cookie-policy': {
+    title: 'Cookie Policy | The HBM',
+    description: 'How The HBM uses cookies and similar technologies. Your privacy matters.',
+    keywords: 'Cookie Policy, Privacy, The HBM',
+    image: defaultImage,
+  },
+  '/termsofuse': {
+    title: 'Terms of Use | The HBM',
+    description: 'Terms of use for The HBM website and services. Please read before using our site.',
+    keywords: 'Terms of Use, Legal, The HBM',
+    image: defaultImage,
+  },
+  '/privacypolicy': {
+    title: 'Privacy Policy | The HBM',
+    description: 'The HBM privacy policy. How we collect, use, and protect your personal information.',
+    keywords: 'Privacy Policy, Data Protection, The HBM',
+    image: defaultImage,
+  },
 };
 
-export default function SEO({ 
-  path, 
-  title: titleProp, 
-  description: descProp, 
-  image: imageProp, 
+// For dynamic routes (e.g. /events/123, /knowledge/5/slug) fall back to section defaults.
+function getBasePath(pathname) {
+  if (!pathname || pathname === '/') return '/';
+  const segments = pathname.replace(/^\/|\/$/g, '').split('/');
+  if (segments[0] === 'events' && segments.length > 1) return '/events';
+  if (segments[0] === 'knowledge') return '/knowledge';
+  const base = '/' + segments[0];
+  return pageSEO[base] ? base : pathname in pageSEO ? pathname : '/';
+}
+
+export default function SEO({
+  path,
+  title: titleProp,
+  description: descProp,
+  image: imageProp,
   type = 'website',
-  schema 
+  schema,
 }) {
   const location = useLocation();
-  const safePath = path || location.pathname;
-  
-  // Base SEO data from central config or fallbacks
-  const seo = pageSEO[safePath] || pageSEO['/'];
-  
+  const rawPath = path || location.pathname;
+  const safePath = rawPath.replace(/\/$/, '') || '/';
+  const basePath = getBasePath(safePath);
+  const seo = pageSEO[safePath] || pageSEO[basePath] || pageSEO['/'];
+
   const resolvedTitle = titleProp || seo.title;
   const resolvedDescription = descProp || seo.description;
-  const resolvedImage = imageProp || seo.image || defaultImage;
+  const resolvedImage = ensureAbsoluteImage(imageProp || seo.image || defaultImage);
   const canonicalUrl = `${siteUrl}${safePath}`;
 
   // Organization Schema (Global)
@@ -71,9 +137,6 @@ export default function SEO({
 
   return (
     <Helmet>
-      {/* Test Tag */}
-      <meta name="hbm-debug" content="seo-component-active" />
-      
       {/* Standard Meta Tags */}
       <title>{resolvedTitle}</title>
       <meta name="description" content={resolvedDescription} />
