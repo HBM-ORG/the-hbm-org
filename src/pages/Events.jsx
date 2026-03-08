@@ -50,6 +50,7 @@ const Events = () => {
     const fallbackConfig = {
       title: { en: "Next Video Connection Event", he: "אירוע חיבור וידאו הבא" },
       date: "2026-03-24T18:00:00Z",
+      time: "18:00",
       description: {
         en: "Join us for a global video connection session.",
         he: "הצטרפו אלינו למפגש חיבור וידאו גלובלי.",

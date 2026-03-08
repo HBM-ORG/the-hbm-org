@@ -2,18 +2,20 @@
  * HBM Enterprise Analytics Service
  *
  * - GA4 (Google Analytics 4) — Measurement ID: G-BR4CGS5B7X
- * - Microsoft Clarity (Heatmaps, Session Recordings, consent API)
+ * - Microsoft Clarity (Heatmaps, Session Recordings) — loaded in separate chunk via analytics-clarity.js
  * - Facebook Pixel (Meta Ads)
  * - LinkedIn Insight Tag
  */
-
-import Clarity from '@microsoft/clarity';
 
 export const GA_ID = import.meta.env.VITE_GA_ID || "G-BR4CGS5B7X";
 export const CLARITY_ID = import.meta.env.VITE_CLARITY_ID || "vjvlklwjdb";
 export const FB_PIXEL_ID = import.meta.env.VITE_FB_PIXEL_ID || "XXXXXXX";
 
 const isValid = (id) => id && id.length > 0 && !String(id).includes('XXXXX');
+
+/** Load Clarity in a separate chunk so main bundle stays small */
+const loadClarityModule = (consent) =>
+  import('./analytics-clarity.js').then((m) => m.loadClarity(consent));
 
 /**
  * Global initialization with Consent Mode v2
@@ -42,7 +44,7 @@ export const initAnalytics = () => {
     // 2. Load scripts if consent already exists
     if (consent?.analytics) {
         loadGoogleAnalytics();
-        loadClarity(consent);
+        loadClarityModule(consent);
     }
     if (consent?.marketing) {
         loadMetaPixel();
@@ -84,37 +86,6 @@ const loadLinkedInInsight = () => {
     // Implementation for loading LinkedIn if needed
 };
 
-/** Microsoft Clarity: heatmaps, session recordings, consent (cookie‑professional) */
-const loadClarity = (consent = null) => {
-    if (window.clarity_loaded || !isValid(CLARITY_ID)) return;
-    try {
-        Clarity.init(CLARITY_ID);
-        const analyticsGranted = consent?.analytics ?? (() => {
-            try {
-                const s = localStorage.getItem('hbm_cookie_consent');
-                return s ? JSON.parse(s).analytics : false;
-            } catch (_) { return false; }
-        })();
-        const marketingGranted = consent?.marketing ?? (() => {
-            try {
-                const s = localStorage.getItem('hbm_cookie_consent');
-                return s ? JSON.parse(s).marketing : false;
-            } catch (_) { return false; }
-        })();
-        if (typeof Clarity.consentV2 === 'function') {
-            Clarity.consentV2({
-                analytics_Storage: analyticsGranted ? 'granted' : 'denied',
-                ad_Storage: marketingGranted ? 'granted' : 'denied',
-            });
-        } else if (typeof Clarity.consent === 'function') {
-            Clarity.consent(!!analyticsGranted);
-        }
-    } catch (e) {
-        console.warn('Clarity init/consent:', e);
-    }
-    window.clarity_loaded = true;
-};
-
 /**
  * updateConsent - Call when user accepts or changes cookie preferences (cookie‑professional)
  */
@@ -129,9 +100,9 @@ export const updateConsent = (consent) => {
     }
     if (consent.analytics) {
         loadGoogleAnalytics();
-        loadClarity(consent);
-    } else if (window.clarity_loaded && typeof Clarity?.consentV2 === 'function') {
-        Clarity.consentV2({ analytics_Storage: 'denied', ad_Storage: 'denied' });
+        loadClarityModule(consent);
+    } else {
+        import('./analytics-clarity.js').then((m) => m.revokeClarityConsent?.()).catch(() => {});
     }
     if (consent.marketing) {
         loadMetaPixel();
@@ -176,11 +147,10 @@ export const trackEvent = (actionName, params = {}) => {
         window.fbq('track', fbEvent, params);
     }
 
-    // Clarity: custom event (shows in Recordings/Heatmaps filters)
-    if (isValid(CLARITY_ID)) {
+    // Clarity: custom event (shows in Recordings/Heatmaps filters) — only if already loaded
+    if (isValid(CLARITY_ID) && window.clarity) {
         try {
-            if (typeof Clarity?.event === 'function') Clarity.event(actionName);
-            else if (window.clarity) window.clarity('set', actionName, JSON.stringify(params));
+            window.clarity('set', actionName, JSON.stringify(params));
         } catch (_) {}
     }
 

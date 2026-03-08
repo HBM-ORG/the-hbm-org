@@ -15,17 +15,14 @@ export default defineConfig({
   },
   build: {
     target: "es2020",
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2100,
     rollupOptions: {
       output: {
-        // Manual chunking: split large vendor libraries into separate files
-        // This improves caching and parallel loading for users
         manualChunks(id) {
-          // Three.js + Globe = separate chunk (large 3D library)
-          if (id.includes("three") || id.includes("three-globe")) {
-            return "vendor-three";
-          }
-          // React ecosystem
+          // Three.js core vs three-globe for better caching (Globe only loads on About)
+          if (id.includes("three-globe")) return "vendor-globe";
+          if (id.includes("node_modules/three/")) return "vendor-three";
+          if (id.includes("three") && !id.includes("three-globe")) return "vendor-three";
           if (
             id.includes("react") ||
             id.includes("react-dom") ||
@@ -33,7 +30,6 @@ export default defineConfig({
           ) {
             return "vendor-react";
           }
-          // Animation libraries
           if (
             id.includes("framer-motion") ||
             id.includes("motion") ||
@@ -41,10 +37,8 @@ export default defineConfig({
           ) {
             return "vendor-animation";
           }
-          // Lucide icons
-          if (id.includes("lucide-react")) {
-            return "vendor-icons";
-          }
+          if (id.includes("lucide-react")) return "vendor-icons";
+          if (id.includes("@microsoft/clarity")) return "vendor-clarity";
         },
       },
     },

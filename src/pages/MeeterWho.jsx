@@ -458,12 +458,26 @@ const partnerLogos = [
   { name: "Partner 13", src: "/partner-logos/56.png" },
 ];
 
+const filterIAC = (list) =>
+  (list || []).filter((p) => {
+    const n = (p.name || "").toLowerCase();
+    const u = (p.logoUrl || p.src || "").toLowerCase();
+    return (
+      !n.includes("iac") &&
+      !u.includes("iac") &&
+      !n.includes("israeli american council") &&
+      !u.includes("israeli american council")
+    );
+  });
+
 export default function MeeterWho() {
   const { lang } = useI18n();
   const [activeTab, setActiveTab] = useState("events");
   const currentTab = tabs.find((t) => t.id === activeTab);
   const [testimonialsList, setTestimonialsList] = useState([]);
-  const [partnerLogosList, setPartnerLogosList] = useState(partnerLogos);
+  const [partnerLogosList, setPartnerLogosList] = useState(() =>
+    filterIAC(partnerLogos)
+  );
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const TESTIMONIAL_AUTO_ADVANCE_MS = 15000; // 15 seconds per card
 
@@ -473,7 +487,7 @@ export default function MeeterWho() {
       .then((data) => {
         if (data?.testimonials?.length) setTestimonialsList(data.testimonials);
         if (data?.partners?.length) {
-          setPartnerLogosList(data.partners);
+          setPartnerLogosList(filterIAC(data.partners));
         }
       })
       .catch(() => {});
@@ -883,49 +897,27 @@ export default function MeeterWho() {
               className="flex gap-12 md:gap-24 items-center w-max animate-marquee"
               style={{ paddingLeft: "2rem", animationDuration: "30s" }}
             >
-              {partnerLogosList && partnerLogosList.length > 0
-                ? [
-                    ...partnerLogosList,
-                    ...partnerLogosList,
-                    ...partnerLogosList,
-                    ...partnerLogosList,
-                  ].map((partner, i) => (
-                    <div
-                      key={i}
-                      className="flex-shrink-0 h-32 md:h-40 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300"
-                    >
-                      <img
-                        src={partner.logoUrl || partner.src}
-                        alt={partner.name || "Partner"}
-                        className="h-full max-h-32 md:max-h-40 w-auto object-contain transition-all duration-300 hover:scale-110"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                        }}
-                        loading="lazy"
-                      />
-                    </div>
-                  ))
-                : [
-                    ...partnerLogos,
-                    ...partnerLogos,
-                    ...partnerLogos,
-                    ...partnerLogos,
-                  ].map((partner, i) => (
-                    <div
-                      key={i}
-                      className="flex-shrink-0 h-32 md:h-40 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300"
-                    >
-                      <img
-                        src={partner.src}
-                        alt={partner.name}
-                        className="h-full max-h-32 md:max-h-40 w-auto object-contain transition-all duration-300 hover:scale-110"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                        }}
-                        loading="lazy"
-                      />
-                    </div>
-                  ))}
+              {[
+                ...(partnerLogosList?.length ? partnerLogosList : filterIAC(partnerLogos)),
+                ...(partnerLogosList?.length ? partnerLogosList : filterIAC(partnerLogos)),
+                ...(partnerLogosList?.length ? partnerLogosList : filterIAC(partnerLogos)),
+                ...(partnerLogosList?.length ? partnerLogosList : filterIAC(partnerLogos)),
+              ].map((partner, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 h-32 md:h-40 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300"
+                >
+                  <img
+                    src={partner.logoUrl || partner.src}
+                    alt={partner.name || "Partner"}
+                    className="h-full max-h-32 md:max-h-40 w-auto object-contain transition-all duration-300 hover:scale-110"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                    }}
+                    loading="lazy"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>

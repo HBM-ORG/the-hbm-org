@@ -39,6 +39,18 @@ const partnerLogos = [
   { name: "Partner 13", src: "/partner-logos/56.png" },
 ];
 
+const filterIAC = (list) =>
+  (list || []).filter((p) => {
+    const n = (p.name || "").toLowerCase();
+    const u = (p.logoUrl || p.src || "").toLowerCase();
+    return (
+      !n.includes("iac") &&
+      !u.includes("iac") &&
+      !n.includes("israeli american council") &&
+      !u.includes("israeli american council")
+    );
+  });
+
 const dailyQuotes = [
   {
     text: "We cannot live only for ourselves. A thousand fibers connect us.",
@@ -281,7 +293,9 @@ export default function Home() {
 
   const whatsappUrl = getWhatsappUrl(lang);
 
-  const [partnerLogosList, setPartnerLogosList] = useState(partnerLogos);
+  const [partnerLogosList, setPartnerLogosList] = useState(
+    () => filterIAC(partnerLogos)
+  );
   const [testimonialsList, setTestimonialsList] = useState([]);
 
   useEffect(() => {
@@ -289,7 +303,7 @@ export default function Home() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.partners?.length) {
-          setPartnerLogosList(data.partners);
+          setPartnerLogosList(filterIAC(data.partners));
         }
         if (data?.testimonials?.length) setTestimonialsList(data.testimonials);
       })
@@ -301,15 +315,15 @@ export default function Home() {
       <SEO
         title={t(
           {
-            en: "The HBM | Bringing People Together | 8-Minute Connections",
-            he: "The HBM | מחברים אנשים | שיחות של 8 דקות",
+            en: "The HBM - Bringing People Together",
+            he: "The HBM - מחברים אנשים",
           },
           lang,
         )}
         description={t(
           {
-            en: "Experience the power of 8-minute human connections. Join The HBM for real networking events and meaningful conversations.",
-            he: "ouve את העוצמה של חיבורים אנושיים של 8 דקות. הצטרפו ל-HBM לאירועי נטוורקינג אמיתיים ושיחות משמעותיות.",
+            en: "Spark real connections in 8 minutes. Events, Meeter, and a movement for human connection.",
+            he: "חיבורים אמיתיים ב-8 דקות. אירועים, Meeter ותנועה לחיבור אנושי.",
           },
           lang,
         )}

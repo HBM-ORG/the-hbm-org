@@ -24,7 +24,15 @@
 
 ### 6. Vite
 - **build.target: "es2020"** — קוד מקומט יותר לדפדפנים מודרניים.
-- **manualChunks** — React, Three.js, אנימציות ואייקונים ב-chunks נפרדים.
+- **manualChunks** — React, Three.js, three-globe, אנימציות, אייקונים ו-Clarity ב-chunks נפרדים.
+- **chunkSizeWarningLimit: 2100** — מניעת אזהרה על vendor-three (נטען רק בדף About).
+
+### 7. אנליטיקס (Clarity) ב-chunk נפרד
+- **analytics-clarity.js** — Microsoft Clarity נטען דינמית רק אחרי `initAnalytics()` ובהתאם להסכמת cookies.
+- ה-bundle הראשי לא כולל את `@microsoft/clarity` — טעינה ראשונה קלה יותר.
+
+### 8. פונטים
+- **אין ייבוא פונטים ב-CSS** — הפונטים נטענים רק מ-`index.html` עם `display=swap`, בלי חסימת רינדור כפולה.
 
 ---
 

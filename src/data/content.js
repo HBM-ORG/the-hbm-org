@@ -747,7 +747,7 @@ export const siteContent = {
           },
           linkedin: "https://www.linkedin.com/in/yuval-meir-hefetz/",
           bio: {
-            en: "The older twin (by technicality, not by maturity), Yuval brings sharp focus and fresh curiosity into everything he does. Recently diving into data analysis, he's all about finding the hidden patterns behind how people connect. Equal parts thoughtful and turbocharged, he's proof that energy and insight make a powerful combo.",
+            en: "The older twin, Yuval brings sharp focus and fresh curiosity into everything he does. Recently diving into data analysis, he's all about finding the hidden patterns behind how people connect. Equal parts thoughtful and turbocharged, he's proof that energy and insight make a powerful combo.",
             he: "התאום הבכור (טכנית, לא מבחינת בגרות), יובל מביא מיקוד חד וסקרנות רעננה לכל מה שהוא עושה. לאחרונה צלל לניתוח נתונים, והוא כולו מציאת התבניות הנסתרות שמאחורי איך שאנשים מתחברים. שילוב של מחשבה וטורבו.",
           },
           funFact: {

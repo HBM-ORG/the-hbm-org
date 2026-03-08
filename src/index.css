@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
-/* Sofia Pro is usually served via Adobe or local, assuming it's available or provided via other means if used */
+/* Fonts loaded in index.html with display=swap to avoid blocking; no duplicate @import here */
 @import "tailwindcss";
 
 @theme {

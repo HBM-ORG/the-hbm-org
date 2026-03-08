@@ -48,7 +48,7 @@ export const eventsConfig = [
           { "title": { "en": "Open Networking", "he": "נטוורקינג חופשי" }, "desc": { "en": "Finish with a drink and a chat.", "he": "מסיימים עם דרינק ושיחה חופשית." } }
       ]
     },
-    "showPartnership": true,
+    "showPartnership": false,
     "partnership": {
         "title": { "en": "In Collaboration with MIXER", "he": "בשיתוף פעולה עם MIXER" },
         "text": { "en": "We are excited to host this event at the beautiful MIXER Campus.", "he": "אנחנו נרגשים לארח את האירוע בקמפוס המעוצב של מיקסר." },
@@ -142,7 +142,7 @@ export const eventsConfig = [
           { "title": { "en": "Open Networking", "he": "נטוורקינג חופשי" }, "desc": { "en": "Finish with a drink and a chat.", "he": "מסיימים עם דרינק ושיחה חופשית." } }
       ]
     },
-    "showPartnership": true,
+    "showPartnership": false,
     "partnership": {
         "title": { "en": "In Collaboration with MIXER", "he": "בשיתוף פעולה עם MIXER" },
         "text": { "en": "We are excited to host this event at the beautiful MIXER Campus.", "he": "אנחנו נרגשים לארח את האירוע בקמפוס המעוצב של מיקסר." },

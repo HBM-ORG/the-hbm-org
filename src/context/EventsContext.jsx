@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import { eventsConfig as fallbackEvents } from "../data/eventsConfig";
 import { getApiBase } from "../utils/api";
 
@@ -18,7 +24,10 @@ export const EventsProvider = ({ children }) => {
           if (Array.isArray(data)) setEvents(data);
         }
       } catch (error) {
-        console.warn("Could not fetch live events, using build-time data.", error);
+        console.warn(
+          "Could not fetch live events, using build-time data.",
+          error,
+        );
       } finally {
         setLoading(false);
       }
@@ -26,12 +35,13 @@ export const EventsProvider = ({ children }) => {
     fetchEvents();
   }, []);
 
-  const value = useMemo(() => ({ events, setEvents, loading }), [events, loading]);
+  const value = useMemo(
+    () => ({ events, setEvents, loading }),
+    [events, loading],
+  );
 
   return (
-    <EventsContext.Provider value={value}>
-      {children}
-    </EventsContext.Provider>
+    <EventsContext.Provider value={value}>{children}</EventsContext.Provider>
   );
 };
 

@@ -69,7 +69,7 @@ export default function Footer() {
             href="mailto:Office@TheHBM.Org"
             className={`flex flex-col gap-2 group hover:opacity-100 opacity-90 transition-all hover:-translate-y-1 duration-300 ${lang === "he" || lang === "ar" ? "items-center md:items-end" : "items-center md:items-start"}`}
           >
-            <h3 className="font-bold text-xl">Office@TheHBM.Org</h3>
+            <h3 className="font-bold text-xl">Office@thehbm.org</h3>
             <p className="text-[12px] md:text-sm opacity-85 leading-relaxed max-w-[220px] font-medium tracking-wide">
               {t(
                 {
@@ -126,38 +126,6 @@ export default function Footer() {
             </p>
           </div>
           <div className="flex flex-wrap justify-center md:justify-end gap-4 md:gap-6 order-1 md:order-2">
-            <Link
-              to="/knowledge"
-              className="hover:opacity-100 hover:text-white transition-all"
-            >
-              {t(
-                {
-                  en: "Knowledge",
-                  he: "בסיס הידע",
-                  es: "Conocimiento",
-                  fr: "Savoir",
-                  de: "Wissen",
-                  ar: "المعرفة",
-                },
-                lang,
-              )}
-            </Link>
-            <Link
-              to="/about"
-              className="hover:opacity-100 hover:text-white transition-all"
-            >
-              {t(
-                {
-                  en: "About Us",
-                  he: "עלינו",
-                  es: "Sobre nosotros",
-                  fr: "À propos",
-                  de: "Über uns",
-                  ar: "من نحن",
-                },
-                lang,
-              )}
-            </Link>
             <Link
               to="/termsofuse"
               className="hover:opacity-100 hover:text-white transition-all"
