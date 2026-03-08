@@ -284,6 +284,31 @@ export default function AnalyticsDashboard({ onOpenCookieLogs }) {
                     />
                 </div>
 
+                {/* Sitemap & SEO */}
+                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden mb-10">
+                    <div className="h-2 w-full bg-gradient-to-r from-emerald-500 to-teal-500" />
+                    <div className="p-8">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                                <Globe className="w-6 h-6 text-emerald-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-gray-900">Sitemap & SEO</h3>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">היטמאפ של האתר</p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">ה-sitemap (XML) מוגש ב־/sitemap.xml ומופנה מ־robots.txt. לעדכון: <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono">npm run generate-sitemap</code></p>
+                        <div className="flex flex-wrap gap-3">
+                            <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-emerald-700">
+                                <Globe className="w-4 h-4" /> Open sitemap.xml
+                            </a>
+                            <a href="/visual-sitemap.html" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-gray-200">
+                                <MapPin className="w-4 h-4" /> Visual sitemap
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Connections tip */}
                 <div className="bg-gradient-to-r from-slate-100 to-slate-50 border border-slate-200 rounded-[2rem] p-8">
                     <div className="flex items-start gap-4">

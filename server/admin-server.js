@@ -9,6 +9,15 @@ import path from "path";
 import { fileURLToPath } from "url";
 import process from "process";
 import { Buffer } from "buffer";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+let heicConvert;
+try {
+  heicConvert = require("heic-convert");
+} catch (_) {
+  heicConvert = null;
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -94,7 +103,12 @@ app.use((req, res, next) => {
 });
 
 // Global Paths
-const EVENTS_FILE_PATH = path.join(PROJECT_ROOT, "public", "data", "events.json");
+const EVENTS_FILE_PATH = path.join(
+  PROJECT_ROOT,
+  "public",
+  "data",
+  "events.json",
+);
 const AUTOMATION_CONFIG_PATH = path.join(
   PROJECT_ROOT,
   "src",
@@ -107,7 +121,12 @@ const REGISTRATIONS_FILE_PATH = path.join(
   "data",
   "registrations.json",
 );
-const EMAIL_QUEUE_PATH = path.join(PROJECT_ROOT, "src", "data", "emailQueue.json");
+const EMAIL_QUEUE_PATH = path.join(
+  PROJECT_ROOT,
+  "src",
+  "data",
+  "emailQueue.json",
+);
 const ENGAGEMENT_LOG_PATH = path.join(
   PROJECT_ROOT,
   "src",
@@ -152,6 +171,79 @@ const KNOWLEDGE_BASE_CONFIG_PATH = path.join(
 );
 const ASSETS_DIR = path.join(PROJECT_ROOT, "public", "assets", "events");
 const CMS_ASSETS_DIR = path.join(PROJECT_ROOT, "public", "assets", "cms");
+
+// CRM contact profile – register early; support with or without trailing slash
+const handleCrmContact = async (req, res) => {
+  try {
+    const email = (req.query.email || "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: "Missing email" });
+    const registrations = await prisma.registration.findMany({
+      where: { email },
+      orderBy: { date: "desc" },
+    });
+    const regList = registrations.map((r) => ({
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      phone: r.phone,
+      source: r.source,
+      eventId: r.eventId,
+      eventName: r.eventName,
+      date: r.date ? new Date(r.date).toISOString() : null,
+      language: r.language,
+      status: r.status,
+      history: r.history,
+    }));
+    const allQueue = await prisma.emailQueue.findMany({
+      orderBy: { scheduledFor: "desc" },
+    });
+    const emailActivity = allQueue
+      .filter(
+        (item) =>
+          (item.data && (item.data.email || "").toLowerCase().trim()) === email,
+      )
+      .map((item) => ({
+        id: item.id,
+        status: item.status,
+        sentAt: item.sentAt ? item.sentAt.toISOString() : null,
+        stepType: item.stepType,
+        flowId: item.flowId,
+        attempts: item.attempts,
+        error: item.error,
+      }));
+    let engagement = [];
+    if (fs.existsSync(ENGAGEMENT_LOG_PATH)) {
+      try {
+        const log = JSON.parse(
+          fs.readFileSync(ENGAGEMENT_LOG_PATH, "utf8"),
+        );
+        engagement = (Array.isArray(log) ? log : [])
+          .filter((e) => (e.email || "").toLowerCase().trim() === email)
+          .map((e) => ({ type: e.type, timestamp: e.timestamp, id: e.id }));
+      } catch (_) {}
+    }
+    const name = regList.length > 0 ? regList[0].name : "";
+    const phone = regList.length > 0 ? regList[0].phone : "";
+    res.json({
+      contact: {
+        email,
+        name,
+        phone,
+        registrations: regList,
+        emailActivity,
+        engagement,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching CRM contact:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+app.get("/api/crm/contact", handleCrmContact);
+app.get("/api/crm/contact/", handleCrmContact);
+
+// Debug: verify CRM API is reachable (GET /api/crm/ping)
+app.get("/api/crm/ping", (_req, res) => res.json({ ok: true, message: "CRM API reachable" }));
 
 // FTP upload to Hostinger (public_html/assets/). Returns public URL or null on failure.
 const ASSETS_BASE_URL = (
@@ -404,13 +496,43 @@ app.post("/api/upload-asset", uploadMemoryAsset, async (req, res) => {
   if (!req.file || !req.file.buffer)
     return res.status(400).json({ error: "No file uploaded" });
 
+  if (req.body.isGallery === "true" && (req.file.mimetype || "").startsWith("video/")) {
+    return res.status(400).json({
+      error: "Media Gallery accepts only images. Use Hero Cinema for video.",
+    });
+  }
+
+  let buffer = req.file.buffer;
+  let originalName = req.file.originalname;
+  const isHeic =
+    req.file.mimetype === "image/heic" ||
+    /\.heic$/i.test(originalName);
+
+  if (isHeic) {
+    if (!heicConvert) {
+      return res.status(400).json({
+        error: "HEIC upload is not supported on this server. Please upload JPG or PNG.",
+      });
+    }
+    try {
+      const jpgBuffer = await heicConvert({ buffer, format: "JPEG", quality: 0.9 });
+      buffer = Buffer.from(jpgBuffer);
+      originalName = originalName.replace(/\.heic$/i, ".jpg");
+    } catch (err) {
+      console.error("[Upload] HEIC conversion failed:", err.message);
+      return res.status(400).json({
+        error: "HEIC conversion failed. Try uploading a JPG or PNG.",
+      });
+    }
+  }
+
   let folderName = req.body.folderName;
   if (!folderName) {
     console.warn('Multer: No folderName in body. Defaulting to "general".');
     folderName = "general";
   }
   const subfolder = req.body.subfolder; // e.g. 'partners', 'hero'
-  const sanitized = req.file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+  const sanitized = originalName.replace(/[^a-zA-Z0-9.\-_]/g, "_");
   const savedFilename = Date.now() + "_" + sanitized;
 
   const remoteDir = subfolder
@@ -418,7 +540,7 @@ app.post("/api/upload-asset", uploadMemoryAsset, async (req, res) => {
     : `${FTP_REMOTE_BASE}/events/${folderName}`;
   const remotePath = `${remoteDir}/${savedFilename}`;
 
-  const usedFtp = await uploadBufferViaFtp(req.file.buffer, remotePath);
+  const usedFtp = await uploadBufferViaFtp(buffer, remotePath);
 
   // Fallback: save locally so Hero Cinema and gallery work in dev / when FTP is not set
   if (!usedFtp) {
@@ -428,7 +550,7 @@ app.post("/api/upload-asset", uploadMemoryAsset, async (req, res) => {
         : path.join(ASSETS_DIR, folderName);
       if (!fs.existsSync(localDir)) fs.mkdirSync(localDir, { recursive: true });
       const localPath = path.join(localDir, savedFilename);
-      fs.writeFileSync(localPath, req.file.buffer);
+      fs.writeFileSync(localPath, buffer);
     } catch (err) {
       console.error("[Upload] Local fallback failed:", err.message);
       return res.status(500).json({
@@ -486,6 +608,20 @@ app.post("/api/delete-image", (req, res) => {
   }
 });
 
+// Normalize event payload: replace .heic with .jpg so gallery/image/heroVideo always point to displayable format
+function normalizeHeicPathsInPayload(obj) {
+  if (typeof obj === "string") {
+    return /\.heic$/i.test(obj) ? obj.replace(/\.heic$/i, ".jpg") : obj;
+  }
+  if (Array.isArray(obj)) return obj.map(normalizeHeicPathsInPayload);
+  if (obj && typeof obj === "object") {
+    const out = {};
+    for (const k of Object.keys(obj)) out[k] = normalizeHeicPathsInPayload(obj[k]);
+    return out;
+  }
+  return obj;
+}
+
 app.post("/api/save-events", (req, res) => {
   try {
     const { events } = req.body;
@@ -494,7 +630,8 @@ app.post("/api/save-events", (req, res) => {
       return res.status(400).json({ error: "Invalid data format" });
     }
 
-    const fileContent = JSON.stringify(events, null, 2);
+    const normalized = normalizeHeicPathsInPayload(events);
+    const fileContent = JSON.stringify(normalized, null, 2);
     fs.writeFileSync(EVENTS_FILE_PATH, fileContent, "utf8");
 
     console.log("Events saved successfully to JSON");
@@ -869,6 +1006,17 @@ function isValidEmail(email) {
   return typeof email === "string" && EMAIL_REGEX.test(email.trim());
 }
 
+/**
+ * Single injection point for email delivery.
+ * Today: SMTP via nodemailer. To add Bravo API: when USE_EMAIL_PROVIDER=bravo
+ * and BRAVO_API_URL (and BRAVO_API_KEY) are set, call Bravo's send API here
+ * with mailOptions (to, from, subject, html, attachments) and return; skip SMTP.
+ * See docs/EMAIL_SYSTEM.md § Bravo Integration.
+ */
+async function deliverEmail(transporter, mailOptions) {
+  return transporter.sendMail(mailOptions);
+}
+
 let processQueueRunning = false;
 
 const processQueue = async (specificItemId = null) => {
@@ -891,7 +1039,8 @@ const processQueue = async (specificItemId = null) => {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS || "",
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_SECURE === "1",
+        secure:
+          process.env.SMTP_SECURE === "true" || process.env.SMTP_SECURE === "1",
       };
     }
     config.smtp = normalizeSmtpConfig(config.smtp);
@@ -1028,7 +1177,7 @@ const processQueue = async (specificItemId = null) => {
             ];
         }
 
-        await transporter.sendMail(mailOptions);
+        await deliverEmail(transporter, mailOptions);
 
         await prisma.emailQueue.update({
           where: { id: item.id },
@@ -1635,6 +1784,71 @@ app.get("/api/registrations", async (req, res) => {
   }
 });
 
+// DELETE all registrations for a contact (by email)
+app.delete("/api/registrations/by-contact", async (req, res) => {
+  try {
+    const email = (req.query.email || "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: "Missing email" });
+    const result = await prisma.registration.deleteMany({
+      where: { email },
+    });
+    res.json({ success: true, deleted: result.count });
+  } catch (err) {
+    console.error("Error deleting by contact:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Export single contact as CSV (same column style as main CRM export)
+app.get("/api/crm/contact/export", async (req, res) => {
+  try {
+    const email = (req.query.email || "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: "Missing email" });
+
+    const registrations = await prisma.registration.findMany({
+      where: { email },
+      orderBy: { date: "desc" },
+    });
+
+    const headers = [
+      "Name",
+      "Email",
+      "Phone",
+      "Source",
+      "Event",
+      "EventId",
+      "Date",
+      "Status",
+      "Language",
+    ];
+    const rows = registrations.map((r) => [
+      `"${(r.name || "").replace(/"/g, '""')}"`,
+      `"${(r.email || "").replace(/"/g, '""')}"`,
+      `"${(r.phone || "").replace(/"/g, '""')}"`,
+      `"${(r.source || "").replace(/"/g, '""')}"`,
+      `"${(r.eventName || "").replace(/"/g, '""')}"`,
+      `"${(r.eventId || "").toString().replace(/"/g, '""')}"`,
+      `"${r.date ? new Date(r.date).toLocaleString() : ""}"`,
+      `"${(r.status || "confirmed").replace(/"/g, '""')}"`,
+      `"${(r.language || "").replace(/"/g, '""')}"`,
+    ]);
+    const csvContent =
+      "\uFEFF" +
+      headers.join(",") +
+      "\n" +
+      rows.map((e) => e.join(",")).join("\n");
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="HBM_Contact_${email.replace(/[^a-z0-9]/gi, "_")}_${new Date().toISOString().split("T")[0]}.csv"`,
+    );
+    res.send(csvContent);
+  } catch (err) {
+    console.error("Error exporting contact:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Professional Lead Management (from MySQL)
 app.get("/api/crm/leads", async (req, res) => {
   try {
@@ -1776,14 +1990,12 @@ app.get("/api/site-content", (req, res) => {
     res.json(JSON.parse(fs.readFileSync(SITE_CONFIGS_PATH, "utf8")));
   } catch (err) {
     console.error("Error reading site content:", err);
-    res
-      .status(200)
-      .json({
-        team: [],
-        testimonials: [],
-        partners: [],
-        locks: { team: false, testimonials: false, partners: false },
-      });
+    res.status(200).json({
+      team: [],
+      testimonials: [],
+      partners: [],
+      locks: { team: false, testimonials: false, partners: false },
+    });
   }
 });
 
@@ -1882,13 +2094,25 @@ app.post("/api/cms/lock-toggle", (req, res) => {
   }
 });
 
-// 4. GET Events (Live JSON)
+// 4. GET Events (Live JSON) – sanitize gallery to only real Media Gallery items (no placeholders)
 app.get("/api/events", (req, res) => {
   try {
     if (!fs.existsSync(EVENTS_FILE_PATH)) {
       return res.json([]);
     }
-    res.json(JSON.parse(fs.readFileSync(EVENTS_FILE_PATH, "utf8")));
+    const raw = JSON.parse(fs.readFileSync(EVENTS_FILE_PATH, "utf8"));
+    const events = Array.isArray(raw)
+      ? raw.map((e) => {
+          const gallery = Array.isArray(e.gallery)
+            ? e.gallery.filter(
+                (item) =>
+                  item != null && String(item).trim() !== "",
+              )
+            : [];
+          return { ...e, gallery };
+        })
+      : raw;
+    res.json(events);
   } catch (err) {
     res.status(500).json({ error: "Failed to read events" });
   }
@@ -2224,11 +2448,22 @@ app.get("/assets/*", (req, res) => {
   const relativePath = req.path.startsWith("/") ? req.path.slice(1) : req.path;
   const assetPath = path.join(PROJECT_ROOT, "public", relativePath);
   const publicRoot = path.join(PROJECT_ROOT, "public");
-  if (!assetPath.startsWith(publicRoot) || !fs.existsSync(assetPath) || !fs.statSync(assetPath).isFile()) {
+  if (
+    !assetPath.startsWith(publicRoot) ||
+    !fs.existsSync(assetPath) ||
+    !fs.statSync(assetPath).isFile()
+  ) {
     return res.status(404).send("Not found");
   }
   const ext = path.extname(assetPath).toLowerCase();
-  const mime = ext === ".mp4" ? "video/mp4" : ext === ".webm" ? "video/webm" : ext === ".mov" ? "video/quicktime" : undefined;
+  const mime =
+    ext === ".mp4"
+      ? "video/mp4"
+      : ext === ".webm"
+        ? "video/webm"
+        : ext === ".mov"
+          ? "video/quicktime"
+          : undefined;
   if (mime) res.setHeader("Content-Type", mime);
   res.setHeader("Accept-Ranges", "bytes");
   res.sendFile(assetPath);

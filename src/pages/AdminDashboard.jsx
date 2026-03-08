@@ -17,9 +17,12 @@ class FlowsErrorBoundary extends React.Component {
       return (
         <div className="h-full flex items-center justify-center p-10 bg-[#f8f9fc]">
           <div className="bg-white border border-gray-200 rounded-2xl p-10 max-w-md text-center shadow-lg">
-            <h3 className="text-lg font-black text-gray-800 mb-2">Connection Error</h3>
+            <h3 className="text-lg font-black text-gray-800 mb-2">
+              Connection Error
+            </h3>
             <p className="text-sm text-gray-500 mb-6">
-              The Flows panel could not load. Check your connection and try again.
+              The Flows panel could not load. Check your connection and try
+              again.
             </p>
             <button
               type="button"
@@ -121,6 +124,18 @@ const AdminDashboard = () => {
   const [filterDateTo, setFilterDateTo] = useState("");
   const [crmViewMode, setCrmViewMode] = useState("byPerson"); // 'byPerson' | 'byRegistration'
   const [crmSortBy, setCrmSortBy] = useState("countDesc"); // countDesc | countAsc | name | lastDateDesc | lastDateAsc
+  const [selectedContactEmail, setSelectedContactEmail] = useState(null);
+  const [contactProfileData, setContactProfileData] = useState(null);
+  const [contactProfileLoading, setContactProfileLoading] = useState(false);
+  const [contactProfileError, setContactProfileError] = useState(null);
+
+  const refetchRegistrations = () => {
+    const base = getApiBase();
+    fetch(`${base}/api/registrations`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setRegistrationsList(Array.isArray(data) ? data : []))
+      .catch(() => setRegistrationsList([]));
+  };
 
   // Sync local events when context updates (e.g. after API fetch on load) so list doesn't revert
   useEffect(() => {
@@ -160,13 +175,50 @@ const AdminDashboard = () => {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!selectedContactEmail) {
+      setContactProfileData(null);
+      setContactProfileError(null);
+      return;
+    }
+    const email = encodeURIComponent(selectedContactEmail);
+    // Use same base as rest of admin: relative /api in dev so Vite proxy hits backend; port 3001 uses same origin
+    const base = getApiBase() || "";
+    const url = base ? `${base.replace(/\/$/, "")}/api/crm/contact?email=${email}` : `/api/crm/contact?email=${email}`;
+    setContactProfileLoading(true);
+    setContactProfileData(null);
+    setContactProfileError(null);
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) return res.json().then((body) => Promise.reject({ message: body?.error || res.statusText, status: res.status }));
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.contact) {
+          setContactProfileData(data.contact);
+          setContactProfileError(null);
+        } else {
+          setContactProfileData(null);
+          setContactProfileError("Invalid response");
+        }
+      })
+      .catch((err) => {
+        console.error("[CRM profile fetch failed]", err);
+        setContactProfileData(null);
+        setContactProfileError(err?.message || "Network error");
+      })
+      .finally(() => setContactProfileLoading(false));
+  }, [selectedContactEmail]);
+
   // Aggregate registrations by person (email or phone+name)
   const contactsAggregated = useMemo(() => {
     const list = Array.isArray(registrationsList) ? registrationsList : [];
     const byKey = new Map();
     list.forEach((reg) => {
       const email = (reg.email || "").trim().toLowerCase();
-      const key = email || `${(reg.phone || "").trim()}_${(reg.name || "").toLowerCase().trim()}`;
+      const key =
+        email ||
+        `${(reg.phone || "").trim()}_${(reg.name || "").toLowerCase().trim()}`;
       if (!key) return;
       if (!byKey.has(key)) {
         byKey.set(key, {
@@ -182,15 +234,21 @@ const AdminDashboard = () => {
       }
       const c = byKey.get(key);
       c.registrations.push(reg);
-      if (reg.eventId && !c.eventIds.includes(reg.eventId)) c.eventIds.push(reg.eventId);
-      if (reg.eventName && !c.eventNames.includes(reg.eventName)) c.eventNames.push(reg.eventName);
-      if (reg.source && !c.sources.includes(reg.source)) c.sources.push(reg.source);
+      if (reg.eventId && !c.eventIds.includes(reg.eventId))
+        c.eventIds.push(reg.eventId);
+      if (reg.eventName && !c.eventNames.includes(reg.eventName))
+        c.eventNames.push(reg.eventName);
+      if (reg.source && !c.sources.includes(reg.source))
+        c.sources.push(reg.source);
     });
     return Array.from(byKey.values()).map((c) => ({
       ...c,
       count: c.registrations.length,
       lastDate: c.registrations.length
-        ? c.registrations.reduce((max, r) => (new Date(r.date) > new Date(max) ? r.date : max), c.registrations[0].date)
+        ? c.registrations.reduce(
+            (max, r) => (new Date(r.date) > new Date(max) ? r.date : max),
+            c.registrations[0].date,
+          )
         : null,
     }));
   }, [registrationsList]);
@@ -208,10 +266,14 @@ const AdminDashboard = () => {
         (item.phone || "").toLowerCase().includes(search);
       const matchEvent =
         filterEvent === "all" ||
-        regs.some((r) => (r.eventId || "").toString() === filterEvent.toString());
+        regs.some(
+          (r) => (r.eventId || "").toString() === filterEvent.toString(),
+        );
       const matchSource =
         filterSource === "all" ||
-        regs.some((r) => (r.source || "").toLowerCase() === filterSource.toLowerCase());
+        regs.some(
+          (r) => (r.source || "").toLowerCase() === filterSource.toLowerCase(),
+        );
       const matchDate =
         (!from && !to) ||
         regs.some((r) => {
@@ -239,21 +301,43 @@ const AdminDashboard = () => {
         sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         break;
       case "lastDateDesc":
-        sorted.sort((a, b) => new Date(b.lastDate || 0) - new Date(a.lastDate || 0));
+        sorted.sort(
+          (a, b) => new Date(b.lastDate || 0) - new Date(a.lastDate || 0),
+        );
         break;
       case "lastDateAsc":
-        sorted.sort((a, b) => new Date(a.lastDate || 0) - new Date(b.lastDate || 0));
+        sorted.sort(
+          (a, b) => new Date(a.lastDate || 0) - new Date(b.lastDate || 0),
+        );
         break;
       default:
         sorted.sort((a, b) => b.count - a.count);
     }
     return sorted;
-  }, [contactsAggregated, crmViewMode, searchTerm, filterEvent, filterSource, filterDateFrom, filterDateTo, crmSortBy]);
+  }, [
+    contactsAggregated,
+    crmViewMode,
+    searchTerm,
+    filterEvent,
+    filterSource,
+    filterDateFrom,
+    filterDateTo,
+    crmSortBy,
+  ]);
 
   const filteredRegistrations = useMemo(() => {
     const filtered = applyCrmFilters(registrationsList, false);
-    return [...filtered].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-  }, [registrationsList, searchTerm, filterEvent, filterSource, filterDateFrom, filterDateTo]);
+    return [...filtered].sort(
+      (a, b) => new Date(b.date || 0) - new Date(a.date || 0),
+    );
+  }, [
+    registrationsList,
+    searchTerm,
+    filterEvent,
+    filterSource,
+    filterDateFrom,
+    filterDateTo,
+  ]);
 
   const uniqueSources = useMemo(() => {
     const set = new Set();
@@ -399,7 +483,8 @@ const AdminDashboard = () => {
 
   const exportToCSV = () => {
     const dataToExport = filteredRegistrations;
-    if (dataToExport.length === 0) return alert("No data to export for current filters");
+    if (dataToExport.length === 0)
+      return alert("No data to export for current filters");
     const headers = [
       "Name",
       "Email",
@@ -501,9 +586,28 @@ const AdminDashboard = () => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const currentCount = (currentEvent.gallery || []).length;
+    const imageFiles = Array.from(files).filter((f) =>
+      (f.type || "").startsWith("image/"),
+    );
+    if (imageFiles.length === 0) {
+      alert(
+        "Media Gallery accepts only images (e.g. JPG, PNG). Please select image files.",
+      );
+      e.target.value = "";
+      return;
+    }
+    if (imageFiles.length < files.length) {
+      alert(
+        `${files.length - imageFiles.length} non-image file(s) were skipped. Only images are allowed in Media Gallery.`,
+      );
+    }
+
+    const galleryList = currentEvent.gallery || [];
+    const currentCount = galleryList.length;
     if (currentCount >= MEDIA_GALLERY_MAX) {
-      alert(`Media Gallery is limited to ${MEDIA_GALLERY_MAX} items. Remove some to add more.`);
+      alert(
+        `Media Gallery is limited to ${MEDIA_GALLERY_MAX} items. Remove some to add more.`,
+      );
       e.target.value = "";
       return;
     }
@@ -521,27 +625,36 @@ const AdminDashboard = () => {
     const addedPaths = [];
     try {
       const maxToAdd = MEDIA_GALLERY_MAX - currentCount;
-      for (let i = 0; i < Math.min(files.length, maxToAdd); i++) {
+      for (let i = 0; i < Math.min(imageFiles.length, maxToAdd); i++) {
         const formData = new FormData();
         formData.append("folderName", folderName);
-        formData.append("asset", files[i]);
+        formData.append("isGallery", "true");
+        formData.append("asset", imageFiles[i]);
         const res = await fetch(`${base}/api/upload-asset`, {
           method: "POST",
           body: formData,
         });
         const data = await res.json();
+        if (!res.ok) {
+          alert(data.error || "Upload failed");
+          continue;
+        }
         if (data.success && data.filename) {
           const fullPath = `/assets/events/${folderName}/${data.path || data.filename}`;
           addedPaths.push(fullPath);
         }
       }
       if (addedPaths.length > 0) {
-        const newGallery = [...(currentEvent.gallery || []), ...addedPaths].slice(0, MEDIA_GALLERY_MAX);
+        const newGallery = [
+          ...(currentEvent.gallery || []),
+          ...addedPaths,
+        ].slice(0, MEDIA_GALLERY_MAX);
         handleChange("gallery", newGallery);
-        await fetchGalleryImages(folderName);
       }
       if (files.length > maxToAdd && maxToAdd > 0) {
-        alert(`Only ${maxToAdd} item(s) added. Media Gallery max is ${MEDIA_GALLERY_MAX}.`);
+        alert(
+          `Only ${maxToAdd} item(s) added. Media Gallery max is ${MEDIA_GALLERY_MAX}.`,
+        );
       }
     } catch (err) {
       console.error("Bulk upload error:", err);
@@ -551,21 +664,25 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteImage = async (filename) => {
-    if (!window.confirm(`Delete ${filename}?`)) return;
-    try {
+  const handleDeleteImage = (galleryItem) => {
+    if (!window.confirm("Remove this item from the gallery?")) return;
+    const newGallery = (currentEvent.gallery || []).filter(
+      (item) => item !== galleryItem,
+    );
+    handleChange("gallery", newGallery);
+    const filename = galleryItem.includes("/")
+      ? galleryItem.split("/").pop()
+      : galleryItem;
+    const folderName = currentEvent.folderName;
+    if (folderName && filename) {
       const base = import.meta.env.DEV
         ? `http://${window.location.hostname}:3001`
         : getApiBase();
-      const res = await fetch(`${base}/api/delete-image`, {
+      fetch(`${base}/api/delete-image`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folderName: currentEvent.folderName, filename }),
-      });
-      const data = await res.json();
-      if (data.success) await fetchGalleryImages(currentEvent.folderName);
-    } catch (err) {
-      console.error(err);
+        body: JSON.stringify({ folderName, filename }),
+      }).catch((err) => console.error(err));
     }
   };
 
@@ -588,7 +705,9 @@ const AdminDashboard = () => {
       });
       const data = await res.json();
       if (data.success) {
-        const fullPath = data.url || `/assets/events/${folderName}/${data.path || data.filename}`;
+        const fullPath =
+          data.url ||
+          `/assets/events/${folderName}/${data.path || data.filename}`;
 
         // Handle general event uploads
         if (currentEvent && currentEvent.folderName) {
@@ -724,7 +843,12 @@ const AdminDashboard = () => {
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
               <p className="text-sm text-amber-800 font-medium">
-                Backend offline. Start it with: <code className="bg-amber-100 px-2 py-0.5 rounded text-xs font-mono">npm run dev:admin</code> so Email Architect, Site Content, and CRM data load from the server.
+                Backend offline. Start it with:{" "}
+                <code className="bg-amber-100 px-2 py-0.5 rounded text-xs font-mono">
+                  npm run dev:admin
+                </code>{" "}
+                so Email Architect, Site Content, and CRM data load from the
+                server.
               </p>
             </div>
           )}
@@ -822,7 +946,9 @@ const AdminDashboard = () => {
           )}
           {topView === "analytics" && !isEditing && (
             <div className="h-[calc(100vh-250px)] animate-in fade-in slide-in-from-bottom-4 duration-500 bg-white rounded-[2rem] shadow-xl overflow-hidden">
-              <AnalyticsDashboard onOpenCookieLogs={() => setTopView("cookies")} />
+              <AnalyticsDashboard
+                onOpenCookieLogs={() => setTopView("cookies")}
+              />
             </div>
           )}
           {topView === "cookies" && !isEditing && (
@@ -843,20 +969,61 @@ const AdminDashboard = () => {
                     </div>
                   )}
                   <div className="relative h-48 overflow-hidden bg-gray-100">
-                    <img
-                      src={
-                        event.image ||
-                        event.thumbnail ||
-                        "/assets/default-event.jpg"
+                    {(() => {
+                      const toSrc = (path) =>
+                        !path || path.startsWith("http")
+                          ? path
+                          : path.startsWith("/")
+                            ? path
+                            : `/${path}`;
+                      if (event.thumbnail || event.image) {
+                        return (
+                          <img
+                            src={toSrc(event.thumbnail || event.image)}
+                            alt=""
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              const fallback = e.target.nextElementSibling;
+                              if (fallback) fallback.classList.remove("hidden");
+                            }}
+                          />
+                        );
                       }
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                      if (event.heroVideo) {
+                        return (
+                          <video
+                            src={toSrc(event.heroVideo)}
+                            className="w-full h-full object-cover"
+                            muted
+                            loop
+                            playsInline
+                            autoPlay
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              const fallback = e.target.nextElementSibling;
+                              if (fallback) fallback.classList.remove("hidden");
+                            }}
+                          />
+                        );
+                      }
+                      return (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                          <ImageIcon className="w-12 h-12" />
+                        </div>
+                      );
+                    })()}
+                    <div className="hidden w-full h-full absolute inset-0 flex items-center justify-center text-gray-300 bg-gray-100">
+                      <ImageIcon className="w-12 h-12" />
+                    </div>
                     <div className="absolute top-4 right-4 flex gap-2 items-center">
                       <button
                         onClick={() => handleEdit(event, "visual")}
                         className={`bg-white/90 backdrop-blur p-2 rounded-lg shadow-sm transition-all ${event.isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-white"}`}
                         disabled={event.isLocked}
-                        title={event.isLocked ? "Event is locked" : "Visual edit"}
+                        title={
+                          event.isLocked ? "Event is locked" : "Visual edit"
+                        }
                       >
                         <Palette className="w-4 h-4 text-purple-600" />
                       </button>
@@ -1045,15 +1212,21 @@ const AdminDashboard = () => {
                       <tr>
                         <th className="px-8 py-4">Contact</th>
                         <th className="px-8 py-4">Email / Phone</th>
-                        <th className="px-8 py-4 text-center"># Registrations</th>
+                        <th className="px-8 py-4 text-center">
+                          # Registrations
+                        </th>
                         <th className="px-8 py-4">Events</th>
                         <th className="px-8 py-4">Last registration</th>
                         <th className="px-8 py-4">Sources</th>
+                        <th className="px-8 py-4 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {sortedContacts.map((contact) => (
-                        <tr key={contact.key} className="hover:bg-blue-50/30 transition-colors">
+                        <tr
+                          key={contact.key}
+                          className="hover:bg-blue-50/30 transition-colors"
+                        >
                           <td className="px-8 py-5">
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center font-black text-purple-600 text-[10px] shrink-0">
@@ -1070,8 +1243,12 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                           <td className="px-8 py-5">
-                            <div className="text-gray-600 font-bold text-xs">{contact.email || "—"}</div>
-                            <div className="text-gray-400 text-[10px]">{contact.phone || "—"}</div>
+                            <div className="text-gray-600 font-bold text-xs">
+                              {contact.email || "—"}
+                            </div>
+                            <div className="text-gray-400 text-[10px]">
+                              {contact.phone || "—"}
+                            </div>
                           </td>
                           <td className="px-8 py-5 text-center">
                             <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-xl bg-purple-100 text-purple-700 font-black text-sm">
@@ -1090,31 +1267,100 @@ const AdminDashboard = () => {
                                 </span>
                               ))}
                               {contact.eventNames.length > 3 && (
-                                <span className="text-[9px] text-gray-400 font-bold" title={contact.eventNames.join(", ")}>
+                                <span
+                                  className="text-[9px] text-gray-400 font-bold"
+                                  title={contact.eventNames.join(", ")}
+                                >
                                   +{contact.eventNames.length - 3}
                                 </span>
                               )}
-                              {contact.eventNames.length === 0 && <span className="text-gray-300 text-[9px]">—</span>}
+                              {contact.eventNames.length === 0 && (
+                                <span className="text-gray-300 text-[9px]">
+                                  —
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="px-8 py-5 text-[10px] text-gray-500 font-bold">
-                            {contact.lastDate ? new Date(contact.lastDate).toLocaleDateString(undefined, { dateStyle: "short" }) : "—"}
+                            {contact.lastDate
+                              ? new Date(contact.lastDate).toLocaleDateString(
+                                  undefined,
+                                  { dateStyle: "short" },
+                                )
+                              : "—"}
                           </td>
                           <td className="px-8 py-5">
                             <div className="flex flex-wrap gap-1">
                               {contact.sources.map((s) => (
-                                <span key={s} className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[8px] font-black uppercase">
+                                <span
+                                  key={s}
+                                  className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[8px] font-black uppercase"
+                                >
                                   {s}
                                 </span>
                               ))}
-                              {contact.sources.length === 0 && <span className="text-gray-300 text-[9px]">—</span>}
+                              {contact.sources.length === 0 && (
+                                <span className="text-gray-300 text-[9px]">
+                                  —
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-8 py-5 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setSelectedContactEmail(
+                                    (contact.email || "").trim() || null,
+                                  )
+                                }
+                                className="text-[10px] font-bold text-[#6160AB] hover:underline uppercase tracking-wider"
+                              >
+                                View profile
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const email = (contact.email || "").trim();
+                                  if (
+                                    !email ||
+                                    !window.confirm(
+                                      `Delete all ${contact.count} registration(s) for this person?`,
+                                    )
+                                  )
+                                    return;
+                                  const base = getApiBase();
+                                  fetch(
+                                    `${base}/api/registrations/by-contact?email=${encodeURIComponent(email)}`,
+                                    { method: "DELETE" },
+                                  )
+                                    .then((res) => res.json())
+                                    .then(() => {
+                                      if (
+                                        selectedContactEmail &&
+                                        selectedContactEmail.toLowerCase() ===
+                                          email.toLowerCase()
+                                      )
+                                        setSelectedContactEmail(null);
+                                      refetchRegistrations();
+                                    })
+                                    .catch(() => {});
+                                }}
+                                className="text-[10px] font-bold text-red-600 hover:underline uppercase tracking-wider"
+                              >
+                                Delete contact
+                              </button>
                             </div>
                           </td>
                         </tr>
                       ))}
                       {sortedContacts.length === 0 && (
                         <tr>
-                          <td colSpan="6" className="px-8 py-20 text-center text-gray-400 font-bold uppercase text-xs italic tracking-widest">
+                          <td
+                            colSpan="7"
+                            className="px-8 py-20 text-center text-gray-400 font-bold uppercase text-xs italic tracking-widest"
+                          >
                             No contacts match filters
                           </td>
                         </tr>
@@ -1130,11 +1376,15 @@ const AdminDashboard = () => {
                         <th className="px-8 py-4">Event</th>
                         <th className="px-8 py-4">Date</th>
                         <th className="px-8 py-4">Source</th>
+                        <th className="px-8 py-4 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {filteredRegistrations.map((reg, idx) => (
-                        <tr key={reg.id || idx} className="hover:bg-blue-50/30 transition-colors">
+                        <tr
+                          key={reg.id || idx}
+                          className="hover:bg-blue-50/30 transition-colors"
+                        >
                           <td className="px-8 py-5">
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center font-black text-purple-600 text-[10px]">
@@ -1145,27 +1395,91 @@ const AdminDashboard = () => {
                                   .slice(0, 2)
                                   .toUpperCase()}
                               </div>
-                              <div className="font-black text-gray-900 text-xs">{reg.name}</div>
+                              <div className="font-black text-gray-900 text-xs">
+                                {reg.name}
+                              </div>
                             </div>
                           </td>
                           <td className="px-8 py-5">
-                            <div className="text-gray-600 font-bold text-xs">{reg.email || "—"}</div>
-                            <div className="text-gray-400 text-[10px]">{reg.phone || "—"}</div>
+                            <div className="text-gray-600 font-bold text-xs">
+                              {reg.email || "—"}
+                            </div>
+                            <div className="text-gray-400 text-[10px]">
+                              {reg.phone || "—"}
+                            </div>
                           </td>
-                          <td className="px-8 py-5 text-[10px] font-bold text-gray-600">{reg.eventName || "—"}</td>
+                          <td className="px-8 py-5 text-[10px] font-bold text-gray-600">
+                            {reg.eventName || "—"}
+                          </td>
                           <td className="px-8 py-5 text-[10px] text-gray-500">
-                            {reg.date ? new Date(reg.date).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" }) : "—"}
+                            {reg.date
+                              ? new Date(reg.date).toLocaleString(undefined, {
+                                  dateStyle: "short",
+                                  timeStyle: "short",
+                                })
+                              : "—"}
                           </td>
                           <td className="px-8 py-5">
                             <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[8px] font-black uppercase">
                               {reg.source || "Direct"}
                             </span>
                           </td>
+                          <td className="px-8 py-5 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setSelectedContactEmail(
+                                    (reg.email || "").trim() || null,
+                                  )
+                                }
+                                className="text-[10px] font-bold text-[#6160AB] hover:underline uppercase tracking-wider"
+                              >
+                                View contact
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (
+                                    !reg.id ||
+                                    !window.confirm(
+                                      "Delete this registration?",
+                                    )
+                                  )
+                                    return;
+                                  const base = getApiBase();
+                                  fetch(
+                                    `${base}/api/registrations/${reg.id}`,
+                                    { method: "DELETE" },
+                                  )
+                                    .then((res) => res.json())
+                                    .then(() => {
+                                      if (
+                                        selectedContactEmail &&
+                                        (reg.email || "")
+                                          .toLowerCase()
+                                          .trim() ===
+                                          selectedContactEmail.toLowerCase()
+                                      )
+                                        setSelectedContactEmail(null);
+                                      refetchRegistrations();
+                                    })
+                                    .catch(() => {});
+                                }}
+                                className="text-[10px] font-bold text-red-600 hover:underline uppercase tracking-wider"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                       {filteredRegistrations.length === 0 && (
                         <tr>
-                          <td colSpan="5" className="px-8 py-20 text-center text-gray-400 font-bold uppercase text-xs italic tracking-widest">
+                          <td
+                            colSpan="6"
+                            className="px-8 py-20 text-center text-gray-400 font-bold uppercase text-xs italic tracking-widest"
+                          >
                             No registrations match filters
                           </td>
                         </tr>
@@ -1173,6 +1487,253 @@ const AdminDashboard = () => {
                     </tbody>
                   </table>
                 )}
+              </div>
+            </div>
+          )}
+
+          {selectedContactEmail && (
+            <div
+              className="fixed inset-0 z-50 flex justify-end bg-black/30"
+              onClick={() => setSelectedContactEmail(null)}
+              onKeyDown={(e) => e.key === "Escape" && setSelectedContactEmail(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Contact profile"
+            >
+              <div
+                className="w-full max-w-lg bg-white shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300"
+                onClick={(e) => e.stopPropagation()}
+                role="document"
+              >
+                <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+                  <h3 className="text-lg font-black text-gray-900">
+                    Contact profile
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedContactEmail(null)}
+                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+                    aria-label="Close"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="p-6">
+                  {contactProfileLoading ? (
+                    <div className="py-12 text-center text-gray-500 font-bold">
+                      Loading profile…
+                    </div>
+                  ) : !contactProfileData ? (
+                    <div className="py-8 px-4 text-center">
+                      <p className="text-red-600 font-bold mb-2">
+                        Could not load profile.
+                      </p>
+                      {contactProfileError && (
+                        <p className="text-sm text-gray-500 mb-2">
+                          {contactProfileError}
+                        </p>
+                      )}
+                      {(import.meta.env.DEV || contactProfileError === "API Endpoint not found") && (
+                        <p className="text-xs text-gray-400 mt-4 max-w-[280px] mx-auto leading-relaxed">
+                          {contactProfileError === "API Endpoint not found"
+                            ? "סגור את השרת (Ctrl+C) והרץ שוב: npm run dev — כך גם Vite (4200) וגם השרת (3001) עולים עם ה-route /api/crm/contact. אם האתר על Hostinger, העלה מחדש את השרת ל-Render."
+                            : "הרץ את השרת על פורט 3001 (npm run dev מריץ גם אותו). הבקשות ל-/api עוברות דרך הפרוקסי."}
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setContactProfileError(null);
+                          const email = selectedContactEmail;
+                          if (!email) return;
+                          const base = getApiBase() || "";
+                          setContactProfileLoading(true);
+                          const url = base ? `${base.replace(/\/$/, "")}/api/crm/contact?email=${encodeURIComponent(email)}` : `/api/crm/contact?email=${encodeURIComponent(email)}`;
+                          fetch(url)
+                            .then((res) => {
+                              if (!res.ok) return res.json().then((body) => Promise.reject({ message: body?.error || res.statusText }));
+                              return res.json();
+                            })
+                            .then((data) => {
+                              if (data?.contact) setContactProfileData(data.contact);
+                              setContactProfileError(null);
+                            })
+                            .catch((err) => setContactProfileError(err?.message || "Network error"))
+                            .finally(() => setContactProfileLoading(false));
+                        }}
+                        className="mt-4 px-4 py-2 rounded-xl bg-[#6160AB] text-white text-xs font-bold uppercase tracking-wider hover:opacity-90"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                        <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center font-black text-purple-600 text-lg">
+                          {(contactProfileData.name || "?")
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-black text-gray-900">
+                            {contactProfileData.name || "—"}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {contactProfileData.email || "—"}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {contactProfileData.phone || "—"}
+                          </p>
+                          <p className="text-[10px] text-gray-400 mt-1">
+                            {contactProfileData.registrations?.length || 0}{" "}
+                            registration(s)
+                          </p>
+                        </div>
+                      </div>
+                      <section className="mb-6">
+                        <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2">
+                          Registrations
+                        </h4>
+                        <div className="rounded-xl border border-gray-100 overflow-hidden">
+                          <table className="w-full text-xs">
+                            <thead className="bg-gray-50 text-[10px] font-black text-gray-500 uppercase">
+                              <tr>
+                                <th className="px-3 py-2 text-left">Event</th>
+                                <th className="px-3 py-2 text-left">Date</th>
+                                <th className="px-3 py-2 text-right">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                              {(contactProfileData.registrations || []).map(
+                                (r) => (
+                                  <tr key={r.id}>
+                                    <td className="px-3 py-2 font-bold text-gray-700">
+                                      {r.eventName || "—"}
+                                    </td>
+                                    <td className="px-3 py-2 text-gray-500">
+                                      {r.date
+                                        ? new Date(r.date).toLocaleDateString(
+                                            undefined,
+                                            { dateStyle: "short" },
+                                          )
+                                        : "—"}
+                                    </td>
+                                    <td className="px-3 py-2 text-right">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (
+                                            !r.id ||
+                                            !window.confirm(
+                                              "Delete this registration?",
+                                            )
+                                          )
+                                            return;
+                                          const base = getApiBase();
+                                          fetch(
+                                            `${base}/api/registrations/${r.id}`,
+                                            { method: "DELETE" },
+                                          )
+                                            .then(() => {
+                                              refetchRegistrations();
+                                              setContactProfileData((prev) =>
+                                                prev
+                                                  ? {
+                                                      ...prev,
+                                                      registrations: (
+                                                        prev.registrations ||
+                                                        []
+                                                      ).filter(
+                                                        (x) => x.id !== r.id,
+                                                      ),
+                                                    }
+                                                  : null,
+                                              );
+                                            })
+                                            .catch(() => {});
+                                        }}
+                                        className="text-[10px] font-bold text-red-600 hover:underline"
+                                      >
+                                        Delete
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ),
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </section>
+                      {(contactProfileData.emailActivity?.length > 0) && (
+                        <section className="mb-6">
+                          <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2">
+                            Email activity
+                          </h4>
+                          <ul className="space-y-1 text-xs text-gray-600">
+                            {contactProfileData.emailActivity.map((a) => (
+                              <li
+                                key={a.id}
+                                className="flex justify-between items-center py-1 border-b border-gray-50"
+                              >
+                                <span>
+                                  {a.stepType || a.flowId || "—"} ·{" "}
+                                  {a.status || "—"}
+                                </span>
+                                <span className="text-gray-400 text-[10px]">
+                                  {a.sentAt
+                                    ? new Date(a.sentAt).toLocaleDateString(
+                                        undefined,
+                                        { dateStyle: "short" },
+                                      )
+                                    : "—"}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        <a
+                          href={`${getApiBase() || ""}/api/crm/contact/export?email=${encodeURIComponent(contactProfileData.email)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#6160AB] text-white text-[10px] font-black uppercase tracking-wider hover:opacity-90"
+                        >
+                          <Download className="w-4 h-4" />
+                          Export profile
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (
+                              !window.confirm(
+                                "Delete all registrations for this contact?",
+                              )
+                            )
+                              return;
+                            const base = getApiBase();
+                            fetch(
+                              `${base}/api/registrations/by-contact?email=${encodeURIComponent(contactProfileData.email)}`,
+                              { method: "DELETE" },
+                            )
+                              .then(() => {
+                                setSelectedContactEmail(null);
+                                refetchRegistrations();
+                              })
+                              .catch(() => {});
+                          }}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-wider hover:opacity-90"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete contact
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -1427,10 +1988,18 @@ const AdminDashboard = () => {
                   </div>
                   <div className="flex gap-2 bg-gray-100 p-1 rounded-2xl">
                     {(() => {
-                      const isPastEvent = currentEvent?.date && new Date(currentEvent.date) < new Date();
+                      const isPastEvent =
+                        currentEvent?.date &&
+                        new Date(currentEvent.date) < new Date();
                       const tabs = isPastEvent
                         ? ["essentials", "media"]
-                        : ["essentials", "media", "content", "settings", "registrations"];
+                        : [
+                            "essentials",
+                            "media",
+                            "content",
+                            "settings",
+                            "registrations",
+                          ];
                       return tabs.map((tab) => (
                         <button
                           key={tab}
@@ -1454,7 +2023,9 @@ const AdminDashboard = () => {
                           </label>
                           <input
                             type="text"
-                            value={currentEvent.title?.en ?? currentEvent.title ?? ""}
+                            value={
+                              currentEvent.title?.en ?? currentEvent.title ?? ""
+                            }
                             onChange={(e) =>
                               handleChange("title", e.target.value, "en")
                             }
@@ -1498,7 +2069,9 @@ const AdminDashboard = () => {
                             rows="5"
                             value={
                               currentEvent.description?.en ??
-                              (typeof currentEvent.description === "string" ? currentEvent.description : "")
+                              (typeof currentEvent.description === "string"
+                                ? currentEvent.description
+                                : "")
                             }
                             onChange={(e) =>
                               handleChange("description", e.target.value, "en")
@@ -2008,34 +2581,35 @@ const AdminDashboard = () => {
                             </label>
                           </div>
                         </div>
-                        {currentEvent?.date && new Date(currentEvent.date) >= new Date() && (
-                        <div>
-                          <label className="block text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">
-                            Card Thumbnail (List)
-                          </label>
-                          <div className="flex gap-3">
-                            <input
-                              type="text"
-                              value={currentEvent.thumbnail}
-                              onChange={(e) =>
-                                handleChange("thumbnail", e.target.value)
-                              }
-                              className="flex-1 p-4 bg-gray-50 rounded-2xl border-none font-bold"
-                            />
-                            <label className="cursor-pointer bg-gray-900 text-white px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">
-                              <ImageIcon className="w-4 h-4" />
-                              <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={(e) =>
-                                  handleAssetUpload(e, "thumbnail")
-                                }
-                              />
-                            </label>
-                          </div>
-                        </div>
-                        )}
+                        {currentEvent?.date &&
+                          new Date(currentEvent.date) >= new Date() && (
+                            <div>
+                              <label className="block text-[10px] font-black uppercase text-gray-400 mb-3 tracking-widest">
+                                Card Thumbnail (List)
+                              </label>
+                              <div className="flex gap-3">
+                                <input
+                                  type="text"
+                                  value={currentEvent.thumbnail}
+                                  onChange={(e) =>
+                                    handleChange("thumbnail", e.target.value)
+                                  }
+                                  className="flex-1 p-4 bg-gray-50 rounded-2xl border-none font-bold"
+                                />
+                                <label className="cursor-pointer bg-gray-900 text-white px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">
+                                  <ImageIcon className="w-4 h-4" />
+                                  <input
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                      handleAssetUpload(e, "thumbnail")
+                                    }
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          )}
                       </div>
 
                       <div className="bg-gray-50 p-8 rounded-3xl border border-dashed border-gray-200">
@@ -2049,7 +2623,8 @@ const AdminDashboard = () => {
                           </h3>
                           <label
                             className={`cursor-pointer px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center gap-2 transition-all ${
-                              (galleryImages.length >= 20 || uploading)
+                              (currentEvent.gallery || []).length >= 20 ||
+                              uploading
                                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                                 : "bg-gray-900 text-white hover:bg-black"
                             }`}
@@ -2064,39 +2639,82 @@ const AdminDashboard = () => {
                             <input
                               type="file"
                               className="hidden"
-                              accept="image/*,video/*"
+                              accept="image/*"
                               multiple
                               onChange={handleGalleryUpload}
-                              disabled={uploading || galleryImages.length >= 20}
+                              disabled={
+                                uploading ||
+                                (currentEvent.gallery || []).length >= 20
+                              }
                             />
                           </label>
                         </div>
+                        <p className="text-xs text-gray-500 mb-4">
+                          Images only (no video). HEIC is converted to JPG
+                          automatically. Use JPG or PNG for best results.
+                        </p>
                         <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-4">
-                          {galleryImages.map((img, idx) => (
-                            <div
-                              key={idx}
-                              className="relative group aspect-square rounded-2xl overflow-hidden shadow-sm shadow-gray-200 bg-black flex items-center justify-center"
-                            >
-                              {/\.(mp4|mov|webm)$/i.test(img) ? (
-                                <Video className="w-8 h-8 text-white opacity-20" />
-                              ) : (
-                                <img
-                                  src={`/assets/events/${currentEvent.folderName}/${img}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              )}
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteImage(img)}
-                                  className="bg-red-600 text-white p-1.5 rounded-full hover:bg-red-700 transition-all"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
+                          {(currentEvent.gallery || []).map((item, idx) => {
+                            const pathOnly =
+                              typeof item === "string" &&
+                              (item.startsWith("http") ||
+                                item.startsWith("/assets"))
+                                ? item
+                                : `/assets/events/${currentEvent.folderName || ""}/${item || ""}`;
+                            const src = pathOnly.startsWith("http")
+                              ? pathOnly
+                              : pathOnly;
+                            const isVideo =
+                              /\.(mp4|mov|webm|MP4|MOV|WEBM)$/i.test(
+                                item || "",
+                              );
+                            return (
+                              <div
+                                key={idx}
+                                className="relative group aspect-square rounded-2xl overflow-hidden shadow-sm shadow-gray-200 bg-gray-100 flex items-center justify-center"
+                              >
+                                {isVideo ? (
+                                  <video
+                                    src={src}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                    playsInline
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                      const next =
+                                        e.currentTarget.nextElementSibling;
+                                      if (next) next.classList.remove("hidden");
+                                    }}
+                                  />
+                                ) : (
+                                  <img
+                                    src={src}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                      const next =
+                                        e.currentTarget.nextElementSibling;
+                                      if (next) next.classList.remove("hidden");
+                                    }}
+                                  />
+                                )}
+                                <div className="hidden absolute inset-0 bg-gray-700 flex items-center justify-center">
+                                  <ImageIcon className="w-8 h-8 text-gray-500" />
+                                </div>
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteImage(item)}
+                                    className="bg-red-600 text-white p-1.5 rounded-full hover:bg-red-700 transition-all"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                          {galleryImages.length === 0 && (
+                            );
+                          })}
+                          {(currentEvent.gallery || []).length === 0 && (
                             <div className="col-span-full py-12 text-center text-gray-300 font-bold uppercase text-[10px] tracking-widest border border-dashed rounded-2xl">
                               Empty Gallery
                             </div>

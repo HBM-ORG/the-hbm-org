@@ -111,6 +111,9 @@ const CookieConsentLogs = () => {
             Cookie Compliance Logs (2026)
           </h3>
         </div>
+        <p className="w-full text-xs text-gray-500 mt-1">
+          כאן מוצגות רק <strong>הסכמות קוקיז</strong> (תאריך, בחירה, IP ממוזער). לנתונים על מי נרשם, כמה רישומים ואיזה אירועים — השתמש ב־<strong>CRM DATABASE</strong> (למעלה).
+        </p>
         <div className="flex items-center gap-3">
           {lastSynced && (
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">

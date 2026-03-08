@@ -20,12 +20,14 @@ const isValid = (id) => id && id.length > 0 && !String(id).includes('XXXXX');
  */
 export const initAnalytics = () => {
     if (typeof window === 'undefined') return;
-    
-    // 1. Consent Mode v2 Defaults (Deny everything by default)
+    // gtag may already be defined by index.html (Google tag snippet)
     window.dataLayer = window.dataLayer || [];
-    function gtag(){window.dataLayer.push(arguments);}
-    window.gtag = window.gtag || gtag;
+    if (typeof window.gtag !== 'function') {
+        function gtag(){window.dataLayer.push(arguments);}
+        window.gtag = gtag;
+    }
 
+    // 1. Consent Mode v2 Defaults (Deny everything by default)
     const savedConsent = localStorage.getItem('hbm_cookie_consent');
     const consent = savedConsent ? JSON.parse(savedConsent) : null;
 
@@ -58,11 +60,10 @@ export const initAnalytics = () => {
 
 const loadGoogleAnalytics = () => {
     if (window.gtag_loaded || !isValid(GA_ID)) return;
-    window.gtag('config', GA_ID, { send_page_view: true });
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
-    document.head.appendChild(script);
+    // Script already in index.html; just send config (after consent)
+    if (typeof window.gtag === 'function') {
+        window.gtag('config', GA_ID, { send_page_view: true });
+    }
     window.gtag_loaded = true;
 };
 
