@@ -571,7 +571,7 @@ export const knowledgeData = [
     "description": "The science and psychology behind the 8-minute methodology and why it's the perfect duration for human connection.",
     "youtubeUrl": "https://www.youtube.com/watch?v=R7smYF02Kjo",
     "category": "Interviews",
-    "hashtags": ["#Methodology", "#Science", "#HBM"],
+    "hashtags": [],
     "accentColor": "#6160AB"
   },
   {
@@ -582,7 +582,7 @@ export const knowledgeData = [
     "description": "How HBM helps organizations and individuals build genuine, lasting communities through simple, deep interactions.",
     "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     "category": "Education",
-    "hashtags": ["#Community", "#Growth", "#Impact"],
+    "hashtags": [],
     "accentColor": "#F07B3C"
   },
   {
@@ -593,7 +593,7 @@ export const knowledgeData = [
     "description": "Elad's vision for the Human Being Movement and its role in healing modern loneliness.",
     "youtubeUrl": "https://www.youtube.com/watch?v=cGWYgO5VEE4",
     "category": "Vision",
-    "hashtags": ["#Vision", "#Healing", "#Connection"],
+    "hashtags": [],
     "accentColor": "#6160AB"
   }
 ];

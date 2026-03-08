@@ -79,16 +79,6 @@ const VideoCard = React.memo(({ item, index }) => {
       </div>
 
       <div className="p-4 md:p-6 flex flex-col">
-        <div className="flex flex-wrap gap-2 mb-2">
-          {(item.hashtags || []).map((tag) => (
-            <span
-              key={tag}
-              className="text-[9px] font-bold text-[var(--accent)] uppercase tracking-wider"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
         <h3
           className={`font-black text-hbm-dark mb-1.5 tracking-tight leading-tight group-hover:text-[var(--accent)] transition-colors ${isLarge ? "text-xl md:text-3xl" : "text-base md:text-lg"}`}
         >

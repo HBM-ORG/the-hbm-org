@@ -5,6 +5,7 @@ const siteUrl = 'https://www.thehbm.org';
 // Default OG image: use 1200×630 for rich previews on WhatsApp/social. Must be absolute URL; crawlers need public access.
 const defaultImage = 'https://www.thehbm.org/wp-content/uploads/2025/06/Logo-and-Tagline.png';
 
+/** Ensures og:image is always an absolute URL. Missing/empty image → defaultImage (fallback so link preview is never broken). */
 function ensureAbsoluteImage(url) {
   if (!url || typeof url !== 'string') return defaultImage;
   const trimmed = url.trim();
