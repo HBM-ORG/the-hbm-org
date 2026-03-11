@@ -3,6 +3,7 @@
 | Doc | Description |
 |-----|--------------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Project structure, stack, entry points |
+| [CI_CD_VARIABLES.md](CI_CD_VARIABLES.md) | GitHub Actions workflows, CI/CD variables, and required secrets |
 | [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md) | PM2 and deployment steps |
 | [DEPLOY_STATUS.md](DEPLOY_STATUS.md) | Status overview and handoff (CRM, content, email) |
 | [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) | **Email:** what exists, what’s needed, Mailchimp/Bravo options |

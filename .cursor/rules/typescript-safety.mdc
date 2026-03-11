@@ -1,0 +1,42 @@
+---
+description: TypeScript safety standards; avoid suppressions and any
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript Safety
+
+- Prefer explicit types, narrow unions, type guards, and `unknown` over `any`.
+- Do not add `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`, or broad `eslint-disable` comments just to silence errors.
+- Do not use file-level suppression as a shortcut to make builds or CI pass.
+- Keep runtime and type-layer behavior aligned; fix the actual type mismatch instead of hiding it.
+- When a value shape is uncertain, model it with a type or runtime guard before accessing properties.
+
+## Preferred fixes
+
+```ts
+// Bad
+const email = (payload as any).email;
+
+// Good
+type RegistrationPayload = { email?: string };
+const email = typeof (payload as RegistrationPayload).email === 'string'
+  ? (payload as RegistrationPayload).email
+  : '';
+```
+
+```ts
+// Bad
+// @ts-ignore
+send(data.user.email);
+
+// Good
+if (data && typeof data === 'object' && 'user' in data) {
+  // narrow further before use
+}
+```
+
+## Narrow exception
+
+- If suppression is truly unavoidable, keep it to the smallest possible scope, add a short reason, and treat it as temporary technical debt.
+- Prefer a single-line, documented exception over a file-wide suppression.

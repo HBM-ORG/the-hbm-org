@@ -19,7 +19,7 @@ This generates the `dist/` folder.
 | Folder / File | Description | Destination |
 |----------------|-------------|-------------|
 | `dist/` | Static frontend | `public_html/` or app root |
-| `server/` (admin-server.js) | Backend Node server | Application root |
+| `server/` (`admin-server.ts`) | Backend Node server | Application root |
 | `package.json` | Dependencies | Application root |
 | `public/logos/`, `public/assets/` | Brand and media (incl. **event images**) | Same structure under `public/` |
 | `public/data/events.json` | **Events + gallery paths** (must match assets on server) | `public/data/` |
@@ -36,7 +36,7 @@ This generates the `dist/` folder.
 ## 3. Hostinger Configuration
 
 1. **Node.js:** Panel → Advanced → Node.js; select the app folder.
-2. **Startup file:** `server/admin-server.js` (or set start command to `node server/admin-server.js`).
+2. **Startup command:** `npm start` (runs `tsx server/admin-server.ts`).
 3. **Environment variables** (in panel):
    - `PORT=3001`
    - `NODE_ENV=production`
@@ -56,7 +56,7 @@ The app writes to `src/data/*.json`. Ensure the Node process has **write permiss
 ## 5. Troubleshooting
 
 - **Design looks different:** Purge Hostinger/LiteSpeed cache after deploy.
-- **API/base URL:** In production, the frontend uses same-origin requests (`base` empty). Correct if the server (server/admin-server.js) serves `dist/`.
+- **API/base URL:** In production, the frontend uses same-origin requests (`base` empty). Correct if the server (`server/admin-server.ts` via `npm start`) serves `dist/`.
 
 ---
 

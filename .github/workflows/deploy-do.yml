@@ -1,0 +1,104 @@
+name: Deploy DigitalOcean
+
+on:
+  push:
+    branches:
+      - dev
+      - staging
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-do-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-dev:
+    name: Deploy Dev App Platform
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref_name == 'dev'
+    environment: development
+    env:
+      DO_API_TOKEN: ${{ secrets.DO_API_TOKEN }}
+      DO_APP_ID_DEV: ${{ vars.DO_APP_ID_DEV }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: config/.nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup doctl
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_DEV != ''
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_API_TOKEN }}
+
+      - name: Trigger App Platform deployment
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_DEV != ''
+        run: doctl apps create-deployment "$DO_APP_ID_DEV"
+
+      - name: Skip notice when DigitalOcean config is missing
+        if: env.DO_API_TOKEN == '' || env.DO_APP_ID_DEV == ''
+        run: |
+          echo "Skipping dev deploy."
+          echo "Set DO_API_TOKEN secret and DO_APP_ID_DEV variable to enable this job."
+
+  deploy-staging:
+    name: Deploy Staging App Platform
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref_name == 'staging'
+    environment: staging
+    env:
+      DO_API_TOKEN: ${{ secrets.DO_API_TOKEN }}
+      DO_APP_ID_STAGING: ${{ vars.DO_APP_ID_STAGING }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: config/.nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup doctl
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_STAGING != ''
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_API_TOKEN }}
+
+      - name: Trigger App Platform deployment
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_STAGING != ''
+        run: doctl apps create-deployment "$DO_APP_ID_STAGING"
+
+      - name: Skip notice when DigitalOcean config is missing
+        if: env.DO_API_TOKEN == '' || env.DO_APP_ID_STAGING == ''
+        run: |
+          echo "Skipping staging deploy."
+          echo "Set DO_API_TOKEN secret and DO_APP_ID_STAGING variable to enable this job."

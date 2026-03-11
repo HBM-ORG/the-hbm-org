@@ -1,0 +1,21 @@
+---
+description: Avoid dynamic imports unless they are explicitly justified
+alwaysApply: true
+---
+
+# Dynamic Import Safety
+
+- Prefer static imports so missing modules and bad exports fail early during typecheck and build, not only at runtime.
+- Avoid `import()` in application and server code by default.
+- Do not use dynamic imports as a workaround for typing, module-resolution, or environment issues.
+
+## Allowed narrow exceptions
+
+- Explicit framework-level code splitting such as route or component lazy loading.
+- Truly optional integrations where loading must depend on runtime availability.
+
+## When an exception is used
+
+- Add a short inline comment explaining why a static import is not appropriate.
+- Keep the dynamic import at the narrowest possible scope.
+- Prefer one well-justified dynamic import over spreading the pattern through the codebase.

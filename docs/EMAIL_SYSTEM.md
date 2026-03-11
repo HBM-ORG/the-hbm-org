@@ -8,7 +8,7 @@ This document describes the HBM email stack, what is required for it to work, an
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| **Email sending** | `server/admin-server.js` | Single delivery point: **`deliverEmail()`** → today SMTP (nodemailer); ready to add Bravo API. |
+| **Email sending** | `server/admin-server.ts` | Single delivery point: **`deliverEmail()`** → today SMTP (nodemailer); ready to add Bravo API. |
 | **Email queue** | Prisma `EmailQueue` (MySQL in prod) | Pending/sent/failed/suppressed; processed every minute. |
 | **Automation flows** | `src/data/automationConfig.json` + Admin UI | Trigger-based flows (e.g. registration, onNewsletterSignup, 48h_before_event) with Liquid templates. |
 | **Campaigns** | `src/data/campaigns.json` + Admin UI | One-off blasts; segment = all / physical / video / newsletter. |
@@ -54,7 +54,7 @@ The server uses the config file first; if `automationConfig.json` has no SMTP ho
 
 ## 3. Bravo Integration (SMTP + API)
 
-The system is built so that **all** emails (physical events, video events, newsletter) go through one queue and **one delivery function** (`deliverEmail()` in `server/admin-server.js`). That makes Bravo integration a single, clear change.
+The system is built so that **all** emails (physical events, video events, newsletter) go through one queue and **one delivery function** (`deliverEmail()` in `server/admin-server.ts`). That makes Bravo integration a single, clear change.
 
 ### Option 1: Bravo as SMTP relay (no code change)
 
@@ -68,7 +68,7 @@ Use Bravo’s SMTP if they provide it:
 
 The code is prepared for a Bravo API integration:
 
-- **Single injection point:** In `server/admin-server.js`, `processQueue()` sends each queued email via **`deliverEmail(transporter, mailOptions)`**. Today this calls `transporter.sendMail(mailOptions)`. To use Bravo API, add logic inside `deliverEmail()` so that when Bravo is enabled (e.g. env), the same `mailOptions` (to, subject, html, from, attachments) are sent via Bravo’s API instead of SMTP.
+- **Single injection point:** In `server/admin-server.ts`, `processQueue()` sends each queued email via **`deliverEmail(transporter, mailOptions)`**. Today this calls `transporter.sendMail(mailOptions)`. To use Bravo API, add logic inside `deliverEmail()` so that when Bravo is enabled (e.g. env), the same `mailOptions` (to, subject, html, from, attachments) are sent via Bravo’s API instead of SMTP.
 - **What stays the same:** Queue, flows, campaigns, suppression list, Liquid templates, and retry logic. Only the actual “send” step changes.
 
 **What you need for Bravo API (when implementing):**
@@ -102,7 +102,7 @@ No need to change flows or segments; physical / video / newsletter are already d
 ## 5. Bravo Readiness Checklist (for dev/CTO)
 
 - [ ] **SMTP path:** Use Bravo SMTP credentials in config or env → works today.
-- [ ] **API path:** Single send point is **`deliverEmail()`** in `server/admin-server.js`; add Bravo API call when `USE_EMAIL_PROVIDER=bravo` and credentials are set.
+- [ ] **API path:** Single send point is **`deliverEmail()`** in `server/admin-server.ts`; add Bravo API call when `USE_EMAIL_PROVIDER=bravo` and credentials are set.
 - [ ] Queue, suppression, and flows remain unchanged; only the implementation of `deliverEmail()` (or a helper it calls) needs to support Bravo.
 
 ---
@@ -111,7 +111,7 @@ No need to change flows or segments; physical / video / newsletter are already d
 
 | File | Role |
 |------|------|
-| `server/admin-server.js` | `processQueue()`, **`deliverEmail()`** (single send point), campaign send, test send, SMTP from config + env fallback. |
+| `server/admin-server.ts` | `processQueue()`, **`deliverEmail()`** (single send point), campaign send, test send, SMTP from config + env fallback. |
 | `src/data/automationConfig.json` | Flows + SMTP (optional if using env). |
 | `src/data/campaigns.json` | Campaign definitions. |
 | `src/data/suppression.json` | Opt-out emails. |

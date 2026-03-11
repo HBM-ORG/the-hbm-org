@@ -7,18 +7,32 @@
     "node": ">=18"
   },
   "scripts": {
-    "dev": "concurrently \"vite --host 0.0.0.0 --port 4200\" \"node server/admin-server.js\"",
+    "dev": "concurrently \"vite --host 0.0.0.0 --port 4200\" \"tsx server/admin-server.ts\"",
     "dev:admin": "npm run dev",
-    "start": "node server/admin-server.js",
+    "start": "tsx server/admin-server.ts",
     "build": "vite build && node scripts/copy-data-to-dist.js",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . --config config/eslint.config.js",
     "preview": "vite preview",
-    "generate-sitemap": "node scripts/generate-sitemap.js"
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "migrate:json-to-db": "npx tsx scripts/migrate-json-to-db.ts",
+    "migrate:json-to-db:dry": "npx tsx scripts/migrate-json-to-db.ts --dry-run",
+    "migrate:files-to-storage": "npx tsx scripts/migrate-files-to-storage.ts",
+    "migrate:files-to-storage:dry": "npx tsx scripts/migrate-files-to-storage.ts --dry-run",
+    "migrate:files-to-storage:update-db-only": "npx tsx scripts/migrate-files-to-storage.ts --update-db-only",
+    "migrate:storage-provider": "npx tsx scripts/migrate-storage-provider.ts",
+    "migrate:storage-provider:dry": "npx tsx scripts/migrate-storage-provider.ts --dry-run",
+    "migrate:all": "npm run migrate:json-to-db && npm run migrate:files-to-storage",
+    "migrate:all:dry": "npm run migrate:json-to-db:dry && npm run migrate:files-to-storage:dry",
+    "storage:status": "curl -s http://localhost:3001/api/upload/status | jq ."
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.750.0",
+    "@aws-sdk/s3-request-presigner": "^3.750.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@google-cloud/storage": "^7.15.2",
     "@microsoft/clarity": "^1.0.2",
     "@prisma/adapter-mariadb": "^7.4.1",
     "@prisma/client": "^6.19.2",
@@ -56,6 +70,10 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@tailwindcss/vite": "^4.1.18",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^25.4.0",
+    "@types/nodemailer": "^7.0.11",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
@@ -68,6 +86,8 @@
     "prisma": "^6.19.2",
     "react-router-dom": "^7.13.0",
     "tailwindcss": "^4.1.18",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3",
     "vite": "^7.2.4"
   }
 }

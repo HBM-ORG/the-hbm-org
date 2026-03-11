@@ -258,7 +258,7 @@ scp .env your-user@admin.thehbm.org:/app/ (secure method)
 ssh your-user@admin.thehbm.org "cd /app && npm install"
 
 # 3. Start admin server
-npm start  # or pm2 start server/admin-server.js
+npm start  # or pm2 start config/ecosystem.config.cjs
 
 # 4. Configure reverse proxy (via Hostinger panel)
 Target: http://localhost:3001

@@ -1,4 +1,5 @@
 import express from "express";
+import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import * as ics from "ics";
 import { v4 as uuidv4 } from "uuid";
@@ -11,10 +12,16 @@ import process from "process";
 import { Buffer } from "buffer";
 import { createRequire } from "module";
 
+type HeicConvertFn = (options: {
+  buffer: Buffer;
+  format: "JPEG" | "PNG";
+  quality?: number;
+}) => Promise<Buffer>;
+
 const require = createRequire(import.meta.url);
-let heicConvert;
+let heicConvert: HeicConvertFn | null = null;
 try {
-  heicConvert = require("heic-convert");
+  heicConvert = require("heic-convert") as HeicConvertFn;
 } catch (_) {
   heicConvert = null;
 }
@@ -23,23 +30,153 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 
-try {
-  const dotenv = await import("dotenv").catch(() => null);
-  if (dotenv) dotenv.default.config();
-} catch (e) {
-  console.error("Error loading dotenv:", e);
-}
+dotenv.config();
 
 import fetch from "node-fetch";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import { Client as FtpClient } from "basic-ftp";
 import { Readable } from "stream";
+import cmsRoutes from "./routes/cms.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
 
 const prisma = new PrismaClient();
 
+type JsonRecord = Record<string, unknown>;
+
+type EmailQueuePayload = {
+  email?: string;
+  language?: string;
+  date?: string;
+  eventName?: string;
+  location?: string;
+  [key: string]: unknown;
+};
+
+type AutomationFlow = {
+  id?: string;
+  active?: boolean;
+  trigger?: string;
+  delayValue?: string | number;
+  delayUnit?: string;
+  subject_he?: string;
+  subject_en?: string;
+  subject?: string;
+  body_he?: string;
+  body_en?: string;
+  body?: string;
+  includeCalendar?: boolean;
+  [key: string]: unknown;
+};
+
+type AutomationSequenceStep = {
+  type?: string;
+  duration?: string;
+  flowId?: string;
+  [key: string]: unknown;
+};
+
+type AutomationSequence = {
+  id?: string;
+  active?: boolean;
+  trigger?: string;
+  steps?: AutomationSequenceStep[];
+  [key: string]: unknown;
+};
+
+type SmtpConfigShape = {
+  host?: string;
+  port?: string | number;
+  user?: string;
+  pass?: string;
+  from?: string;
+  secure?: boolean;
+  [key: string]: unknown;
+};
+
+type AutomationConfig = {
+  flows?: AutomationFlow[];
+  sequences?: AutomationSequence[];
+  smtp?: SmtpConfigShape;
+  globalStyling?: JsonRecord;
+  [key: string]: unknown;
+};
+
+type CampaignDefinition = {
+  id?: string;
+  subject_he?: string;
+  subject_en?: string;
+  subject?: string;
+  body_he?: string;
+  body_en?: string;
+  body?: string;
+  includeCalendar?: boolean;
+  [key: string]: unknown;
+};
+
+type EngagementEntry = {
+  id?: string;
+  type?: string;
+  email?: string;
+  timestamp?: string;
+  [key: string]: unknown;
+};
+
+type BookAiData = {
+  author?: string;
+  authorQuote?: string;
+  threeKeySentences?: string[];
+  shortSummary?: string;
+  fullSummary?: string;
+  finalQuote?: string;
+};
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function readJsonFile<T>(filePath: string, fallback: T): T {
+  try {
+    if (!fs.existsSync(filePath)) return fallback;
+    return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function asEmailQueuePayload(value: unknown): EmailQueuePayload {
+  return isRecord(value) ? (value as EmailQueuePayload) : {};
+}
+
+function getEmailFromPayload(value: unknown): string {
+  const email = asEmailQueuePayload(value).email;
+  return typeof email === "string" ? email : "";
+}
+
+function getSingleQueryValue(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function getRequestIp(
+  ip: string | undefined,
+  forwardedFor: string | string[] | undefined,
+  remoteAddress: string | undefined,
+): string {
+  if (typeof ip === "string" && ip.trim()) return ip;
+  if (Array.isArray(forwardedFor) && typeof forwardedFor[0] === "string") {
+    return forwardedFor[0];
+  }
+  if (typeof forwardedFor === "string" && forwardedFor.trim()) {
+    return forwardedFor.split(",")[0].trim();
+  }
+  if (typeof remoteAddress === "string" && remoteAddress.trim()) {
+    return remoteAddress;
+  }
+  return "unknown";
+}
+
 // Define triggerAutomation function
-const triggerAutomation = async (flowId) => {
+const triggerAutomation = async (flowId: string, _data?: unknown) => {
   console.log(`Triggering automation for flowId: ${flowId}`);
   // Add logic here
 };
@@ -81,6 +218,8 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json());
+app.use("/api/upload", uploadRoutes);
+app.use("/api", cmsRoutes);
 
 // --- Subdomain Routing ---
 app.use((req, res, next) => {
@@ -200,7 +339,7 @@ const handleCrmContact = async (req, res) => {
     const emailActivity = allQueue
       .filter(
         (item) =>
-          (item.data && (item.data.email || "").toLowerCase().trim()) === email,
+          getEmailFromPayload(item.data).toLowerCase().trim() === email,
       )
       .map((item) => ({
         id: item.id,
@@ -297,8 +436,9 @@ if (!fs.existsSync(CMS_ASSETS_DIR))
 const LOG_FILE = path.join(PROJECT_ROOT, "src", "data", "server-errors.log");
 
 // Safe file-based error logger — never crashes the process
-const logError = (context, err) => {
-  const entry = `[${new Date().toISOString()}] [${context}] ${err?.message || err}\n`;
+const logError = (context: string, err: unknown) => {
+  const message = err instanceof Error ? err.message : String(err);
+  const entry = `[${new Date().toISOString()}] [${context}] ${message}\n`;
   console.error(entry);
   try {
     fs.appendFileSync(LOG_FILE, entry);
@@ -444,11 +584,14 @@ app.get("/api/images/:folderName", (req, res) => {
 // Cookie Consent Logging
 app.post("/api/cookie-consent-log", async (req, res) => {
   const { choice, settings } = req.body;
-  const ip =
-    req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  const ip = getRequestIp(
+    req.ip,
+    req.headers["x-forwarded-for"],
+    req.socket.remoteAddress,
+  );
   const hashedIp = crypto
     .createHash("sha256")
-    .update(ip || "unknown")
+    .update(ip)
     .digest("hex");
 
   try {
@@ -916,7 +1059,7 @@ const getEmailTemplate = (body, config, trackingId, email, language) => {
 const triggerAutomationByEvent = async (triggerType, userData) => {
   try {
     if (!fs.existsSync(AUTOMATION_CONFIG_PATH)) return;
-    const config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH));
+    const config = readJsonFile<AutomationConfig>(AUTOMATION_CONFIG_PATH, {});
 
     const toCreate = [];
     const now = Date.now();
@@ -934,7 +1077,7 @@ const triggerAutomationByEvent = async (triggerType, userData) => {
             : flow.delayUnit === "d"
               ? 86400000
               : 60000;
-        scheduledFor += parseInt(flow.delayValue) * multiplier;
+        scheduledFor += parseInt(String(flow.delayValue), 10) * multiplier;
       }
       toCreate.push({
         id: uuidv4(),
@@ -953,8 +1096,9 @@ const triggerAutomationByEvent = async (triggerType, userData) => {
     );
     for (const seq of activeSequences) {
       let cumulativeDelay = 0;
-      for (let stepIndex = 0; stepIndex < seq.steps.length; stepIndex++) {
-        const step = seq.steps[stepIndex];
+      const sequenceSteps = Array.isArray(seq.steps) ? seq.steps : [];
+      for (let stepIndex = 0; stepIndex < sequenceSteps.length; stepIndex++) {
+        const step = sequenceSteps[stepIndex];
         if (step.type === "wait") {
           cumulativeDelay += parseDelay(step.duration);
         } else if (step.type === "email") {
@@ -994,16 +1138,19 @@ const triggerAutomationByEvent = async (triggerType, userData) => {
 
 const addToEmailQueue = async (sequenceId, userData) => {};
 
-const parseDelay = (str) => {
-  const value = parseInt(str);
-  if (str.includes("h")) return value * 60 * 60 * 1000;
-  if (str.includes("m")) return value * 60 * 1000;
-  if (str.includes("d")) return value * 24 * 60 * 60 * 1000;
+const parseDelay = (str: string | number) => {
+  const raw = String(str);
+  const value = parseInt(raw, 10);
+  if (raw.includes("h")) return value * 60 * 60 * 1000;
+  if (raw.includes("m")) return value * 60 * 1000;
+  if (raw.includes("d")) return value * 24 * 60 * 60 * 1000;
   return 0;
 };
 
 // Normalize SMTP for Office 365: always use smtp.office365.com and port 587
-function normalizeSmtpConfig(smtp) {
+function normalizeSmtpConfig(
+  smtp: SmtpConfigShape | null | undefined,
+): SmtpConfigShape | null | undefined {
   if (!smtp || !smtp.host) return smtp;
   const host = String(smtp.host).toLowerCase();
   if (host.includes("office365") || host.includes("outlook")) {
@@ -1017,7 +1164,7 @@ function normalizeSmtpConfig(smtp) {
   return {
     ...smtp,
     host: smtp.host.trim().toLowerCase(),
-    port: parseInt(smtp.port) || 587,
+    port: parseInt(String(smtp.port), 10) || 587,
   };
 }
 
@@ -1044,9 +1191,9 @@ const processQueue = async (specificItemId = null) => {
   processQueueRunning = true;
   try {
     const now = new Date();
-    let config;
+    let config: AutomationConfig;
     try {
-      config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH));
+      config = readJsonFile<AutomationConfig>(AUTOMATION_CONFIG_PATH, {});
     } catch (e) {
       console.error("[Email] processQueue: failed to load config", e);
       return false;
@@ -1064,13 +1211,11 @@ const processQueue = async (specificItemId = null) => {
       };
     }
     config.smtp = normalizeSmtpConfig(config.smtp);
-    const suppressionList = fs.existsSync(SUPPRESSION_LIST_PATH)
-      ? JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH))
-      : [];
+    const suppressionList = readJsonFile<string[]>(SUPPRESSION_LIST_PATH, []);
 
     if (!config?.smtp?.host) return false;
 
-    const port = parseInt(config.smtp.port) || 587;
+    const port = parseInt(String(config.smtp.port), 10) || 587;
     const secure =
       typeof config.smtp.secure === "boolean"
         ? config.smtp.secure
@@ -1089,19 +1234,21 @@ const processQueue = async (specificItemId = null) => {
       return false;
     }
 
-    const where = {
+    const baseWhere = {
       status: "pending",
       stepType: "email",
       scheduledFor: { lte: now },
     };
-    if (specificItemId) where.id = specificItemId;
-
-    const items = await prisma.emailQueue.findMany({ where });
+    const items = await prisma.emailQueue.findMany({
+      where: specificItemId
+        ? { ...baseWhere, id: specificItemId }
+        : baseWhere,
+    });
     let success = true;
     const baseUrl = BASE_URL || "http://localhost:3001";
 
     for (const item of items) {
-      const data = item.data;
+      const data = asEmailQueuePayload(item.data);
 
       if (suppressionList.includes(data?.email)) {
         await prisma.emailQueue.update({
@@ -1125,7 +1272,7 @@ const processQueue = async (specificItemId = null) => {
         const flow = (config.flows || []).find((f) => f.id === item.flowId);
         const campaign = !flow
           ? fs.existsSync(CAMPAIGNS_FILE_PATH)
-            ? JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH)).find(
+            ? readJsonFile<CampaignDefinition[]>(CAMPAIGNS_FILE_PATH, []).find(
                 (c) => c.id === item.flowId,
               )
             : null
@@ -1140,7 +1287,7 @@ const processQueue = async (specificItemId = null) => {
           continue;
         }
 
-        const source = flow || campaign;
+        const source: CampaignDefinition | AutomationFlow = flow || campaign!;
         const trackingId = item.id;
         const lang = data.language || "en";
         const renderData = {
@@ -1171,7 +1318,13 @@ const processQueue = async (specificItemId = null) => {
           { url: baseUrl },
         );
 
-        const mailOptions = {
+        const mailOptions: {
+          from?: string;
+          to: string;
+          subject: string;
+          html: string;
+          attachments?: Array<{ filename: string; content: string }>;
+        } = {
           from: config.smtp.from,
           to: data.email,
           subject,
@@ -1207,7 +1360,7 @@ const processQueue = async (specificItemId = null) => {
         console.log("[Email] Sent successfully to", data.email);
       } catch (err) {
         logError("SMTP/Queue", err);
-        let errMsg = err.message || String(err);
+        let errMsg = err instanceof Error ? err.message : String(err);
         const host = (config.smtp?.host || "").toLowerCase();
         const isAuthError = /535|auth|login|invalid credentials/i.test(errMsg);
         if (
@@ -1247,10 +1400,13 @@ const processQueue = async (specificItemId = null) => {
   }
 };
 
-const logEngagement = (id, type, email, metadata = {}) => {
-  const log = fs.existsSync(ENGAGEMENT_LOG_PATH)
-    ? JSON.parse(fs.readFileSync(ENGAGEMENT_LOG_PATH))
-    : [];
+const logEngagement = (
+  id: string,
+  type: string,
+  email: string,
+  metadata: JsonRecord = {},
+) => {
+  const log = readJsonFile<EngagementEntry[]>(ENGAGEMENT_LOG_PATH, []);
   log.push({
     id,
     type,
@@ -1279,7 +1435,8 @@ app.get("/api/track/open/:id", async (req, res) => {
     const item = await prisma.emailQueue.findUnique({
       where: { id: req.params.id },
     });
-    if (item?.data?.email) email = item.data.email;
+    const itemEmail = getEmailFromPayload(item?.data);
+    if (itemEmail) email = itemEmail;
   } catch (e) {}
 
   logEngagement(req.params.id, "open", email);
@@ -1301,11 +1458,12 @@ app.get("/api/track/click/:id", async (req, res) => {
     const item = await prisma.emailQueue.findUnique({
       where: { id: req.params.id },
     });
-    if (item?.data?.email) email = item.data.email;
+    const itemEmail = getEmailFromPayload(item?.data);
+    if (itemEmail) email = itemEmail;
   } catch (e) {}
 
   logEngagement(req.params.id, "click", email);
-  const target = req.query.url || "http://thehbm.org";
+  const target = getSingleQueryValue(req.query.url) || "http://thehbm.org";
   res.redirect(target);
 });
 
@@ -1510,10 +1668,10 @@ const AUTOMATION_SETTINGS_DEFAULT_FLOWS = [
 
 app.get("/api/automation-settings", (req, res) => {
   try {
-    let config = {};
-    if (fs.existsSync(AUTOMATION_CONFIG_PATH)) {
-      config = JSON.parse(fs.readFileSync(AUTOMATION_CONFIG_PATH, "utf8"));
-    }
+    const config: AutomationConfig = readJsonFile<AutomationConfig>(
+      AUTOMATION_CONFIG_PATH,
+      {},
+    );
     config.flows = Array.isArray(config.flows)
       ? config.flows
       : AUTOMATION_SETTINGS_DEFAULT_FLOWS;
@@ -1548,7 +1706,7 @@ app.get("/api/video-event", (req, res) => {
       registrationFields: { name: true, email: true, phone: true },
     });
   }
-  res.json(JSON.parse(fs.readFileSync(VIDEO_EVENT_CONFIG_PATH, "utf8")));
+  res.json(readJsonFile<JsonRecord>(VIDEO_EVENT_CONFIG_PATH, {}));
 });
 
 app.post("/api/video-event", (req, res) => {
@@ -1634,9 +1792,7 @@ app.get("/api/campaigns", (req, res) => {
 
 app.post("/api/campaigns", (req, res) => {
   try {
-    const campaigns = fs.existsSync(CAMPAIGNS_FILE_PATH)
-      ? JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH))
-      : [];
+    const campaigns = readJsonFile<JsonRecord[]>(CAMPAIGNS_FILE_PATH, []);
     const newCampaign = {
       ...req.body,
       id: uuidv4(),
@@ -1665,7 +1821,7 @@ app.post("/api/campaigns/send", async (req, res) => {
   try {
     if (!fs.existsSync(CAMPAIGNS_FILE_PATH))
       return res.status(404).json({ error: "No campaigns file" });
-    const campaigns = JSON.parse(fs.readFileSync(CAMPAIGNS_FILE_PATH, "utf8"));
+    const campaigns = readJsonFile<CampaignDefinition[]>(CAMPAIGNS_FILE_PATH, []);
     const campaign = campaigns.find((c) => c.id === campaignId);
     if (!campaign) return res.status(404).json({ error: "Campaign not found" });
 
@@ -1714,12 +1870,10 @@ app.post("/api/campaigns/send", async (req, res) => {
 });
 
 app.post("/api/unsubscribe", (req, res) => {
-  const { email } = req.query;
+  const email = getSingleQueryValue(req.query.email);
   if (!email) return res.status(400).send("Email missing");
   try {
-    const suppressionList = fs.existsSync(SUPPRESSION_LIST_PATH)
-      ? JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH))
-      : [];
+    const suppressionList = readJsonFile<string[]>(SUPPRESSION_LIST_PATH, []);
     if (!suppressionList.includes(email)) {
       suppressionList.push(email);
       fs.writeFileSync(
@@ -1738,7 +1892,7 @@ app.post("/api/unsubscribe", (req, res) => {
 app.get("/api/suppression", (req, res) => {
   try {
     if (!fs.existsSync(SUPPRESSION_LIST_PATH)) return res.json([]);
-    res.json(JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH, "utf8")));
+    res.json(readJsonFile<string[]>(SUPPRESSION_LIST_PATH, []));
   } catch {
     res.json([]);
   }
@@ -1747,9 +1901,7 @@ app.get("/api/suppression", (req, res) => {
 app.post("/api/suppression/toggle", (req, res) => {
   const { email } = req.body;
   try {
-    let list = fs.existsSync(SUPPRESSION_LIST_PATH)
-      ? JSON.parse(fs.readFileSync(SUPPRESSION_LIST_PATH))
-      : [];
+    let list = readJsonFile<string[]>(SUPPRESSION_LIST_PATH, []);
     if (list.includes(email)) {
       list = list.filter((e) => e !== email);
     } else {
@@ -1807,7 +1959,7 @@ app.get("/api/registrations", async (req, res) => {
 // DELETE all registrations for a contact (by email)
 app.delete("/api/registrations/by-contact", async (req, res) => {
   try {
-    const email = (req.query.email || "").trim().toLowerCase();
+    const email = getSingleQueryValue(req.query.email).trim().toLowerCase();
     if (!email) return res.status(400).json({ error: "Missing email" });
     const result = await prisma.registration.deleteMany({
       where: { email },
@@ -1822,7 +1974,7 @@ app.delete("/api/registrations/by-contact", async (req, res) => {
 // Export single contact as CSV (same column style as main CRM export)
 app.get("/api/crm/contact/export", async (req, res) => {
   try {
-    const email = (req.query.email || "").trim().toLowerCase();
+    const email = getSingleQueryValue(req.query.email).trim().toLowerCase();
     if (!email) return res.status(400).json({ error: "Missing email" });
 
     const registrations = await prisma.registration.findMany({
@@ -2050,10 +2202,8 @@ app.get("/api/cms/how-it-works", (req, res) => {
 
 app.post("/api/cms/how-it-works", (req, res) => {
   try {
-    const config = fs.existsSync(HOW_IT_WORKS_CONFIG_PATH)
-      ? JSON.parse(fs.readFileSync(HOW_IT_WORKS_CONFIG_PATH))
-      : {};
-    if (config.isLocked && !req.query.force) {
+    const config = readJsonFile<JsonRecord>(HOW_IT_WORKS_CONFIG_PATH, {});
+    if (Boolean(config.isLocked) && !req.query.force) {
       return res.status(403).json({ error: "Section is locked" });
     }
     fs.writeFileSync(
@@ -2082,10 +2232,8 @@ app.get("/api/cms/knowledge-base", (req, res) => {
 
 app.post("/api/cms/knowledge-base", (req, res) => {
   try {
-    const config = fs.existsSync(KNOWLEDGE_BASE_CONFIG_PATH)
-      ? JSON.parse(fs.readFileSync(KNOWLEDGE_BASE_CONFIG_PATH))
-      : {};
-    if (config.isLocked && !req.query.force) {
+    const config = readJsonFile<JsonRecord>(KNOWLEDGE_BASE_CONFIG_PATH, {});
+    if (Boolean(config.isLocked) && !req.query.force) {
       return res.status(403).json({ error: "Section is locked" });
     }
     fs.writeFileSync(
@@ -2105,8 +2253,8 @@ app.post("/api/cms/lock-toggle", (req, res) => {
       ? HOW_IT_WORKS_CONFIG_PATH
       : KNOWLEDGE_BASE_CONFIG_PATH;
   try {
-    const config = JSON.parse(fs.readFileSync(targetPath, "utf8"));
-    config.isLocked = !config.isLocked;
+    const config = readJsonFile<JsonRecord>(targetPath, {});
+    config.isLocked = !Boolean(config.isLocked);
     fs.writeFileSync(targetPath, JSON.stringify(config, null, 2));
     res.json({ success: true, isLocked: config.isLocked });
   } catch (err) {
@@ -2352,7 +2500,7 @@ app.post("/api/ai/fetch-book", async (req, res) => {
         author || book?.authors?.[0],
       );
 
-    let aiData = {};
+    let aiData: BookAiData = {};
     const prompt = `Return ONLY a JSON object for the book "${title}" ${author ? `by ${author}` : ""}:
         {
           "authorQuote": "A direct profound quote by the author",
@@ -2370,7 +2518,33 @@ app.post("/api/ai/fetch-book", async (req, res) => {
     if (aiText) {
       try {
         const match = aiText.match(/\{[\s\S]*\}/);
-        if (match) aiData = JSON.parse(match[0]);
+        if (match) {
+          const parsed = JSON.parse(match[0]) as JsonRecord;
+          aiData = {
+            author: typeof parsed.author === "string" ? parsed.author : undefined,
+            authorQuote:
+              typeof parsed.authorQuote === "string"
+                ? parsed.authorQuote
+                : undefined,
+            threeKeySentences: Array.isArray(parsed.threeKeySentences)
+              ? parsed.threeKeySentences.filter(
+                  (sentence): sentence is string => typeof sentence === "string",
+                )
+              : undefined,
+            shortSummary:
+              typeof parsed.shortSummary === "string"
+                ? parsed.shortSummary
+                : undefined,
+            fullSummary:
+              typeof parsed.fullSummary === "string"
+                ? parsed.fullSummary
+                : undefined,
+            finalQuote:
+              typeof parsed.finalQuote === "string"
+                ? parsed.finalQuote
+                : undefined,
+          };
+        }
         console.log(`[AI] Success for: ${title}`);
       } catch (e) {
         console.error("AI Parse Fail:", e.message);
@@ -2463,8 +2637,8 @@ app.post("/api/ai/fetch-video", async (req, res) => {
 // ==========================================
 // SERVE STATIC ASSETS & PRODUCTION BUILD
 // ==========================================
-// Explicitly serve /assets/* from public (for video streaming with correct headers)
-app.get("/assets/*", (req, res) => {
+// Express 5/path-to-regexp no longer accepts bare wildcard strings like "/assets/*".
+app.get(/^\/assets\/.*/, (req, res) => {
   const relativePath = req.path.startsWith("/") ? req.path.slice(1) : req.path;
   const assetPath = path.join(PROJECT_ROOT, "public", relativePath);
   const publicRoot = path.join(PROJECT_ROOT, "public");
@@ -2509,8 +2683,9 @@ app.use("/api", (req, res) => {
   res.status(404).json({ error: "API Endpoint not found" });
 });
 
-const server = app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 HBM Server running on port ${PORT}`);
+const SERVER_PORT = Number(PORT) || 3001;
+const server = app.listen(SERVER_PORT, "0.0.0.0", () => {
+  console.log(`🚀 HBM Server running on port ${SERVER_PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`📁 Serving dist from: ${path.join(PROJECT_ROOT, "dist")}`);
   console.log(

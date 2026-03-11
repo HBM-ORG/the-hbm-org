@@ -51,3 +51,148 @@ model Registration {
   history            Json?    // [{ type, date, message }]
   createdAt          DateTime @default(now())
 }
+
+/// Replaces events.json — event data with object storage URLs
+model Event {
+  id                      String   @id @default(uuid())
+  legacyId                String?  @unique // Original numeric ID for migration
+  folderName              String?
+  title                   Json     // { en: string, he: string }
+  description             Json     // { en: string, he: string }
+  date                    DateTime
+  location                String
+  locationParams          Json?    // { addressText, googleMapsEmbedUrl }
+  type                    String   // "Face to Face" | "Virtual"
+  image                   String?  // Object storage URL
+  heroVideo               String?  // Object storage URL
+  gallery                 Json?    // String[] — object storage URLs
+  imageBubbles            Json?    // Array of { title: {en,he}, image: string, desc: {en,he} }
+  promoBubbles            Json?    // Array of { title: {en,he}, desc: {en,he} }
+  whatToExpect            Json?    // { boldTitle: {en,he}, points: [...] }
+  showPartnership         Boolean  @default(false)
+  partnership             Json?    // { title: {en,he}, text: {en,he}, link: string }
+  freeText                Json?    // { en: string, he: string }
+  socialProof             Json?    // { capacity: number, attendingCount: number }
+  tags                    Json?    // String[]
+  highlights              Json?    // Array of { title, description, icon }
+  partners                Json?    // Array of { name, logo: string, website }
+  faqs                    Json?    // Array of { question: {en,he}, answer: {en,he} }
+  hostNote                Json?    // { message, author, avatar: string }
+  registration            Json?    // { status, externalUrl, whatsappLink }
+  visuals                 Json?    // { brightness, blur, videoScale, overlayOpacity }
+  isLocked                Boolean  @default(false)
+  contentEnglishOnly      Boolean  @default(false)
+  importantDetailsHeading Json?    // { en: string, he: string }
+  importantDetailsSectionLabel Json? // { en: string, he: string }
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([date])
+  @@index([legacyId])
+}
+
+/// Replaces site-configs.json — team members with object storage URLs
+model TeamMember {
+  id           String  @id @default(uuid())
+  legacyId     String? @unique
+  name         String
+  role         String
+  nickname     String
+  image        String? // Object storage URL
+  linkedin     String?
+  bio          String  @db.Text
+  funFact      String  @db.Text
+  imagePosition String?
+  imageScale   Float?
+  displayOrder Int     @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+}
+
+/// Replaces site-configs.json — testimonials
+model Testimonial {
+  id          String  @id @default(uuid())
+  legacyId    String? @unique
+  quote       String  @db.Text
+  author      String
+  role        String
+  companyLogo String? // Object storage URL
+  stars       Int     @default(5)
+  displayOrder Int    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([displayOrder])
+}
+
+/// Replaces site-configs.json — partners with object storage URLs
+model Partner {
+  id           String  @id @default(uuid())
+  legacyId     String? @unique
+  name         String
+  logoUrl      String  // Object storage URL
+  website      String?
+  displayOrder Int     @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+}
+
+/// Replaces automationConfig.json — email flows
+model EmailFlow {
+  id              String   @id @default(uuid())
+  legacyId        String?  @unique // Original flow ID like "registration_confirmed"
+  name            String
+  trigger         String   // "on_registration", "48h_before_event", etc.
+  active          Boolean  @default(true)
+  subject         Json     // { en: string, he: string }
+  body            Json     // { en: string, he: string }
+  subjectB        Json?    // { en: string, he: string } — for A/B testing
+  abTestActive    Boolean  @default(false)
+  includeCalendar Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([trigger])
+  @@index([active])
+}
+
+/// Replaces automationConfig.json — email sequences
+model EmailSequence {
+  id       String   @id @default(uuid())
+  legacyId String?  @unique
+  name     String
+  trigger  String
+  active   Boolean  @default(true)
+  steps    Json     // Array of { type: "email"|"wait", flowId?: string, duration: string }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([trigger])
+  @@index([active])
+}
+
+/// Replaces automationConfig.json — SMTP configuration (single row config)
+model SmtpConfig {
+  id     String  @id @default(uuid())
+  host   String
+  port   Int
+  user   String
+  pass   String  @db.Text // Encrypted in application layer
+  from   String
+  secure Boolean @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+/// Replaces automationConfig.json — global styling (single row config)
+model GlobalStyling {
+  id             String @id @default(uuid())
+  primaryColor   String
+  secondaryColor String
+  logoUrl        String // Object storage URL
+  fontFamily     String
+  updatedAt      DateTime @updatedAt
+}

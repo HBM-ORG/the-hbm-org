@@ -10,7 +10,7 @@ Root is kept to **7 files** (package.json, package-lock.json, .gitignore, README
 - **`/docs`** — All documentation (deploy, Hostinger, Render, QA, sitemap); see [docs/README.md](docs/README.md)
 - **`/data`** — Runtime data and local DB files (gitignored)
 - **`/scripts`** — Build and utility scripts (sitemap, migrate, email diagnostics)
-- **`/server`** — Express API (admin-server.js)
+- **`/server`** — Express API (`admin-server.ts`)
 - **`/src`** — React frontend (Vite)
 - **`/public`** — Static assets and `dist` output
 
@@ -59,7 +59,7 @@ npm run preview
 ## 📊 4. Admin Protocol
 - **Admin Dashboard**: Accessible via `/admin`
 - **Access**: Credentials via internal secure channels
-- **Intelligence Sync**: Ensure the admin server is running (automatic in `dev:admin`; runs `server/admin-server.js`)
+- **Intelligence Sync**: Ensure the admin server is running (automatic in `dev:admin`; runs `server/admin-server.ts` via `tsx`)
 
 ## 📧 5. Email (Handoff)
 Transactional and campaign emails use **SMTP** (nodemailer). To enable:

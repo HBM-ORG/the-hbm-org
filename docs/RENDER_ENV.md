@@ -81,7 +81,7 @@ Ensure **Hostinger MySQL** is created. On first deploy, run migrations from Rend
 - If you have a migration folder: `npx prisma migrate deploy`
 - To sync schema without migration history: `npx prisma db push`
 
-Then start the app with `node server/admin-server.js` or `npm start` (or your start command).
+Then start the app with `npm start` (runs `tsx server/admin-server.ts`) or use that same command in your process manager.
 
 ---
 

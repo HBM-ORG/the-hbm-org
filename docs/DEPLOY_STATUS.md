@@ -66,7 +66,7 @@
 ## 6. מה צריך לעלייה
 
 - **Build:** `npm run build`
-- **הרצת שרת:** `node server/admin-server.js` or `npm start` (או PM2)
+- **הרצת שרת:** `npm start` (מפעיל `tsx server/admin-server.ts`) או PM2 דרך `config/ecosystem.config.cjs`
 - **משתני סביבה:** `PORT`, `DATABASE_URL`, אופציונלי SMTP, Gemini, וכו' (ראה [RENDER_ENV.md](RENDER_ENV.md), [config/.env.example](../config/.env.example))
 - **תשתית:** כל התעבורה לאותו שרת (same-origin ל-API ו-dist).
 

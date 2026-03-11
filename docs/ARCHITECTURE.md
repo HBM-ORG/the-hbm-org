@@ -8,7 +8,7 @@ Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prism
 
 ```
 ├── server/
-│   └── admin-server.js   # Express API (events, uploads, email, Prisma)
+│   └── admin-server.ts   # Express API (events, uploads, email, Prisma)
 ├── index.html            # Vite entry
 ├── package.json
 ├── vite.config.js
@@ -50,7 +50,7 @@ Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prism
 | Layer    | Tech |
 |----------|------|
 | Frontend | React 19, Vite 7, Tailwind |
-| API      | Express (admin-server.js), REST + multipart uploads |
+| API      | Express (`admin-server.ts` via `tsx`), REST + multipart uploads |
 | DB       | Prisma; MySQL (production), SQLite (local optional) |
 | Assets   | FTP upload to Hostinger `public_html/assets/` |
 | Deploy   | Render (API), Hostinger (static/site), PM2 (self-hosted) |
@@ -62,7 +62,7 @@ Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prism
 | Context | Command |
 |---------|---------|
 | **Dev** | `npm run dev:admin` → Vite :4200 + Express :3001 |
-| **Prod** | `node server/admin-server.js` or `npm start` (serves `dist/` + API) |
+| **Prod** | `npm start` (runs `tsx server/admin-server.ts`, serves `dist/` + API) |
 | **PM2** | `pm2 start config/ecosystem.config.cjs` |
 
 ---
