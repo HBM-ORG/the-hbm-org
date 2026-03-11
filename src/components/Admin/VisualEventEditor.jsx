@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion, Reorder, AnimatePresence } from "framer-motion";
 import NextEventHero from "../Events/NextEventHero";
+import { uploadFile } from "../../utils/upload";
 
 // This component wraps the public NextEventHero but injects "Edit Mode" props
 const VisualEventEditor = ({
@@ -57,43 +58,31 @@ const VisualEventEditor = ({
     const newPaths = [];
 
     for (const file of files) {
-      const formData = new FormData();
-      formData.append("folderName", folderName);
-      if (subfolder) formData.append("subfolder", subfolder);
-      formData.append("asset", file);
-
       try {
-        const base = import.meta.env.DEV
-          ? `http://${window.location.hostname}:3001`
-          : "";
-        const res = await fetch(`${base}/api/upload-asset`, {
-          method: "POST",
-          body: formData,
-        });
-        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-        const data = await res.json();
+        const keyPrefix = subfolder
+          ? `events/${folderName}/${subfolder}`
+          : `events/${folderName}`;
+        const result = await uploadFile(file, { keyPrefix });
+        if (!result.success || !result.url) {
+          throw new Error(result.error || "Upload failed");
+        }
 
-        if (data.success) {
-          const finalPath = data.path
-            ? `/assets/events/${folderName}/${data.path}`
-            : `/assets/events/${folderName}/${data.filename}`;
-          newPaths.push(finalPath);
+        const finalPath = result.url;
+        newPaths.push(finalPath);
 
-          if (fieldPath === "heroMedia") {
-            // Dynamically determine if it's a video or image based on extension
-            const isVideo = /\.(mp4|mov|webm)$/i.test(finalPath);
-            if (isVideo) {
-              onUpdate("heroVideo", finalPath);
-              onUpdate("heroImage", ""); // Clear image
-              onUpdate("image", "");
-            } else {
-              onUpdate("heroImage", finalPath);
-              onUpdate("image", finalPath); // Set image for thumbnail
-              onUpdate("heroVideo", ""); // Clear video
-            }
-          } else if (fieldPath !== "gallery") {
-            onUpdate(fieldPath, finalPath);
+        if (fieldPath === "heroMedia") {
+          const isVideo = /\.(mp4|mov|webm)(\?|$)/i.test(finalPath);
+          if (isVideo) {
+            onUpdate("heroVideo", finalPath);
+            onUpdate("heroImage", "");
+            onUpdate("image", "");
+          } else {
+            onUpdate("heroImage", finalPath);
+            onUpdate("image", finalPath);
+            onUpdate("heroVideo", "");
           }
+        } else if (fieldPath !== "gallery") {
+          onUpdate(fieldPath, finalPath);
         }
       } catch (err) {
         console.error(err);
@@ -110,24 +99,12 @@ const VisualEventEditor = ({
     const file = e?.target?.files?.[0];
     if (!file) return;
     const folderName = event.folderName || `event-${event.id}-${Date.now()}`;
-    const formData = new FormData();
-    formData.append("folderName", folderName);
-    formData.append("subfolder", "cards");
-    formData.append("asset", file);
     try {
-      const base = import.meta.env.DEV
-        ? `http://${window.location.hostname}:3001`
-        : "";
-      const res = await fetch(`${base}/api/upload-asset`, {
-        method: "POST",
-        body: formData,
+      const result = await uploadFile(file, {
+        keyPrefix: `events/${folderName}/cards`,
       });
-      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-      const data = await res.json();
-      if (data.success) {
-        const fullPath = data.path
-          ? `/assets/events/${folderName}/${data.path}`
-          : `/assets/events/${folderName}/cards/${data.filename}`;
+      if (result.success && result.url) {
+        const fullPath = result.url;
         const bubbles = Array.isArray(event.imageBubbles) ? [...event.imageBubbles] : [];
         while (bubbles.length <= bubbleIdx) {
           bubbles.push({ title: { en: "", he: "" }, desc: { en: "", he: "" }, image: "" });

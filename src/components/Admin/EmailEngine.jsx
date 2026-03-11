@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 import { getApiBase } from '../../utils/api';
+import { uploadFile } from '../../utils/upload';
 
 // ── Utility ─────────────────────────────────────────────────────────────────
 const TAG_COLORS = {
@@ -476,13 +477,10 @@ const EmailEngine = () => {
     const handleEmailImageUpload = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const formData = new FormData();
-        formData.append('image', file);
         try {
-            const r = await fetch(`${API}/api/upload-email-image`, { method: 'POST', body: formData });
-            const d = await r.json();
-            if (d.success && d.url) {
-                insertAtCursor(`\n<img src="${d.url}" width="100%" style="border-radius:12px;" />\n`);
+            const result = await uploadFile(file, { keyPrefix: 'emails' });
+            if (result.success && result.url) {
+                insertAtCursor(`\n<img src="${result.url}" width="100%" style="border-radius:12px;" />\n`);
             }
         } catch (err) { console.error('Image Upload Error:', err); }
     };
@@ -525,13 +523,10 @@ const EmailEngine = () => {
     const handleSignatureUpload = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const formData = new FormData();
-        formData.append('image', file);
         try {
-            const r = await fetch(`${API}/api/upload-email-image`, { method: 'POST', body: formData });
-            const d = await r.json();
-            if (d.success && d.url) {
-                setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, signatureUrl: d.url } }));
+            const result = await uploadFile(file, { keyPrefix: 'emails' });
+            if (result.success && result.url) {
+                setConfig(prev => ({ ...prev, globalStyling: { ...prev.globalStyling, signatureUrl: result.url } }));
             }
         } catch (err) { console.error('Signature Upload Error:', err); }
     };

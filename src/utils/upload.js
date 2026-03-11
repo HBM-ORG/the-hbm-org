@@ -83,6 +83,21 @@ export async function deleteUploadedFile(keyOrUrl, options = {}) {
   const { adminPassword = 'hbm2026' } = options;
 
   try {
+    if (typeof keyOrUrl === 'string' && keyOrUrl.startsWith('/assets/')) {
+      return { success: true, skipped: true };
+    }
+
+    if (typeof keyOrUrl === 'string' && keyOrUrl.startsWith('http')) {
+      try {
+        const parsed = new URL(keyOrUrl);
+        if (parsed.pathname.startsWith('/assets/')) {
+          return { success: true, skipped: true };
+        }
+      } catch (_err) {
+        // Continue with normal delete request if URL parsing fails.
+      }
+    }
+
     const base = getApiBase();
     const isUrl = typeof keyOrUrl === 'string' && keyOrUrl.startsWith('http');
     const res = await fetch(`${base}/api/upload/delete`, {

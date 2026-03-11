@@ -17,6 +17,7 @@
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "migrate:json-to-db": "npx tsx scripts/migrate-json-to-db.ts",
     "migrate:json-to-db:dry": "npx tsx scripts/migrate-json-to-db.ts --dry-run",
+    "migrate:engagement-to-db": "npx tsx scripts/migrate-engagement-log-to-db.ts",
     "migrate:files-to-storage": "npx tsx scripts/migrate-files-to-storage.ts",
     "migrate:files-to-storage:dry": "npx tsx scripts/migrate-files-to-storage.ts --dry-run",
     "migrate:files-to-storage:update-db-only": "npx tsx scripts/migrate-files-to-storage.ts --update-db-only",

@@ -6,14 +6,7 @@ import {
   getKeyFromUrl,
   removeFile,
 } from '../services/storage.service.js';
-
-async function isAuthorized(req: Request): Promise<boolean> {
-  const adminPassword = req.headers['x-admin-password'];
-  return (
-    typeof adminPassword === 'string' &&
-    (adminPassword === process.env.ADMIN_PASSWORD || adminPassword === 'hbm2026')
-  );
-}
+import { isAuthorizedRequest } from '../middleware/admin-auth.js';
 
 /**
  * @openapi
@@ -24,7 +17,7 @@ async function isAuthorized(req: Request): Promise<boolean> {
  */
 export async function signUpload(req: Request, res: Response): Promise<void> {
   try {
-    if (!(await isAuthorized(req))) {
+    if (!(await isAuthorizedRequest(req))) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
@@ -79,7 +72,7 @@ export async function signDownload(req: Request, res: Response): Promise<void> {
  */
 export async function deleteUpload(req: Request, res: Response): Promise<void> {
   try {
-    if (!(await isAuthorized(req))) {
+    if (!(await isAuthorizedRequest(req))) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }

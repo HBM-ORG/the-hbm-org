@@ -1,3 +1,4 @@
+import type { Request, Response } from "express";
 import {
   getAutomationSettingsBundle,
   getSiteContentBundle,
@@ -5,15 +6,8 @@ import {
   saveAutomationSettingsBundle,
   saveEventsBatch,
   saveSiteContentBundle,
-} from '../services/cms.service.js';
-
-async function isAuthorized(req: any): Promise<boolean> {
-  const adminPassword = req.headers['x-admin-password'];
-  return (
-    typeof adminPassword === 'string' &&
-    (adminPassword === process.env.ADMIN_PASSWORD || adminPassword === 'hbm2026')
-  );
-}
+} from "../services/cms.service.js";
+import { isAuthorizedRequest } from "../middleware/admin-auth.js";
 
 /**
  * @openapi
@@ -22,7 +16,7 @@ async function isAuthorized(req: any): Promise<boolean> {
  *     summary: List events
  *     tags: [CMS]
  */
-export async function getEvents(_req: any, res: any): Promise<void> {
+export async function getEvents(_req: Request, res: Response): Promise<void> {
   try {
     const events = await listEvents();
     res.json(
@@ -70,9 +64,9 @@ export async function getEvents(_req: any, res: any): Promise<void> {
  *     summary: Save events
  *     tags: [CMS]
  */
-export async function saveEvents(req: any, res: any): Promise<void> {
+export async function saveEvents(req: Request, res: Response): Promise<void> {
   try {
-    if (!(await isAuthorized(req))) {
+    if (!(await isAuthorizedRequest(req))) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
@@ -102,7 +96,7 @@ export async function saveEvents(req: any, res: any): Promise<void> {
  *     summary: Get site content
  *     tags: [CMS]
  */
-export async function getSiteContent(_req: any, res: any): Promise<void> {
+export async function getSiteContent(_req: Request, res: Response): Promise<void> {
   try {
     const { team, testimonials, partners } = await getSiteContentBundle();
     res.json({
@@ -151,9 +145,9 @@ export async function getSiteContent(_req: any, res: any): Promise<void> {
  *     summary: Save site content
  *     tags: [CMS]
  */
-export async function saveSiteContent(req: any, res: any): Promise<void> {
+export async function saveSiteContent(req: Request, res: Response): Promise<void> {
   try {
-    if (!(await isAuthorized(req))) {
+    if (!(await isAuthorizedRequest(req))) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
@@ -183,7 +177,10 @@ export async function saveSiteContent(req: any, res: any): Promise<void> {
  *     summary: Get automation settings
  *     tags: [CMS]
  */
-export async function getAutomationSettings(_req: any, res: any): Promise<void> {
+export async function getAutomationSettings(
+  _req: Request,
+  res: Response,
+): Promise<void> {
   try {
     const { flows, sequences, smtpConfig, globalStyling } =
       await getAutomationSettingsBundle();
@@ -240,9 +237,12 @@ export async function getAutomationSettings(_req: any, res: any): Promise<void> 
  *     summary: Save automation settings
  *     tags: [CMS]
  */
-export async function saveAutomationSettings(req: any, res: any): Promise<void> {
+export async function saveAutomationSettings(
+  req: Request,
+  res: Response,
+): Promise<void> {
   try {
-    if (!(await isAuthorized(req))) {
+    if (!(await isAuthorizedRequest(req))) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }

@@ -17,6 +17,7 @@
   },
   "include": [
     "server/**/*.ts",
+    "server/**/*.d.ts",
     "scripts/**/*.ts"
   ],
   "exclude": [

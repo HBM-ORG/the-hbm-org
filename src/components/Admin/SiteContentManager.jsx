@@ -3,6 +3,7 @@ import { Save, Users, Quote, Image as ImageIcon, Plus, Trash2, Edit3, X, Lock, U
 import { siteContent } from '../../data/content';
 import knowledgeBaseFallback from '../../data/knowledgeBaseConfig.json';
 import { getApiBase } from '../../utils/api';
+import { uploadFile } from '../../utils/upload';
 
 const PhoneMockup = ({ children, className = "" }) => (
     <div className={`relative mx-auto rounded-[2.5rem] border-[6px] border-gray-900 bg-gray-900 shadow-2xl overflow-hidden ${className}`} style={{ aspectRatio: '9/19.5', width: '160px' }}>
@@ -201,24 +202,19 @@ const SiteContentManager = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const formData = new FormData();
-        formData.append('image', file);
-
         try {
-            const res = await fetch(`${base}/api/upload-cms-image`, {
-                method: 'POST',
-                body: formData
+            const result = await uploadFile(file, {
+                keyPrefix: 'cms',
             });
-            const data = await res.json();
-            if (data.success) {
+            if (result.success && result.url) {
                 if (section === 'how-it-works') {
                     const newHow = { ...howItWorks };
                     const stepsKey = mode === 'video' ? 'videoSteps' : 'physicalSteps';
-                    newHow[stepsKey][index].image = data.url;
+                    newHow[stepsKey][index].image = result.url;
                     setHowItWorks(newHow);
                 } else if (section === 'knowledge') {
                     const newKnow = { ...knowledgeBase };
-                    newKnow.books[index].coverUrl = data.url;
+                    newKnow.books[index].coverUrl = result.url;
                     setKnowledgeBase(newKnow);
                 }
             }

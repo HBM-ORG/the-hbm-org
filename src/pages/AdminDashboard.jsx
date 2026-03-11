@@ -93,6 +93,7 @@ import AnalyticsDashboard from "../components/Admin/AnalyticsDashboard";
 import CookieConsentLogs from "../components/Admin/CookieConsentLogs";
 import { useEvents } from "../context/EventsContext";
 import { getApiBase } from "../utils/api";
+import { deleteUploadedFile, uploadFile } from "../utils/upload";
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -618,31 +619,20 @@ const AdminDashboard = () => {
       handleChange("folderName", folderName);
     }
 
-    const base = import.meta.env.DEV
-      ? `http://${window.location.hostname}:3001`
-      : getApiBase();
     setUploading(true);
     const addedPaths = [];
     try {
       const maxToAdd = MEDIA_GALLERY_MAX - currentCount;
       for (let i = 0; i < Math.min(imageFiles.length, maxToAdd); i++) {
-        const formData = new FormData();
-        formData.append("folderName", folderName);
-        formData.append("isGallery", "true");
-        formData.append("asset", imageFiles[i]);
-        const res = await fetch(`${base}/api/upload-asset`, {
-          method: "POST",
-          body: formData,
+        const result = await uploadFile(imageFiles[i], {
+          keyPrefix: `events/${folderName}`,
         });
-        const data = await res.json();
-        if (!res.ok) {
-          alert(data.error || "Upload failed");
+
+        if (!result.success || !result.url) {
+          alert(result.error || "Upload failed");
           continue;
         }
-        if (data.success && data.filename) {
-          const fullPath = `/assets/events/${folderName}/${data.path || data.filename}`;
-          addedPaths.push(fullPath);
-        }
+        addedPaths.push(result.url);
       }
       if (addedPaths.length > 0) {
         const newGallery = [
@@ -675,14 +665,7 @@ const AdminDashboard = () => {
       : galleryItem;
     const folderName = currentEvent.folderName;
     if (folderName && filename) {
-      const base = import.meta.env.DEV
-        ? `http://${window.location.hostname}:3001`
-        : getApiBase();
-      fetch(`${base}/api/delete-image`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folderName, filename }),
-      }).catch((err) => console.error(err));
+      deleteUploadedFile(galleryItem).catch((err) => console.error(err));
     }
   };
 
@@ -691,25 +674,15 @@ const AdminDashboard = () => {
     if (!file) return;
 
     const folderName = currentEvent?.folderName || "video-event";
-    const formData = new FormData();
-    formData.append("folderName", folderName);
-    if (type === "partners") formData.append("subfolder", "partners");
-    formData.append("asset", file);
     try {
-      const base = import.meta.env.DEV
-        ? `http://${window.location.hostname}:3001`
-        : getApiBase();
-      const res = await fetch(`${base}/api/upload-asset`, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.success) {
-        const fullPath =
-          data.url ||
-          `/assets/events/${folderName}/${data.path || data.filename}`;
+      const keyPrefix =
+        type === "partners"
+          ? `events/${folderName}/partners`
+          : `events/${folderName}`;
+      const result = await uploadFile(file, { keyPrefix });
+      if (result.success && result.url) {
+        const fullPath = result.url;
 
-        // Handle general event uploads
         if (currentEvent && currentEvent.folderName) {
           if (type === "hero") handleChange("heroVideo", fullPath);
           if (type === "thumbnail") handleChange("thumbnail", fullPath);
@@ -717,7 +690,7 @@ const AdminDashboard = () => {
           if (type === "partners") {
             const newPartner = {
               name: "New Partner",
-              logo: `/assets/events/${folderName}/${data.path}`,
+              logo: fullPath,
               website: "",
             };
             handleChange("partners", [
@@ -725,11 +698,11 @@ const AdminDashboard = () => {
               newPartner,
             ]);
           }
-        }
-        // Handle video event specific uploads
-        else if (type === "videoEventImage") {
+        } else if (type === "videoEventImage") {
           setVideoEventConfig((prev) => ({ ...prev, image: fullPath }));
         }
+      } else {
+        console.error("Asset upload failed", result.error);
       }
     } catch (err) {
       console.error("Asset upload failed", err);
@@ -2447,33 +2420,18 @@ const AdminDashboard = () => {
                                     onChange={(e) => {
                                       const file = e.target.files[0];
                                       if (!file) return;
-                                      const formData = new FormData();
-                                      formData.append(
-                                        "folderName",
-                                        currentEvent.folderName,
-                                      );
-                                      formData.append("subfolder", "partners");
-                                      formData.append("asset", file);
-                                      const base = import.meta.env.DEV
-                                        ? `http://${window.location.hostname}:3001`
-                                        : getApiBase();
-                                      fetch(`${base}/api/upload-asset`, {
-                                        method: "POST",
-                                        body: formData,
-                                      })
-                                        .then((res) => res.json())
-                                        .then((data) => {
-                                          if (data.success) {
-                                            const p =
-                                              data.path || data.filename;
-                                            handleArrayChange(
-                                              "partners",
-                                              idx,
-                                              "logo",
-                                              `/assets/events/${currentEvent.folderName}/${p}`,
-                                            );
-                                          }
-                                        });
+                                      uploadFile(file, {
+                                        keyPrefix: `events/${currentEvent.folderName}/partners`,
+                                      }).then((result) => {
+                                        if (result.success && result.url) {
+                                          handleArrayChange(
+                                            "partners",
+                                            idx,
+                                            "logo",
+                                            result.url,
+                                          );
+                                        }
+                                      });
                                     }}
                                   />
                                 </label>

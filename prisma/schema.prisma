@@ -33,6 +33,16 @@ model EmailQueue {
   createdAt    DateTime  @default(now())
 }
 
+/// Replaces engagement.json — email send/open/click tracking log
+model EmailEngagement {
+  id         String   @id @default(uuid())
+  trackingId String?
+  eventType  String   // sent | open | click
+  email      String
+  timestamp  DateTime @default(now())
+  metadata   Json?
+}
+
 /// Replaces registrations.json — event/newsletter signups and leads
 model Registration {
   id                 Int      @id @default(autoincrement())
