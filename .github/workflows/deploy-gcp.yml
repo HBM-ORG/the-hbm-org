@@ -40,11 +40,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Typecheck server workspace
+        run: npm run typecheck -w apps/server
 
-      - name: Build
-        run: npm run build
+      - name: Build client workspace
+        run: npm run build -w apps/client
+
+      - name: Validate server workspace build
+        run: npm run build -w apps/server
 
       - name: Authenticate to Google Cloud
         if: env.GCP_CREDENTIALS_JSON != '' && env.GCP_PROJECT_ID != '' && env.GCP_REGION != '' && env.GCP_CLOUD_RUN_SERVICE != '' && env.GCP_ARTIFACT_REGISTRY_REGION != '' && env.GCP_ARTIFACT_REGISTRY_REPOSITORY != ''

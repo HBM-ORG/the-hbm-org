@@ -6,7 +6,7 @@ Set these in **Render Dashboard → Your Service → Environment** so the HBM ad
 
 For the **Test** button and automations to send mail from Render you **must**:
 
-1. **In Admin → Email Architect → Automation Settings → SMTP** (saved in `automationConfig.json`):
+1. **In Admin → Email Architect → Automation Settings → SMTP** (saved in MySQL via `EmailFlow`/`SmtpConfig` tables):
    - **Host:** `smtp.office365.com` (lowercase; the server normalizes Office 365 to this)
    - **Port:** `587`
    - **User:** your Office 365 email (e.g. `office@thehbm.org`)
@@ -41,7 +41,7 @@ SMTP can be configured in the **Admin → Email Architect → Automation Setting
 | `SMTP_PASS` | App password (Office 365) or mailbox password | (secret) |
 | `SMTP_FROM` | From header | `The HBM <office@thehbm.org>` |
 
-*Note: The server uses SMTP from Admin (automationConfig) first; if none is set there, it falls back to these env vars.*
+*Note: The server uses SMTP from the database-backed admin settings first; if none is set there, it falls back to these env vars.*
 
 ## FTP – Hostinger (email images & assets)
 
@@ -81,8 +81,8 @@ Ensure **Hostinger MySQL** is created. On first deploy, run migrations from Rend
 - If you have a migration folder: `npx prisma migrate deploy`
 - To sync schema without migration history: `npx prisma db push`
 
-Then start the app with `npm start` (runs `tsx server/admin-server.ts`) or use that same command in your process manager.
+Then start the app with `npm start` (runs `tsx apps/server/src/web.ts`) or use that same command in your process manager.
 
 ---
 
-**See also:** [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) · [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md) · [config/.env.example](../config/.env.example)
+**See also:** [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) · [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md) · [`apps/server/.env.example`](../apps/server/.env.example) · [`apps/client/.env.example`](../apps/client/.env.example)

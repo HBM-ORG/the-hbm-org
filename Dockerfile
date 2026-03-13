@@ -2,11 +2,13 @@ FROM node:20-bookworm-slim AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json tsconfig.json prisma.config.ts ./
+COPY apps/client/package.json apps/client/package.json
+COPY apps/server/package.json apps/server/package.json
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN npm run typecheck && npm run build
 
 FROM node:20-bookworm-slim AS runtime
 

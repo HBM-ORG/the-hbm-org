@@ -16,13 +16,14 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "server/**/*.ts",
-    "server/**/*.d.ts",
+    "apps/server/src/**/*.ts",
+    "apps/server/src/**/*.d.ts",
     "scripts/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist",
+    "apps/client/dist",
+    "apps/server/dist",
     "scripts/output"
   ]
 }

@@ -1,5 +1,7 @@
 node_modules
 dist
+apps/client/dist
+apps/server/dist
 .git
 .github
 .cursor

@@ -1,10 +1,10 @@
 # Admin Server Refactor Map
 
-Track the migration from `server/admin-server.ts` into a normal REST structure:
+Track the migration from `apps/server/src/admin-server.ts` into a normal REST structure:
 
-- `server/routes/*`
-- `server/controllers/*`
-- `server/services/*`
+- `apps/server/src/routes/*`
+- `apps/server/src/controllers/*`
+- `apps/server/src/services/*`
 - shared helpers/types in focused modules
 
 ## Goals
@@ -12,14 +12,14 @@ Track the migration from `server/admin-server.ts` into a normal REST structure:
 - [ ] Keep route files declarative only
 - [ ] Move HTTP logic to controllers
 - [ ] Move business logic and persistence to services
-- [ ] Shrink `server/admin-server.ts` to app bootstrap, middleware, static serving, and route mounting
+- [ ] Shrink `apps/server/src/admin-server.ts` to app bootstrap, middleware, static serving, and route mounting
 - [ ] Preserve current runtime behavior while refactoring
 - [ ] Keep `npm run typecheck` and `npm run build` green after each pass
 
 ## Already Extracted
 
-- [x] Upload API mounted via `server/routes/upload.routes.ts`
-- [x] Core CMS API mounted via `server/routes/cms.routes.ts`
+- [x] Upload API mounted via `apps/server/src/routes/upload.routes.ts`
+- [x] Core CMS API mounted via `apps/server/src/routes/cms.routes.ts`
 - [x] Storage adapter abstraction for Spaces and GCS
 - [x] TypeScript-first server runtime
 

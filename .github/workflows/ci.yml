@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   validate:
-    name: Typecheck and Build
+    name: Workspace Validation
     runs-on: ubuntu-latest
 
     steps:
@@ -38,8 +38,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Typecheck server workspace
+        run: npm run typecheck -w apps/server
 
-      - name: Build
-        run: npm run build
+      - name: Build client workspace
+        run: npm run build -w apps/client
+
+      - name: Validate server workspace build
+        run: npm run build -w apps/server

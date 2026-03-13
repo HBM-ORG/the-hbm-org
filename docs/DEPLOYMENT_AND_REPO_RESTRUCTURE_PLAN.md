@@ -9,16 +9,29 @@ Track the planned move from the current combined app layout to a clearer deploym
 
 This document is intentionally a plan only. It does not mean the changes should be implemented in one pass.
 
+## Progress Update
+
+Current status after the workspace split and runtime cleanup pass:
+
+- [x] Repository now uses explicit `apps/client` and `apps/server` ownership.
+- [x] Server runtime, worker entrypoint, Prisma schema, and migrations now live under the server app.
+- [x] Worker startup is now controlled by a dedicated runtime flag so web processes do not poll the queue by default.
+- [x] Scripts are grouped into `scripts/dev`, `scripts/build`, `scripts/ops`, and `scripts/one-off`.
+- [x] CI/CD, Docker, env examples, and major docs have been updated to follow the new workspace layout.
+- [ ] Frontend is still served in the current runtime/deployment shape and has not yet been split into a fully separate static deployment target.
+- [ ] Cloud deployment topology still needs the final platform-level split into frontend, web, and worker services.
+- [ ] Multi-worker safety is still blocked on queue claiming/leasing.
+
 ## Goals
 
 - [ ] Keep production behavior stable while restructuring
 - [ ] Separate static UI delivery from API and background jobs
 - [ ] Prevent duplicate queue workers when web instances scale
-- [ ] Make `dev`, `staging`, and `main` deployment topology explicit
-- [ ] Introduce a clearer repo layout for client, server, shared code, and scripts
+- [x] Make `dev`, `staging`, and `main` deployment topology explicit
+- [x] Introduce a clearer repo layout for client, server, shared code, and scripts
 - [ ] Split build artifacts so client and server outputs are not mixed
-- [ ] Distinguish permanent operational scripts from one-time migration scripts
-- [ ] Preserve `npm run typecheck`, `npm run build`, CI, and deploy workflows throughout the transition
+- [x] Distinguish permanent operational scripts from one-time migration scripts
+- [x] Preserve `npm run typecheck`, `npm run build`, CI, and deploy workflows throughout the transition
 
 ## Recommended Target Architecture
 
@@ -27,7 +40,7 @@ This document is intentionally a plan only. It does not mean the changes should 
 - [ ] Frontend/UI deployed separately as a static app
 - [ ] API deployed as its own web service
 - [ ] Background email/queue processing deployed as a dedicated worker service
-- [ ] Only the worker service runs queue polling by default
+- [x] Only the worker service runs queue polling by default
 - [ ] Web service can scale independently from the worker
 
 ### Platform mapping
@@ -86,16 +99,16 @@ Notes:
 
 ## Repo Structure Recommendation
 
-## Current issue
+## Original issue
 
-Today the repo mixes concerns:
+Before the workspace split, the repo mixed concerns:
 
 - frontend lives under `src/`
 - backend lives under `server/`
 - build output is effectively frontend-oriented and served by the backend
 - one-time migration scripts sit beside scripts that may remain useful long-term
 
-That works during migration, but it becomes harder to reason about once frontend, web, and worker become independent deployment units.
+That was workable during migration, but it became harder to reason about once frontend, web, and worker needed to become independent deployment units. The repo layout concerns below are now partially completed and tracked in the checklist sections.
 
 ## Recommended target layout
 
@@ -135,19 +148,19 @@ That works during migration, but it becomes harder to reason about once frontend
 
 ## Repo structure decisions
 
-- [ ] Introduce `apps/client` as the explicit frontend root
-- [ ] Introduce `apps/server` as the explicit backend root
-- [ ] Add `apps/server/src` so server code has the same structure clarity as the client
+- [x] Introduce `apps/client` as the explicit frontend root
+- [x] Introduce `apps/server` as the explicit backend root
+- [x] Add `apps/server/src` so server code has the same structure clarity as the client
 - [ ] Keep room for `packages/shared` for shared types/constants/schemas if needed
-- [ ] Move backend entrypoints under `apps/server/src`
-- [ ] Move Prisma schema and migrations under `apps/server/prisma`
+- [x] Move backend entrypoints under `apps/server/src`
+- [x] Move Prisma schema and migrations under `apps/server/prisma`
 
 ## Prisma recommendation
 
 Opinionated recommendation:
 
-- [ ] Move the Prisma schema/migrations under the server app when the repo split happens
-- [ ] Keep Prisma Client generation in its normal package-managed location unless there is a strong reason to customize output
+- [x] Move the Prisma schema/migrations under the server app when the repo split happens
+- [x] Keep Prisma Client generation in its normal package-managed location unless there is a strong reason to customize output
 
 Rationale:
 
@@ -173,16 +186,16 @@ Rationale:
 
 ### Configuration
 
-- [ ] Introduce a runtime flag such as `RUN_EMAIL_WORKER=true|false`
-- [ ] Ensure web processes do not start the queue worker unless explicitly enabled
-- [ ] Ensure worker processes do not need to serve frontend traffic
+- [x] Introduce a runtime flag such as `RUN_EMAIL_WORKER=true|false`
+- [x] Ensure web processes do not start the queue worker unless explicitly enabled
+- [x] Ensure worker processes do not need to serve frontend traffic
 
 ### Service boundaries
 
-- [ ] Web role handles HTTP API traffic
-- [ ] Worker role handles queue polling and background jobs
-- [ ] Shared business logic remains in reusable server services
-- [ ] Worker bootstrap becomes a thin entrypoint over the same service modules
+- [x] Web role handles HTTP API traffic
+- [x] Worker role handles queue polling and background jobs
+- [x] Shared business logic remains in reusable server services
+- [x] Worker bootstrap becomes a thin entrypoint over the same service modules
 
 ### Future concurrency support
 
@@ -208,10 +221,10 @@ Rationale:
 
 ### CI invariants
 
-- [ ] `npm ci` or workspace install remains deterministic
-- [ ] Typecheck continues to cover backend TypeScript
-- [ ] Frontend build remains validated in CI
-- [ ] Deployment workflows stay aligned with `dev` -> `staging` -> `main`
+- [x] `npm ci` or workspace install remains deterministic
+- [x] Typecheck continues to cover backend TypeScript
+- [x] Frontend build remains validated in CI
+- [x] Deployment workflows stay aligned with `dev` -> `staging` -> `main`
 
 ## Script Cleanup Plan
 
@@ -219,10 +232,10 @@ Rationale:
 
 Recommended categories:
 
-- [ ] `scripts/dev/` for local development helpers
-- [ ] `scripts/build/` for repeatable build-time tasks
-- [ ] `scripts/ops/` for operational scripts that may still be used after launch
-- [ ] `scripts/one-off/` for temporary migration/backfill utilities
+- [x] `scripts/dev/` for local development helpers
+- [x] `scripts/build/` for repeatable build-time tasks
+- [x] `scripts/ops/` for operational scripts that may still be used after launch
+- [x] `scripts/one-off/` for temporary migration/backfill utilities
 
 ## Permanent vs temporary scripts
 
@@ -246,7 +259,7 @@ Important distinction:
 
 ## Cleanup policy
 
-- [ ] Move one-time migration scripts into a clearly marked `scripts/one-off/` location
+- [x] Move one-time migration scripts into a clearly marked `scripts/one-off/` location
 - [ ] Keep them until the migration/cutover is validated in all relevant environments
 - [ ] After validation, either archive them or leave them with explicit "historical one-off" labeling
 - [ ] Remove them from primary docs and default workflows once they are no longer part of the normal operating model
@@ -262,9 +275,9 @@ Important distinction:
 
 ### Phase 2: worker isolation without major repo move
 
-- [ ] Add worker runtime flag
-- [ ] Prevent queue worker startup on normal web instances
-- [ ] Add a dedicated worker entrypoint
+- [x] Add worker runtime flag
+- [x] Prevent queue worker startup on normal web instances
+- [x] Add a dedicated worker entrypoint
 - [ ] Keep current repo layout during this phase
 
 ### Phase 3: deployment topology split
@@ -275,15 +288,15 @@ Important distinction:
 
 ### Phase 4: frontend split
 
-- [ ] Move client into explicit app folder
+- [x] Move client into explicit app folder
 - [ ] Deploy frontend as static target
 - [ ] Remove backend dependence on serving frontend in production
 
 ### Phase 5: backend app relocation
 
-- [ ] Move server code into `apps/server/src`
-- [ ] Move Prisma schema into `apps/server/prisma`
-- [ ] Update all scripts, tsconfig, and deploy paths accordingly
+- [x] Move server code into `apps/server/src`
+- [x] Move Prisma schema into `apps/server/prisma`
+- [x] Update all scripts, tsconfig, and deploy paths accordingly
 
 ### Phase 6: script cleanup and final hardening
 
@@ -298,8 +311,8 @@ Important distinction:
 - [ ] Web replicas can scale without duplicating worker behavior
 - [ ] Frontend is deployable independently as a static artifact
 - [ ] Backend is deployable independently as an API/worker artifact
-- [ ] Repo layout clearly communicates client vs server ownership
-- [ ] Prisma lives with the server app
+- [x] Repo layout clearly communicates client vs server ownership
+- [x] Prisma lives with the server app
 - [ ] One-off migration scripts are no longer treated as standard deploy tooling
 - [ ] CI/CD reflects the true deployment topology
 - [ ] `dev`, `staging`, and `main` remain aligned with the intended hosting model

@@ -21,9 +21,9 @@
 
 | מקור | Endpoint | קובץ | מצב |
 |------|----------|------|-----|
-| רישום לאירוע פיזי | `POST /api/register` | NextEventHero, טופס אירוע | ✅ נשמר ל-`src/data/registrations.json` |
-| רישום לאירוע וידאו | `POST /api/register` | VideoEventModal | ✅ אותו קובץ |
-| הרשמה לניוזלטר | `POST /api/newsletter` | NewsletterSection (פוטר) | ✅ אותו קובץ |
+| רישום לאירוע פיזי | `POST /api/register` | NextEventHero, טופס אירוע | ✅ נשמר ב-DB (`Registration`) |
+| רישום לאירוע וידאו | `POST /api/register` | VideoEventModal | ✅ אותו מודל |
+| הרשמה לניוזלטר | `POST /api/newsletter` | NewsletterSection (פוטר) | ✅ אותו מודל |
 
 - באדמין: **CRM Database** – צפייה, סינון, מיון, ייצוא CSV.
 
@@ -66,8 +66,8 @@
 ## 6. מה צריך לעלייה
 
 - **Build:** `npm run build`
-- **הרצת שרת:** `npm start` (מפעיל `tsx server/admin-server.ts`) או PM2 דרך `config/ecosystem.config.cjs`
-- **משתני סביבה:** `PORT`, `DATABASE_URL`, אופציונלי SMTP, Gemini, וכו' (ראה [RENDER_ENV.md](RENDER_ENV.md), [config/.env.example](../config/.env.example))
+- **הרצת שרת:** `npm start` (מפעיל `tsx apps/server/src/web.ts`) או PM2 דרך `config/ecosystem.config.cjs`
+- **משתני סביבה:** `PORT`, `DATABASE_URL`, אופציונלי SMTP, Gemini, וכו' (ראה [RENDER_ENV.md](RENDER_ENV.md), [`apps/server/.env.example`](../apps/server/.env.example), [`apps/client/.env.example`](../apps/client/.env.example))
 - **תשתית:** כל התעבורה לאותו שרת (same-origin ל-API ו-dist).
 
 ---

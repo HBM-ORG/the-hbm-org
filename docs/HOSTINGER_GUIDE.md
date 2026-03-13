@@ -10,7 +10,7 @@ Build the frontend before uploading:
 ```bash
 npm run build
 ```
-This generates the `dist/` folder.
+This generates the `apps/client/dist/` folder.
 
 ---
 
@@ -18,16 +18,16 @@ This generates the `dist/` folder.
 
 | Folder / File | Description | Destination |
 |----------------|-------------|-------------|
-| `dist/` | Static frontend | `public_html/` or app root |
-| `server/` (`admin-server.ts`) | Backend Node server | Application root |
+| `apps/client/dist/` | Static frontend | `public_html/` or app root |
+| `apps/server/` (`src/web.ts`) | Backend Node server | Application root |
 | `package.json` | Dependencies | Application root |
-| `public/logos/`, `public/assets/` | Brand and media (incl. **event images**) | Same structure under `public/` |
-| `public/data/events.json` | **Events + gallery paths** (must match assets on server) | `public/data/` |
-| `src/data/` | JSON data (CMS, regs) | Same structure under `src/data/` |
+| `apps/client/public/logos/`, `apps/client/public/assets/` | Brand and media (incl. **event images**) | Same structure under `public/` |
+| `apps/client/public/data/events.json` | **Events + gallery paths** (must match assets on server) | `public/data/` |
+| `apps/client/src/data/` | Remaining transitional JSON data | Same structure under `src/data/` |
 
-**Important for event images:** Upload the entire `public/assets/events/` folder (all event subfolders with their JPG/PNG/MP4 files). Include every event folder and subfolders such as `cards/` (used by the "Important Details" 3 cards). The site and admin load images from `/assets/events/...`. If you ran `node scripts/convert-heic-to-jpg.js`, upload both the converted JPGs and the updated `public/data/events.json` so the live site shows all gallery images.
+**Important for event images:** Upload the entire `apps/client/public/assets/events/` folder (all event subfolders with their JPG/PNG/MP4 files). Include every event folder and subfolders such as `cards/` (used by the "Important Details" 3 cards). The site and admin load images from `/assets/events/...`. If you ran `node scripts/ops/convert-heic-to-jpg.js`, upload both the converted JPGs and the updated `apps/client/public/data/events.json` so the live site shows all gallery images.
 
-**Checklist so everything looks like local:** After deploy, ensure `public/assets/events/<eventFolder>/` contains all images (gallery, hero, cards). If you use FTP (FTP_HOST, FTP_USER, FTP_PASS in production), new uploads from the admin go straight to Hostinger; for existing local uploads, upload the same `public/assets/events/` tree to the server.
+**Checklist so everything looks like local:** After deploy, ensure `apps/client/public/assets/events/<eventFolder>/` contains all images (gallery, hero, cards) before copying them into the server's public web root.
 
 **Do not upload `.env`.** Set all secrets in the Hostinger panel (see below).
 
@@ -36,27 +36,27 @@ This generates the `dist/` folder.
 ## 3. Hostinger Configuration
 
 1. **Node.js:** Panel → Advanced → Node.js; select the app folder.
-2. **Startup command:** `npm start` (runs `tsx server/admin-server.ts`).
+2. **Startup command:** `npm start` (runs `tsx apps/server/src/web.ts` through the workspace root).
 3. **Environment variables** (in panel):
    - `PORT=3001`
    - `NODE_ENV=production`
    - `DATABASE_URL` (if using MySQL)
    - `GEMINI_API_KEY`, `GOOGLE_BOOKS_API_KEY` (optional)
    - For email: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` (see [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md))
-   - For assets: `FTP_HOST`, `FTP_USER`, `FTP_PASS` (see [RENDER_ENV.md](RENDER_ENV.md))
+  - For assets: `STORAGE_PROVIDER`, `SPACES_*` or `GCS_*` (see [RENDER_ENV.md](RENDER_ENV.md))
 
 ---
 
 ## 4. Persistence
 
-The app writes to `src/data/*.json`. Ensure the Node process has **write permissions** to `src/data/`.
+The remaining transitional file-backed services write to `apps/client/src/data/*.json`. Ensure the Node process has **write permissions** there until those domains are fully migrated to the database.
 
 ---
 
 ## 5. Troubleshooting
 
 - **Design looks different:** Purge Hostinger/LiteSpeed cache after deploy.
-- **API/base URL:** In production, the frontend uses same-origin requests (`base` empty). Correct if the server (`server/admin-server.ts` via `npm start`) serves `dist/`.
+- **API/base URL:** In production, the frontend uses same-origin requests (`base` empty). Correct if the server (`apps/server/src/web.ts` via `npm start`) serves `apps/client/dist/`.
 
 ---
 

@@ -109,12 +109,12 @@ File Breakdown:
 
 ### Critical Files Present
 
-✅ `dist/index.html` - Entry point (29 lines)  
-✅ `dist/assets/index-C-fK_x1w.js` - Main bundle (422KB)  
-✅ `dist/assets/index-DatmyCrq.css` - Styles (158KB)  
-✅ `dist/assets/vendor-react-*.js` - React runtime  
-✅ `dist/assets/vendor-three-*.js` - 3D library  
-✅ `dist/assets/vendor-animation-*.js` - Animation library
+✅ `apps/client/dist/index.html` - Entry point  
+✅ `apps/client/dist/assets/index-*.js` - Main bundle  
+✅ `apps/client/dist/assets/index-*.css` - Styles  
+✅ `apps/client/dist/assets/vendor-react-*.js` - React runtime  
+✅ `apps/client/dist/assets/vendor-three-*.js` - 3D library  
+✅ `apps/client/dist/assets/vendor-animation-*.js` - Animation library
 
 ### Security Checks
 
@@ -209,7 +209,7 @@ File Breakdown:
 
 1. **Configure SMTP Credentials**
    - Obtain SMTP details from email provider
-   - Update `/src/data/automationConfig.json`
+   - Update SMTP settings in Admin → Email Architect or `apps/server/.env`
    - Test with: `curl -X POST http://localhost:3001/api/smtp-check`
 
 ### 🟡 RECOMMENDED (Non-blocking)
@@ -250,8 +250,8 @@ File Breakdown:
 
 ```bash
 # 1. Upload files to Hostinger
-scp -r dist/* your-user@admin.thehbm.org:/public_html/
-scp -r server your-user@admin.thehbm.org:/app/
+scp -r apps/client/dist/* your-user@admin.thehbm.org:/public_html/
+scp -r apps/server your-user@admin.thehbm.org:/app/
 scp .env your-user@admin.thehbm.org:/app/ (secure method)
 
 # 2. Install dependencies
@@ -342,7 +342,7 @@ Domain: admin.thehbm.org
 
 1. **Immediately:**
    - [ ] Obtain SMTP credentials from email provider
-   - [ ] Update automationConfig.json with SMTP details
+   - [ ] Update SMTP settings in Admin or `apps/server/.env`
    - [ ] Test SMTP connection locally
 
 2. **Within 24 hours:**

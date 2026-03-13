@@ -4,29 +4,28 @@ Standard procedures for developing, testing, and deploying the platform. **Hando
 
 ## 📁 Project structure
 
-Root is kept to **7 files** (package.json, package-lock.json, .gitignore, README.md, index.html, vite.config.js, prisma.config.ts). All other config and server code live in subfolders.
+The repo now uses **npm workspaces** with separate app roots:
 
-- **`/config`** — PM2, ESLint, env template (e.g. `ecosystem.config.cjs`, `.env.example`, `.nvmrc`).
+- **`/apps/client`** — React/Vite frontend (`src`, `public`, `dist`, `vite.config.js`)
+- **`/apps/server`** — Express API + worker entrypoints (`src/web.ts`, `src/worker.ts`, `prisma/`)
+- **`/config`** — PM2, ESLint, Node version hints (e.g. `ecosystem.config.cjs`, `.nvmrc`)
 - **`/docs`** — All documentation (deploy, Hostinger, Render, QA, sitemap); see [docs/README.md](docs/README.md)
-- **`/data`** — Runtime data and local DB files (gitignored)
-- **`/scripts`** — Build and utility scripts (sitemap, migrate, email diagnostics)
-- **`/server`** — Express API (`admin-server.ts`)
-- **`/src`** — React frontend (Vite)
-- **`/public`** — Static assets and `dist` output
+- **`/data`** — Shared runtime/exported data kept at repo root
+- **`/scripts`** — Reclassified helpers under `build/`, `dev/`, `ops/`, `one-off/`
 
 Full layout and stack: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## 🛠 1. Environment Setup
-Node **18+** (recommended: 20; see `config/.nvmrc`). Copy `config/.env.example` to `.env` and fill in values.
+Node **18+** (recommended: 20; see `config/.nvmrc`). Copy `apps/server/.env.example` to `apps/server/.env` and `apps/client/.env.example` to `apps/client/.env` as needed. The repo root `.env` is still supported as a temporary fallback for server-side scripts during transition.
 
 Always ensure your local environment is synchronized with the latest dependencies.
 ```bash
 # Clean install (if you encounter strange bugs)
 rm -rf node_modules
-npm install
+npm install --legacy-peer-deps
 
 # Standard update
-npm install
+npm install --legacy-peer-deps
 ```
 
 ## 🚀 2. Development Execution
@@ -38,7 +37,7 @@ This runs the React frontend AND the Express backend (for emails, event saving, 
 npm run dev:admin
 ```
 - **UI**: `http://localhost:4200`
-- **Admin Server**: `http://localhost:3001`
+- **Admin Server**: `http://localhost:3001` (`apps/server/src/web.ts`)
 
 ### B. Client Only
 If you are only editing styling or UI logic and don't need the database/upload services.
@@ -59,7 +58,7 @@ npm run preview
 ## 📊 4. Admin Protocol
 - **Admin Dashboard**: Accessible via `/admin`
 - **Access**: Credentials via internal secure channels
-- **Intelligence Sync**: Ensure the admin server is running (automatic in `dev:admin`; runs `server/admin-server.ts` via `tsx`)
+- **Intelligence Sync**: Ensure the admin server is running (automatic in `dev:admin`; runs `apps/server/src/web.ts` via `tsx`)
 
 ## 📧 5. Email (Handoff)
 Transactional and campaign emails use **SMTP** (nodemailer). To enable:

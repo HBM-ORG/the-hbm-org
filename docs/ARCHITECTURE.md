@@ -7,39 +7,37 @@ Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prism
 ## Directory layout
 
 ```
-├── server/
-│   └── admin-server.ts   # Express API (events, uploads, email, Prisma)
-├── index.html            # Vite entry
 ├── package.json
-├── vite.config.js
 ├── prisma.config.ts
-├── config/               # Process/deploy config
-│   └── ecosystem.config.cjs   # PM2
+├── apps/
+│   ├── client/
+│   │   ├── index.html
+│   │   ├── vite.config.js
+│   │   ├── public/
+│   │   ├── src/
+│   │   └── dist/
+│   └── server/
+│       ├── prisma/
+│       ├── src/
+│       │   ├── web.ts          # Express web entrypoint
+│       │   ├── worker.ts       # Email worker entrypoint
+│       │   └── services/
+│       └── package.json
+├── config/               # Shared repo/process config
+│   └── ecosystem.config.cjs
 ├── data/                 # Runtime data (gitignored: *.db)
 │   ├── site-configs.json
 │   └── *.db              # SQLite (local) – production uses MySQL
 ├── docs/                 # All project documentation
 │   ├── ARCHITECTURE.md, DEPLOY_*.md, EMAIL_SYSTEM.md, HOSTINGER_GUIDE.md, …
 │   └── notes/
-├── generated/            # Prisma client (generated)
 ├── logs/                 # PM2 / server logs (gitignored)
-├── prisma/
-│   └── schema.prisma
-├── public/               # Static assets and built site (dist served here in prod)
-│   ├── assets/           # Events, emails, CMS images (FTP to Hostinger in prod)
-│   └── data/             # events.json etc.
-├── scripts/              # One-off and build scripts
-│   ├── generate-sitemap.js
-│   ├── migrate-data.js
-│   ├── smtp-diagnostics.js
-│   ├── test-email-engine.js
+├── scripts/
+│   ├── build/
+│   ├── dev/
+│   ├── ops/
+│   ├── one-off/
 │   └── output/
-├── src/                  # React app (Vite)
-│   ├── components/
-│   ├── pages/
-│   ├── data/             # JSON configs, content
-│   ├── i18n/
-│   └── utils/
 └── src-backup-v6/        # Legacy backup (optional)
 ```
 
@@ -50,10 +48,10 @@ Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prism
 | Layer    | Tech |
 |----------|------|
 | Frontend | React 19, Vite 7, Tailwind |
-| API      | Express (`admin-server.ts` via `tsx`), REST + multipart uploads |
+| API      | Express (`apps/server/src/web.ts` via `tsx`), REST + upload signing |
 | DB       | Prisma; MySQL (production), SQLite (local optional) |
-| Assets   | FTP upload to Hostinger `public_html/assets/` |
-| Deploy   | Render (API), Hostinger (static/site), PM2 (self-hosted) |
+| Assets   | DigitalOcean Spaces or Google Cloud Storage |
+| Deploy   | Workspace-aware Docker/CI, PM2/self-hosted, DO/GCP |
 
 ---
 
@@ -62,7 +60,8 @@ Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prism
 | Context | Command |
 |---------|---------|
 | **Dev** | `npm run dev:admin` → Vite :4200 + Express :3001 |
-| **Prod** | `npm start` (runs `tsx server/admin-server.ts`, serves `dist/` + API) |
+| **Prod** | `npm start` (runs `tsx apps/server/src/web.ts`, serves `apps/client/dist/` + API) |
+| **Worker** | `npm run start:worker` |
 | **PM2** | `pm2 start config/ecosystem.config.cjs` |
 
 ---

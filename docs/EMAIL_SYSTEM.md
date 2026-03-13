@@ -8,11 +8,11 @@ This document describes the HBM email stack, what is required for it to work, an
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| **Email sending** | `server/admin-server.ts` | Single delivery point: **`deliverEmail()`** → today SMTP (nodemailer); ready to add Bravo API. |
+| **Email sending** | `apps/server/src/services/email-support.service.ts` + `apps/server/src/services/email-queue.service.ts` | Single delivery path for SMTP today; structured so a provider adapter can be introduced later. |
 | **Email queue** | Prisma `EmailQueue` (MySQL in prod) | Pending/sent/failed/suppressed; processed every minute. |
-| **Automation flows** | `src/data/automationConfig.json` + Admin UI | Trigger-based flows (e.g. registration, onNewsletterSignup, 48h_before_event) with Liquid templates. |
-| **Campaigns** | `src/data/campaigns.json` + Admin UI | One-off blasts; segment = all / physical / video / newsletter. |
-| **Suppression list** | `src/data/suppression.json` | Opt-outs; applied before sending any email. |
+| **Automation flows** | Prisma `EmailFlow` / `EmailSequence` / `SmtpConfig` / `GlobalStyling` + Admin UI | Trigger-based flows (e.g. registration, onNewsletterSignup, 48h_before_event) with Liquid templates. |
+| **Campaigns** | Prisma `EmailCampaign` + Admin UI | One-off blasts; segment = all / physical / video / newsletter. |
+| **Suppression list** | Prisma `EmailSuppression` | Opt-outs; applied before sending any email. |
 | **Email Architect** | Admin → Email Architect | Edit flows/campaigns, SMTP settings, test send, global styling. |
 
 **Flow:** Registration (physical / video) or Newsletter signup → trigger writes to `EmailQueue` → `processQueue()` runs every minute → **`deliverEmail()`** sends (SMTP today; Bravo-ready) → marks sent/failed.
@@ -23,7 +23,7 @@ This document describes the HBM email stack, what is required for it to work, an
 
 ## 2. What You Need for Emails to Work
 
-### Option A: SMTP in Admin (stored in `automationConfig.json`)
+### Option A: SMTP in Admin (stored in Prisma-backed admin settings)
 
 1. In **Admin → Email Architect → Automation Settings**, set:
    - **Host:** e.g. `smtp.office365.com`, `smtp.gmail.com`, or **Bravo SMTP** (if they provide one).
@@ -42,19 +42,19 @@ Set in Render / Hostinger (or `.env` locally):
 - `SMTP_PASS` — app password or Bravo SMTP password.
 - `SMTP_FROM` — e.g. `The HBM <office@thehbm.org>`.
 
-The server uses the config file first; if `automationConfig.json` has no SMTP host, it falls back to these env vars.
+The server uses the database-backed admin config first; if no SMTP host is stored there, it falls back to these env vars.
 
 ### Other requirements
 
 - **Database:** `EmailQueue` lives in MySQL (production). Set `DATABASE_URL` and run migrations (`npx prisma migrate deploy` or `npx prisma db push`).
 - **BASE_URL:** Set to the app’s public URL so tracking/open links in emails work.
-- **FTP (optional):** For images in emails to persist across deploys, set `FTP_HOST`, `FTP_USER`, `FTP_PASS`; see [RENDER_ENV.md](RENDER_ENV.md).
+- **Object storage:** For uploaded email images, configure `STORAGE_PROVIDER` plus either `SPACES_*` or `GCS_*`; see [RENDER_ENV.md](RENDER_ENV.md).
 
 ---
 
 ## 3. Bravo Integration (SMTP + API)
 
-The system is built so that **all** emails (physical events, video events, newsletter) go through one queue and **one delivery function** (`deliverEmail()` in `server/admin-server.ts`). That makes Bravo integration a single, clear change.
+The system is built so that **all** emails (physical events, video events, newsletter) go through one queue and one delivery path inside the server services. That keeps a future Bravo integration isolated to the send step.
 
 ### Option 1: Bravo as SMTP relay (no code change)
 
@@ -68,7 +68,7 @@ Use Bravo’s SMTP if they provide it:
 
 The code is prepared for a Bravo API integration:
 
-- **Single injection point:** In `server/admin-server.ts`, `processQueue()` sends each queued email via **`deliverEmail(transporter, mailOptions)`**. Today this calls `transporter.sendMail(mailOptions)`. To use Bravo API, add logic inside `deliverEmail()` so that when Bravo is enabled (e.g. env), the same `mailOptions` (to, subject, html, from, attachments) are sent via Bravo’s API instead of SMTP.
+- **Single injection point:** `apps/server/src/services/email-queue.service.ts` processes queue items and delegates transport work through the server email support layer. To use Bravo API, introduce a provider-aware send helper there so the same mail payload can be sent through Bravo instead of SMTP.
 - **What stays the same:** Queue, flows, campaigns, suppression list, Liquid templates, and retry logic. Only the actual “send” step changes.
 
 **What you need for Bravo API (when implementing):**
@@ -77,7 +77,7 @@ The code is prepared for a Bravo API integration:
 |----------|---------|
 | Bravo API docs | Endpoint for sending transactional email (e.g. POST with to, subject, html, from). |
 | Auth method | API key, OAuth, or other; where to put it (e.g. `BRAVO_API_KEY` in env). |
-| Optional: suppression | If Bravo manages unsubscribes, sync with `suppression.json` or DB so we don’t send to opted-out addresses. |
+| Optional: suppression | If Bravo manages unsubscribes, sync with `EmailSuppression` so we don’t send to opted-out addresses. |
 
 **Suggested env (for when Bravo API is implemented):**
 
@@ -99,11 +99,11 @@ No need to change flows or segments; physical / video / newsletter are already d
 
 ---
 
-## 5. Bravo Readiness Checklist (for dev/CTO)
+## 5. Brevo Readiness Checklist (for dev/CTO)
 
-- [ ] **SMTP path:** Use Bravo SMTP credentials in config or env → works today.
-- [ ] **API path:** Single send point is **`deliverEmail()`** in `server/admin-server.ts`; add Bravo API call when `USE_EMAIL_PROVIDER=bravo` and credentials are set.
-- [ ] Queue, suppression, and flows remain unchanged; only the implementation of `deliverEmail()` (or a helper it calls) needs to support Bravo.
+- [ ] **SMTP path:** Use Brevo SMTP credentials in config or env → works today.
+- [ ] **API path:** Add provider-aware sending in `apps/server/src/services/email-support.service.ts` / `apps/server/src/services/email-queue.service.ts` when `USE_EMAIL_PROVIDER=bravo`.
+- [ ] Queue, suppression, and flows remain unchanged; only the implementation of the final send step needs to support Brevo.
 
 ---
 
@@ -111,11 +111,11 @@ No need to change flows or segments; physical / video / newsletter are already d
 
 | File | Role |
 |------|------|
-| `server/admin-server.ts` | `processQueue()`, **`deliverEmail()`** (single send point), campaign send, test send, SMTP from config + env fallback. |
-| `src/data/automationConfig.json` | Flows + SMTP (optional if using env). |
-| `src/data/campaigns.json` | Campaign definitions. |
-| `src/data/suppression.json` | Opt-out emails. |
-| `scripts/smtp-diagnostics.js` | Standalone SMTP connectivity check. |
-| `scripts/test-email-engine.js` | Ad-hoc email send test. |
+| `apps/server/src/services/email-queue.service.ts` | Queue processing, campaign send, automation triggers. |
+| `apps/server/src/services/email-support.service.ts` | SMTP normalization and final delivery helper. |
+| `apps/server/prisma/schema.prisma` | Queue, flow, campaign, suppression, and content models. |
+| `scripts/one-off/migrate-json-to-db.ts` | One-off backfill from legacy JSON into Prisma tables. |
+| `scripts/ops/smtp-diagnostics.js` | Standalone SMTP connectivity check. |
+| `scripts/dev/test-email-engine.js` | Ad-hoc email send test. |
 
-For env and deploy: [RENDER_ENV.md](RENDER_ENV.md), [config/.env.example](../config/.env.example).
+For env and deploy: [RENDER_ENV.md](RENDER_ENV.md), [`apps/server/.env.example`](../apps/server/.env.example), [`apps/client/.env.example`](../apps/client/.env.example).

@@ -9,22 +9,39 @@ This repo now supports moving mutable runtime content out of JSON files and into
 - Uploads can use pre-signed URLs instead of writing to local disk.
 - Migration scripts were added for JSON data and media files.
 
+## Current Status
+
+- Already moved to DB:
+  - CRM registrations
+  - events and site content managed through DB-backed services
+  - email engagement log
+  - cookie consent log
+  - email automation settings (`EmailFlow`, `EmailSequence`, `SmtpConfig`, `GlobalStyling`)
+  - campaigns (`EmailCampaign`)
+  - suppression list (`EmailSuppression`)
+  - remaining mutable content configs (`ContentEntry` for video event, how-it-works, knowledge base)
+- Already moved to object storage:
+  - admin uploads through `/api/upload/*`
+- Legacy JSON files now exist only as migration sources / historical backups for one-off backfill scripts.
+
 ## New Server Structure
 
-- `server/routes/upload.routes.ts`
-- `server/routes/cms.routes.ts`
-- `server/controllers/upload.controller.ts`
-- `server/controllers/cms.controller.ts`
-- `server/services/storage.service.ts`
-- `server/services/cms.service.ts`
-- `server/storage/index.ts`
-- `server/storage/adapter.ts`
-- `server/storage/types.ts`
+- `apps/server/src/routes/upload.routes.ts`
+- `apps/server/src/routes/cms.routes.ts`
+- `apps/server/src/controllers/upload.controller.ts`
+- `apps/server/src/controllers/cms.controller.ts`
+- `apps/server/src/services/storage.service.ts`
+- `apps/server/src/services/cms.service.ts`
+- `apps/server/src/storage/index.ts`
+- `apps/server/src/storage/adapter.ts`
+- `apps/server/src/storage/types.ts`
 
 ## Migration Scripts
 
-- `scripts/migrate-json-to-db.ts`
-- `scripts/migrate-files-to-storage.ts`
+- `scripts/one-off/migrate-json-to-db.ts`
+- `scripts/one-off/migrate-files-to-storage.ts`
+- `scripts/one-off/migrate-engagement-log-to-db.ts`
+- `scripts/one-off/migrate-storage-provider.ts`
 
 ## Environment
 
@@ -52,14 +69,15 @@ GCS_CREDENTIALS_JSON='{"type":"service_account", ... }'
 
 ## Suggested Flow
 
-1. Run Prisma migrations against the new schema.
-2. Run `migrate-json-to-db.ts` to load textual content.
-3. Run `migrate-files-to-storage.ts` to move media and rewrite URLs.
+1. Run Prisma migrations against `apps/server/prisma`.
+2. Run `scripts/one-off/migrate-json-to-db.ts` to backfill all legacy JSON-backed runtime data into Prisma tables.
+3. Run `scripts/one-off/migrate-files-to-storage.ts` to move media and rewrite URLs.
 4. Verify admin upload flows against the new `/api/upload/*` endpoints.
-5. Remove legacy JSON write paths only after verification.
+5. Treat the old JSON files as migration-only artifacts; runtime reads and writes now go through Prisma-backed services.
 
 ## Notes
 
 - The route files are intentionally thin now.
 - OpenAPI-style annotations were added at controller level so docs can be enabled later.
-- `src/utils/upload.js` is now the frontend helper for pre-signed uploads.
+- `apps/client/src/utils/upload.js` is now the frontend helper for pre-signed uploads.
+- `apps/server/src/paths.ts` no longer points at client runtime JSON files; it is now only used for repo/app/env paths.

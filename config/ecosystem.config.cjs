@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "hbm-server",
       script: "./node_modules/.bin/tsx",
-      args: "./server/admin-server.ts",
+      args: "./apps/server/src/web.ts",
       env: {
         NODE_ENV: "production",
         PORT: 3001
