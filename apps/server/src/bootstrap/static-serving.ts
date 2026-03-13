@@ -3,25 +3,43 @@ import fs from "fs";
 import path from "path";
 
 type StaticRoots = {
-  publicRoot: string;
+  publicRoots: string[];
   distRoot: string;
 };
 
 export function mountStaticServing(
   app: Express,
-  { publicRoot, distRoot }: StaticRoots,
+  { publicRoots, distRoot }: StaticRoots,
 ): void {
+  const normalizedRoots = publicRoots.filter(Boolean);
 
   // Express 5/path-to-regexp no longer accepts bare wildcard strings like "/assets/*".
   app.get(/^\/assets\/.*/, (req: Request, res: Response) => {
-    const relativePath = req.path.startsWith("/") ? req.path.slice(1) : req.path;
-    const assetPath = path.join(publicRoot, relativePath);
+    const rawRelativePath = req.path.startsWith("/") ? req.path.slice(1) : req.path;
+    let relativePath = rawRelativePath;
 
-    if (
-      !assetPath.startsWith(publicRoot) ||
-      !fs.existsSync(assetPath) ||
-      !fs.statSync(assetPath).isFile()
-    ) {
+    try {
+      relativePath = decodeURIComponent(rawRelativePath);
+    } catch {
+      res.status(400).send("Invalid asset path");
+      return;
+    }
+
+    let assetPath: string | null = null;
+
+    for (const root of normalizedRoots) {
+      const candidate = path.join(root, relativePath);
+      if (
+        candidate.startsWith(root) &&
+        fs.existsSync(candidate) &&
+        fs.statSync(candidate).isFile()
+      ) {
+        assetPath = candidate;
+        break;
+      }
+    }
+
+    if (!assetPath) {
       res.status(404).send("Not found");
       return;
     }
@@ -41,7 +59,9 @@ export function mountStaticServing(
     res.sendFile(assetPath);
   });
 
-  app.use(express.static(publicRoot));
+  for (const root of normalizedRoots) {
+    app.use(express.static(root));
+  }
   app.use(express.static(distRoot));
 
   app.get(/^(?!\/api|\/assets).*/, (_req: Request, res: Response) => {

@@ -1,0 +1,193 @@
+{
+  "smtp": {
+    "host": "smtp.office365.com",
+    "port": 587,
+    "user": "office@thehbm.org",
+    "pass": "",
+    "from": "The HBM <office@thehbm.org>",
+    "secure": false
+  },
+  "globalStyling": {
+    "primaryColor": "#6160AB",
+    "secondaryColor": "#F07B3C",
+    "logoUrl": "/logo.png",
+    "fontFamily": "Sora, sans-serif"
+  },
+  "flows": [
+    {
+      "id": "registration_confirmed",
+      "name": "🎟️ Booking Confirmed",
+      "subject": "You're in, {{name}} — Your HBM Spot is Confirmed ✅",
+      "body": "Hi {{name}},\n\nWelcome to the fold. You just secured your spot at **{{eventName}}** — and we can't wait to meet you.\n\n📅 **Date:** {{eventDate}}\n📍 **Location:** {{location}}\n\nHere's what to expect:\n- 8-minute structured conversations with extraordinary strangers\n- A warm, curated atmosphere built for real connection\n- No awkward mingling — just meaningful exchanges\n\nSee you soon,\nThe HBM Team 🧡",
+      "trigger": "on_registration",
+      "active": true,
+      "includeCalendar": true,
+      "subjectB": "✅ {{name}}, you're officially in — HBM Awaits",
+      "abTestActive": false
+    },
+    {
+      "id": "check_in_curiosity",
+      "name": "🔥 48h Pre-Event Hype",
+      "subject": "48 hours, {{name}}. Are you ready for your HBM moment?",
+      "body": "Hi {{name}},\n\nIn 48 hours, you'll be sitting across from someone you've never met — and 8 minutes could change everything.\n\n**Quick reminder:**\n📅 {{eventDate}}\n📍 {{location}}\n\n**Our pro tip for your best HBM:** Come with ONE question you genuinely want to ask a stranger. Not a networking question. A real one.\n\nMost people don't prepare. You're not most people.\n\nSee you there 🚀\nThe HBM Team",
+      "trigger": "48h_before_event",
+      "active": true,
+      "includeCalendar": false,
+      "subjectB": "Tomorrow is HBM day, {{name}} — here's your primer",
+      "abTestActive": false
+    },
+    {
+      "id": "post_event_warmth",
+      "name": "💛 Post-Event Warmth",
+      "subject": "Something shifted tonight, {{name}} 🌙",
+      "body": "Hi {{name}},\n\nLast night happened. And we hope it was as meaningful for you as it was for us.\n\nYou showed up. You were present. You gave a stranger 8 minutes of your full attention — and that's rare. That's {{eventName}} in a nutshell.\n\nWant to stay in the loop for the next one? We'd love to have you back.\n\nWith warmth,\nThe HBM Team 🧡\n\nPS — got 30 seconds? Tell us one thing that surprised you tonight: [Feedback Link]",
+      "trigger": "24h_after_event",
+      "active": true,
+      "includeCalendar": false
+    },
+    {
+      "id": "eight_minute_funnel",
+      "name": "⚡ 8-Min Journey",
+      "subject": "Hi {{name}} — your 8-minute journey starts now",
+      "body": "Hi {{name}},\n\nYou've just taken the first step toward something you can't un-see.\n\nThe Human Being Movement exists because the world needs more of this: two people, 8 minutes, zero agenda — and the kind of depth that usually takes years.\n\nHere's your invitation to join our next event:\n👉 [Reserve Your Spot]\n\nSpots fill up. The conversations are worth it.\n\nSee you on the other side,\nThe HBM Team",
+      "trigger": "site_signup",
+      "active": true,
+      "includeCalendar": false
+    },
+    {
+      "id": "re_engagement",
+      "name": "💫 Re-Engagement",
+      "subject": "{{name}}, we miss you at HBM 👀",
+      "body": "Hi {{name}},\n\nIt's been a while since we last saw you at an HBM event — and honestly, that feels like a missed opportunity (for everyone, including the stranger who didn't get to meet you).\n\nWe're running a new experience soon. Different energy. Same magic.\n\n🗓️ Would love to see your name on the list again.\n\n[Check Out the Next Event]\n\nWith love,\nThe HBM Team",
+      "trigger": "30_days_inactive",
+      "active": false,
+      "includeCalendar": false
+    },
+    {
+      "id": "community_spotlight",
+      "name": "🌟 Community Story",
+      "subject": "A story from the HBM room — worth reading, {{name}}",
+      "body": "Hi {{name}},\n\nEvery HBM event creates moments. Some of those moments become stories.\n\nThis week, we wanted to share one from our community — a real conversation that started in 8 minutes and turned into something neither person expected.\n\n[Read the Story →]\n\nThis is why we do what we do. And why we'd love to see you at the next one.\n\nAlways,\nThe HBM Team ✨",
+      "trigger": "weekly_newsletter",
+      "active": false,
+      "includeCalendar": false
+    },
+    {
+      "id": "flow_1771844992584_onNewsletterSignup",
+      "name": "Newsletter Welcome",
+      "trigger": "onNewsletterSignup",
+      "active": true,
+      "subject_en": "Welcome to Newsletter Welcome",
+      "subject_he": "ברוכים הבאים - Newsletter Welcome",
+      "body_en": "Hello {{name}},\n\nYour message here.\n\nBest, Team",
+      "body_he": "שלום {{name}},\n\nההודעה שלכם כאן.\n\nבברכה, הצוות"
+    },
+    {
+      "id": "flow_1771844992584_onPhysicalRegistration",
+      "name": "Physical Event Reg",
+      "trigger": "onPhysicalRegistration",
+      "active": true,
+      "subject_en": "Welcome to Physical Event Reg",
+      "subject_he": "ברוכים הבאים - Physical Event Reg",
+      "body_en": "Hello {{name}},\n\nYour message here.\n\nBest, Team",
+      "body_he": "שלום {{name}},\n\nההודעה שלכם כאן.\n\nבברכה, הצוות"
+    },
+    {
+      "id": "flow_1771844992584_onVideoRegistration",
+      "name": "Video Event Reg",
+      "trigger": "onVideoRegistration",
+      "active": true,
+      "subject_en": "Welcome to Video Event Reg",
+      "subject_he": "ברוכים הבאים - Video Event Reg",
+      "body_en": "Hello {{name}},\n\nYour message here.\n\nBest, Team",
+      "body_he": "שלום {{name}},\n\nההודעה שלכם כאן.\n\nבברכה, הצוות"
+    },
+    {
+      "id": "flow_1771844992584_on8MinJourney",
+      "name": "8-Min Journey",
+      "trigger": "on8MinJourney",
+      "active": true,
+      "subject_en": "Welcome to 8-Min Journey",
+      "subject_he": "ברוכים הבאים - 8-Min Journey",
+      "body_en": "Hello {{name}},\n\nYour message here.\n\nBest, Team",
+      "body_he": "שלום {{name}},\n\nההודעה שלכם כאן.\n\nבברכה, הצוות"
+    }
+  ],
+  "sequences": [
+    {
+      "id": "welcome_journey",
+      "name": "Welcome & Conversion Journey",
+      "trigger": "registration",
+      "active": true,
+      "steps": [
+        {
+          "type": "email",
+          "flowId": "registration_confirmed",
+          "duration": "0m"
+        },
+        {
+          "type": "wait",
+          "duration": "24h"
+        },
+        {
+          "type": "email",
+          "flowId": "check_in_curiosity",
+          "duration": "24h"
+        },
+        {
+          "type": "wait",
+          "duration": "48h"
+        },
+        {
+          "type": "email",
+          "flowId": "post_event_warmth",
+          "duration": "48h"
+        }
+      ]
+    },
+    {
+      "id": "cold_funnel",
+      "name": "Cold Lead Conversion",
+      "trigger": "site_signup",
+      "active": false,
+      "steps": [
+        {
+          "type": "email",
+          "flowId": "eight_minute_funnel",
+          "duration": "0m"
+        },
+        {
+          "type": "wait",
+          "duration": "3d"
+        },
+        {
+          "type": "email",
+          "flowId": "re_engagement",
+          "duration": "3d"
+        }
+      ]
+    },
+    {
+      "id": "community_cycle",
+      "name": "Community Retention Loop",
+      "trigger": "30_days_inactive",
+      "active": false,
+      "steps": [
+        {
+          "type": "email",
+          "flowId": "community_spotlight",
+          "duration": "0m"
+        },
+        {
+          "type": "wait",
+          "duration": "7d"
+        },
+        {
+          "type": "email",
+          "flowId": "re_engagement",
+          "duration": "7d"
+        }
+      ]
+    }
+  ]
+}

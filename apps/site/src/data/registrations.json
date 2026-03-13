@@ -1,0 +1,319 @@
+[
+  {
+    "id": 1771843969015,
+    "name": "יובל",
+    "email": "yuval17040@gmail.com",
+    "phone": "0587654436",
+    "source": "other",
+    "eventId": "video-event",
+    "eventName": "Next Video Event",
+    "date": "2026-02-23T10:52:49.015Z",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771868384609,
+    "name": "Tester Bot",
+    "email": "tester@hbm.org",
+    "phone": "0501234567",
+    "source": "onPhysicalRegistration",
+    "eventId": "general",
+    "eventName": "HBM Launch",
+    "date": "2026-02-23T17:39:44.609Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771868788323,
+    "name": "Verification Test",
+    "phone": "0540000000",
+    "source": "site_signup",
+    "eventId": "general",
+    "eventName": "General Registration",
+    "date": "2026-02-23T17:46:28.323Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771868875199,
+    "name": "Automation Test",
+    "email": "auto@hbm.org",
+    "phone": "0541112233",
+    "source": "site_signup",
+    "eventId": "general",
+    "eventName": "General Registration",
+    "date": "2026-02-23T17:47:55.199Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771918984623,
+    "name": "Final Launch Test",
+    "phone": "0549998877",
+    "source": "onPhysicalRegistration",
+    "eventId": "general",
+    "eventName": "General Registration",
+    "date": "2026-02-24T07:43:04.623Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771919063341,
+    "name": "Active Flow Test",
+    "phone": "0543332211",
+    "source": "onPhysicalRegistration",
+    "eventId": "general",
+    "eventName": "General Registration",
+    "date": "2026-02-24T07:44:23.341Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771928260818,
+    "name": "yuval",
+    "email": "17040@gmail.com",
+    "phone": "0587654436",
+    "source": "friend",
+    "eventId": "next-1",
+    "eventName": "HBM event",
+    "date": "2026-02-24T10:17:40.818Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771946614728,
+    "name": "yuval",
+    "email": "yuval17040@gmail.com",
+    "phone": "0587654436",
+    "source": "social",
+    "eventId": "next-1",
+    "eventName": "HBM event",
+    "date": "2026-02-24T15:23:34.728Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771947969691,
+    "name": "יובל",
+    "email": "yuval17040@gmail.com",
+    "phone": "05876544376",
+    "source": "staff",
+    "eventId": "video-event",
+    "eventName": "Video Event",
+    "date": "2026-02-24T15:46:09.691Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771948109752,
+    "name": "יובל",
+    "email": "yuval17040@gmail.com",
+    "phone": "05876544376",
+    "source": "staff",
+    "eventId": "video-event",
+    "eventName": "Video Event",
+    "date": "2026-02-24T15:48:29.752Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771948115389,
+    "name": "יובל",
+    "email": "yuval17040@gmail.com",
+    "phone": "05876544376",
+    "source": "staff",
+    "eventId": "video-event",
+    "eventName": "Video Event",
+    "date": "2026-02-24T15:48:35.389Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1771974988062,
+    "name": "יובל ",
+    "email": "yuval17040@gmail.com",
+    "phone": "0587654436",
+    "source": "friend",
+    "eventId": "next-1",
+    "eventName": "The HBM Community Night",
+    "date": "2026-02-24T23:16:28.062Z",
+    "language": "en",
+    "status": "confirmed"
+  },
+  {
+    "id": 1772025775560,
+    "name": "QA Tester",
+    "email": "qa@thehbm.org",
+    "phone": "0501234567",
+    "acquisitionSource": "social",
+    "registrationSource": "website_general",
+    "source": "social",
+    "category": "Event Lead",
+    "eventId": "next-1",
+    "eventName": "The HBM Community Night",
+    "date": "2026-02-25T13:22:55.560Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "registration",
+        "date": "2026-02-25T13:22:55.560Z",
+        "message": "Registered for The HBM Community Night"
+      }
+    ]
+  },
+  {
+    "id": 1772026152069,
+    "name": "QA Video Bot",
+    "email": "qa-video@thehbm.org",
+    "phone": "0509988776",
+    "acquisitionSource": "other",
+    "registrationSource": "video_event_modal",
+    "source": "video_event_modal",
+    "category": "Video Lead",
+    "eventId": "video-event",
+    "eventName": "Video Event",
+    "date": "2026-02-25T13:29:12.069Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "registration",
+        "date": "2026-02-25T13:29:12.069Z",
+        "message": "Registered for Video Event"
+      }
+    ]
+  },
+  {
+    "id": 1772030005155,
+    "name": "Test User",
+    "email": "test@example.com",
+    "phone": "+1234567890",
+    "acquisitionSource": "Direct",
+    "registrationSource": "website_general",
+    "source": "Direct Web",
+    "category": "Event Lead",
+    "eventId": "test-event",
+    "eventName": "General Registration",
+    "date": "2026-02-25T14:33:25.155Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "registration",
+        "date": "2026-02-25T14:33:25.155Z",
+        "message": "Registered for General"
+      },
+      {
+        "type": "subscription",
+        "date": "2026-02-25T14:36:23.344Z",
+        "message": "Re-subscribed to Newsletter"
+      }
+    ]
+  },
+  {
+    "id": 1772030229662,
+    "name": "yuval",
+    "email": "Yuval17040@gmail.com",
+    "phone": "0587654436",
+    "acquisitionSource": "social",
+    "registrationSource": "website_general",
+    "source": "social",
+    "category": "Event Lead",
+    "eventId": "next-1",
+    "eventName": "The HBM Community Night",
+    "date": "2026-02-25T14:37:09.662Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "registration",
+        "date": "2026-02-25T14:37:09.662Z",
+        "message": "Registered for The HBM Community Night"
+      }
+    ]
+  },
+  {
+    "id": 1772037897492,
+    "name": "yuval",
+    "email": "yuval17040@gmail.com",
+    "phone": "0587654436",
+    "acquisitionSource": "social",
+    "registrationSource": "website_general",
+    "source": "social",
+    "category": "Event Lead",
+    "eventId": "next-1",
+    "eventName": "The HBM Community Night",
+    "date": "2026-02-25T16:44:57.492Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "registration",
+        "date": "2026-02-25T16:44:57.492Z",
+        "message": "Registered for The HBM Community Night"
+      }
+    ]
+  },
+  {
+    "id": 1772038883301,
+    "name": "yuval",
+    "email": "yuval17040@gmail.com",
+    "phone": "0587654436",
+    "acquisitionSource": "social",
+    "registrationSource": "website_general",
+    "source": "social",
+    "category": "Event Lead",
+    "eventId": "next-1",
+    "eventName": "The HBM Community Night",
+    "date": "2026-02-25T17:01:23.301Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "registration",
+        "date": "2026-02-25T17:01:23.301Z",
+        "message": "Registered for The HBM Community Night"
+      }
+    ]
+  },
+  {
+    "id": 1772140823964,
+    "name": "Subscriber",
+    "email": "yuvak17040@gmail.com",
+    "phone": "",
+    "source": "footer_newsletter",
+    "category": "Subscriber",
+    "date": "2026-02-26T21:20:23.964Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "subscription",
+        "date": "2026-02-26T21:20:23.964Z",
+        "message": "Subscribed to Newsletter"
+      }
+    ]
+  },
+  {
+    "id": 1772140853972,
+    "name": "yuvak1",
+    "email": "yuvak17040@gmail.com",
+    "phone": "0587654436",
+    "acquisitionSource": "social",
+    "registrationSource": "video_event_modal",
+    "source": "video_event_modal",
+    "category": "Video Lead",
+    "eventId": "video-event",
+    "eventName": "Video Event",
+    "date": "2026-02-26T21:20:53.972Z",
+    "language": "en",
+    "status": "confirmed",
+    "history": [
+      {
+        "type": "registration",
+        "date": "2026-02-26T21:20:53.972Z",
+        "message": "Registered for Video Event"
+      }
+    ]
+  }
+]

@@ -10,7 +10,7 @@ Build the frontend before uploading:
 ```bash
 npm run build
 ```
-This generates the `apps/client/dist/` folder.
+This generates `apps/site/dist/` and `apps/admin/dist/`.
 
 ---
 
@@ -18,16 +18,16 @@ This generates the `apps/client/dist/` folder.
 
 | Folder / File | Description | Destination |
 |----------------|-------------|-------------|
-| `apps/client/dist/` | Static frontend | `public_html/` or app root |
+| `apps/site/dist/` | Public static frontend | Site `public_html/` or app root |
+| `apps/admin/dist/` | Admin static frontend | Admin host `public_html/` or app root |
 | `apps/server/` (`src/web.ts`) | Backend Node server | Application root |
 | `package.json` | Dependencies | Application root |
-| `apps/client/public/logos/`, `apps/client/public/assets/` | Brand and media (incl. **event images**) | Same structure under `public/` |
-| `apps/client/public/data/events.json` | **Events + gallery paths** (must match assets on server) | `public/data/` |
-| `apps/client/src/data/` | Remaining transitional JSON data | Same structure under `src/data/` |
+| `apps/site/public/logos/`, `apps/site/public/assets/` | Public brand and media (incl. **event images**) | Same structure under site `public/` |
+| `apps/site/public/data/events.json` | Static event snapshot used by site tooling/build output | `public/data/` |
 
-**Important for event images:** Upload the entire `apps/client/public/assets/events/` folder (all event subfolders with their JPG/PNG/MP4 files). Include every event folder and subfolders such as `cards/` (used by the "Important Details" 3 cards). The site and admin load images from `/assets/events/...`. If you ran `node scripts/ops/convert-heic-to-jpg.js`, upload both the converted JPGs and the updated `apps/client/public/data/events.json` so the live site shows all gallery images.
+**Important for event images:** Upload the entire `apps/site/public/assets/events/` folder (all event subfolders with their JPG/PNG/MP4 files). Include every event folder and subfolders such as `cards/` (used by the "Important Details" 3 cards). The site and admin load images from `/assets/events/...`. If you ran `node scripts/ops/convert-heic-to-jpg.js`, upload both the converted JPGs and the updated `apps/site/public/data/events.json` so the live site shows all gallery images.
 
-**Checklist so everything looks like local:** After deploy, ensure `apps/client/public/assets/events/<eventFolder>/` contains all images (gallery, hero, cards) before copying them into the server's public web root.
+**Checklist so everything looks like local:** After deploy, ensure `apps/site/public/assets/events/<eventFolder>/` contains all images (gallery, hero, cards) before copying them into the server's public web root.
 
 **Do not upload `.env`.** Set all secrets in the Hostinger panel (see below).
 
@@ -49,14 +49,14 @@ This generates the `apps/client/dist/` folder.
 
 ## 4. Persistence
 
-The remaining transitional file-backed services write to `apps/client/src/data/*.json`. Ensure the Node process has **write permissions** there until those domains are fully migrated to the database.
+Runtime persistence now lives in Prisma-backed database tables plus object storage. The public site keeps a static event snapshot at `apps/site/public/data/events.json`, which is copied into the site build output for static hosting.
 
 ---
 
 ## 5. Troubleshooting
 
 - **Design looks different:** Purge Hostinger/LiteSpeed cache after deploy.
-- **API/base URL:** In production, the frontend uses same-origin requests (`base` empty). Correct if the server (`apps/server/src/web.ts` via `npm start`) serves `apps/client/dist/`.
+- **API/base URL:** In production, the public site can use same-origin requests if the server (`apps/server/src/web.ts` via `npm start`) serves `apps/site/dist/`.
 
 ---
 

@@ -24,6 +24,10 @@ dist-ssr
 *.sw?
 *.mp4
 .env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
 *.db
 *.db-shm
 *.db-wal

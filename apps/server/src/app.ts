@@ -1,6 +1,6 @@
 import express from "express";
 import { mountStaticServing } from "./bootstrap/static-serving.js";
-import { CLIENT_DIST_ROOT, CLIENT_PUBLIC_ROOT } from "./paths.js";
+import { LEGACY_CLIENT_PUBLIC_ROOT, SITE_DIST_ROOT, SITE_PUBLIC_ROOT } from "./paths.js";
 import aiRoutes from "./routes/ai.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import { createCampaignRoutes } from "./routes/campaign.routes.js";
@@ -82,8 +82,8 @@ export function createApp({ baseUrl, startWorker = false }: CreateAppOptions) {
   );
 
   mountStaticServing(app, {
-    publicRoot: CLIENT_PUBLIC_ROOT,
-    distRoot: CLIENT_DIST_ROOT,
+    publicRoots: [SITE_PUBLIC_ROOT, LEGACY_CLIENT_PUBLIC_ROOT],
+    distRoot: SITE_DIST_ROOT,
   });
 
   return { app, emailQueueEngine };

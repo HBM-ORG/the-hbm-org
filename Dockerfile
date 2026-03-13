@@ -3,7 +3,8 @@ FROM node:20-bookworm-slim AS build
 WORKDIR /app
 
 COPY package.json package-lock.json tsconfig.json prisma.config.ts ./
-COPY apps/client/package.json apps/client/package.json
+COPY apps/site/package.json apps/site/package.json
+COPY apps/admin/package.json apps/admin/package.json
 COPY apps/server/package.json apps/server/package.json
 RUN npm ci
 

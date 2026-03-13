@@ -1,5 +1,5 @@
 /**
- * Converts all .heic files in apps/client/public/assets/events to .jpg so they display in all browsers.
+ * Converts all .heic files in apps/site/public/assets/events to .jpg so they display in all browsers.
  * Does NOT delete the original .heic files. Updates events.json to point to .jpg paths.
  * Run once: node scripts/ops/convert-heic-to-jpg.js
  */
@@ -20,9 +20,9 @@ try {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
-const CLIENT_PUBLIC_ROOT = path.join(PROJECT_ROOT, "apps", "client", "public");
-const ASSETS_DIR = path.join(CLIENT_PUBLIC_ROOT, "assets", "events");
-const EVENTS_FILE = path.join(CLIENT_PUBLIC_ROOT, "data", "events.json");
+const SITE_PUBLIC_ROOT = path.join(PROJECT_ROOT, "apps", "site", "public");
+const ASSETS_DIR = path.join(SITE_PUBLIC_ROOT, "assets", "events");
+const EVENTS_FILE = path.join(SITE_PUBLIC_ROOT, "data", "events.json");
 
 function* walkHeicFiles(dir) {
   if (!fs.existsSync(dir)) return;
@@ -53,7 +53,7 @@ function replaceHeicWithJpgInObject(obj) {
 async function main() {
   const heicFiles = [...walkHeicFiles(ASSETS_DIR)];
   console.log(
-    `Found ${heicFiles.length} .heic file(s) in apps/client/public/assets/events`,
+    `Found ${heicFiles.length} .heic file(s) in apps/site/public/assets/events`,
   );
 
   for (const heicPath of heicFiles) {
@@ -87,7 +87,7 @@ async function main() {
   const events = JSON.parse(eventsJson);
   const updated = replaceHeicWithJpgInObject(events);
   fs.writeFileSync(EVENTS_FILE, JSON.stringify(updated, null, 2), "utf8");
-  console.log("Updated apps/client/public/data/events.json: all .heic paths -> .jpg");
+  console.log("Updated apps/site/public/data/events.json: all .heic paths -> .jpg");
 }
 
 main().catch((err) => {

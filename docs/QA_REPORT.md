@@ -109,12 +109,12 @@ File Breakdown:
 
 ### Critical Files Present
 
-✅ `apps/client/dist/index.html` - Entry point  
-✅ `apps/client/dist/assets/index-*.js` - Main bundle  
-✅ `apps/client/dist/assets/index-*.css` - Styles  
-✅ `apps/client/dist/assets/vendor-react-*.js` - React runtime  
-✅ `apps/client/dist/assets/vendor-three-*.js` - 3D library  
-✅ `apps/client/dist/assets/vendor-animation-*.js` - Animation library
+✅ `apps/site/dist/index.html` - Public site entry point  
+✅ `apps/site/dist/assets/index-*.js` - Main public-site bundle  
+✅ `apps/site/dist/assets/index-*.css` - Public-site styles  
+✅ `apps/site/dist/assets/vendor-react-*.js` - React runtime  
+✅ `apps/site/dist/assets/vendor-three-*.js` - 3D library  
+✅ `apps/site/dist/assets/vendor-animation-*.js` - Animation library
 
 ### Security Checks
 
@@ -250,7 +250,8 @@ File Breakdown:
 
 ```bash
 # 1. Upload files to Hostinger
-scp -r apps/client/dist/* your-user@admin.thehbm.org:/public_html/
+scp -r apps/site/dist/* your-user@www.thehbm.org:/public_html/
+scp -r apps/admin/dist/* your-user@admin.thehbm.org:/public_html/
 scp -r apps/server your-user@admin.thehbm.org:/app/
 scp .env your-user@admin.thehbm.org:/app/ (secure method)
 

@@ -1,9 +1,4 @@
-function getApiBase() {
-  if (import.meta.env && import.meta.env.DEV) {
-    return `http://${window.location.hostname}:3001`;
-  }
-  return '';
-}
+import { getApiBase } from "./api";
 
 function getStoredAdminPassword() {
   if (typeof window === 'undefined') return '';

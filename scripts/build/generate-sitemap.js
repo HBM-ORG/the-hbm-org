@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { eventsConfig } from '../../apps/client/src/data/eventsConfig.js';
+import { eventsConfig } from '../../apps/site/src/data/eventsConfig.js';
 
 // Setup paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const PUBLIC_DIR = path.join(__dirname, '../../apps/client/public');
+const PUBLIC_DIR = path.join(__dirname, '../../apps/site/public');
 const SITEMAP_PATH = path.join(PUBLIC_DIR, 'sitemap.xml');
 
 

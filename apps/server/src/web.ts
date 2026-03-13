@@ -2,7 +2,7 @@ import process from "process";
 import { createApp } from "./app.js";
 import { buildBaseUrl } from "./config/runtime-config.js";
 import { loadServerEnv } from "./load-env.js";
-import { CLIENT_DIST_ROOT } from "./paths.js";
+import { SITE_DIST_ROOT } from "./paths.js";
 
 loadServerEnv();
 
@@ -21,7 +21,7 @@ export function startWebServer(): RunningServer {
   const server = app.listen(port, "0.0.0.0", () => {
     console.log(`🚀 HBM Server running on port ${port}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
-    console.log(`📁 Serving dist from: ${CLIENT_DIST_ROOT}`);
+    console.log(`📁 Serving site dist from: ${SITE_DIST_ROOT}`);
     console.log(
       `📚 Magic Fetch: GEMINI_API_KEY=${process.env.GEMINI_API_KEY ? "set" : "NOT SET"}, GOOGLE_BOOKS_API_KEY=${process.env.GOOGLE_BOOKS_API_KEY ? "set" : "NOT SET"}`,
     );

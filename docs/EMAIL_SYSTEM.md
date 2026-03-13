@@ -118,4 +118,4 @@ No need to change flows or segments; physical / video / newsletter are already d
 | `scripts/ops/smtp-diagnostics.js` | Standalone SMTP connectivity check. |
 | `scripts/dev/test-email-engine.js` | Ad-hoc email send test. |
 
-For env and deploy: [RENDER_ENV.md](RENDER_ENV.md), [`apps/server/.env.example`](../apps/server/.env.example), [`apps/client/.env.example`](../apps/client/.env.example).
+For env and deploy: [RENDER_ENV.md](RENDER_ENV.md), [`apps/server/.env.example`](../apps/server/.env.example), [`apps/site/.env.example`](../apps/site/.env.example), [`apps/admin/.env.example`](../apps/admin/.env.example).

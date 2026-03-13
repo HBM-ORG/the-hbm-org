@@ -79,5 +79,5 @@ GCS_CREDENTIALS_JSON='{"type":"service_account", ... }'
 
 - The route files are intentionally thin now.
 - OpenAPI-style annotations were added at controller level so docs can be enabled later.
-- `apps/client/src/utils/upload.js` is now the frontend helper for pre-signed uploads.
+- `apps/admin/src/utils/upload.js` is now the admin frontend helper for pre-signed uploads.
 - `apps/server/src/paths.ts` no longer points at client runtime JSON files; it is now only used for repo/app/env paths.

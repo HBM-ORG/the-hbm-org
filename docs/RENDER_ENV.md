@@ -85,4 +85,4 @@ Then start the app with `npm start` (runs `tsx apps/server/src/web.ts`) or use t
 
 ---
 
-**See also:** [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) · [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md) · [`apps/server/.env.example`](../apps/server/.env.example) · [`apps/client/.env.example`](../apps/client/.env.example)
+**See also:** [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) · [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md) · [`apps/server/.env.example`](../apps/server/.env.example) · [`apps/site/.env.example`](../apps/site/.env.example) · [`apps/admin/.env.example`](../apps/admin/.env.example)

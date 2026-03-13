@@ -15,7 +15,7 @@
 ### חיבור לחשבון GA4
 
 - **חשבון/נכס:** האתר מחובר ל־Google Analytics 4 עם **Measurement ID: `G-BR4CGS5B7X`** (נכס "the-hbm" / hbmFrontEnd).
-- **איפה מוגדר:** התג טעון ב־`apps/client/index.html`, וה־config (שליחת נתונים) רץ מ־`apps/client/src/utils/analytics.js` **אחרי** שהמשתמש מאשר cookies (Analytics).
+- **איפה מוגדר:** התג טעון ב־`apps/site/index.html`, וה־config (שליחת נתונים) רץ מ־`apps/site/src/utils/analytics.js` **אחרי** שהמשתמש מאשר cookies (Analytics).
 - **אימות:** ב־GA4 → דף הבית אמור להופיע "איסוף הנתונים פעיל"; ב־Realtime תראה משתמשים פעילים (למשל "משתמשים פעילים ב־30 הדקות האחרונות"). נתונים מלאים בדוחות יכולים להופיע עד כ־24 שעות אחרי האיסוף.
 
 ### מה מקבלים מזה שזה מחובר
@@ -44,15 +44,15 @@
   (בפיתוח: `http://localhost:4200/sitemap.xml` אם האתר רץ שם.)
 
 - **איפה מוגדר:**  
-  - קובץ: `apps/client/public/sitemap.xml`  
+  - קובץ: `apps/site/public/sitemap.xml`  
   - סקריפט ליצירה/עדכון: `npm run generate-sitemap` (מריץ את `scripts/build/generate-sitemap.js`).
 
 - **robots.txt:**  
-  `apps/client/public/robots.txt` מפנה ל-Sitemap:  
+  `apps/site/public/robots.txt` מפנה ל-Sitemap:  
   `Sitemap: https://www.thehbm.org/sitemap.xml`
 
 - **מפת אתר ויזואלית:**  
-  קובץ `apps/client/public/visual-sitemap.html` (מפת דפים ויזואלית לניווט פנימי).
+  קובץ `apps/site/public/visual-sitemap.html` (מפת דפים ויזואלית לניווט פנימי).
 
 ---
 
@@ -62,5 +62,5 @@
 |----|------|
 | **נתוני קוקיז** | אדמין → **Cookie Logs** |
 | **Google Analytics / Clarity** | אדמין → **Analytics** (לינקים לדשבורדים החיצוניים) |
-| **Sitemap XML** | `/sitemap.xml` באתר (או `apps/client/public/sitemap.xml` בקוד) |
+| **Sitemap XML** | `/sitemap.xml` באתר (או `apps/site/public/sitemap.xml` בקוד) |
 | **עדכון Sitemap** | `npm run generate-sitemap` |

@@ -59,8 +59,8 @@ Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prism
 
 | Context | Command |
 |---------|---------|
-| **Dev** | `npm run dev:admin` → Vite :4200 + Express :3001 |
-| **Prod** | `npm start` (runs `tsx apps/server/src/web.ts`, serves `apps/client/dist/` + API) |
+| **Dev** | `npm run dev` → Site Vite :4200 + Admin Vite :4300 + Express :3001 |
+| **Prod** | `npm start` (runs `tsx apps/server/src/web.ts`, serves `apps/site/dist/` + API) |
 | **Worker** | `npm run start:worker` |
 | **PM2** | `pm2 start config/ecosystem.config.cjs` |
 

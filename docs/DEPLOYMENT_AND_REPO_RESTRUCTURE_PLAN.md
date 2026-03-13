@@ -9,16 +9,21 @@ Track the planned move from the current combined app layout to a clearer deploym
 
 This document is intentionally a plan only. It does not mean the changes should be implemented in one pass.
 
+See also:
+
+- `docs/CLIENT_SPLIT_MIGRATION_MAP.md` for the file-by-file migration record from the legacy combined frontend into `apps/site` and `apps/admin`.
+
 ## Progress Update
 
-Current status after the workspace split and runtime cleanup pass:
+Current status after the workspace split, runtime cleanup pass, and frontend split groundwork:
 
-- [x] Repository now uses explicit `apps/client` and `apps/server` ownership.
+- [x] Repository now uses explicit `apps/site`, `apps/admin`, and `apps/server` ownership.
 - [x] Server runtime, worker entrypoint, Prisma schema, and migrations now live under the server app.
 - [x] Worker startup is now controlled by a dedicated runtime flag so web processes do not poll the queue by default.
 - [x] Scripts are grouped into `scripts/dev`, `scripts/build`, `scripts/ops`, and `scripts/one-off`.
 - [x] CI/CD, Docker, env examples, and major docs have been updated to follow the new workspace layout.
-- [ ] Frontend is still served in the current runtime/deployment shape and has not yet been split into a fully separate static deployment target.
+- [x] Separate frontend workspaces now exist for the public site and admin app, with independent builds and env files.
+- [ ] Frontend is still partly served in the current runtime/deployment shape and has not yet been split into fully separate platform static deployment targets.
 - [ ] Cloud deployment topology still needs the final platform-level split into frontend, web, and worker services.
 - [ ] Multi-worker safety is still blocked on queue claiming/leasing.
 
@@ -115,11 +120,16 @@ That was workable during migration, but it became harder to reason about once fr
 ```text
 .
 ├── apps/
-│   ├── client/
+│   ├── site/
 │   │   ├── src/
 │   │   ├── public/
 │   │   ├── index.html
-│   │   └── vite.config.ts
+│   │   └── vite.config.js
+│   ├── admin/
+│   │   ├── src/
+│   │   ├── public/
+│   │   ├── index.html
+│   │   └── vite.config.js
 │   └── server/
 │       ├── src/
 │       │   ├── bootstrap/
@@ -128,14 +138,8 @@ That was workable during migration, but it became harder to reason about once fr
 │       │   ├── routes/
 │       │   ├── services/
 │       │   ├── storage/
-│       │   ├── types/
-│       │   ├── web/
-│       │   └── worker/
+│       │   └── worker.ts
 │       ├── prisma/
-│       └── package.json
-├── packages/
-│   └── shared/
-│       ├── src/
 │       └── package.json
 ├── scripts/
 │   ├── dev/
@@ -148,9 +152,9 @@ That was workable during migration, but it became harder to reason about once fr
 
 ## Repo structure decisions
 
-- [x] Introduce `apps/client` as the explicit frontend root
+- [x] Introduce `apps/site` and `apps/admin` as explicit frontend roots
 - [x] Introduce `apps/server` as the explicit backend root
-- [x] Add `apps/server/src` so server code has the same structure clarity as the client
+- [x] Add `apps/server/src` so server code has the same structure clarity as the frontend apps
 - [ ] Keep room for `packages/shared` for shared types/constants/schemas if needed
 - [x] Move backend entrypoints under `apps/server/src`
 - [x] Move Prisma schema and migrations under `apps/server/prisma`
@@ -171,7 +175,8 @@ Rationale:
 
 ### Target output model
 
-- [ ] Client builds to its own output directory, for example `apps/client/dist`
+- [x] Site builds to its own output directory (`apps/site/dist`)
+- [x] Admin builds to its own output directory (`apps/admin/dist`)
 - [ ] Server builds to its own output directory, for example `apps/server/dist`
 - [ ] Deployment never depends on a combined mixed artifact layout
 - [ ] Static frontend artifact can be deployed without packaging the API

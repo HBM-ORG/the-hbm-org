@@ -67,7 +67,7 @@
 
 - **Build:** `npm run build`
 - **הרצת שרת:** `npm start` (מפעיל `tsx apps/server/src/web.ts`) או PM2 דרך `config/ecosystem.config.cjs`
-- **משתני סביבה:** `PORT`, `DATABASE_URL`, אופציונלי SMTP, Gemini, וכו' (ראה [RENDER_ENV.md](RENDER_ENV.md), [`apps/server/.env.example`](../apps/server/.env.example), [`apps/client/.env.example`](../apps/client/.env.example))
+- **משתני סביבה:** `PORT`, `DATABASE_URL`, אופציונלי SMTP, Gemini, וכו' (ראה [RENDER_ENV.md](RENDER_ENV.md), [`apps/server/.env.example`](../apps/server/.env.example), [`apps/site/.env.example`](../apps/site/.env.example), [`apps/admin/.env.example`](../apps/admin/.env.example))
 - **תשתית:** כל התעבורה לאותו שרת (same-origin ל-API ו-dist).
 
 ---

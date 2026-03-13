@@ -6,7 +6,7 @@ Standard steps to run the site and admin dashboard 24/7 with live updates.
 
 ## 1. Prerequisites
 
-- **Node.js** 18+ (see [config/.nvmrc](../config/.nvmrc); copy `apps/server/.env.example` to `apps/server/.env` and `apps/client/.env.example` to `apps/client/.env` as needed).
+- **Node.js** 18+ (see [config/.nvmrc](../config/.nvmrc); copy `apps/server/.env.example` to `apps/server/.env`, `apps/site/.env.example` to `apps/site/.env`, and `apps/admin/.env.example` to `apps/admin/.env` as needed).
 - **PM2** (process manager):
 ```bash
 npm install -g pm2
@@ -20,7 +20,7 @@ Always build the frontend before starting the server:
 ```bash
 npm run build
 ```
-This produces the `apps/client/dist/` folder that the server serves in production.
+This produces separate frontend bundles in `apps/site/dist/` and `apps/admin/dist/`.
 
 ---
 

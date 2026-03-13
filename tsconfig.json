@@ -22,7 +22,8 @@
   ],
   "exclude": [
     "node_modules",
-    "apps/client/dist",
+    "apps/site/dist",
+    "apps/admin/dist",
     "apps/server/dist",
     "scripts/output"
   ]
