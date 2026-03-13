@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -6,12 +7,24 @@ import { eventsConfig } from '../../apps/site/src/data/eventsConfig.js';
 // Setup paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const PROJECT_ROOT = path.join(__dirname, '../..');
 const PUBLIC_DIR = path.join(__dirname, '../../apps/site/public');
 const SITEMAP_PATH = path.join(PUBLIC_DIR, 'sitemap.xml');
 
+dotenv.config({ path: path.join(PROJECT_ROOT, 'apps/site/.env') });
+dotenv.config({ path: path.join(PROJECT_ROOT, '.env'), override: false });
 
-// Domain
-const BASE_URL = 'https://www.thehbm.org';
+function normalizeUrl(value) {
+  return String(value || '').trim().replace(/\/+$/, '');
+}
+
+const BASE_URL = normalizeUrl(
+  process.env.VITE_SITE_URL || process.env.SITE_PUBLIC_URL || process.env.SITE_APP_URL,
+);
+
+if (!BASE_URL) {
+  throw new Error('Missing site base URL. Set VITE_SITE_URL, SITE_PUBLIC_URL, or SITE_APP_URL.');
+}
 
 // Routes Configuration
 const staticRoutes = [

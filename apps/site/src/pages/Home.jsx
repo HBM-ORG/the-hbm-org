@@ -19,8 +19,6 @@ import EyebrowBadge from "../components/EyebrowBadge";
 import { Quote, Star } from "lucide-react";
 import SEO from "../components/SEO";
 import { getApiBase } from "../utils/api";
-
-const WP = "https://www.thehbm.org/wp-content/uploads";
 const { home, global } = siteContent;
 
 const partnerLogos = [

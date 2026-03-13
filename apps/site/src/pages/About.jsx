@@ -596,7 +596,7 @@ export default function About() {
             </h2>
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div className="flex justify-center">
-                {/* Logo path must exist in public/logos/ at build/deploy (Hostinger). Root-relative paths are correct for production. */}
+                {/* Logo path must exist in public/logos/ at build/deploy. Root-relative paths are correct for production. */}
                 <img
                   src="/logos/file-2qgRiQ7eUZ1uhx7Xfasq3P-The HBM LOGO.png"
                   alt="HBM Logo"

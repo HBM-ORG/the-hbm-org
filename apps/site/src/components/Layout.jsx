@@ -7,6 +7,7 @@ import NewsletterSection from "./NewsletterSection.jsx";
 import CookieConsent from "./CookieCompliance/CookieConsent.jsx";
 import PageErrorBoundary from "./PageErrorBoundary.jsx";
 import { useI18n, t } from "../i18n/context.jsx";
+import { buildWhatsappUrl } from "../config/public-brand";
 
 const whatsappMessages = {
   en: "Hi! I'm ready to find my next opportunity. Can you help me get started with Meeter?",
@@ -18,8 +19,7 @@ const whatsappMessages = {
 };
 
 export function getWhatsappUrl(lang) {
-  const message = encodeURIComponent(whatsappMessages[lang] || whatsappMessages.en);
-  return `https://wa.me/972587073136?text=${message}`;
+  return buildWhatsappUrl(whatsappMessages[lang] || whatsappMessages.en);
 }
 
 export default function Layout() {

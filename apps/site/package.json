@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 4200",
-    "build": "vite build && node ../../scripts/build/copy-data-to-dist.js apps/site",
+    "dev": "node ../../scripts/build/write-runtime-config.js apps/site && vite --host 0.0.0.0 --port 4200",
+    "build": "node ../../scripts/build/write-runtime-config.js apps/site && vite build && node ../../scripts/build/copy-data-to-dist.js apps/site",
     "preview": "vite preview"
   },
   "dependencies": {

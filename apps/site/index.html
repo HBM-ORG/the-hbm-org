@@ -7,11 +7,7 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="theme-color" content="#000000" />
-    <link
-      rel="icon"
-      type="image/png"
-      href="https://www.thehbm.org/wp-content/uploads/2025/05/cropped-favicon.png"
-    />
+    <link rel="icon" type="image/png" href="" id="app-favicon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -32,14 +28,11 @@
       property="og:description"
       content="Spark real connections in 8 minutes. Events, Meeter, and a movement for human connection."
     />
-    <meta property="og:image" content="https://www.thehbm.org/og-default.png" />
-    <meta
-      property="og:image:secure_url"
-      content="https://www.thehbm.org/og-default.png"
-    />
+    <meta property="og:image" content="" />
+    <meta property="og:image:secure_url" content="" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:url" content="https://www.thehbm.org/" />
+    <meta property="og:url" content="" />
     <meta property="og:locale" content="en_US" />
 
     <meta name="twitter:card" content="summary_large_image" />
@@ -51,27 +44,31 @@
       name="twitter:description"
       content="Spark real connections in 8 minutes. Events, Meeter, and a movement for human connection."
     />
-    <meta
-      name="twitter:image"
-      content="https://www.thehbm.org/og-default.png"
-    />
+    <meta name="twitter:image" content="" />
 
     <link rel="manifest" href="/site.webmanifest" />
-    <link
-      rel="apple-touch-icon"
-      href="https://www.thehbm.org/wp-content/uploads/2026/02/לוגו-HBM-עדכני.png"
-    />
-
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-BR4CGS5B7X"
-    ></script>
+    <link rel="apple-touch-icon" href="" id="app-apple-touch-icon" />
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
+      function readBuildEnvValue(raw) {
+        return raw && !/^%.*%$/.test(raw) ? raw : "";
       }
-      gtag("js", new Date());
+
+      const configuredSiteUrl = readBuildEnvValue("%VITE_SITE_URL%");
+      const configuredOgImage = readBuildEnvValue("%VITE_SITE_OG_IMAGE_URL%");
+      const configuredFavicon = readBuildEnvValue("%VITE_FAVICON_URL%");
+      const configuredTouchIcon = readBuildEnvValue("%VITE_APPLE_TOUCH_ICON_URL%");
+
+      const siteUrl = (configuredSiteUrl || window.location.origin).replace(/\/+$/, "");
+      const ogImage = configuredOgImage || `${siteUrl}/og-default.png`;
+      const favicon = configuredFavicon || `${siteUrl}/assets/logo.png`;
+      const touchIcon = configuredTouchIcon || `${siteUrl}/assets/logo.png`;
+
+      document.getElementById("app-favicon")?.setAttribute("href", favicon);
+      document.getElementById("app-apple-touch-icon")?.setAttribute("href", touchIcon);
+      document.querySelector('meta[property="og:image"]')?.setAttribute("content", ogImage);
+      document.querySelector('meta[property="og:image:secure_url"]')?.setAttribute("content", ogImage);
+      document.querySelector('meta[property="og:url"]')?.setAttribute("content", `${siteUrl}/`);
+      document.querySelector('meta[name="twitter:image"]')?.setAttribute("content", ogImage);
     </script>
   </head>
   <body>

@@ -35,7 +35,7 @@ export const runtimeConfig = {
     return readEnv("EMAIL_FONT_FAMILY", "Sora, sans-serif");
   },
   get publicSiteUrl() {
-    return readEnv("SITE_PUBLIC_URL", "https://www.thehbm.org");
+    return readEnv("SITE_PUBLIC_URL", readEnv("SITE_APP_URL"));
   },
   get defaultVideoEventTitleEn() {
     return readEnv("DEFAULT_VIDEO_EVENT_TITLE_EN", "Video Event");
@@ -52,5 +52,6 @@ export const runtimeConfig = {
 };
 
 export function buildBaseUrl(port: number): string {
-  return readEnv("BASE_URL", `http://localhost:${port}`);
+  void port;
+  return readEnv("BASE_URL");
 }

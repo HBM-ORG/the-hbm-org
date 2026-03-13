@@ -1,0 +1,42 @@
+{
+  "migratedAt": "2026-03-13T11:21:05.286Z",
+  "sourceCmsBaseUrl": "https://www.thehbm.org/wp-content/uploads",
+  "targetCmsBaseUrl": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media",
+  "targetSpacesBucket": "test-org-site-media-files",
+  "targetSpacesEndpointHost": "nyc3.digitaloceanspaces.com",
+  "mapping": {
+    "https://www.thehbm.org/wp-content/uploads/2025/05/Settings-3.png": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/05/Settings-3.png",
+    "https://www.thehbm.org/wp-content/uploads/2025/05/banner-video.mp4": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/05/banner-video.mp4",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/0_Blue-Sky_Clouds_1920x1080-1.mp4": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/0_Blue-Sky_Clouds_1920x1080-1.mp4",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/11.png": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/11.png",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/22.png": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/22.png",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/33.png": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/33.png",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/3e9a2f16dffdd7c84f9c8b3050635f8572aa90d2.jpg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/3e9a2f16dffdd7c84f9c8b3050635f8572aa90d2.jpg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/44.png": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/44.png",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/64b98af75218168718545305b74f140db8fdf320.jpg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/64b98af75218168718545305b74f140db8fdf320.jpg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/Be-generous.svg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/Be-generous.svg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/Celebrate-different-perspectives.svg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/Celebrate-different-perspectives.svg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/End-strong.svg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/End-strong.svg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/Keep-it-light-when-needed.svg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/Keep-it-light-when-needed.svg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/Lead-with-curiosity.svg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/Lead-with-curiosity.svg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/Respect-every-vibe.svg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/Respect-every-vibe.svg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/Show-up-as-yourself.-1.svg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/Show-up-as-yourself.-1.svg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/Show-up-as-yourself.svg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/Show-up-as-yourself.svg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/add7278ee0a03cd074c76a1e5065f3b8eb071b8d-min.jpg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/add7278ee0a03cd074c76a1e5065f3b8eb071b8d-min.jpg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/c9e281bfd1b044faaa101d5cfd29bf2c896deb94.jpg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/c9e281bfd1b044faaa101d5cfd29bf2c896deb94.jpg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/df61281a9cb4e8a73b2ea532dd3ea9eaf0754d77-min.jpg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/df61281a9cb4e8a73b2ea532dd3ea9eaf0754d77-min.jpg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/f85d08655c800c423fc2b7c577e95bd8a1541397-min.jpg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/f85d08655c800c423fc2b7c577e95bd8a1541397-min.jpg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/fa6fdd033d2e5c63c227f0f5b0e0ed1b966f4f1e.jpg": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/fa6fdd033d2e5c63c227f0f5b0e0ed1b966f4f1e.jpg",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/scene-theme-companies-businessesa.mp4": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/scene-theme-companies-businessesa.mp4",
+    "https://www.thehbm.org/wp-content/uploads/2025/06/vision-video.mp4": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/06/vision-video.mp4",
+    "https://www.thehbm.org/wp-content/uploads/2025/07/20250703_1555_Heartfelt-Office-Conversation_simple_compose_01jz85pbtyee3v7wkazg6vqgr1.mp4": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/07/20250703_1555_Heartfelt-Office-Conversation_simple_compose_01jz85pbtyee3v7wkazg6vqgr1.mp4",
+    "https://www.thehbm.org/wp-content/uploads/2025/05/cropped-favicon.png": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/05/cropped-favicon.png",
+    "https://www.thehbm.org/wp-content/uploads/2026/02/לוגו-HBM-עדכני.png": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2026/02/%D7%9C%D7%95%D7%92%D7%95-HBM-%D7%A2%D7%93%D7%9B%D7%A0%D7%99.png",
+    "https://www.thehbm.org/og-default.png": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/brand/og-default.png",
+    "https://www.ynharari.com/wp-content/uploads/2017/01/homo_deus.png": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/book-covers/homo-deus.png"
+  },
+  "derived": {
+    "ogImageUrl": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/brand/og-default.png",
+    "homoDeusCoverUrl": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/book-covers/homo-deus.png"
+  }
+}

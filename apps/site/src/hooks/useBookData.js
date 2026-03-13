@@ -10,7 +10,7 @@ const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7; // 7 days
 // Removed m.media-amazon.com links as they are unreliable (Anti-Hotlinking 404s)
 const HARDCODED_COVERS = {
     "Meditations": "https://covers.openlibrary.org/b/id/12711090-L.jpg",
-    "Homo Deus": "https://www.ynharari.com/wp-content/uploads/2017/01/homo_deus.png",
+    "Homo Deus": "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/book-covers/homo-deus.png",
     "Deep Work": "https://covers.openlibrary.org/b/id/12745300-L.jpg"
 };
 

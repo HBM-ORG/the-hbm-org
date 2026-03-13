@@ -653,21 +653,80 @@ flowchart TD
         themeVariables: { fontFamily: "Inter" },
       });
 
-      document.addEventListener("DOMContentLoaded", () => {
-        // Fix iframe paths resolving locally when visual-sitemap is opened via Double Click (file:///)
-        // or just ensure they run correctly off localhost:4200 if file:///
-        const isFile = window.location.protocol === "file:";
-        const baseUrl = isFile
-          ? "http://localhost:4200"
-          : window.location.origin;
+      async function loadRuntimeConfig() {
+        try {
+          const response = await fetch("/data/runtime-config.json", {
+            cache: "no-store",
+          });
+          if (!response.ok) return {};
+          return await response.json();
+        } catch {
+          return {};
+        }
+      }
+
+      function normalizeUrl(raw) {
+        return String(raw || "").trim().replace(/\/+$/, "");
+      }
+
+      function getSiteBaseUrl(config) {
+        return normalizeUrl(config.siteUrl) || window.location.origin;
+      }
+
+      function getAdminBaseUrl(config) {
+        const explicitAdminUrl = normalizeUrl(config.adminUrl);
+        if (explicitAdminUrl) {
+          return explicitAdminUrl;
+        }
+
+        if (window.location.protocol === "file:") {
+          return "";
+        }
+
+        const { hostname, protocol } = window.location;
+        if (hostname.startsWith("admin.")) {
+          return window.location.origin;
+        }
+        if (hostname === "localhost" || hostname === "127.0.0.1") {
+          return `${protocol}//${hostname}:4300`;
+        }
+
+        return `${protocol}//admin.${hostname.replace(/^www\./, "")}`;
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Render site pages on the site origin and admin previews on the admin origin.
+        const runtimeConfig = await loadRuntimeConfig();
+        const siteBaseUrl = getSiteBaseUrl(runtimeConfig);
+        const adminBaseUrl = getAdminBaseUrl(runtimeConfig);
 
         document.querySelectorAll("iframe[data-src]").forEach((iframe) => {
           const rawSrc = iframe.getAttribute("data-src");
           if (rawSrc) {
             const separator = rawSrc.includes("?") ? "&" : "?";
-            iframe.src = baseUrl + rawSrc + separator + "embedPreview=1";
+            const targetBase =
+              rawSrc === "/admin-dashboard" && adminBaseUrl
+                ? adminBaseUrl
+                : siteBaseUrl;
+            iframe.src = targetBase + rawSrc + separator + "embedPreview=1";
           }
         });
+
+        // Mermaid renders the graph as SVG anchors after initialization.
+        window.setTimeout(() => {
+          document.querySelectorAll("a").forEach((anchor) => {
+            const href =
+              anchor.getAttribute("href") ||
+              anchor.getAttribute("xlink:href");
+            if (href === "/admin-dashboard" && adminBaseUrl) {
+              const target = `${adminBaseUrl}/admin-dashboard`;
+              anchor.setAttribute("href", target);
+              anchor.setAttribute("xlink:href", target);
+              anchor.setAttribute("target", "_blank");
+              anchor.setAttribute("rel", "noopener noreferrer");
+            }
+          });
+        }, 0);
       });
     </script>
   </body>

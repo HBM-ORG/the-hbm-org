@@ -11,6 +11,8 @@
 //
 // ==================================================================================
 
+import { PUBLIC_BRAND } from "../config/public-brand";
+
 export const eventsConfig = [
   {
     "id": "next-1",
@@ -127,7 +129,7 @@ export const eventsConfig = [
     "registration": {
       "status": "open",
       "externalUrl": "/events/register",
-      "whatsappLink": "https://wa.me/972587073136"
+      "whatsappLink": PUBLIC_BRAND.socialLinks.whatsapp
     },
     "promoBubbles": [
       { "title": { "en": "8-Minute Rounds", "he": "סבבים של 8 דקות" }, "desc": { "en": "Perfect timing.", "he": "הזמן המדויק לחיבור עמוק." } },

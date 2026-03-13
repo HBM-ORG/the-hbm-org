@@ -9,6 +9,29 @@ function readEnvValue(name) {
   return trimTrailingSlash(import.meta.env[name]);
 }
 
+function getBrowserOrigin() {
+  if (typeof window === "undefined") return "";
+  return trimTrailingSlash(window.location.origin);
+}
+
+function deriveAdminUrl() {
+  if (typeof window === "undefined") return "";
+
+  const currentOrigin = getBrowserOrigin();
+  if (!currentOrigin) return "";
+
+  const { hostname, protocol } = window.location;
+  if (hostname.startsWith("admin.")) {
+    return currentOrigin;
+  }
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return "";
+  }
+
+  const rootHost = hostname.replace(/^www\./, "");
+  return `${protocol}//admin.${rootHost}`;
+}
+
 export function joinUrl(base, path) {
   const cleanBase = trimTrailingSlash(base);
   const cleanPath = String(path || "");
@@ -25,13 +48,6 @@ export function joinUrl(base, path) {
 export function getApiBase() {
   const explicitBase = readEnvValue("VITE_API_BASE");
   if (explicitBase) return explicitBase;
-
-  if (typeof window === "undefined") return "";
-  if (window.location.port === "3001") return "";
-
-  if (import.meta.env.DEV) {
-    return `http://${window.location.hostname}:3001`;
-  }
 
   return "";
 }
@@ -59,9 +75,23 @@ export function resolveAssetUrl(rawPath) {
 }
 
 export function getSiteUrl() {
-  return readEnvValue("VITE_SITE_URL") || "https://www.thehbm.org";
+  return readEnvValue("VITE_SITE_URL") || getBrowserOrigin();
 }
 
 export function getAdminUrl() {
-  return readEnvValue("VITE_ADMIN_URL") || "https://admin.thehbm.org";
+  return readEnvValue("VITE_ADMIN_URL") || deriveAdminUrl();
+}
+
+export function getCmsUploadsBase() {
+  const explicitBase =
+    readEnvValue("VITE_CMS_UPLOADS_BASE") || readEnvValue("VITE_WP_CONTENT_BASE");
+  if (explicitBase) return explicitBase;
+
+  const siteUrl = getSiteUrl();
+  return siteUrl ? joinUrl(siteUrl, "/wp-content/uploads") : "";
+}
+
+export function getAbsoluteSiteUrl(path = "/") {
+  const siteUrl = getSiteUrl();
+  return siteUrl ? joinUrl(siteUrl, path) : path;
 }

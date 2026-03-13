@@ -7,11 +7,7 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="theme-color" content="#111827" />
-    <link
-      rel="icon"
-      type="image/png"
-      href="https://www.thehbm.org/wp-content/uploads/2025/05/cropped-favicon.png"
-    />
+    <link rel="icon" type="image/png" href="" id="app-favicon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -23,6 +19,18 @@
       name="robots"
       content="noindex, nofollow, noarchive, nosnippet"
     />
+    <script>
+      function readBuildEnvValue(raw) {
+        return raw && !/^%.*%$/.test(raw) ? raw : "";
+      }
+
+      const configuredSiteUrl = readBuildEnvValue("%VITE_SITE_URL%");
+      const configuredFavicon = readBuildEnvValue("%VITE_FAVICON_URL%");
+      const siteUrl = (configuredSiteUrl || window.location.origin).replace(/\/+$/, "");
+      const favicon = configuredFavicon || `${siteUrl}/assets/logo.png`;
+
+      document.getElementById("app-favicon")?.setAttribute("href", favicon);
+    </script>
   </head>
   <body>
     <div id="root"></div>

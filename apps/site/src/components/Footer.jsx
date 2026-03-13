@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useI18n, t } from "../i18n/context.jsx";
 import { siteContent } from "../data/content.js";
+import { PUBLIC_BRAND } from "../config/public-brand";
 
 const { global } = siteContent;
 
@@ -51,10 +52,10 @@ export default function Footer() {
           ))}
 
           <a
-            href="mailto:Office@TheHBM.Org"
+            href={PUBLIC_BRAND.contact.emailHref}
             className={`flex flex-col gap-2 group hover:opacity-100 opacity-90 transition-all hover:-translate-y-1 duration-300 ${lang === "he" || lang === "ar" ? "items-center md:items-end" : "items-center md:items-start"}`}
           >
-            <h3 className="font-bold text-xl">Office@thehbm.org</h3>
+            <h3 className="font-bold text-xl">{PUBLIC_BRAND.contact.email}</h3>
             <p className="text-[12px] md:text-sm opacity-85 leading-relaxed max-w-[220px] font-medium tracking-wide">
               {t(
                 {

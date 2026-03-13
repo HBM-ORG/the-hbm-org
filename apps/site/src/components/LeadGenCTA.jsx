@@ -1,6 +1,7 @@
 import { useI18n, t } from '../i18n/context'
 import { motion } from 'framer-motion'
 import { Mail, ArrowRight } from 'lucide-react'
+import { PUBLIC_BRAND } from '../config/public-brand'
 
 export default function LeadGenCTA({ 
   title = { en: 'Want to bring Meeter to your world?', he: 'רוצים להביא את Meeter אליכם?' },
@@ -29,7 +30,7 @@ export default function LeadGenCTA({
             className="inline-block"
           >
             <a 
-              href="mailto:office@thehbm.org"
+              href={PUBLIC_BRAND.contact.emailHref}
               className="group flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-[#6160AB] to-[#F07B3C] text-white rounded-full text-xl font-bold shadow-2xl transition-all duration-300 hover:shadow-[0_20px_50px_rgba(240,123,60,0.3)]"
             >
               <Mail size={24} className="group-hover:rotate-12 transition-transform" />
@@ -39,7 +40,7 @@ export default function LeadGenCTA({
           </motion.div>
 
           <p className="mt-8 text-sm text-hbm-gray/60 font-medium font-['Sofia_Pro']">
-            office@thehbm.org
+            {PUBLIC_BRAND.contact.email}
           </p>
         </div>
       </div>

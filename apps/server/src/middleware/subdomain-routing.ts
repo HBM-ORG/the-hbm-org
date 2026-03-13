@@ -6,13 +6,24 @@ function buildRedirectTarget(origin: string, path: string): string {
   return `${safeOrigin}${safePath}`;
 }
 
+function getConfiguredHostname(value: string): string {
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return "";
+  }
+}
+
 export function subdomainRoutingMiddleware(
   req: Request,
   res: Response,
   next: NextFunction,
 ): void {
-  const host = req.headers.host || "";
+  const host = String(req.headers.host || "").split(":")[0];
   const adminAppUrl = String(process.env.ADMIN_APP_URL || "").trim();
+  const siteHost =
+    getConfiguredHostname(String(process.env.SITE_PUBLIC_URL || "").trim())
+    || getConfiguredHostname(String(process.env.SITE_APP_URL || "").trim());
 
   if (host.startsWith("admin.") && req.method === "GET" && !req.path.startsWith("/api")) {
     if (adminAppUrl) {
@@ -26,7 +37,7 @@ export function subdomainRoutingMiddleware(
     }
   }
 
-  if ((host === "thehbm.org" || host === "www.thehbm.org") && req.path === "/admin-dashboard") {
+  if (siteHost && host === siteHost && req.path === "/admin-dashboard") {
     if (adminAppUrl) {
       res.redirect(buildRedirectTarget(adminAppUrl, "/"));
       return;

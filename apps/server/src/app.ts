@@ -51,6 +51,8 @@ export function createApp({ baseUrl, startWorker = false }: CreateAppOptions) {
   app.set("trust proxy", 1);
   app.use(corsMiddleware);
   app.use(express.json());
+  app.use(subdomainRoutingMiddleware);
+  app.use(requestLoggingMiddleware);
   app.use("/api", authRoutes);
   app.use("/api/upload", uploadRoutes);
   app.use("/api", aiRoutes);
@@ -72,8 +74,6 @@ export function createApp({ baseUrl, startWorker = false }: CreateAppOptions) {
       triggerAutomation,
     }),
   );
-  app.use(subdomainRoutingMiddleware);
-  app.use(requestLoggingMiddleware);
   app.use(
     "/api",
     createCampaignRoutes({

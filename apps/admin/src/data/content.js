@@ -1,4 +1,7 @@
-const WP = "https://www.thehbm.org/wp-content/uploads";
+import { getCmsUploadsBase } from "../utils/api";
+import { PUBLIC_BRAND } from "../config/public-brand";
+
+const WP = getCmsUploadsBase();
 
 export const siteContent = {
   global: {
@@ -8,16 +11,8 @@ export const siteContent = {
     logoTagline: "/assets/logo.png",
     favicon: "/assets/logo.png",
     ctaUrl: "/events#register-video",
-    whatsappUrl:
-      "https://wa.me/972587073136?text=%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A7%D7%91%D7%9C%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%D7%A0%D7%95%D7%A1%D7%A4%D7%99%D7%9D%20%D7%A2%D7%9C%20%D7%94%D7%90%D7%A8%D7%92%D7%95%D7%9F",
-    socialLinks: {
-      instagram: "https://www.instagram.com/the__hbm/",
-      whatsapp: "https://wa.me/972587073136",
-      facebook: "https://www.facebook.com/people/The-HBM/61573100935457/",
-      linkedin: "https://www.linkedin.com/company/the-human-being-movement/",
-      youtube: "https://www.youtube.com/@TheHBM",
-      email: "mailto:office@thehbm.org",
-    },
+    whatsappUrl: PUBLIC_BRAND.inquiryWhatsappUrl,
+    socialLinks: PUBLIC_BRAND.socialLinks,
     nav: [
       { label: "Home", path: "/" },
       { label: "Meeter", path: "/meeter" },
@@ -33,27 +28,27 @@ export const siteContent = {
         {
           platform: "Instagram",
           text: "Here we try to look cooler than we are. Come for the visuals, stay for the behind-the-scenes chaos.",
-          url: "https://www.instagram.com/the__hbm/",
+          url: PUBLIC_BRAND.socialLinks.instagram,
         },
         {
           platform: "WhatsApp",
           text: "A direct line to the team! Questions, feedback, or just a hello—we're here.",
-          url: "https://wa.me/972587073136",
+          url: PUBLIC_BRAND.socialLinks.whatsapp,
         },
         {
           platform: "Facebook",
           text: "Yes, we still use Facebook. And no, we're not here for the drama.",
-          url: "https://www.facebook.com/people/The-HBM/61573100935457/",
+          url: PUBLIC_BRAND.socialLinks.facebook,
         },
         {
           platform: "LinkedIn",
           text: 'Our "we\'re professional, promise" face. For updates, partnerships, and sentences that use the word "synergy".',
-          url: "https://www.linkedin.com/company/the-human-being-movement/",
+          url: PUBLIC_BRAND.socialLinks.linkedin,
         },
         {
           platform: "YouTube",
           text: "Where we share stories, events, and the magic behind 8-minute connections.",
-          url: "https://www.youtube.com/@TheHBM",
+          url: PUBLIC_BRAND.socialLinks.youtube,
         },
       ],
     },

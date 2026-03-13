@@ -1,0 +1,6 @@
+{
+  "siteUrl": "http://localhost:4200",
+  "adminUrl": "http://localhost:4300",
+  "apiBase": "http://localhost:3001",
+  "assetBase": ""
+}

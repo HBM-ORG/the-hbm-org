@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Mail, Phone, Instagram, Send, Copy, Share2, Sparkles, Linkedin, ArrowRight } from 'lucide-react'
 import { useI18n, t } from '../i18n/context'
+import { PUBLIC_BRAND } from '../config/public-brand'
 
 export default function ConnectionCardMockup() {
   const { lang } = useI18n()
@@ -49,14 +50,14 @@ export default function ConnectionCardMockup() {
                     <Mail size={12} className="text-[#6160AB]" />
                     <span>Email</span>
                   </div>
-                  <span className="font-bold text-hbm-dark">office@thehbm.org</span>
+                  <span className="font-bold text-hbm-dark">{PUBLIC_BRAND.contact.email}</span>
                 </div>
                 <div className="flex items-center justify-between text-[10px]">
                   <div className="flex items-center gap-2 text-hbm-gray">
                     <Phone size={12} className="text-[#6160AB]" />
                     <span>Phone</span>
                   </div>
-                  <span className="font-bold text-hbm-dark">0587073136</span>
+                  <span className="font-bold text-hbm-dark">{PUBLIC_BRAND.contact.whatsappPhoneDisplay}</span>
                 </div>
                 <div className="flex items-center justify-between text-[10px]">
                   <div className="flex items-center gap-2 text-hbm-gray">

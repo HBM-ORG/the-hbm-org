@@ -14,6 +14,7 @@ const isValid = (id) => {
   const value = String(id || "").trim();
   if (!value) return false;
   if (value.includes("XXXXX")) return false;
+  if (value.startsWith("your-")) return false;
   if (["null", "undefined", "false", "0"].includes(value.toLowerCase())) return false;
   return true;
 };
@@ -66,6 +67,13 @@ export const initAnalytics = () => {
 
 const loadGoogleAnalytics = () => {
   if (window.gtag_loaded || !isValid(GA_ID)) return;
+  if (!window.gtag_script_loaded) {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_ID)}`;
+    document.head.appendChild(script);
+    window.gtag_script_loaded = true;
+  }
   if (typeof window.gtag === "function") {
     window.gtag("config", GA_ID, { send_page_view: true });
   }

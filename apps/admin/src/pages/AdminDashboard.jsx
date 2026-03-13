@@ -530,9 +530,7 @@ const AdminDashboard = () => {
   const saveToBackend = async (data) => {
     setSaveStatus("Saving...");
     try {
-      const base = import.meta.env.DEV
-        ? `http://${window.location.hostname}:3001`
-        : getApiBase();
+      const base = getApiBase();
       const apiUrl = `${base}/api/save-events`;
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -554,9 +552,7 @@ const AdminDashboard = () => {
   const saveVideoEventToBackend = async () => {
     setSaveStatus("Saving Video Event...");
     try {
-      const base = import.meta.env.DEV
-        ? `http://${window.location.hostname}:3001`
-        : getApiBase();
+      const base = getApiBase();
       const response = await fetch(`${base}/api/video-event`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1517,7 +1513,7 @@ const AdminDashboard = () => {
                       {(import.meta.env.DEV || contactProfileError === "API Endpoint not found") && (
                         <p className="text-xs text-gray-400 mt-4 max-w-[280px] mx-auto leading-relaxed">
                           {contactProfileError === "API Endpoint not found"
-                            ? "סגור את השרת (Ctrl+C) והרץ שוב: npm run dev — כך גם Vite (4200) וגם השרת (3001) עולים עם ה-route /api/crm/contact. אם האתר על Hostinger, העלה מחדש את השרת ל-Render."
+                            ? "סגור את השרת (Ctrl+C) והרץ שוב: npm run dev — כך גם Vite (4200) וגם השרת (3001) עולים עם ה-route /api/crm/contact. אם זו סביבת פריסה, העלה מחדש את שירות ה-API."
                             : "הרץ את השרת על פורט 3001 (npm run dev מריץ גם אותו). הבקשות ל-/api עוברות דרך הפרוקסי."}
                         </p>
                       )}
@@ -2684,8 +2680,17 @@ const AdminDashboard = () => {
                             );
                           })}
                           {(currentEvent.gallery || []).length === 0 && (
-                            <div className="col-span-full py-12 text-center text-gray-300 font-bold uppercase text-[10px] tracking-widest border border-dashed rounded-2xl">
-                              Empty Gallery
+                            <div className="col-span-full py-12 px-6 text-center text-gray-300 font-bold uppercase text-[10px] tracking-widest border border-dashed rounded-2xl">
+                              <div>Empty Gallery</div>
+                              {(currentEvent.image ||
+                                currentEvent.heroVideo ||
+                                currentEvent.thumbnail ||
+                                (currentEvent.imageBubbles || []).length > 0) && (
+                                <div className="mt-3 text-[9px] font-semibold normal-case tracking-normal text-gray-400">
+                                  This event still has hero or detail media configured
+                                  outside the gallery manager.
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

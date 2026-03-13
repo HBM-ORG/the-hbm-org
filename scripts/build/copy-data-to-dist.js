@@ -19,6 +19,10 @@ const toCopy = [
     src: path.join(siteAppRoot, "public", "data", "events.json"),
     name: "events.json",
   },
+  {
+    src: path.join(siteAppRoot, "public", "data", "runtime-config.json"),
+    name: "runtime-config.json",
+  },
 ];
 
 try {

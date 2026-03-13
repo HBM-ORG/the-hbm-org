@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Instagram, Volume2, VolumeX } from 'lucide-react'
 import { useI18n, t } from '../../i18n/context'
 import BubbleContainer from '../BubbleContainer'
+import { PUBLIC_BRAND } from '../../config/public-brand'
 
 // Placeholder videos - will be replaced with Instagram API later
 
@@ -119,7 +120,7 @@ export default function Why8Minutes() {
             className="mt-6 md:mt-8 z-20"
           >
             <a
-              href="https://instagram.com/the__hbm"
+              href={PUBLIC_BRAND.socialLinks.instagram}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-[#F07B3C] to-[#ff9b6b] text-white rounded-full px-6 py-2.5 text-sm md:text-base font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 transform active:scale-95"
