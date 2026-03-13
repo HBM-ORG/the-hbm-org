@@ -6,11 +6,17 @@ Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prism
 
 ## Directory layout
 
-```
+```text
 ├── package.json
 ├── prisma.config.ts
 ├── apps/
-│   ├── client/
+│   ├── site/
+│   │   ├── index.html
+│   │   ├── vite.config.js
+│   │   ├── public/
+│   │   ├── src/
+│   │   └── dist/
+│   ├── admin/
 │   │   ├── index.html
 │   │   ├── vite.config.js
 │   │   ├── public/
@@ -45,20 +51,20 @@ Full-stack monorepo: **React (Vite)** frontend + **Express** API server, **Prism
 
 ## Stack
 
-| Layer    | Tech |
-|----------|------|
+| Layer | Tech |
+| --- | --- |
 | Frontend | React 19, Vite 7, Tailwind |
-| API      | Express (`apps/server/src/web.ts` via `tsx`), REST + upload signing |
-| DB       | Prisma; MySQL (production), SQLite (local optional) |
-| Assets   | DigitalOcean Spaces or Google Cloud Storage |
-| Deploy   | Workspace-aware Docker/CI, PM2/self-hosted, DO/GCP |
+| API | Express (`apps/server/src/web.ts` via `tsx`), REST + upload signing |
+| DB | Prisma; MySQL (production), SQLite (local optional) |
+| Assets | DigitalOcean Spaces or Google Cloud Storage |
+| Deploy | Workspace-aware Docker/CI, PM2/self-hosted, DO/GCP |
 
 ---
 
 ## Entry points
 
 | Context | Command |
-|---------|---------|
+| --- | --- |
 | **Dev** | `npm run dev` → Site Vite :4200 + Admin Vite :4300 + Express :3001 |
 | **Prod** | `npm start` (runs `tsx apps/server/src/web.ts`, serves `apps/site/dist/` + API) |
 | **Worker** | `npm run start:worker` |

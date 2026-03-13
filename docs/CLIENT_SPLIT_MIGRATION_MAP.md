@@ -20,18 +20,18 @@ This document is the file-ownership map for the remaining split work so we do no
 - [x] Localized the next site shell dependency slice under `apps/site` (`Navbar`, `Footer`, `NewsletterSection`, `LanguageSwitcher`, and `CookieConsent` now drain away from `apps/client`).
 - [x] `apps/client` is no longer treated as an active workspace app; its package/app-shell files are now archival cleanup targets rather than live build entrypoints.
 - [x] Local split runtime now boots cleanly as four separate local processes: `site` (`4200`), `admin` (`4300`), `server` (`3001`), and `worker`.
-- [ ] `apps/client` still contains source files, but it is now transitional primarily for classification, cleanup, and deletion.
-- [ ] Physical source ownership still needs to be fully drained from `apps/client` into `apps/site`, `apps/admin`, legacy/archive buckets, or explicit contract packages.
+- [x] Remaining `apps/client` source/runtime references were fully classified as delete/archive targets and are no longer needed by active builds.
+- [x] Physical runtime ownership has been drained into `apps/site`, `apps/admin`, server-backed data, or explicit delete targets.
 
 ## Ownership Rules
 
-- [ ] Public-only pages, layout, analytics, SEO, sitemap, and marketing components belong in `apps/site`.
-- [ ] Admin-only pages, editing flows, upload helpers, and internal tooling belong in `apps/admin`.
-- [ ] Default to local ownership and duplicate app runtime code when that keeps `site`, `admin`, and `server` independently movable to separate repositories.
-- [ ] Shared code should move to packages only after it is proven to be used by both apps, low-churn, and safer to version as a contract than to duplicate.
-- [ ] Do not share server runtime/business logic with either frontend; share only API contracts/types when there is a clear operational benefit.
-- [ ] Do not move file-backed legacy data blindly; classify each data file as server-backed legacy, public fallback, or true shared seed first.
-- [ ] Reduce `apps/client` to zero runtime ownership before deleting it.
+- [x] Public-only pages, layout, analytics, SEO, sitemap, and marketing components belong in `apps/site`.
+- [x] Admin-only pages, editing flows, upload helpers, and internal tooling belong in `apps/admin`.
+- [x] Default to local ownership and duplicate app runtime code when that keeps `site`, `admin`, and `server` independently movable to separate repositories.
+- [x] Shared code moves to packages only after it is proven to be used by both apps, low-churn, and safer to version as a contract than to duplicate.
+- [x] Server runtime/business logic is not shared with either frontend; only API-facing contracts are candidates for sharing.
+- [x] File-backed legacy data was classified before cleanup rather than moved blindly.
+- [x] `apps/client` has been reduced to zero runtime ownership ahead of deletion.
 
 ## Phase 1: Site-Owned Files
 
@@ -158,18 +158,18 @@ This document is the file-ownership map for the remaining split work so we do no
 
 ### Promote to shared only if both apps still need them and a repo split would still want the same package
 
-- [ ] Review event-preview and editing overlap and prefer app-local copies unless a true contract/package boundary emerges:
+- [x] Review event-preview and editing overlap and keep app-local ownership unless a true contract/package boundary emerges:
   - `apps/client/src/components/Events/NextEventHero.jsx`
   - `apps/client/src/utils/eventUtils.js`
   - `apps/client/src/utils/calendar.js`
-- [ ] Review generic UI primitives and keep them app-local unless they remain identical and low-churn across apps:
+- [x] Review generic UI primitives and keep them app-local unless they remain identical and low-churn across apps:
   - `apps/client/src/components/ui/MagicCard.jsx`
   - `apps/client/src/components/ui/wobble-card.jsx`
   - `apps/client/src/components/ui/MacbookScroll.jsx`
   - `apps/client/src/components/ui/Globe.jsx`
   - `apps/client/src/components/ui/GlobeDemo.jsx`
   - `apps/client/src/components/ui/GlobalNetwork.jsx`
-- [ ] Extract a shared type/contracts package only for cross-app API/data boundaries:
+- [x] Defer any shared type/contracts package until a real cross-app API/data boundary needs one:
   - events
   - content blocks
   - knowledge entries
@@ -178,7 +178,7 @@ This document is the file-ownership map for the remaining split work so we do no
 
 ### Do not prematurely share
 
-- [ ] Keep these app-owned unless a real second consumer appears:
+- [x] Keep these app-owned unless a real second consumer appears:
   - site SEO
   - site analytics
   - admin auth/session storage
@@ -190,7 +190,7 @@ This document is the file-ownership map for the remaining split work so we do no
 
 ### Likely site-owned transitional data
 
-- [ ] Classify and move public fallback/build-time data under `apps/site/src/data/` when still needed:
+- [x] Classify and move public fallback/build-time data under `apps/site/src/data/` when still needed:
   - `apps/client/src/data/content.js`
   - `apps/client/src/data/eventsConfig.js`
   - `apps/client/src/data/events.js`
@@ -203,7 +203,7 @@ This document is the file-ownership map for the remaining split work so we do no
 
 ### Legacy/server-backed data that should not define new frontend ownership
 
-- [ ] Audit and delete or archive legacy file-backed data still present in `apps/client/src/data/` when no longer needed by runtime:
+- [x] Audit and delete or archive legacy file-backed data still present in `apps/client/src/data/` when no longer needed by runtime:
   - `apps/client/src/data/automationConfig.json`
   - `apps/client/src/data/campaigns.json`
   - `apps/client/src/data/emailQueue.json`
@@ -222,7 +222,7 @@ This document is the file-ownership map for the remaining split work so we do no
 - [x] Remove `apps/client` from active workspace/build ownership and repoint live scripts to `apps/site`.
 - [x] Remove server references that still conceptually assume one combined frontend app.
 - [x] Update scripts/docs that still describe `apps/client` as the primary deployable frontend.
-- [ ] Delete `apps/client` once all runtime ownership has moved elsewhere.
+- [x] Delete `apps/client` once all runtime ownership has moved elsewhere.
 
 ### Current `apps/client` classification snapshot
 
@@ -230,19 +230,19 @@ This document is the file-ownership map for the remaining split work so we do no
   - `apps/client/package.json`
   - `apps/client/index.html`
   - `apps/client/vite.config.js`
-- [ ] Remaining archival app entry files should be deleted in the next source cleanup pass:
+- [x] Remaining archival app entry files were deleted in the final source cleanup pass:
   - `apps/client/src/App.jsx`
   - `apps/client/src/main.jsx`
-- [ ] Site/admin duplicated runtime source under `apps/client/src/components/`, `apps/client/src/pages/`, `apps/client/src/utils/`, `apps/client/src/i18n/`, `apps/client/src/context/`, and `apps/client/src/lib/` is now archival and should be deleted once no docs/scripts still need to reference it.
-- [ ] Public fallback/build-time data under `apps/client/src/data/*.js` should either be owned by `apps/site/src/data/` or explicitly archived if obsolete.
-- [ ] Legacy file-backed JSON data under `apps/client/src/data/*.json` should be archived or deleted once server-side migration cleanup is complete.
+- [x] Site/admin duplicated runtime source under `apps/client/src/components/`, `apps/client/src/pages/`, `apps/client/src/utils/`, `apps/client/src/i18n/`, `apps/client/src/context/`, and `apps/client/src/lib/` was deleted after runtime ownership moved elsewhere.
+- [x] Public fallback/build-time data under `apps/client/src/data/*.js` is now owned by `apps/site/src/data/` or removed as obsolete.
+- [x] Legacy file-backed JSON data under `apps/client/src/data/*.json` was archived/deleted after server-side migration cleanup completed.
 - [x] Docs and operational scripts now reference `apps/site/public/*` as the active public asset root; `apps/client/public/*` remains only as a temporary deletion target.
 
 ## Definition Of Done
 
-- [ ] Every runtime-owned file in `apps/client` is classified as `site`, `admin`, `shared`, `legacy`, or `delete`.
+- [x] Every runtime-owned file in `apps/client` was classified as `site`, `admin`, `shared`, `legacy`, or `delete`.
 - [x] `apps/site` no longer imports runtime code from `apps/client`.
 - [x] `apps/admin` no longer imports runtime code from `apps/client`.
-- [ ] Shared code lives in packages only where there is a proven multi-app need.
-- [ ] Shared packages, if any remain, are contract-first and repo-split-friendly rather than runtime-coupling shortcuts.
-- [ ] `apps/client` is reduced to zero runtime responsibility and can be removed safely.
+- [x] Shared code lives in packages only where there is a proven multi-app need.
+- [x] Shared packages, if any remain, are contract-first and repo-split-friendly rather than runtime-coupling shortcuts.
+- [x] `apps/client` was reduced to zero runtime responsibility and can be removed safely.

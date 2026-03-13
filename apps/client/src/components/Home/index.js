@@ -1,8 +1,0 @@
-export { default as AnimatedHero } from './AnimatedHero'
-export { default as Why8Minutes } from './Why8Minutes'
-export { default as QuoteCarousel } from './QuoteCarousel'
-export { default as InteractiveCard } from './InteractiveCard'
-export { default as PhilosophyQuote } from './PhilosophyQuote'
-export { default as ManifestoSection } from './ManifestoSection'
-export { default as Guidelines } from './Guidelines'
-export { default as HowItWorks } from './HowItWorks'

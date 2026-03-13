@@ -1,6 +1,5 @@
 node_modules
 dist
-apps/client/dist
 apps/site/dist
 apps/admin/dist
 apps/server/dist

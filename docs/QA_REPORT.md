@@ -59,7 +59,7 @@ The HBM platform has successfully completed comprehensive QA testing. All critic
 
 ### Registration Flow
 
-```
+```text
 POST /api/register
 Input: {"name":"Test","email":"test@example.com","phone":"+1234567890","eventId":"test-event"}
 Response: {"success":true,"message":"Registration successful","leadId":1772030005155}
@@ -68,7 +68,7 @@ Status: ✅ 200
 
 ### Newsletter Signup
 
-```
+```text
 POST /api/newsletter
 Input: {"email":"test@example.com","language":"en"}
 Response: {"success":true,"message":"Newsletter signup successful"}
@@ -95,7 +95,7 @@ Status: ✅ 200
 
 ### Production Build Output
 
-```
+```text
 Total Files: 121
 Total Size: 2.6 GB (includes media)
 
@@ -214,17 +214,18 @@ File Breakdown:
 
 ### 🟡 RECOMMENDED (Non-blocking)
 
-2. **Update Tailwind Color References** (cosmetic)
+1. **Update Tailwind Color References** (cosmetic)
    - Replace hardcoded colors with design system tokens
    - Files affected: AnimatedHero.jsx, NextEventHero.jsx
    - Example: `bg-[#6160AB]` → `bg-hbm-purple`
 
-3. **Implement Code-Splitting for Three.js** (performance)
+2. **Implement Code-Splitting for Three.js** (performance)
    - Dynamic import for 3D components
    - Reduces initial bundle from 2.6GB to ~500MB
    - Good for SEO and initial load
 
-4. **Add .htaccess for SPA Routing** ✓ Already present
+3. **Add .htaccess for SPA Routing** ✓ Already present
+
    ```apache
    # Rewrite all requests to index.html for React routing
    RewriteBase /

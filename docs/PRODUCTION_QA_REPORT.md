@@ -46,7 +46,7 @@
 ## 2. Issues found and fixes applied
 
 | Issue | Fix |
-|-------|-----|
+| --- | --- |
 | Console logs in analytics in production | Guarded with `import.meta.env.DEV` in `apps/site/src/utils/analytics.js`. |
 | No canonical/siteUrl comment in SEO | Added comment above `siteUrl` and note for OG image 1200×630 in `apps/site/src/components/SEO.jsx`. |
 | Hardcoded strings (EventDetails, About eyebrow, PageErrorBoundary, GlobeDemo) | New keys in `apps/site/src/i18n/translations.js` and components switched to `t(..., lang)`. |

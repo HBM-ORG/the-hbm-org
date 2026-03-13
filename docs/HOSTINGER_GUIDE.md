@@ -7,9 +7,11 @@ How to deploy the HBM platform (site + admin + API) on Hostinger.
 ## 1. Preparation
 
 Build the frontend before uploading:
+
 ```bash
 npm run build
 ```
+
 This generates `apps/site/dist/` and `apps/admin/dist/`.
 
 ---
@@ -17,7 +19,7 @@ This generates `apps/site/dist/` and `apps/admin/dist/`.
 ## 2. What to Upload
 
 | Folder / File | Description | Destination |
-|----------------|-------------|-------------|
+| --- | --- | --- |
 | `apps/site/dist/` | Public static frontend | Site `public_html/` or app root |
 | `apps/admin/dist/` | Admin static frontend | Admin host `public_html/` or app root |
 | `apps/server/` (`src/web.ts`) | Backend Node server | Application root |
@@ -38,12 +40,13 @@ This generates `apps/site/dist/` and `apps/admin/dist/`.
 1. **Node.js:** Panel → Advanced → Node.js; select the app folder.
 2. **Startup command:** `npm start` (runs `tsx apps/server/src/web.ts` through the workspace root).
 3. **Environment variables** (in panel):
-   - `PORT=3001`
-   - `NODE_ENV=production`
-   - `DATABASE_URL` (if using MySQL)
-   - `GEMINI_API_KEY`, `GOOGLE_BOOKS_API_KEY` (optional)
-   - For email: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` (see [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md))
-  - For assets: `STORAGE_PROVIDER`, `SPACES_*` or `GCS_*` (see [RENDER_ENV.md](RENDER_ENV.md))
+
+- `PORT=3001`
+- `NODE_ENV=production`
+- `DATABASE_URL` (if using MySQL)
+- `GEMINI_API_KEY`, `GOOGLE_BOOKS_API_KEY` (optional)
+- For email: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` (see [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md))
+- For assets: `STORAGE_PROVIDER`, `SPACES_*` or `GCS_*` (see [RENDER_ENV.md](RENDER_ENV.md))
 
 ---
 
