@@ -8,6 +8,10 @@ This project now targets a three-app deployment boundary:
   - API web runtime
   - worker runtime
 
+For a trackable checklist with placeholder example values, see:
+
+- `docs/CI_CD_EXAMPLE_VALUES_CHECKLIST.md`
+
 ## Branch Mapping
 
 - `dev`: DigitalOcean development environment
@@ -56,11 +60,11 @@ Used by:
 
 ### `development` environment
 
-#### Secrets
+#### Development secrets
 
 - `BACKEND_DATABASE_URL`
 
-#### Variables
+#### Development variables
 
 - `DO_APP_ID_SITE`
 - `DO_APP_ID_ADMIN`
@@ -75,11 +79,11 @@ Purpose:
 
 ### `staging` environment
 
-#### Secrets
+#### Staging secrets
 
 - `BACKEND_DATABASE_URL`
 
-#### Variables
+#### Staging variables
 
 - `DO_APP_ID_SITE`
 - `DO_APP_ID_ADMIN`
@@ -92,12 +96,12 @@ Purpose:
 
 ### `production` environment
 
-#### Secrets
+#### Production secrets
 
 - `GCP_CREDENTIALS_JSON`
 - `BACKEND_DATABASE_URL`
 
-#### Variables
+#### Production variables
 
 - `GCP_PROJECT_ID`
 - `GCP_REGION`

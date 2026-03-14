@@ -93,6 +93,7 @@ import AnalyticsDashboard from "../components/Admin/AnalyticsDashboard";
 import CookieConsentLogs from "../components/Admin/CookieConsentLogs";
 import { useEvents } from "../context/EventsContext";
 import { getApiBase, resolveAssetUrl } from "../utils/api";
+import { getStoredAdminPassword } from "../utils/admin-auth.js";
 import { deleteUploadedFile, uploadFile } from "../utils/upload";
 import { useAdminAuth } from "../hooks/useAdminAuth.js";
 
@@ -531,10 +532,14 @@ const AdminDashboard = () => {
     setSaveStatus("Saving...");
     try {
       const base = getApiBase();
+      const adminPassword = getStoredAdminPassword();
       const apiUrl = `${base}/api/save-events`;
       const response = await fetch(apiUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Admin-Password": adminPassword,
+        },
         body: JSON.stringify({ events: data }),
       });
       const result = await response.json();
@@ -553,9 +558,13 @@ const AdminDashboard = () => {
     setSaveStatus("Saving Video Event...");
     try {
       const base = getApiBase();
+      const adminPassword = getStoredAdminPassword();
       const response = await fetch(`${base}/api/video-event`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Admin-Password": adminPassword,
+        },
         body: JSON.stringify(videoEventConfig),
       });
       const result = await response.json();
