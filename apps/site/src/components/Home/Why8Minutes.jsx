@@ -5,6 +5,9 @@ import { useI18n, t } from '../../i18n/context'
 import BubbleContainer from '../BubbleContainer'
 import { PUBLIC_BRAND } from '../../config/public-brand'
 
+const MEETER_REEL_URL =
+  "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/05/banner-video.mp4";
+
 // Placeholder videos - will be replaced with Instagram API later
 
 
@@ -93,7 +96,7 @@ export default function Why8Minutes() {
             <div className="relative aspect-[9/16] bg-black rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] md:border-[8px] border-gray-900">
                 <video
                   ref={videoRef}
-                  src="/meeter-video/Meeter_Com_Reel.mp4"
+                  src={MEETER_REEL_URL}
                   autoPlay
                   loop
                   muted

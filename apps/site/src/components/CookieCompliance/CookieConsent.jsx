@@ -84,18 +84,10 @@ const CookieConsent = () => {
         <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-md z-[999]" />
         <Drawer.Content
           className="fixed bottom-0 left-0 right-0 z-[1000] flex flex-col items-center outline-none"
-          aria-labelledby="cookie-consent-title"
-          aria-describedby="cookie-consent-desc"
         >
-          <Drawer.Title asChild>
-            <h2 id="cookie-consent-title" className="sr-only">
-              Cookie consent
-            </h2>
-          </Drawer.Title>
-          <Drawer.Description asChild>
-            <p id="cookie-consent-desc" className="sr-only">
-              Choose how we use cookies on this site.
-            </p>
+          <Drawer.Title className="sr-only">Cookie consent</Drawer.Title>
+          <Drawer.Description className="sr-only">
+            Choose how we use cookies on this site.
           </Drawer.Description>
           <div
             ref={drawerContentRef}

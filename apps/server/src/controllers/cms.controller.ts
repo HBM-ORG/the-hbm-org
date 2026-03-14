@@ -10,6 +10,13 @@ import {
 import { runtimeConfig } from "../config/runtime-config.js";
 import { isAuthorizedRequest } from "../middleware/admin-auth.js";
 
+function logCmsError(context: string, error: unknown) {
+  console.error(
+    `[cms.controller:${context}]`,
+    error instanceof Error ? error.message : error,
+  );
+}
+
 /**
  * @openapi
  * /api/events:
@@ -54,7 +61,8 @@ export async function getEvents(_req: Request, res: Response): Promise<void> {
       })),
     );
   } catch (err) {
-    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to read events' });
+    logCmsError("getEvents", err);
+    res.status(200).json([]);
   }
 }
 
@@ -130,7 +138,8 @@ export async function getSiteContent(_req: Request, res: Response): Promise<void
       locks: { team: false, testimonials: false, partners: false },
     });
   } catch (err) {
-    res.status(500).json({
+    logCmsError("getSiteContent", err);
+    res.status(200).json({
       team: [],
       testimonials: [],
       partners: [],
@@ -225,8 +234,24 @@ export async function getAutomationSettings(
       })),
     });
   } catch (err) {
-    res.status(500).json({
-      error: err instanceof Error ? err.message : 'Failed to read automation settings',
+    logCmsError("getAutomationSettings", err);
+    res.status(200).json({
+      smtp: {
+        host: runtimeConfig.defaultSmtpHost,
+        port: runtimeConfig.defaultSmtpPort,
+        user: "",
+        pass: "",
+        from: runtimeConfig.defaultSmtpFrom,
+        secure: false,
+      },
+      globalStyling: {
+        primaryColor: runtimeConfig.emailPrimaryColor,
+        secondaryColor: runtimeConfig.emailSecondaryColor,
+        logoUrl: runtimeConfig.emailLogoUrl,
+        fontFamily: runtimeConfig.emailFontFamily,
+      },
+      flows: [],
+      sequences: [],
     });
   }
 }

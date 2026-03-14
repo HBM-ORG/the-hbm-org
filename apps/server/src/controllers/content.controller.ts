@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import type { ContentLockTarget } from "../types/content.js";
 import {
+  getDefaultHowItWorksConfig,
+  getDefaultKnowledgeBaseConfig,
+  getDefaultSiteSettingsConfig,
+  getDefaultVideoEventConfig,
   getSiteSettingsConfig,
   getHowItWorksConfig,
   getHowItWorksStaging,
@@ -15,6 +19,13 @@ import {
   toggleContentLock,
 } from "../services/content.service.js";
 import { isAuthorizedRequest } from "../middleware/admin-auth.js";
+
+function logContentError(context: string, error: unknown) {
+  console.error(
+    `[content.controller:${context}]`,
+    error instanceof Error ? error.message : error,
+  );
+}
 
 function isForced(req: Request): boolean {
   const value = req.query.force;
@@ -33,7 +44,12 @@ function getLockTarget(value: unknown): ContentLockTarget | null {
  *     tags: [Content]
  */
 export async function getVideoEvent(_req: Request, res: Response): Promise<void> {
-  res.json(await getVideoEventConfig());
+  try {
+    res.json(await getVideoEventConfig());
+  } catch (error) {
+    logContentError("getVideoEvent", error);
+    res.status(200).json(getDefaultVideoEventConfig());
+  }
 }
 
 /**
@@ -63,7 +79,12 @@ export async function getSiteSettings(
   _req: Request,
   res: Response,
 ): Promise<void> {
-  res.status(200).json(await getSiteSettingsConfig());
+  try {
+    res.status(200).json(await getSiteSettingsConfig());
+  } catch (error) {
+    logContentError("getSiteSettings", error);
+    res.status(200).json(getDefaultSiteSettingsConfig());
+  }
 }
 
 export async function saveSiteSettings(
@@ -95,7 +116,12 @@ export async function getHowItWorksStage(
   _req: Request,
   res: Response,
 ): Promise<void> {
-  res.json(await getHowItWorksStaging());
+  try {
+    res.json(await getHowItWorksStaging());
+  } catch (error) {
+    logContentError("getHowItWorksStage", error);
+    res.status(200).json(getDefaultHowItWorksConfig());
+  }
 }
 
 /**
@@ -153,7 +179,12 @@ export async function getHowItWorks(
   _req: Request,
   res: Response,
 ): Promise<void> {
-  res.status(200).json(await getHowItWorksConfig());
+  try {
+    res.status(200).json(await getHowItWorksConfig());
+  } catch (error) {
+    logContentError("getHowItWorks", error);
+    res.status(200).json(getDefaultHowItWorksConfig());
+  }
 }
 
 /**
@@ -192,7 +223,12 @@ export async function getKnowledgeBase(
   _req: Request,
   res: Response,
 ): Promise<void> {
-  res.status(200).json(await getKnowledgeBaseConfig());
+  try {
+    res.status(200).json(await getKnowledgeBaseConfig());
+  } catch (error) {
+    logContentError("getKnowledgeBase", error);
+    res.status(200).json(getDefaultKnowledgeBaseConfig());
+  }
 }
 
 /**

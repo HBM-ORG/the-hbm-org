@@ -28,6 +28,33 @@ const DEFAULT_SITE_SETTINGS = Object.freeze({
   inquiryWhatsappMessage: "אשמח לקבל פרטים נוספים על הארגון",
 });
 
+export function getDefaultSiteSettingsConfig(): SiteSettingsConfig {
+  return normalizeSiteSettingsConfig({});
+}
+
+export function getDefaultVideoEventConfig(): VideoEventConfig {
+  return normalizeVideoEventConfig({
+    title: {
+      en: runtimeConfig.defaultVideoEventTitleEn,
+      he: runtimeConfig.defaultVideoEventTitleHe,
+    },
+    date: new Date().toISOString(),
+    time: runtimeConfig.defaultVideoEventTime,
+    location: runtimeConfig.defaultVideoEventLocation,
+    image: "",
+    participants: 0,
+    registrationFields: { name: true, email: true, phone: true },
+  });
+}
+
+export function getDefaultHowItWorksConfig(): HowItWorksConfig {
+  return withLockState(normalizeHowItWorksConfig({}), false);
+}
+
+export function getDefaultKnowledgeBaseConfig(): KnowledgeBaseConfig {
+  return withLockState(normalizeKnowledgeBaseConfig({}), false);
+}
+
 type JsonRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is JsonRecord {
@@ -210,18 +237,7 @@ async function saveContentEntry(input: {
 export async function getVideoEventConfig(): Promise<VideoEventConfig> {
   const row = await getContentEntry(VIDEO_EVENT_KEY);
   if (!row) {
-    return normalizeVideoEventConfig({
-      title: {
-        en: runtimeConfig.defaultVideoEventTitleEn,
-        he: runtimeConfig.defaultVideoEventTitleHe,
-      },
-      date: new Date().toISOString(),
-      time: runtimeConfig.defaultVideoEventTime,
-      location: runtimeConfig.defaultVideoEventLocation,
-      image: "",
-      participants: 0,
-      registrationFields: { name: true, email: true, phone: true },
-    });
+    return getDefaultVideoEventConfig();
   }
 
   return normalizeVideoEventConfig(row.published);
