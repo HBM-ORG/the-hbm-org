@@ -700,7 +700,15 @@ flowchart TD
               rawSrc === "/admin-dashboard" && adminBaseUrl
                 ? adminBaseUrl
                 : siteBaseUrl;
-            iframe.src = targetBase + resolvedPath + separator + "embedPreview=1";
+            try {
+              const absoluteUrl = new URL(
+                `${resolvedPath}${separator}embedPreview=1`,
+                `${targetBase || window.location.origin}/`,
+              );
+              iframe.src = absoluteUrl.toString();
+            } catch {
+              iframe.src = `${resolvedPath}${separator}embedPreview=1`;
+            }
           }
         });
 

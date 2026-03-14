@@ -3,8 +3,17 @@ import { runtimeConfig } from '../config/runtime-config.js';
 
 const prisma = new PrismaClient();
 
+function withLegacyId<T extends { id: string; legacyId?: string | null }>(row: T) {
+  return {
+    ...row,
+    id: row.legacyId || row.id,
+    databaseId: row.id,
+  };
+}
+
 export async function listEvents() {
-  return prisma.event.findMany({ orderBy: { date: 'desc' } });
+  const rows = await prisma.event.findMany({ orderBy: { date: 'desc' } });
+  return rows.map(withLegacyId);
 }
 
 export async function saveEventsBatch(events: any[]) {
@@ -70,7 +79,11 @@ export async function getSiteContentBundle() {
     prisma.partner.findMany({ orderBy: { displayOrder: 'asc' } }),
   ]);
 
-  return { team, testimonials, partners };
+  return {
+    team: team.map(withLegacyId),
+    testimonials: testimonials.map(withLegacyId),
+    partners: partners.map(withLegacyId),
+  };
 }
 
 export async function saveSiteContentBundle({
@@ -170,7 +183,12 @@ export async function getAutomationSettingsBundle() {
     prisma.globalStyling.findFirst(),
   ]);
 
-  return { flows, sequences, smtpConfig, globalStyling };
+  return {
+    flows: flows.map(withLegacyId),
+    sequences: sequences.map(withLegacyId),
+    smtpConfig,
+    globalStyling,
+  };
 }
 
 export async function saveAutomationSettingsBundle({

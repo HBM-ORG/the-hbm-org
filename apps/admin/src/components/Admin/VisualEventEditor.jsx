@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { motion, Reorder, AnimatePresence } from "framer-motion";
 import NextEventHero from "../Events/NextEventHero";
-import { getAssetBase } from "../../utils/api";
+import { getAssetBase, resolveAssetUrl } from "../../utils/api";
 import { uploadFile } from "../../utils/upload";
 
 // This component wraps the public NextEventHero but injects "Edit Mode" props
@@ -1222,11 +1222,11 @@ const VisualEventEditor = ({
                         <Video className="w-8 h-8 text-white opacity-40" />
                       ) : (
                         <img
-                          src={
+                          src={resolveAssetUrl(
                             img.startsWith("http") || img.startsWith("/assets")
                               ? img
-                              : `/assets/events/${event.folderName || "general"}/${img}`
-                          }
+                              : `/assets/events/${event.folderName || "general"}/${img}`,
+                          )}
                           className="w-full h-full object-cover pointer-events-none"
                           alt=""
                         />

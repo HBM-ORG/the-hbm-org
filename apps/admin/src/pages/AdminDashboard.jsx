@@ -970,11 +970,13 @@ const AdminDashboard = () => {
                   <div className="relative h-48 overflow-hidden bg-gray-100">
                     {(() => {
                       const toSrc = (path) =>
-                        !path || path.startsWith("http")
+                        !path
                           ? path
-                          : path.startsWith("/")
-                            ? path
-                            : `/${path}`;
+                          : resolveAssetUrl(
+                              path.startsWith("/") || path.startsWith("http")
+                                ? path
+                                : `/${path}`,
+                            );
                       if (event.thumbnail || event.image) {
                         return (
                           <img
@@ -1856,7 +1858,7 @@ const AdminDashboard = () => {
                     <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden mb-4 relative border border-gray-200">
                       {videoEventConfig.image ? (
                         <img
-                          src={videoEventConfig.image}
+                          src={resolveAssetUrl(videoEventConfig.image)}
                           alt="Cover"
                           className="w-full h-full object-cover"
                         />
@@ -2531,11 +2533,7 @@ const AdminDashboard = () => {
                           <div className="mt-6 rounded-2xl overflow-hidden bg-black/50 aspect-video max-h-64">
                             <video
                               key={currentEvent.heroVideo}
-                              src={
-                                currentEvent.heroVideo.startsWith("http")
-                                  ? currentEvent.heroVideo
-                                  : currentEvent.heroVideo
-                              }
+                              src={resolveAssetUrl(currentEvent.heroVideo)}
                               controls
                               preload="auto"
                               className="w-full h-full object-contain"

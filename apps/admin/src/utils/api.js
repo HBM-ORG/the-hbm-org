@@ -32,6 +32,29 @@ function deriveAdminUrl() {
   return `${protocol}//admin.${rootHost}`;
 }
 
+function deriveSiteUrl() {
+  if (typeof window === "undefined") return "";
+
+  const currentOrigin = getBrowserOrigin();
+  if (!currentOrigin) return "";
+
+  const { hostname, protocol } = window.location;
+  if (hostname.startsWith("www.") || hostname.startsWith("testwww.")) {
+    return currentOrigin;
+  }
+  if (hostname.startsWith("admin.")) {
+    return `${protocol}//www.${hostname.slice("admin.".length)}`;
+  }
+  if (hostname.startsWith("testadmin.")) {
+    return `${protocol}//testwww.${hostname.slice("testadmin.".length)}`;
+  }
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return "";
+  }
+
+  return `${protocol}//www.${hostname.replace(/^admin\./, "")}`;
+}
+
 export function joinUrl(base, path) {
   const cleanBase = trimTrailingSlash(base);
   const cleanPath = String(path || "");
@@ -53,7 +76,7 @@ export function getApiBase() {
 }
 
 export function getAssetBase() {
-  return getApiBase() || "";
+  return getSiteUrl() || getApiBase() || "";
 }
 
 export function resolveAssetUrl(rawPath) {
@@ -64,6 +87,11 @@ export function resolveAssetUrl(rawPath) {
     return value;
   }
 
+  if (value.startsWith("/assets/")) {
+    const assetBase = getSiteUrl() || getApiBase();
+    return assetBase ? joinUrl(assetBase, value) : value;
+  }
+
   if (!value.startsWith("/")) return value;
 
   const assetBase = getAssetBase();
@@ -71,7 +99,7 @@ export function resolveAssetUrl(rawPath) {
 }
 
 export function getSiteUrl() {
-  return readEnvValue("VITE_SITE_URL") || getBrowserOrigin();
+  return readEnvValue("VITE_SITE_URL") || deriveSiteUrl() || getBrowserOrigin();
 }
 
 export function getAdminUrl() {

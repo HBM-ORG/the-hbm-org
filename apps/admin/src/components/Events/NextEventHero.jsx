@@ -16,7 +16,7 @@ import BubbleContainer from "../BubbleContainer";
 import CountdownTimer from "./CountdownTimer";
 import CalendarDropdown from "./CalendarDropdown";
 import { hbmAnalytics } from "../../utils/admin-analytics";
-import { getApiBase } from "../../utils/api";
+import { getApiBase, resolveAssetUrl } from "../../utils/api";
 
 const NextEventHero = ({
   event,
@@ -125,7 +125,10 @@ const NextEventHero = ({
             />
           ) : (
             <img
-              src={resolveAsset(event.heroImage || event.image) || "/assets/default-hero.jpg"}
+              src={
+                resolveAsset(event.heroImage || event.image)
+                || resolveAssetUrl("/assets/default-hero.jpg")
+              }
               alt="Event Background"
               className="w-full h-full object-cover transition-all duration-300"
               style={{
@@ -403,7 +406,7 @@ const NextEventHero = ({
                                       I approve that I have read and agree to
                                       the{" "}
                                       <a
-                                        href="/assets/events/ef3d3fe33_HBMTOU-FINAL (1).pdf"
+                                        href={resolveAssetUrl("/assets/events/ef3d3fe33_HBMTOU-FINAL (1).pdf")}
                                         target="_blank"
                                         className="text-[#F07B3C] hover:underline mx-1"
                                       >
@@ -411,7 +414,7 @@ const NextEventHero = ({
                                       </a>{" "}
                                       and{" "}
                                       <a
-                                        href="/assets/events/af6ef7603_HBMPrivacyPolicyFINAL.pdf"
+                                        href={resolveAssetUrl("/assets/events/af6ef7603_HBMPrivacyPolicyFINAL.pdf")}
                                         target="_blank"
                                         className="text-[#F07B3C] hover:underline mx-1"
                                       >
@@ -424,7 +427,7 @@ const NextEventHero = ({
                                     <>
                                       אני מאשר/ת שקראתי והסכמתי ל
                                       <a
-                                        href="/assets/events/ef3d3fe33_HBMTOU-FINAL (1).pdf"
+                                        href={resolveAssetUrl("/assets/events/ef3d3fe33_HBMTOU-FINAL (1).pdf")}
                                         target="_blank"
                                         className="text-[#F07B3C] hover:underline mx-1"
                                       >
@@ -432,7 +435,7 @@ const NextEventHero = ({
                                       </a>{" "}
                                       ול
                                       <a
-                                        href="/assets/events/af6ef7603_HBMPrivacyPolicyFINAL.pdf"
+                                        href={resolveAssetUrl("/assets/events/af6ef7603_HBMPrivacyPolicyFINAL.pdf")}
                                         target="_blank"
                                         className="text-[#F07B3C] hover:underline mx-1"
                                       >
