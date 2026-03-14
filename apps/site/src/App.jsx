@@ -1,5 +1,11 @@
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { EventsProvider } from "./context/EventsContext.jsx";
 import { I18nProvider } from "./i18n/context.jsx";
 import Layout from "./components/Layout.jsx";
@@ -61,6 +67,34 @@ function AnalyticsTracker() {
   return null;
 }
 
+function PreviewRouteBootstrap() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("embedPreview") !== "1") return;
+    if (location.pathname !== "/") return;
+
+    const previewPath = String(params.get("previewPath") || "").trim();
+    if (!previewPath) return;
+
+    const target = new URL(
+      previewPath.startsWith("/") ? previewPath : `/${previewPath}`,
+      window.location.origin,
+    );
+    const targetParams = new URLSearchParams(target.search);
+    targetParams.set("embedPreview", "1");
+
+    navigate(
+      `${target.pathname}${targetParams.toString() ? `?${targetParams.toString()}` : ""}${target.hash}`,
+      { replace: true },
+    );
+  }, [location.pathname, location.search, navigate]);
+
+  return null;
+}
+
 export default function App() {
   useEffect(() => {
     const runAnalytics = () => initAnalytics();
@@ -77,6 +111,7 @@ export default function App() {
         <BrowserRouter>
           <ScrollToHash />
           <AnalyticsTracker />
+          <PreviewRouteBootstrap />
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />

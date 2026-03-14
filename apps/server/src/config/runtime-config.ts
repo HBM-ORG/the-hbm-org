@@ -29,7 +29,7 @@ export const runtimeConfig = {
     return readEnv("EMAIL_SECONDARY_COLOR", "#F07B3C");
   },
   get emailLogoUrl() {
-    return readEnv("EMAIL_LOGO_URL", "/logo.png");
+    return readEnv("EMAIL_LOGO_URL");
   },
   get emailFontFamily() {
     return readEnv("EMAIL_FONT_FAMILY", "Sora, sans-serif");

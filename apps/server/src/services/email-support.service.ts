@@ -87,6 +87,11 @@ export function getEmailTemplate({
     typeof styling.logoUrl === "string"
       ? styling.logoUrl
       : runtimeConfig.emailLogoUrl;
+  const resolvedLogoUrl = logoUrl
+    ? logoUrl.startsWith("http")
+      ? logoUrl
+      : `${baseUrl}${logoUrl}`
+    : "";
   const trackingUrl = `${baseUrl}/api/track/open/${trackingId}`;
   const unsubscribeUrl = `${baseUrl}/api/unsubscribe?email=${encodeURIComponent(email)}`;
 
@@ -115,7 +120,7 @@ export function getEmailTemplate({
         <div class="wrapper">
             <div class="container">
                 <div class="header">
-                    <img src="${logoUrl.startsWith("http") ? logoUrl : baseUrl + logoUrl}" class="logo" alt="The HBM">
+                    ${resolvedLogoUrl ? `<img src="${resolvedLogoUrl}" class="logo" alt="The HBM">` : ""}
                 </div>
                 <div class="content">
                     ${body}

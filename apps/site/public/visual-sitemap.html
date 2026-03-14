@@ -694,20 +694,22 @@ flowchart TD
         document.querySelectorAll("iframe[data-src]").forEach((iframe) => {
           const rawSrc = iframe.getAttribute("data-src");
           if (rawSrc) {
-            const separator = rawSrc.includes("?") ? "&" : "?";
             const resolvedPath = rawSrc === "/admin-dashboard" ? "/" : rawSrc;
-            const targetBase =
-              rawSrc === "/admin-dashboard" && adminBaseUrl
-                ? adminBaseUrl
-                : siteBaseUrl;
+            const isAdminPreview = rawSrc === "/admin-dashboard";
+            const targetBase = isAdminPreview && adminBaseUrl ? adminBaseUrl : siteBaseUrl;
             try {
+              const previewQuery = isAdminPreview
+                ? "?embedPreview=1"
+                : `?embedPreview=1&previewPath=${encodeURIComponent(resolvedPath)}`;
               const absoluteUrl = new URL(
-                `${resolvedPath}${separator}embedPreview=1`,
+                `/${previewQuery}`,
                 `${targetBase || window.location.origin}/`,
               );
               iframe.src = absoluteUrl.toString();
             } catch {
-              iframe.src = `${resolvedPath}${separator}embedPreview=1`;
+              iframe.src = isAdminPreview
+                ? "/?embedPreview=1"
+                : `/?embedPreview=1&previewPath=${encodeURIComponent(resolvedPath)}`;
             }
           }
         });

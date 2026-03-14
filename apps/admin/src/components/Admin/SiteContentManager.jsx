@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Save, Users, Quote, Image as ImageIcon, Plus, Trash2, Edit3, X, Lock, Unlock, Star, Smartphone, BookOpen, Video, Youtube, Upload, Sparkles, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
 import { siteContent } from '../../data/content';
 import { getStoredAdminPassword } from '../../utils/admin-auth.js';
-import { getApiBase } from '../../utils/api';
+import { getApiBase, resolveAssetUrl } from '../../utils/api';
 import { uploadFile } from '../../utils/upload';
 
 const PhoneMockup = ({ children, className = "" }) => (
@@ -489,7 +489,7 @@ const SiteContentManager = () => {
                                         <div><label className="text-[10px] font-black uppercase text-gray-400">Logo Image URL</label><input type="text" disabled={content.locks?.partners} value={partner.logoUrl} onChange={e => handleArrayChange('partners', idx, 'logoUrl', e.target.value)} className="w-full bg-white p-3 rounded-lg border font-bold text-xs text-blue-600 disabled:bg-gray-50 disabled:text-gray-400" placeholder="/assets/..."/></div>
                                         {partner.logoUrl && (
                                             <div className="h-16 flex items-center justify-center p-2 bg-white rounded-lg border">
-                                                <img src={partner.logoUrl} alt="Logo Preview" className="max-h-full max-w-full object-contain" />
+                                                <img src={resolveAssetUrl(partner.logoUrl)} alt="Logo Preview" className="max-h-full max-w-full object-contain" />
                                             </div>
                                         )}
                                     </div>

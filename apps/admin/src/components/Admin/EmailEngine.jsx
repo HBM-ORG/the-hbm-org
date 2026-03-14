@@ -9,7 +9,7 @@ import {
     Edit3
 } from 'lucide-react';
 
-import { getApiBase } from '../../utils/api';
+import { getApiBase, resolveAssetUrl } from '../../utils/api';
 import { uploadFile } from '../../utils/upload';
 
 // ── Utility ─────────────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ const DEFAULT_FLOWS = [
 function getDefaultConfig() {
     return {
         smtp: { host: '', port: 587, user: '', pass: '', from: '' },
-        globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' },
+        globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' },
         flows: DEFAULT_FLOWS.map(df => ({
             id: `flow_${df.id}`,
             name: df.name,
@@ -164,7 +164,7 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
     const isHe = activeLang === 'he';
     const rawSubject = (isHe && flow?.subject_he) ? flow.subject_he : (flow?.subject_en || flow?.subject || '');
     const rawBody = (isHe && flow?.body_he) ? flow.body_he : (flow?.body_en || flow?.body || '');
-    const signatureUrl = config?.globalStyling?.signatureUrl;
+    const signatureUrl = resolveAssetUrl(config?.globalStyling?.signatureUrl);
 
     const body = rawBody.replace(/\n/g, '<br>')
         .replace(/{{name}}/g, isHe ? 'אלכס' : 'Alex')
@@ -179,7 +179,7 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
 
     const primary = config?.globalStyling?.primaryColor || '#6160AB';
     const secondary = config?.globalStyling?.secondaryColor || '#F07B3C';
-    const logoUrl = config?.globalStyling?.logoUrl || '/logo.png';
+    const logoUrl = resolveAssetUrl(config?.globalStyling?.logoUrl);
 
     const dir = isHe ? 'rtl' : 'ltr';
     const align = isHe ? 'right' : 'left';
@@ -189,7 +189,9 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
             <div className="overflow-y-auto max-h-[520px]" dir={dir} style={{ textAlign: align }}>
                 {/* Header */}
                 <div className="h-24 flex items-center justify-center p-4" style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}>
-                    <img src={logoUrl} className="h-10 object-contain drop-shadow-lg" alt="HBM" onError={(e) => e.target.style.display='none'} />
+                    {logoUrl ? (
+                        <img src={logoUrl} className="h-10 object-contain drop-shadow-lg" alt="HBM" onError={(e) => e.target.style.display='none'} />
+                    ) : null}
                 </div>
                 {/* Body */}
                 <div className="p-6 bg-white shrink-0 min-h-[200px]">
@@ -259,7 +261,7 @@ const EmailEngine = () => {
                 setBackendOffline(true);
                 const fallback = {
                     smtp: { host: '', port: 587, user: '', pass: '', from: '' },
-                    globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' },
+                    globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' },
                     flows: DEFAULT_FLOWS.map(df => ({
                         id: `flow_${df.id}`,
                         name: df.name,
@@ -283,7 +285,7 @@ const EmailEngine = () => {
 
             setBackendOffline(false);
             if (!cfg.smtp) cfg.smtp = { host: '', port: 587, user: '', pass: '', from: '' };
-            if (!cfg.globalStyling) cfg.globalStyling = { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' };
+            if (!cfg.globalStyling) cfg.globalStyling = { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' };
 
             const existingFlows = Array.isArray(cfg.flows) ? cfg.flows : [];
             const triggerKey = (t) => (t || '').toLowerCase();
@@ -314,7 +316,7 @@ const EmailEngine = () => {
             setBackendOffline(true);
             const fallback = {
                 smtp: { host: '', port: 587, user: '', pass: '', from: '' },
-                globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '/logo.png' },
+                globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' },
                 flows: DEFAULT_FLOWS.map(df => ({
                     id: `flow_${df.id}`,
                     name: df.name,
