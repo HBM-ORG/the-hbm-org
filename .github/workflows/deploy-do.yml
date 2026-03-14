@@ -5,6 +5,16 @@ on:
     branches:
       - dev
       - staging
+    paths:
+      - "apps/site/**"
+      - "apps/admin/**"
+      - "apps/server/**"
+      - "data/public-brand.js"
+      - "scripts/build/**"
+      - "package.json"
+      - "package-lock.json"
+      - "config/.nvmrc"
+      - ".github/workflows/deploy-do.yml"
   workflow_dispatch:
 
 concurrency:
@@ -16,101 +26,187 @@ permissions:
 
 jobs:
   deploy-dev:
-    name: Deploy Dev App Platform
+    name: Deploy Dev App Platform Apps
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref_name == 'dev'
     environment: development
     env:
       DO_API_TOKEN: ${{ secrets.DO_API_TOKEN }}
-      DO_APP_ID_DEV: ${{ vars.DO_APP_ID_DEV }}
+      DO_APP_ID_SITE: ${{ vars.DO_APP_ID_SITE }}
+      DO_APP_ID_ADMIN: ${{ vars.DO_APP_ID_ADMIN }}
+      DO_APP_ID_BACKEND: ${{ vars.DO_APP_ID_BACKEND }}
+      BACKEND_DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Detect changed deployment targets
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            site:
+              - 'apps/site/**'
+              - 'data/public-brand.js'
+              - 'scripts/build/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'config/.nvmrc'
+            admin:
+              - 'apps/admin/**'
+              - 'data/public-brand.js'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'config/.nvmrc'
+            backend:
+              - 'apps/server/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'config/.nvmrc'
+
       - name: Setup Node.js
+        if: steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true'
         uses: actions/setup-node@v4
         with:
           node-version-file: config/.nvmrc
           cache: npm
 
       - name: Install dependencies
+        if: steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true'
         run: npm ci
 
-      - name: Typecheck server workspace
-        run: npm run typecheck -w apps/server
-
       - name: Build site workspace
-        run: npm run build -w apps/site
+        if: steps.changes.outputs.site == 'true'
+        run: npm run validate -w apps/site
 
       - name: Build admin workspace
-        run: npm run build -w apps/admin
+        if: steps.changes.outputs.admin == 'true'
+        run: npm run validate -w apps/admin
 
-      - name: Validate server workspace build
-        run: npm run build -w apps/server
+      - name: Validate backend workspace
+        if: steps.changes.outputs.backend == 'true'
+        run: npm run validate -w apps/server
+
+      - name: Apply backend Prisma migrations
+        if: steps.changes.outputs.backend == 'true' && env.BACKEND_DATABASE_URL != ''
+        env:
+          DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
+        run: npm run prisma:migrate:deploy -w apps/server
 
       - name: Setup doctl
-        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_DEV != ''
+        if: env.DO_API_TOKEN != '' && (steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true')
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DO_API_TOKEN }}
 
-      - name: Trigger App Platform deployment
-        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_DEV != ''
-        run: doctl apps create-deployment "$DO_APP_ID_DEV"
+      - name: Trigger site deployment
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_SITE != '' && steps.changes.outputs.site == 'true'
+        run: doctl apps create-deployment "$DO_APP_ID_SITE" --wait
 
-      - name: Skip notice when DigitalOcean config is missing
-        if: env.DO_API_TOKEN == '' || env.DO_APP_ID_DEV == ''
+      - name: Trigger admin deployment
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_ADMIN != '' && steps.changes.outputs.admin == 'true'
+        run: doctl apps create-deployment "$DO_APP_ID_ADMIN" --wait
+
+      - name: Trigger backend deployment
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_BACKEND != '' && steps.changes.outputs.backend == 'true'
+        run: doctl apps create-deployment "$DO_APP_ID_BACKEND" --wait
+
+      - name: Skip notice when no development DigitalOcean deployment is triggered
+        if: env.DO_API_TOKEN == '' || (steps.changes.outputs.site != 'true' && steps.changes.outputs.admin != 'true' && steps.changes.outputs.backend != 'true')
         run: |
           echo "Skipping dev deploy."
-          echo "Set DO_API_TOKEN secret and DO_APP_ID_DEV variable to enable this job."
+          echo "Either no deploy-relevant files changed or DO_API_TOKEN is missing."
 
   deploy-staging:
-    name: Deploy Staging App Platform
+    name: Deploy Staging App Platform Apps
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref_name == 'staging'
     environment: staging
     env:
       DO_API_TOKEN: ${{ secrets.DO_API_TOKEN }}
-      DO_APP_ID_STAGING: ${{ vars.DO_APP_ID_STAGING }}
+      DO_APP_ID_SITE: ${{ vars.DO_APP_ID_SITE }}
+      DO_APP_ID_ADMIN: ${{ vars.DO_APP_ID_ADMIN }}
+      DO_APP_ID_BACKEND: ${{ vars.DO_APP_ID_BACKEND }}
+      BACKEND_DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Detect changed deployment targets
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            site:
+              - 'apps/site/**'
+              - 'data/public-brand.js'
+              - 'scripts/build/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'config/.nvmrc'
+            admin:
+              - 'apps/admin/**'
+              - 'data/public-brand.js'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'config/.nvmrc'
+            backend:
+              - 'apps/server/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'config/.nvmrc'
+
       - name: Setup Node.js
+        if: steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true'
         uses: actions/setup-node@v4
         with:
           node-version-file: config/.nvmrc
           cache: npm
 
       - name: Install dependencies
+        if: steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true'
         run: npm ci
 
-      - name: Typecheck server workspace
-        run: npm run typecheck -w apps/server
-
       - name: Build site workspace
-        run: npm run build -w apps/site
+        if: steps.changes.outputs.site == 'true'
+        run: npm run validate -w apps/site
 
       - name: Build admin workspace
-        run: npm run build -w apps/admin
+        if: steps.changes.outputs.admin == 'true'
+        run: npm run validate -w apps/admin
 
-      - name: Validate server workspace build
-        run: npm run build -w apps/server
+      - name: Validate backend workspace
+        if: steps.changes.outputs.backend == 'true'
+        run: npm run validate -w apps/server
+
+      - name: Apply backend Prisma migrations
+        if: steps.changes.outputs.backend == 'true' && env.BACKEND_DATABASE_URL != ''
+        env:
+          DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
+        run: npm run prisma:migrate:deploy -w apps/server
 
       - name: Setup doctl
-        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_STAGING != ''
+        if: env.DO_API_TOKEN != '' && (steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true')
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DO_API_TOKEN }}
 
-      - name: Trigger App Platform deployment
-        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_STAGING != ''
-        run: doctl apps create-deployment "$DO_APP_ID_STAGING"
+      - name: Trigger site deployment
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_SITE != '' && steps.changes.outputs.site == 'true'
+        run: doctl apps create-deployment "$DO_APP_ID_SITE" --wait
 
-      - name: Skip notice when DigitalOcean config is missing
-        if: env.DO_API_TOKEN == '' || env.DO_APP_ID_STAGING == ''
+      - name: Trigger admin deployment
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_ADMIN != '' && steps.changes.outputs.admin == 'true'
+        run: doctl apps create-deployment "$DO_APP_ID_ADMIN" --wait
+
+      - name: Trigger backend deployment
+        if: env.DO_API_TOKEN != '' && env.DO_APP_ID_BACKEND != '' && steps.changes.outputs.backend == 'true'
+        run: doctl apps create-deployment "$DO_APP_ID_BACKEND" --wait
+
+      - name: Skip notice when no staging DigitalOcean deployment is triggered
+        if: env.DO_API_TOKEN == '' || (steps.changes.outputs.site != 'true' && steps.changes.outputs.admin != 'true' && steps.changes.outputs.backend != 'true')
         run: |
           echo "Skipping staging deploy."
-          echo "Set DO_API_TOKEN secret and DO_APP_ID_STAGING variable to enable this job."
+          echo "Either no deploy-relevant files changed or DO_API_TOKEN is missing."

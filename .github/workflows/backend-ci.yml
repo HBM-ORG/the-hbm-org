@@ -1,4 +1,4 @@
-name: Shared CI
+name: Backend CI
 
 on:
   push:
@@ -7,34 +7,36 @@ on:
       - staging
       - main
     paths:
+      - "apps/server/**"
+      - "apps/server/Dockerfile"
       - "package.json"
       - "package-lock.json"
-      - "config/**"
-      - "scripts/build/**"
-      - ".github/workflows/ci.yml"
+      - "config/.nvmrc"
+      - ".github/workflows/backend-ci.yml"
   pull_request:
     branches:
       - dev
       - staging
       - main
     paths:
+      - "apps/server/**"
+      - "apps/server/Dockerfile"
       - "package.json"
       - "package-lock.json"
-      - "config/**"
-      - "scripts/build/**"
-      - ".github/workflows/ci.yml"
+      - "config/.nvmrc"
+      - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: backend-ci-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  validate:
-    name: Shared Workspace Validation
+  validate-backend:
+    name: Validate Backend
     runs-on: ubuntu-latest
 
     steps:
@@ -50,14 +52,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck server workspace
-        run: npm run typecheck -w apps/server
-
-      - name: Build site workspace
-        run: npm run build -w apps/site
-
-      - name: Build admin workspace
-        run: npm run build -w apps/admin
-
-      - name: Validate server workspace build
-        run: npm run build -w apps/server
+      - name: Validate backend workspace
+        run: npm run validate -w apps/server

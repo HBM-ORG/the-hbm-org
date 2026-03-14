@@ -1,56 +1,153 @@
-# 🚀 HBM Deployment Guide
+# HBM Deployment Guide
 
-Standard steps to run the site and admin dashboard 24/7 with live updates.
+Current short-term deployment target:
 
----
+- `apps/site` deployed independently
+- `apps/admin` deployed independently
+- `apps/server` deployed as one backend app that contains:
+  - API web component
+  - worker component
 
-## 1. Prerequisites
+## Branch To Platform Mapping
 
-- **Node.js** 18+ (see [config/.nvmrc](../config/.nvmrc); copy `apps/server/.env.example` to `apps/server/.env`, `apps/site/.env.example` to `apps/site/.env`, and `apps/admin/.env.example` to `apps/admin/.env` as needed).
-- **PM2** (process manager):
+- `dev` -> DigitalOcean
+- `staging` -> DigitalOcean
+- `main` -> GCP
+
+## DigitalOcean Deployment Shape
+
+### Site app
+
+- deploys `apps/site`
+- static site app
+- expected dev hostname: `testwww.thehbm.org`
+
+Build:
+
 ```bash
-npm install -g pm2
+npm ci && npm run validate -w apps/site
 ```
 
----
+Output directory:
 
-## 2. Build the Site
-
-Always build the frontend before starting the server:
 ```bash
-npm run build
-```
-This produces separate frontend bundles in `apps/site/dist/` and `apps/admin/dist/`.
-
----
-
-## 3. Run with PM2 (Always On)
-
-Use the ecosystem file in `config/` so the app restarts on crash or reboot:
-```bash
-pm2 start config/ecosystem.config.cjs
-pm2 save
-pm2 startup
+apps/site/dist
 ```
 
-- **Server port:** default `3001`. Ensure firewall/Nginx allows traffic to this port.
-- **Admin access:** Currently open; consider Basic Auth or login middleware for production.
+### Admin app
 
----
+- deploys `apps/admin`
+- static site app
+- expected dev hostname: `testadmin.thehbm.org`
 
-## 4. Subdomain (admin.thehbm.org)
+Build:
 
-1. In your DNS (GoDaddy, Cloudflare, etc.), add an **A record**:
-   - **Host:** `admin`
-   - **Points to:** your server IP
-2. The app detects `admin.` and redirects to the dashboard.
+```bash
+npm ci && npm run validate -w apps/admin
+```
 
----
+Output directory:
 
-## 5. Live Updates
+```bash
+apps/admin/dist
+```
 
-The server serves both the API and static files. Saves in the admin update JSON/data on disk; the site loads this on each request, so changes appear **immediately** without rebuilding.
+### Backend app
 
----
+- deploys `apps/server`
+- one App Platform app with:
+  - `web` component
+  - `worker` component
+- expected dev hostname: `testapi.thehbm.org`
 
-**See also:** [ARCHITECTURE.md](ARCHITECTURE.md) · [RENDER_ENV.md](RENDER_ENV.md) · [HOSTINGER_GUIDE.md](HOSTINGER_GUIDE.md).
+Backend build:
+
+```bash
+npm ci && npm run validate -w apps/server
+```
+
+Backend web run command:
+
+```bash
+npm run web -w apps/server
+```
+
+Backend worker run command:
+
+```bash
+npm run worker -w apps/server
+```
+
+### Backend infrastructure ownership
+
+These belong only to the backend app:
+
+- Managed MySQL
+- Spaces bucket
+- backend secrets
+- Prisma schema migrations
+
+## Prisma Deployment Flow
+
+Prisma is now treated as a backend deployment concern, not a manual post-deploy step.
+
+Backend CI/deploy flow:
+
+```bash
+npm ci
+npm run validate -w apps/server
+npm run prisma:migrate:deploy -w apps/server
+```
+
+## Runtime Environment Ownership
+
+### Site app
+
+- `VITE_SITE_URL`
+- `VITE_ADMIN_URL`
+- `VITE_API_BASE`
+- `VITE_ASSET_BASE`
+
+### Admin app
+
+- `VITE_SITE_URL`
+- `VITE_ADMIN_URL`
+- `VITE_API_BASE`
+- `VITE_ASSET_BASE`
+
+### Backend app
+
+- `DATABASE_URL`
+- `BASE_URL`
+- `SITE_PUBLIC_URL`
+- `SITE_APP_URL`
+- `ADMIN_APP_URL`
+- `RUN_EMAIL_WORKER=false` on web
+- storage credentials
+- SMTP credentials
+- AI credentials
+
+## GitHub Actions Entry Points
+
+- shared root validation: `.github/workflows/ci.yml`
+- site CI: `.github/workflows/site-ci.yml`
+- admin CI: `.github/workflows/admin-ci.yml`
+- backend CI: `.github/workflows/backend-ci.yml`
+- DigitalOcean deploy: `.github/workflows/deploy-do.yml`
+- GCP deploy: `.github/workflows/deploy-gcp.yml`
+
+## Local Transitional Runtime
+
+Local PM2 / single-server instructions are now legacy/transitional only. The current cloud target is the split deployment model described above, not one always-on node serving everything together.
+
+## Related Docs
+
+- [THREE_APP_DEPLOYMENT_CHECKLIST.md](THREE_APP_DEPLOYMENT_CHECKLIST.md)
+- [CI_CD_VARIABLES.md](CI_CD_VARIABLES.md)
+- [DEPLOYMENT_AND_REPO_RESTRUCTURE_PLAN.md](DEPLOYMENT_AND_REPO_RESTRUCTURE_PLAN.md)
+
+## Backend Container
+
+The backend container build now lives in:
+
+- `apps/server/Dockerfile`

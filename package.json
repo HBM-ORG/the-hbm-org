@@ -27,6 +27,9 @@
     "build:admin": "npm run build -w apps/admin",
     "build:frontends": "npm run build -w apps/site && npm run build -w apps/admin",
     "build:server": "npm run build -w apps/server",
+    "validate:site": "npm run validate -w apps/site",
+    "validate:admin": "npm run validate -w apps/admin",
+    "validate:backend": "npm run validate -w apps/server",
     "typecheck": "npm run typecheck -w apps/server",
     "lint": "eslint . --config config/eslint.config.js",
     "preview": "npm run preview -w apps/site",
@@ -46,6 +49,7 @@
     "reconcile:event-assets:dry": "npm run reconcile:event-assets:dry -w apps/server",
     "migrate:all": "npm run migrate:all -w apps/server",
     "migrate:all:dry": "npm run migrate:all:dry -w apps/server",
+    "docker:build:backend": "docker build -f apps/server/Dockerfile .",
     "storage:status": "curl -s http://localhost:3001/api/upload/status | jq ."
   },
   "devDependencies": {

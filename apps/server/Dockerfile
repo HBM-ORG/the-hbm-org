@@ -9,7 +9,7 @@ COPY apps/server/package.json apps/server/package.json
 RUN npm ci
 
 COPY . .
-RUN npm run typecheck && npm run build
+RUN npm run validate -w apps/server
 
 FROM node:20-bookworm-slim AS runtime
 
@@ -22,4 +22,4 @@ COPY --from=build /app /app
 
 EXPOSE 3001
 
-CMD ["npm", "start"]
+CMD ["npm", "run", "web", "-w", "apps/server"]

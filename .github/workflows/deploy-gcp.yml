@@ -4,6 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "apps/site/**"
+      - "apps/admin/**"
+      - "apps/server/**"
+      - "data/public-brand.js"
+      - "scripts/build/**"
+      - "package.json"
+      - "package-lock.json"
+      - "config/.nvmrc"
+      - "apps/server/Dockerfile"
+      - ".github/workflows/deploy-gcp.yml"
   workflow_dispatch:
 
 concurrency:
@@ -21,6 +32,7 @@ jobs:
     environment: production
     env:
       GCP_CREDENTIALS_JSON: ${{ secrets.GCP_CREDENTIALS_JSON }}
+      BACKEND_DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
       GCP_REGION: ${{ vars.GCP_REGION }}
       GCP_CLOUD_RUN_SERVICE: ${{ vars.GCP_CLOUD_RUN_SERVICE }}
@@ -40,17 +52,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck server workspace
-        run: npm run typecheck -w apps/server
+      - name: Validate site workspace
+        run: npm run validate -w apps/site
 
-      - name: Build site workspace
-        run: npm run build -w apps/site
+      - name: Validate admin workspace
+        run: npm run validate -w apps/admin
 
-      - name: Build admin workspace
-        run: npm run build -w apps/admin
+      - name: Validate backend workspace
+        run: npm run validate -w apps/server
 
-      - name: Validate server workspace build
-        run: npm run build -w apps/server
+      - name: Apply backend Prisma migrations
+        if: env.BACKEND_DATABASE_URL != ''
+        env:
+          DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
+        run: npm run prisma:migrate:deploy -w apps/server
 
       - name: Authenticate to Google Cloud
         if: env.GCP_CREDENTIALS_JSON != '' && env.GCP_PROJECT_ID != '' && env.GCP_REGION != '' && env.GCP_CLOUD_RUN_SERVICE != '' && env.GCP_ARTIFACT_REGISTRY_REGION != '' && env.GCP_ARTIFACT_REGISTRY_REPOSITORY != ''
@@ -65,18 +80,19 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: Build container image with Cloud Build
+        id: build_image
         if: env.GCP_CREDENTIALS_JSON != '' && env.GCP_PROJECT_ID != '' && env.GCP_REGION != '' && env.GCP_CLOUD_RUN_SERVICE != '' && env.GCP_ARTIFACT_REGISTRY_REGION != '' && env.GCP_ARTIFACT_REGISTRY_REPOSITORY != ''
         run: |
           IMAGE_NAME="${GITHUB_REPOSITORY##*/}"
           IMAGE_URI="${GCP_ARTIFACT_REGISTRY_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${GCP_ARTIFACT_REGISTRY_REPOSITORY}/${IMAGE_NAME}:${GITHUB_SHA}"
-          echo "IMAGE_URI=$IMAGE_URI" >> "$GITHUB_ENV"
-          gcloud builds submit --tag "$IMAGE_URI"
+          echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+          gcloud builds submit --tag "$IMAGE_URI" --file apps/server/Dockerfile .
 
       - name: Deploy image to Cloud Run
-        if: env.IMAGE_URI != ''
+        if: steps.build_image.outputs.image_uri != ''
         run: |
           gcloud run deploy "$GCP_CLOUD_RUN_SERVICE" \
-            --image "$IMAGE_URI" \
+            --image "${{ steps.build_image.outputs.image_uri }}" \
             --project "$GCP_PROJECT_ID" \
             --region "$GCP_REGION" \
             --quiet

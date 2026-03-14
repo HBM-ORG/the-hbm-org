@@ -1,75 +1,67 @@
-# 📋 Deployment Status & Handoff (The HBM)
+# Deployment Status And Handoff
 
-**Executive summary:** Site and admin are structured and working. Go-live is possible after frontend build and env setup. For full **email** setup and ESP options (Mailchimp, Bravo), see **[EMAIL_SYSTEM.md](EMAIL_SYSTEM.md)**.
+## Executive Summary
 
----
+The runtime is no longer tracked as a single server serving everything together. The active deployment target is now:
 
-## Status overview
+- `site` app
+- `admin` app
+- `backend` app
+
+where backend contains:
+
+- web/API component
+- worker component
+
+## Current Status Overview
 
 | Area | Status | Notes |
 |------|--------|------|
-| CRM & registrations | ✅ | Events, video, newsletter → `registrations`; view/filter/export in Admin |
-| Cookies & consent | ✅ | Consent logged to DB; GA4 + Clarity load only after consent |
-| Live content | ✅ | Knowledge, How It Works, Site Content, Video Event, Events → API, instant on site |
-| Magic Fetch (books) | ✅ | Requires `GEMINI_API_KEY`; covers, summaries, quotes |
-| Email (automations + campaigns) | ⚠️ | Logic ready; **needs SMTP** (Admin or env). See [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) |
-| Admin chat agent | ✅ Removed | No action needed |
+| Site/admin frontend split | ✅ | `apps/site` and `apps/admin` are independent workspaces |
+| Backend web/worker split | ✅ | `apps/server` exposes separate `web` and `worker` entrypoints |
+| Prisma / MySQL runtime | ✅ | backend uses Prisma + MySQL |
+| Backend CI Prisma generation | ✅ | automated in backend CI |
+| Backend schema migration automation | ✅ | deploy workflows now run `prisma migrate deploy` |
+| Backend container ownership | ✅ | backend Docker build now lives in `apps/server/Dockerfile` |
+| DO deploy topology | ✅ In progress | workflows/docs updated for three app IDs per environment |
+| GCP deploy topology | ⚠️ Transitional | production workflow still uses the current Cloud Run path while the logical boundary is being aligned |
 
----
+## Active Short-Term Deployment Model
 
-## 1. CRM ורישומים
+### DigitalOcean
 
-| מקור | Endpoint | קובץ | מצב |
-|------|----------|------|-----|
-| רישום לאירוע פיזי | `POST /api/register` | NextEventHero, טופס אירוע | ✅ נשמר ב-DB (`Registration`) |
-| רישום לאירוע וידאו | `POST /api/register` | VideoEventModal | ✅ אותו מודל |
-| הרשמה לניוזלטר | `POST /api/newsletter` | NewsletterSection (פוטר) | ✅ אותו מודל |
+- `dev` and `staging` use:
+  - one `site` app ID
+  - one `admin` app ID
+  - one `backend` app ID
 
-- באדמין: **CRM Database** – צפייה, סינון, מיון, ייצוא CSV.
+### GCP
 
----
+- `main` remains deployed through the existing GCP workflow
+- backend Prisma automation is now explicit in the workflow
+- production boundary alignment is still in progress
 
-## 2. קוקיז ואנליטיקס
+## Current Workflow Ownership
 
-- הסכמה: באנר/דרוור; לוג ל-DB (`CookieConsentLog`).
-- GA4 + Clarity (Heatmaps, Recordings) נטענים רק אחרי הסכמה.
-- אדמין → Analytics: לינקים ל-GA4 ו-Clarity.
+- shared validation: `.github/workflows/ci.yml`
+- site validation: `.github/workflows/site-ci.yml`
+- admin validation: `.github/workflows/admin-ci.yml`
+- backend validation: `.github/workflows/backend-ci.yml`
+- DigitalOcean deployment: `.github/workflows/deploy-do.yml`
+- GCP deployment: `.github/workflows/deploy-gcp.yml`
 
----
+## Immediate Operational Notes
 
-## 3. תוכן חי מהאדמין
+- Site should target the backend through `VITE_API_BASE`
+- Admin should target the backend through `VITE_API_BASE`
+- Backend owns:
+  - `DATABASE_URL`
+  - Prisma generation/migration lifecycle
+  - storage credentials
+  - SMTP / AI secrets
 
-| אדמין | API | דף ציבורי |
-|-------|-----|-----------|
-| Site Content → Knowledge | `/api/cms/knowledge-base` | `/knowledge` |
-| How It Works | `/api/cms/how-it-works` | How It Works |
-| Site Content (Team, Testimonials…) | `/api/site-content` | About, MeeterWho… |
-| Video Event | `/api/video-event` | דף אירוע וידאו |
-| Events | `/api/events` + JSON | Events, Hero |
+## Related Docs
 
----
-
-## 4. Magic Fetch (ספרים)
-
-- אדמין → Site Content → Knowledge → Magic Fetch.
-- דורש `GEMINI_API_KEY`; אופציונלי `GOOGLE_BOOKS_API_KEY`.
-
----
-
-## 5. מיילים
-
-- אוטומציות (flows) ותור (EmailQueue) וקמפיינים מוכנים.
-- **להפעלה:** SMTP ב-Admin (Email Architect) או במשתני סביבה. פרטים: [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md).
-
----
-
-## 6. מה צריך לעלייה
-
-- **Build:** `npm run build`
-- **הרצת שרת:** `npm start` (מפעיל `tsx apps/server/src/web.ts`) או PM2 דרך `config/ecosystem.config.cjs`
-- **משתני סביבה:** `PORT`, `DATABASE_URL`, אופציונלי SMTP, Gemini, וכו' (ראה [RENDER_ENV.md](RENDER_ENV.md), [`apps/server/.env.example`](../apps/server/.env.example), [`apps/site/.env.example`](../apps/site/.env.example), [`apps/admin/.env.example`](../apps/admin/.env.example))
-- **תשתית:** כל התעבורה לאותו שרת (same-origin ל-API ו-dist).
-
----
-
-**See also:** [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md)
+- [THREE_APP_DEPLOYMENT_CHECKLIST.md](THREE_APP_DEPLOYMENT_CHECKLIST.md)
+- [CI_CD_VARIABLES.md](CI_CD_VARIABLES.md)
+- [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md)

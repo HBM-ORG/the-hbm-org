@@ -1,99 +1,214 @@
 # CI/CD Variables And Secrets
 
-This project uses separate GitHub Actions workflows for CI, DigitalOcean deploys, and GCP deploys. The frontend is now split into two deployable apps:
+This project now targets a three-app deployment boundary:
 
-- `apps/site` for `thehbm.org` / `www.thehbm.org`
-- `apps/admin` for `admin.thehbm.org`
-- `apps/server` for the shared API and worker runtime
+- `apps/site` as the public site
+- `apps/admin` as the admin static UI
+- `apps/server` as the backend app, containing:
+  - API web runtime
+  - worker runtime
 
 ## Branch Mapping
 
-- `dev`: development environment on DigitalOcean App Platform via `.github/workflows/deploy-do.yml`
-- `staging`: staging environment on DigitalOcean App Platform via `.github/workflows/deploy-do.yml`
-- `main`: production environment on GCP Cloud Run via `.github/workflows/deploy-gcp.yml`
+- `dev`: DigitalOcean development environment
+- `staging`: DigitalOcean staging environment
+- `main`: GCP production environment
 
-## Workflows
+## Workflow Layout
 
-- `.github/workflows/ci.yml`: runs `npm ci`, server typecheck, and validates `apps/site`, `apps/admin`, and `apps/server`
-- `.github/workflows/deploy-do.yml`: validates and deploys `dev` and `staging` to DigitalOcean
-- `.github/workflows/deploy-gcp.yml`: validates, builds the Docker image, and deploys `main` to GCP Cloud Run
+### Shared / orchestration
 
-## GitHub Actions Secrets
+- `.github/workflows/ci.yml`: shared workspace validation for root-level and cross-cutting changes
 
-These should be configured in GitHub repository or environment secrets.
+### Component CI
 
-- `DO_API_TOKEN`: used by the DigitalOcean deploy workflow to trigger App Platform deployments via `doctl`
-- `GCP_CREDENTIALS_JSON`: used by the GCP deploy workflow for Cloud Build, Artifact Registry, and Cloud Run
+- `.github/workflows/site-ci.yml`: validates `apps/site`
+- `.github/workflows/admin-ci.yml`: validates `apps/admin`
+- `.github/workflows/backend-ci.yml`: validates `apps/server`, including explicit Prisma generation
 
-## GitHub Actions Variables
+### Deploy
 
-These should be configured as GitHub repository or environment variables.
+- `.github/workflows/deploy-do.yml`: deploys `dev` and `staging` to DigitalOcean using three app IDs per environment:
+  - `site`
+  - `admin`
+  - `backend`
+- `.github/workflows/deploy-gcp.yml`: deploys `main` to GCP and runs backend Prisma generation plus schema migration before backend rollout
 
-### DigitalOcean
+## GitHub Environments
 
-- `DO_APP_ID_DEV`: `development` environment variable for the App Platform app ID behind the `dev` branch
-- `DO_APP_ID_STAGING`: `staging` environment variable for the App Platform app ID behind the `staging` branch
+Use these GitHub environments:
 
-### GCP
+- `development`
+- `staging`
+- `production`
 
-- `GCP_PROJECT_ID`: `production` environment variable for the GCP project ID
-- `GCP_REGION`: `production` environment variable for the Cloud Run region, for example `europe-west1`
-- `GCP_CLOUD_RUN_SERVICE`: `production` environment variable for the Cloud Run service name
-- `GCP_ARTIFACT_REGISTRY_REGION`: `production` environment variable for the Artifact Registry region
-- `GCP_ARTIFACT_REGISTRY_REPOSITORY`: `production` environment variable for the Artifact Registry Docker repository name
+Environment-scoped variable names should stay consistent across environments. The value changes per environment, but the key name stays the same.
+
+## Exact GitHub Secrets And Variables Matrix
+
+### Shared repository secret
+
+- `DO_API_TOKEN`
+
+Used by:
+
+- `.github/workflows/deploy-do.yml`
+
+### `development` environment
+
+#### Secrets
+
+- `BACKEND_DATABASE_URL`
+
+#### Variables
+
+- `DO_APP_ID_SITE`
+- `DO_APP_ID_ADMIN`
+- `DO_APP_ID_BACKEND`
+
+Purpose:
+
+- `site` DO App Platform app ID for `testwww.thehbm.org`
+- `admin` DO App Platform app ID for `testadmin.thehbm.org`
+- `backend` DO App Platform app ID for `testapi.thehbm.org`
+- `BACKEND_DATABASE_URL` is used by backend CI/deploy automation to run `prisma migrate deploy`
+
+### `staging` environment
+
+#### Secrets
+
+- `BACKEND_DATABASE_URL`
+
+#### Variables
+
+- `DO_APP_ID_SITE`
+- `DO_APP_ID_ADMIN`
+- `DO_APP_ID_BACKEND`
+
+Purpose:
+
+- same variable names as `development`
+- values point to staging App Platform app IDs and staging backend DB
+
+### `production` environment
+
+#### Secrets
+
+- `GCP_CREDENTIALS_JSON`
+- `BACKEND_DATABASE_URL`
+
+#### Variables
+
+- `GCP_PROJECT_ID`
+- `GCP_REGION`
+- `GCP_CLOUD_RUN_SERVICE`
+- `GCP_ARTIFACT_REGISTRY_REGION`
+- `GCP_ARTIFACT_REGISTRY_REPOSITORY`
+
+Purpose:
+
+- `GCP_CREDENTIALS_JSON` authenticates GitHub Actions to GCP
+- `BACKEND_DATABASE_URL` is used by backend deployment automation to run `prisma migrate deploy`
+- `GCP_*` values drive Cloud Build, Artifact Registry, and Cloud Run deployment
+
+## Why `BACKEND_DATABASE_URL` Lives In GitHub
+
+Runtime application config should still live in the hosting platform, but backend schema deployment now runs automatically in CI/CD.
+
+That means GitHub Actions needs a DB connection string for:
+
+- `npm run prisma:migrate:deploy -w apps/server`
+
+This is a CI/deploy secret, separate from the hosting platform’s runtime env values, even if both point to the same database.
 
 ## Runtime Application Environment Variables
 
-GitHub Actions deploys the app, but runtime application config should live in the hosting platform, not in GitHub Actions.
+These live in the hosting platform, not in GitHub Actions variables.
 
-Examples:
+### Site app runtime variables
 
-- `DATABASE_URL`
-- `ADMIN_PASSWORD`
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
-- `STORAGE_PROVIDER`
-- `SPACES_ENDPOINT`, `SPACES_REGION`, `SPACES_BUCKET`, `SPACES_KEY`, `SPACES_SECRET`
-- `GCS_BUCKET`, `GCS_PROJECT_ID`, `GCS_CREDENTIALS_JSON`, `GCS_KEY_FILE`
-- `GEMINI_API_KEY`
-- `GOOGLE_BOOKS_API_KEY`
-- `SITE_APP_URL`
-- `ADMIN_APP_URL`
-
-## Frontend Static App Variables
-
-These belong to the frontend hosting target for each app, not the server container.
-
-### Site app
-
-- `VITE_API_BASE`
-- `VITE_ASSET_BASE`
 - `VITE_SITE_URL`
 - `VITE_ADMIN_URL`
+- `VITE_API_BASE`
+- `VITE_ASSET_BASE`
+- `VITE_CMS_UPLOADS_BASE` when legacy external media remains needed
+- `VITE_SITE_OG_IMAGE_URL` as needed
+- `VITE_FAVICON_URL` as needed
+- `VITE_APPLE_TOUCH_ICON_URL` as needed
 - `VITE_GA_ID`
 - `VITE_CLARITY_ID`
 - `VITE_FB_PIXEL_ID`
 
-### Admin app
+### Admin app runtime variables
 
-- `VITE_API_BASE`
-- `VITE_ASSET_BASE`
 - `VITE_SITE_URL`
 - `VITE_ADMIN_URL`
-- `VITE_CLARITY_ID` (optional, only for direct Clarity project deep-links from admin)
+- `VITE_API_BASE`
+- `VITE_ASSET_BASE`
+- `VITE_CMS_UPLOADS_BASE` when legacy external media remains needed
+- `VITE_FAVICON_URL` as needed
+- `VITE_CLARITY_ID` as needed
 
-### Frontend variables that should stay server-side instead
+### Backend app runtime variables
+
+- `NODE_ENV`
+- `PORT`
+- `BASE_URL`
+- `SITE_PUBLIC_URL`
+- `SITE_APP_URL`
+- `ADMIN_APP_URL`
+- `DATABASE_URL`
+- `ADMIN_PASSWORD`
+- `RUN_EMAIL_WORKER=false` on the web component
+- `STORAGE_PROVIDER`
+- `SPACES_ENDPOINT`
+- `SPACES_REGION`
+- `SPACES_BUCKET`
+- `SPACES_KEY`
+- `SPACES_SECRET`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `SMTP_FROM`
+- `GEMINI_API_KEY`
+- `GOOGLE_BOOKS_API_KEY`
+- `OPENAI_API_KEY`
+
+### Frontend variables that must stay server-side
 
 Do not expose these as `VITE_*` vars in `apps/site` or `apps/admin`:
 
 - `GOOGLE_BOOKS_API_KEY`
 - `GEMINI_API_KEY`
 - `OPENAI_API_KEY`
+- `DATABASE_URL`
+- storage credentials
+- SMTP credentials
 
-Those remain runtime-only server variables in `apps/server`.
+## Environment-Specific Hostname Matrix
+
+### Development
+
+- site: `https://testwww.thehbm.org`
+- admin: `https://testadmin.thehbm.org`
+- backend: `https://testapi.thehbm.org`
+
+### Staging
+
+- site: set the staging public site hostname
+- admin: set the staging admin hostname
+- backend: set the staging API hostname
+
+### Production
+
+- site: production public hostname
+- admin: production admin hostname
+- backend: production API hostname
 
 ## Local Development Defaults
 
-The checked-in frontend env examples default to localhost for split local development:
+The checked-in frontend env examples default to localhost:
 
 ### `apps/site/.env.example`
 
@@ -107,17 +222,40 @@ The checked-in frontend env examples default to localhost for split local develo
 - `VITE_SITE_URL=http://localhost:4200`
 - `VITE_ADMIN_URL=http://localhost:4300`
 
-Keep these in:
+### `apps/server/.env.example`
 
-- DigitalOcean App Platform environment settings for `dev` and `staging`
-- GCP Cloud Run service variables and secret bindings for `main`
+- `BASE_URL=http://localhost:3001`
+- `SITE_APP_URL=http://localhost:4200`
+- `ADMIN_APP_URL=http://localhost:4300`
+- `RUN_EMAIL_WORKER=false`
 
-## Docker / GCP Deploy Notes
+## Prisma Automation Notes
 
-Production deploy uses:
+The backend pipeline now treats Prisma as a backend-wide concern:
 
-1. `Dockerfile`
-2. `gcloud builds submit` to build and push an image to Artifact Registry
-3. `gcloud run deploy` to deploy that image to Cloud Run
+1. `npm ci`
+2. `npm run prisma:generate -w apps/server`
+3. backend build / typecheck
+4. `npm run prisma:migrate:deploy -w apps/server`
+5. deploy backend runtime
 
-That gives production a stable, explicit build artifact instead of a source-only deploy.
+This applies to:
+
+- DigitalOcean backend deployment
+- GCP production backend deployment
+
+## Production / GCP Notes
+
+Current production workflow still uses:
+
+1. `apps/server/Dockerfile`
+2. `gcloud builds submit`
+3. `gcloud run deploy`
+
+The deployment boundary is being aligned to the same logical model as DO:
+
+- site
+- admin
+- backend
+
+The backend Prisma migration step is now automated in the production pipeline through `BACKEND_DATABASE_URL`.
