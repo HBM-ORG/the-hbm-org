@@ -8,46 +8,40 @@ Remove the remaining dependency on legacy WordPress-style media hosting (`/wp-co
 
 - WordPress is **not** an active application/runtime platform anymore.
 - There is **no** live `wp-admin`, `wp-json`, or WordPress API integration left in the active codebase.
-- The remaining dependency is a **legacy media source/path convention** used by:
-  - frontend content data in `apps/site/src/data/content.js`
-  - mirrored admin preview data in `apps/admin/src/data/content.js`
-  - HTML head asset defaults in both apps
-  - the SEO organization logo
-  - one hardcoded book cover in `apps/site/src/hooks/useBookData.js`
+- Active runtime media no longer depends on `/wp-content/uploads`.
+- Frontend content data in `apps/site/src/data/content.js` and mirrored admin preview data in `apps/admin/src/data/content.js` now point directly to DigitalOcean Spaces URLs under `legacy/wordpress-media`.
+- HTML head asset defaults, SEO organization branding, and the `Homo Deus` fallback cover no longer depend on WordPress-hosted media.
 
 ## Migration Attempt Status
 
 - A live migration attempt to DO Spaces was executed for the public `wp-content/uploads` URLs.
 - Result: the old public `wp-content/uploads` URLs returned an HTML page instead of the original binaries for the main media bundle.
-- Because of that, the full content-media migration could **not** be safely completed from the public host alone.
-- Successful partial migrations:
+- The checked-in WordPress backup under `wp-content/` does **not** contain an `uploads/` tree, so it was not an authoritative recovery source for the remaining binaries.
+- Despite that, the migration mapping in `scripts/one-off/wordpress-media-mapping.json` provided authoritative Spaces targets for the remaining HBM media bundle.
+- Successful migrations:
   - `og-default.png` moved to Spaces
   - `Homo Deus` fallback cover moved to Spaces
-  - favicon / touch icon / organization logo no longer depend on WordPress-hosted media and now use local `/assets/logo.png`
-- Remaining blocker:
-  - the `content.js` media bundle still needs an authoritative binary source (Hostinger filesystem export, backup archive, or original local asset pack) before it can be migrated safely
+  - favicon / touch icon / organization logo no longer depend on WordPress-hosted media and now use local app assets / DB-backed settings
+  - `content.js` media bundle moved off WordPress-shaped runtime URLs and now uses Spaces-hosted legacy media URLs directly
 
 ## Active Runtime Compatibility Layer
 
-- `apps/site/src/utils/api.js`
-- `apps/admin/src/utils/api.js`
-- `apps/site/index.html`
-- `apps/admin/index.html`
-- `apps/site/src/components/SEO.jsx`
+- None in active runtime for WordPress media paths.
 
 Purpose:
 
-- These files currently preserve backward compatibility through `VITE_CMS_UPLOADS_BASE` and a fallback to `VITE_SITE_URL + /wp-content/uploads`.
-- This is safe for the transition period, but should be removed only **after** the media assets below are migrated.
+- WordPress-style path compatibility has been removed from the active site and admin runtime.
+- The remaining WordPress references in this repository are historical only: mapping files, docs, and backups.
+- `scripts/one-off/wordpress-media-mapping.json` is retained as an audit manifest of the finalized source-to-Spaces migration.
 
-## Content Inventory
+## Migrated Content Inventory
 
-The following WordPress-hosted assets are still referenced in both:
+The following assets were the final WordPress-hosted runtime bundle referenced in both:
 
 - `apps/site/src/data/content.js`
 - `apps/admin/src/data/content.js`
 
-That means every media migration below must be updated in **both** files unless the admin is refactored to consume the same source directly.
+These entries were updated in **both** files and now resolve to Spaces-hosted URLs.
 
 ### `meeter.banner`
 
@@ -130,7 +124,8 @@ That means every media migration below must be updated in **both** files unless 
 
 Current behavior:
 
-- favicon / apple-touch-icon / org logo can still resolve via `VITE_CMS_UPLOADS_BASE`
+- favicon and apple-touch-icon now resolve from repo-served app-local public assets
+- organization/contact/social metadata now comes from DB-backed site settings
 - these should eventually move to:
   - repo-served public assets, or
   - object storage/CDN URLs not shaped around WordPress paths
@@ -138,7 +133,7 @@ Current behavior:
 ### Book Cover Fallback
 
 - `apps/site/src/hooks/useBookData.js`
-- Remaining external WordPress-hosted asset:
+- Migrated external asset:
   - `https://www.ynharari.com/wp-content/uploads/2017/01/homo_deus.png`
 
 Impact:
@@ -171,38 +166,36 @@ Impact:
 
 ## Safe Removal Order
 
-- [ ] Migrate all `${WP}/...` assets used in `apps/site/src/data/content.js`
-- [ ] Mirror the same updated asset URLs into `apps/admin/src/data/content.js`
+- [x] Migrate all `${WP}/...` assets used in `apps/site/src/data/content.js`
+- [x] Mirror the same updated asset URLs into `apps/admin/src/data/content.js`
 - [x] Repoint the HTML head asset config away from WordPress-hosted media
 - [x] Move the SEO organization logo source off the WordPress host
 - [x] Replace the `Homo Deus` WordPress-hosted cover in `apps/site/src/hooks/useBookData.js`
-- [ ] Remove `VITE_WP_CONTENT_BASE` compatibility
-- [ ] Remove the `/wp-content/uploads` fallback from `getCmsUploadsBase()`
-- [ ] Remove WordPress-shaped fallback logic from `apps/site/index.html` and `apps/admin/index.html`
+- [x] Remove `VITE_WP_CONTENT_BASE` compatibility
+- [x] Remove the `/wp-content/uploads` fallback from `getCmsUploadsBase()`
+- [x] Remove WordPress-shaped fallback logic from `apps/site/index.html` and `apps/admin/index.html`
 - [ ] Update or archive Hostinger-specific docs
 - [ ] Remove backup-only legacy references if no longer needed
 
-## Recommended Migration Target
+## Current Runtime Target
 
-Preferred target for the remaining assets:
+Current target for the migrated assets:
 
-- object storage/CDN on DigitalOcean Spaces or GCS
+- object storage/CDN on DigitalOcean Spaces
 
 Fallback option:
 
 - checked-in public assets for stable brand/media files that do not need runtime mutability
 
-## Suggested Execution Strategy
+## Remaining Cleanup Strategy
 
-1. Move stable brand/head assets first.
-2. Move `about` and `b2b` media next, since they represent the largest visible dependency surface.
-3. Move `meeter` banner/guidelines assets.
-4. Replace the single `Homo Deus` fallback image.
-5. Remove the compatibility layer only after browser QA confirms parity on:
+1. Browser-QA the Spaces-backed media on:
    - `/about`
    - `/meeter`
    - `/b2b`
    - admin preview surfaces that read `apps/admin/src/data/content.js`
+2. Update or archive Hostinger/WordPress migration docs that still imply an active runtime dependency.
+3. Delete backup-only references once they are no longer needed for audit/history.
 
 ## Notes
 

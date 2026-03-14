@@ -9,11 +9,13 @@ import {
   getHowItWorks,
   getHowItWorksStage,
   getKnowledgeBase,
+  getSiteSettings,
   getVideoEvent,
   publishHowItWorksStage,
   saveHowItWorks,
   saveHowItWorksStage,
   saveKnowledgeBase,
+  saveSiteSettings,
   saveVideoEvent,
   toggleLock,
 } from "../controllers/content.controller.js";
@@ -22,6 +24,8 @@ const router = Router();
 
 router.get("/video-event", getVideoEvent);
 router.post("/video-event", saveVideoEvent);
+router.get("/site-settings", getSiteSettings);
+router.post("/site-settings", saveSiteSettings);
 router.get("/cms/how-it-works/staging", getHowItWorksStage);
 router.post("/cms/how-it-works/staging", saveHowItWorksStage);
 router.post("/cms/how-it-works/publish", publishHowItWorksStage);

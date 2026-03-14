@@ -4,7 +4,6 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": ["ES2022", "DOM"],
-    "types": ["node"],
     "allowJs": false,
     "checkJs": false,
     "noEmit": true,
@@ -15,16 +14,8 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": [
-    "apps/server/src/**/*.ts",
-    "apps/server/src/**/*.d.ts",
-    "scripts/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "apps/site/dist",
-    "apps/admin/dist",
-    "apps/server/dist",
-    "scripts/output"
+  "files": [],
+  "references": [
+    { "path": "./apps/server" }
   ]
 }

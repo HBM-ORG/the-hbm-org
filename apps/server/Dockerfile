@@ -2,14 +2,14 @@ FROM node:20-bookworm-slim AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json tsconfig.json prisma.config.ts ./
-COPY apps/site/package.json apps/site/package.json
-COPY apps/admin/package.json apps/admin/package.json
-COPY apps/server/package.json apps/server/package.json
+COPY tsconfig.json prisma.config.ts ./
+COPY apps/server/package.json apps/server/package-lock.json apps/server/tsconfig.json ./apps/server/
+WORKDIR /app/apps/server
 RUN npm ci
 
+WORKDIR /app
 COPY . .
-RUN npm run validate -w apps/server
+RUN npm --prefix apps/server run validate
 
 FROM node:20-bookworm-slim AS runtime
 
@@ -22,4 +22,4 @@ COPY --from=build /app /app
 
 EXPOSE 3001
 
-CMD ["npm", "run", "web", "-w", "apps/server"]
+CMD ["npm", "--prefix", "apps/server", "run", "web"]

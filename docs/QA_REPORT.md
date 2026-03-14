@@ -1,5 +1,8 @@
 # 🎯 QA Report (The HBM)
 
+> Historical report only.
+> This QA document was produced for the older Hostinger/Render deployment phase and should not be treated as the current go-live checklist.
+
 **Status:** ✅ Ready for deployment (Hostinger / Render)  
 **Last updated:** February 2026
 

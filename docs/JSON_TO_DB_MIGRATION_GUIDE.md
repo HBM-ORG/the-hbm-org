@@ -19,7 +19,7 @@ This repo now supports moving mutable runtime content out of JSON files and into
   - email automation settings (`EmailFlow`, `EmailSequence`, `SmtpConfig`, `GlobalStyling`)
   - campaigns (`EmailCampaign`)
   - suppression list (`EmailSuppression`)
-  - remaining mutable content configs (`ContentEntry` for video event, how-it-works, knowledge base)
+- remaining mutable content configs (`ContentEntry` for video event, how-it-works, knowledge base, site settings)
 - Already moved to object storage:
   - admin uploads through `/api/upload/*`
 - Legacy JSON files now exist only as migration sources / historical backups for one-off backfill scripts.

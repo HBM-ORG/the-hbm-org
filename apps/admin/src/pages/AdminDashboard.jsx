@@ -91,6 +91,7 @@ import EmailEngine from "../components/Admin/EmailEngine";
 import SiteContentManager from "../components/Admin/SiteContentManager";
 import AnalyticsDashboard from "../components/Admin/AnalyticsDashboard";
 import CookieConsentLogs from "../components/Admin/CookieConsentLogs";
+import SettingsManager from "../components/Admin/SettingsManager.jsx";
 import { useEvents } from "../context/EventsContext";
 import { getApiBase, resolveAssetUrl } from "../utils/api";
 import { getStoredAdminPassword } from "../utils/admin-auth.js";
@@ -914,6 +915,13 @@ const AdminDashboard = () => {
             >
               <ShieldCheck className="w-4 h-4" /> Cookie Logs
             </button>
+            <div className="w-px h-8 bg-gray-200 mx-2 self-center"></div>
+            <button
+              onClick={() => setTopView("settings")}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${topView === "settings" ? "bg-white text-indigo-600 shadow-xl" : "text-gray-400 hover:text-indigo-500"}`}
+            >
+              <Settings className="w-4 h-4" /> Settings
+            </button>
           </div>
         )}
 
@@ -940,6 +948,11 @@ const AdminDashboard = () => {
           {topView === "cookies" && !isEditing && (
             <div className="h-[calc(100vh-250px)] animate-in fade-in slide-in-from-bottom-4 duration-500">
               <CookieConsentLogs />
+            </div>
+          )}
+          {topView === "settings" && !isEditing && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <SettingsManager />
             </div>
           )}
           {!isEditing && topView === "events" && (

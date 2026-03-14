@@ -38,6 +38,16 @@ For a trackable checklist with placeholder example values, see:
   - `backend`
 - `.github/workflows/deploy-gcp.yml`: deploys `main` to GCP and runs backend Prisma generation plus schema migration before backend rollout
 
+## App Root Deployment Boundary
+
+Each deployable now installs and validates from its own app root:
+
+- `apps/site`
+- `apps/admin`
+- `apps/server`
+
+That means frontend deploys no longer need the root `package.json` install path or backend Prisma hooks in order to build successfully.
+
 ## GitHub Environments
 
 Use these GitHub environments:
@@ -121,7 +131,7 @@ Runtime application config should still live in the hosting platform, but backen
 
 That means GitHub Actions needs a DB connection string for:
 
-- `npm run prisma:migrate:deploy -w apps/server`
+- `npm --prefix apps/server run prisma:migrate:deploy`
 
 This is a CI/deploy secret, separate from the hosting platform’s runtime env values, even if both point to the same database.
 
@@ -134,11 +144,7 @@ These live in the hosting platform, not in GitHub Actions variables.
 - `VITE_SITE_URL`
 - `VITE_ADMIN_URL`
 - `VITE_API_BASE`
-- `VITE_ASSET_BASE`
-- `VITE_CMS_UPLOADS_BASE` when legacy external media remains needed
 - `VITE_SITE_OG_IMAGE_URL` as needed
-- `VITE_FAVICON_URL` as needed
-- `VITE_APPLE_TOUCH_ICON_URL` as needed
 - `VITE_GA_ID`
 - `VITE_CLARITY_ID`
 - `VITE_FB_PIXEL_ID`
@@ -148,10 +154,13 @@ These live in the hosting platform, not in GitHub Actions variables.
 - `VITE_SITE_URL`
 - `VITE_ADMIN_URL`
 - `VITE_API_BASE`
-- `VITE_ASSET_BASE`
-- `VITE_CMS_UPLOADS_BASE` when legacy external media remains needed
-- `VITE_FAVICON_URL` as needed
 - `VITE_CLARITY_ID` as needed
+
+### Shared frontend notes
+
+- Frontend asset and legacy upload URLs now derive from `VITE_API_BASE`; separate `VITE_ASSET_BASE` and `VITE_CMS_UPLOADS_BASE` keys are no longer required.
+- Site and admin favicons are now repo-served from each app's own `public/` directory, so `VITE_FAVICON_URL` and `VITE_APPLE_TOUCH_ICON_URL` are no longer required.
+- Organization/contact/social metadata now lives in DB-backed site settings and is maintained from the admin `Settings` tab instead of app-local hardcoded runtime env keys.
 
 ### Backend app runtime variables
 

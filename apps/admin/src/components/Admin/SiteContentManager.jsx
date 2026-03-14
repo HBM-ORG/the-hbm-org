@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Save, Users, Quote, Image as ImageIcon, Plus, Trash2, Edit3, X, Lock, Unlock, Star, Smartphone, BookOpen, Video, Youtube, Upload, Sparkles, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
 import { siteContent } from '../../data/content';
+import { getStoredAdminPassword } from '../../utils/admin-auth.js';
 import { getApiBase } from '../../utils/api';
 import { uploadFile } from '../../utils/upload';
 
@@ -94,23 +95,28 @@ const SiteContentManager = () => {
     const saveChanges = async () => {
         setSaveStatus('Saving...');
         try {
+            const adminPassword = getStoredAdminPassword();
+            const headers = {
+                'Content-Type': 'application/json',
+                'X-Admin-Password': adminPassword,
+            };
             let res;
             if (activeSection === 'how-it-works') {
                 res = await fetch(`${base}/api/cms/how-it-works`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(howItWorks)
                 });
             } else if (activeSection === 'knowledge') {
                 res = await fetch(`${base}/api/cms/knowledge-base`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(knowledgeBase)
                 });
             } else {
                 res = await fetch(`${base}/api/site-content`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(content)
                 });
             }

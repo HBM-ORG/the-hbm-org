@@ -54,7 +54,7 @@ This is the agreed transition model for now:
 ### Root orchestration
 
 - [ ] Keep root `package.json` minimal and orchestration-focused
-- [ ] Keep root install/build usable from repo root
+- [x] Keep root install/build usable from repo root
 - [ ] Limit root workflows to shared validation or orchestration only
 
 ### Component CI workflows
@@ -84,22 +84,22 @@ This is the agreed transition model for now:
 ### `apps/site`
 
 - [x] Keep `apps/site/package.json` as the source of truth for site build/run scripts
-- [ ] Ensure site build can run from:
-  - repo root via `npm run validate -w apps/site`
+- [x] Ensure site build can run from:
+  - repo root via `npm run validate:site`
   - `apps/site` directly via local package scripts
 
 ### `apps/admin`
 
 - [x] Keep `apps/admin/package.json` as the source of truth for admin build/run scripts
-- [ ] Ensure admin build can run from:
-  - repo root via `npm run validate -w apps/admin`
+- [x] Ensure admin build can run from:
+  - repo root via `npm run validate:admin`
   - `apps/admin` directly via local package scripts
 
 ### `apps/server`
 
 - [x] Keep `apps/server/package.json` as the source of truth for backend web/worker/Prisma scripts
-- [ ] Ensure backend commands can run from:
-  - repo root via workspace scripts
+- [x] Ensure backend commands can run from:
+  - repo root via orchestration scripts
   - `apps/server` directly via local package scripts
 - [x] Keep `web` and `worker` under the same backend package root
 
@@ -107,10 +107,10 @@ This is the agreed transition model for now:
 
 ### Backend CI build
 
-- [ ] Run `npm ci`
-- [x] Run `npm run prisma:generate -w apps/server`
-- [ ] Run backend typecheck/build
-- [x] Keep Prisma generation explicit in backend CI even if `postinstall` also runs it
+- [x] Run `npm ci` inside `apps/server`
+- [x] Run `npm run prisma:generate` inside `apps/server`
+- [x] Run backend typecheck/build
+- [x] Keep Prisma generation explicit in backend CI without relying on root `postinstall`
 
 ### Backend deploy
 
@@ -140,25 +140,23 @@ This is the agreed transition model for now:
 
 ### Site app (`testwww.thehbm.org`)
 
-- [ ] Create static app from repo root
-- [ ] Build with `npm ci && npm run validate -w apps/site`
-- [ ] Publish `apps/site/dist`
+- [ ] Create static app from `apps/site`
+- [ ] Build with `npm ci && npm run validate`
+- [ ] Publish `dist`
 - [ ] Set:
   - `VITE_SITE_URL=https://testwww.thehbm.org`
   - `VITE_ADMIN_URL=https://testadmin.thehbm.org`
   - `VITE_API_BASE=https://testapi.thehbm.org`
-  - `VITE_ASSET_BASE=https://testapi.thehbm.org`
 
 ### Admin app (`testadmin.thehbm.org`)
 
-- [ ] Create static app from repo root
-- [ ] Build with `npm ci && npm run validate -w apps/admin`
-- [ ] Publish `apps/admin/dist`
+- [ ] Create static app from `apps/admin`
+- [ ] Build with `npm ci && npm run validate`
+- [ ] Publish `dist`
 - [ ] Set:
   - `VITE_SITE_URL=https://testwww.thehbm.org`
   - `VITE_ADMIN_URL=https://testadmin.thehbm.org`
   - `VITE_API_BASE=https://testapi.thehbm.org`
-  - `VITE_ASSET_BASE=https://testapi.thehbm.org`
 
 ### Backend app (`testapi.thehbm.org`)
 
@@ -168,8 +166,8 @@ This is the agreed transition model for now:
 
 #### Backend web component
 
-- [ ] Build with `npm ci && npm run validate -w apps/server`
-- [ ] Run with `npm run web -w apps/server`
+- [ ] Build with `npm ci && npm run validate`
+- [ ] Run with `npm run web`
 - [ ] Expose port `3001`
 - [ ] Keep `RUN_EMAIL_WORKER=false`
 - [ ] Start with `1` instance
@@ -177,8 +175,8 @@ This is the agreed transition model for now:
 
 #### Backend worker component
 
-- [ ] Build with `npm ci && npm run validate -w apps/server`
-- [ ] Run with `npm run worker -w apps/server`
+- [ ] Build with `npm ci && npm run validate`
+- [ ] Run with `npm run worker`
 - [ ] Keep `1` instance initially
 - [ ] Do not scale worker horizontally until queue safety guarantees exist
 
@@ -217,21 +215,23 @@ This is the agreed transition model for now:
 
 ## Frontend Runtime Variables
 
+Shared organization contact/social metadata is now DB-backed and maintained from the admin `Settings` tab.
+
 ### Site
 
 - [ ] `VITE_SITE_URL`
 - [ ] `VITE_ADMIN_URL`
 - [ ] `VITE_API_BASE`
-- [ ] `VITE_ASSET_BASE`
-- [ ] analytics/head/media vars as needed
+- [ ] analytics vars as needed
+- [ ] confirm local `public/favicon.svg` and `public/apple-touch-icon.svg` are present in the built app
 
 ### Admin
 
 - [ ] `VITE_SITE_URL`
 - [ ] `VITE_ADMIN_URL`
 - [ ] `VITE_API_BASE`
-- [ ] `VITE_ASSET_BASE`
 - [ ] admin-only optional vars as needed
+- [ ] confirm local `public/favicon.svg` is present in the built app
 
 ## GCP Production Preparation
 

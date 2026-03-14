@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="theme-color" content="#000000" />
-    <link rel="icon" type="image/png" href="" id="app-favicon" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -47,7 +47,7 @@
     <meta name="twitter:image" content="" />
 
     <link rel="manifest" href="/site.webmanifest" />
-    <link rel="apple-touch-icon" href="" id="app-apple-touch-icon" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
     <script>
       function readBuildEnvValue(raw) {
         return raw && !/^%.*%$/.test(raw) ? raw : "";
@@ -55,16 +55,9 @@
 
       const configuredSiteUrl = readBuildEnvValue("%VITE_SITE_URL%");
       const configuredOgImage = readBuildEnvValue("%VITE_SITE_OG_IMAGE_URL%");
-      const configuredFavicon = readBuildEnvValue("%VITE_FAVICON_URL%");
-      const configuredTouchIcon = readBuildEnvValue("%VITE_APPLE_TOUCH_ICON_URL%");
 
       const siteUrl = (configuredSiteUrl || window.location.origin).replace(/\/+$/, "");
       const ogImage = configuredOgImage || `${siteUrl}/og-default.png`;
-      const favicon = configuredFavicon || `${siteUrl}/assets/logo.png`;
-      const touchIcon = configuredTouchIcon || `${siteUrl}/assets/logo.png`;
-
-      document.getElementById("app-favicon")?.setAttribute("href", favicon);
-      document.getElementById("app-apple-touch-icon")?.setAttribute("href", touchIcon);
       document.querySelector('meta[property="og:image"]')?.setAttribute("content", ogImage);
       document.querySelector('meta[property="og:image:secure_url"]')?.setAttribute("content", ogImage);
       document.querySelector('meta[property="og:url"]')?.setAttribute("content", `${siteUrl}/`);

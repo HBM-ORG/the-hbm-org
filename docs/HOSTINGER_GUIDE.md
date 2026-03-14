@@ -1,5 +1,9 @@
 # 🌐 HBM Production Deployment (Hostinger)
 
+> Historical document only.
+> The active deployment model is the three-app split documented in `DEPLOY_INSTRUCTIONS.md`, `CI_CD_VARIABLES.md`, and `THREE_APP_DEPLOYMENT_CHECKLIST.md`.
+> Keep this file only as legacy operational history for the previous Hostinger-based setup.
+
 How to deploy the HBM platform (site + admin + API) on Hostinger.
 
 ---

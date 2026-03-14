@@ -8,10 +8,6 @@ on:
       - main
     paths:
       - "apps/site/**"
-      - "data/public-brand.js"
-      - "scripts/build/**"
-      - "package.json"
-      - "package-lock.json"
       - "config/.nvmrc"
       - ".github/workflows/site-ci.yml"
   pull_request:
@@ -21,10 +17,6 @@ on:
       - main
     paths:
       - "apps/site/**"
-      - "data/public-brand.js"
-      - "scripts/build/**"
-      - "package.json"
-      - "package-lock.json"
       - "config/.nvmrc"
       - ".github/workflows/site-ci.yml"
   workflow_dispatch:
@@ -50,9 +42,10 @@ jobs:
         with:
           node-version-file: config/.nvmrc
           cache: npm
+          cache-dependency-path: apps/site/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefix apps/site
 
       - name: Validate site workspace
-        run: npm run validate -w apps/site
+        run: npm --prefix apps/site run validate

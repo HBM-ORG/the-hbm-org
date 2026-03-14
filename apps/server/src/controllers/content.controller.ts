@@ -1,17 +1,20 @@
 import type { Request, Response } from "express";
 import type { ContentLockTarget } from "../types/content.js";
 import {
+  getSiteSettingsConfig,
   getHowItWorksConfig,
   getHowItWorksStaging,
   getKnowledgeBaseConfig,
   getVideoEventConfig,
   publishHowItWorks,
+  saveSiteSettingsConfig,
   saveHowItWorksConfig,
   saveHowItWorksStaging,
   saveKnowledgeBaseConfig,
   saveVideoEventConfig,
   toggleContentLock,
 } from "../services/content.service.js";
+import { isAuthorizedRequest } from "../middleware/admin-auth.js";
 
 function isForced(req: Request): boolean {
   const value = req.query.force;
@@ -45,10 +48,39 @@ export async function saveVideoEvent(
   res: Response,
 ): Promise<void> {
   try {
+    if (!(await isAuthorizedRequest(req))) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     await saveVideoEventConfig(req.body);
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: "Failed to save video event settings" });
+  }
+}
+
+export async function getSiteSettings(
+  _req: Request,
+  res: Response,
+): Promise<void> {
+  res.status(200).json(await getSiteSettingsConfig());
+}
+
+export async function saveSiteSettings(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (!(await isAuthorizedRequest(req))) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const settings = await saveSiteSettingsConfig(req.body);
+    res.json({ success: true, settings });
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Failed to save site settings",
+    });
   }
 }
 
@@ -136,6 +168,10 @@ export async function saveHowItWorks(
   res: Response,
 ): Promise<void> {
   try {
+    if (!(await isAuthorizedRequest(req))) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     await saveHowItWorksConfig(req.body, isForced(req));
     res.json({ success: true });
   } catch (error) {
@@ -171,6 +207,10 @@ export async function saveKnowledgeBase(
   res: Response,
 ): Promise<void> {
   try {
+    if (!(await isAuthorizedRequest(req))) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     await saveKnowledgeBaseConfig(req.body, isForced(req));
     res.json({ success: true });
   } catch (error) {
@@ -189,6 +229,10 @@ export async function saveKnowledgeBase(
  */
 export async function toggleLock(req: Request, res: Response): Promise<void> {
   try {
+    if (!(await isAuthorizedRequest(req))) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     const configPath = getLockTarget(req.body?.path);
     if (!configPath) {
       res.status(400).json({ error: "Invalid content lock target" });

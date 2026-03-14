@@ -653,52 +653,43 @@ flowchart TD
         themeVariables: { fontFamily: "Inter" },
       });
 
-      async function loadRuntimeConfig() {
-        try {
-          const response = await fetch("/data/runtime-config.json", {
-            cache: "no-store",
-          });
-          if (!response.ok) return {};
-          return await response.json();
-        } catch {
-          return {};
-        }
-      }
-
       function normalizeUrl(raw) {
         return String(raw || "").trim().replace(/\/+$/, "");
       }
 
-      function getSiteBaseUrl(config) {
-        return normalizeUrl(config.siteUrl) || window.location.origin;
+      function getSiteBaseUrl() {
+        if (window.location.protocol === "file:") {
+          return "";
+        }
+        return window.location.origin;
       }
 
-      function getAdminBaseUrl(config) {
-        const explicitAdminUrl = normalizeUrl(config.adminUrl);
-        if (explicitAdminUrl) {
-          return explicitAdminUrl;
-        }
-
+      function getAdminBaseUrl() {
         if (window.location.protocol === "file:") {
           return "";
         }
 
         const { hostname, protocol } = window.location;
-        if (hostname.startsWith("admin.")) {
+        if (hostname.startsWith("admin.") || hostname.startsWith("testadmin.")) {
           return window.location.origin;
         }
         if (hostname === "localhost" || hostname === "127.0.0.1") {
           return `${protocol}//${hostname}:4300`;
         }
+        if (hostname.startsWith("testwww.")) {
+          return `${protocol}//testadmin.${hostname.slice("testwww.".length)}`;
+        }
+        if (hostname.startsWith("www.")) {
+          return `${protocol}//admin.${hostname.slice("www.".length)}`;
+        }
 
-        return `${protocol}//admin.${hostname.replace(/^www\./, "")}`;
+        return `${protocol}//admin.${hostname}`;
       }
 
       document.addEventListener("DOMContentLoaded", async () => {
         // Render site pages on the site origin and admin previews on the admin origin.
-        const runtimeConfig = await loadRuntimeConfig();
-        const siteBaseUrl = getSiteBaseUrl(runtimeConfig);
-        const adminBaseUrl = getAdminBaseUrl(runtimeConfig);
+        const siteBaseUrl = getSiteBaseUrl();
+        const adminBaseUrl = getAdminBaseUrl();
 
         document.querySelectorAll("iframe[data-src]").forEach((iframe) => {
           const rawSrc = iframe.getAttribute("data-src");

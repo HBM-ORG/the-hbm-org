@@ -12,6 +12,21 @@ const prisma = new PrismaClient();
 const VIDEO_EVENT_KEY = "videoEvent";
 const HOW_IT_WORKS_KEY = "howItWorks";
 const KNOWLEDGE_BASE_KEY = "knowledgeBase";
+const SITE_SETTINGS_KEY = "siteSettings";
+
+const DEFAULT_SITE_SETTINGS = Object.freeze({
+  organizationName: "The HBM",
+  contactEmail: "office@thehbm.org",
+  whatsappPhoneE164: "972587073136",
+  whatsappPhoneDisplay: "0587073136",
+  socialLinks: Object.freeze({
+    instagram: "https://www.instagram.com/the__hbm/",
+    facebook: "https://www.facebook.com/people/The-HBM/61573100935457/",
+    linkedin: "https://www.linkedin.com/company/the-human-being-movement/",
+    youtube: "https://www.youtube.com/@TheHBM",
+  }),
+  inquiryWhatsappMessage: "אשמח לקבל פרטים נוספים על הארגון",
+});
 
 type JsonRecord = Record<string, unknown>;
 
@@ -80,6 +95,67 @@ function normalizeKnowledgeBaseConfig(value: unknown): KnowledgeBaseConfig {
     books: Array.isArray(source.books) ? source.books : [],
     videos: Array.isArray(source.videos) ? source.videos : [],
     isLocked: Boolean(source.isLocked),
+  };
+}
+
+export type SiteSettingsConfig = {
+  organizationName: string;
+  contactEmail: string;
+  whatsappPhoneE164: string;
+  whatsappPhoneDisplay: string;
+  socialLinks: {
+    instagram: string;
+    facebook: string;
+    linkedin: string;
+    youtube: string;
+  };
+  inquiryWhatsappMessage: string;
+};
+
+function normalizeSiteSettingsConfig(value: unknown): SiteSettingsConfig {
+  const source = isRecord(value) ? value : {};
+  const socialLinks = isRecord(source.socialLinks) ? source.socialLinks : {};
+
+  return {
+    organizationName:
+      typeof source.organizationName === "string" && source.organizationName.trim()
+        ? source.organizationName.trim()
+        : DEFAULT_SITE_SETTINGS.organizationName,
+    contactEmail:
+      typeof source.contactEmail === "string" && source.contactEmail.trim()
+        ? source.contactEmail.trim()
+        : DEFAULT_SITE_SETTINGS.contactEmail,
+    whatsappPhoneE164:
+      typeof source.whatsappPhoneE164 === "string" && source.whatsappPhoneE164.trim()
+        ? source.whatsappPhoneE164.trim()
+        : DEFAULT_SITE_SETTINGS.whatsappPhoneE164,
+    whatsappPhoneDisplay:
+      typeof source.whatsappPhoneDisplay === "string" && source.whatsappPhoneDisplay.trim()
+        ? source.whatsappPhoneDisplay.trim()
+        : DEFAULT_SITE_SETTINGS.whatsappPhoneDisplay,
+    socialLinks: {
+      instagram:
+        typeof socialLinks.instagram === "string" && socialLinks.instagram.trim()
+          ? socialLinks.instagram.trim()
+          : DEFAULT_SITE_SETTINGS.socialLinks.instagram,
+      facebook:
+        typeof socialLinks.facebook === "string" && socialLinks.facebook.trim()
+          ? socialLinks.facebook.trim()
+          : DEFAULT_SITE_SETTINGS.socialLinks.facebook,
+      linkedin:
+        typeof socialLinks.linkedin === "string" && socialLinks.linkedin.trim()
+          ? socialLinks.linkedin.trim()
+          : DEFAULT_SITE_SETTINGS.socialLinks.linkedin,
+      youtube:
+        typeof socialLinks.youtube === "string" && socialLinks.youtube.trim()
+          ? socialLinks.youtube.trim()
+          : DEFAULT_SITE_SETTINGS.socialLinks.youtube,
+    },
+    inquiryWhatsappMessage:
+      typeof source.inquiryWhatsappMessage === "string"
+      && source.inquiryWhatsappMessage.trim()
+        ? source.inquiryWhatsappMessage.trim()
+        : DEFAULT_SITE_SETTINGS.inquiryWhatsappMessage,
   };
 }
 
@@ -240,6 +316,22 @@ export async function getKnowledgeBaseConfig(): Promise<KnowledgeBaseConfig> {
     normalizeKnowledgeBaseConfig(row?.published ?? {}),
     Boolean(row?.isLocked),
   );
+}
+
+export async function getSiteSettingsConfig(): Promise<SiteSettingsConfig> {
+  const row = await getContentEntry(SITE_SETTINGS_KEY);
+  return normalizeSiteSettingsConfig(row?.published ?? {});
+}
+
+export async function saveSiteSettingsConfig(
+  payload: unknown,
+): Promise<SiteSettingsConfig> {
+  const normalized = normalizeSiteSettingsConfig(payload);
+  await saveContentEntry({
+    key: SITE_SETTINGS_KEY,
+    published: normalized as JsonRecord,
+  });
+  return normalized;
 }
 
 export async function saveKnowledgeBaseConfig(

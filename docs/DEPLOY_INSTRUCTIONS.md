@@ -21,17 +21,18 @@ Current short-term deployment target:
 - deploys `apps/site`
 - static site app
 - expected dev hostname: `testwww.thehbm.org`
+- set App Platform source directory to `apps/site`
 
 Build:
 
 ```bash
-npm ci && npm run validate -w apps/site
+npm ci && npm run validate
 ```
 
 Output directory:
 
 ```bash
-apps/site/dist
+dist
 ```
 
 ### Admin app
@@ -39,17 +40,18 @@ apps/site/dist
 - deploys `apps/admin`
 - static site app
 - expected dev hostname: `testadmin.thehbm.org`
+- set App Platform source directory to `apps/admin`
 
 Build:
 
 ```bash
-npm ci && npm run validate -w apps/admin
+npm ci && npm run validate
 ```
 
 Output directory:
 
 ```bash
-apps/admin/dist
+dist
 ```
 
 ### Backend app
@@ -59,23 +61,24 @@ apps/admin/dist
   - `web` component
   - `worker` component
 - expected dev hostname: `testapi.thehbm.org`
+- set App Platform source directory to `apps/server`
 
 Backend build:
 
 ```bash
-npm ci && npm run validate -w apps/server
+npm ci && npm run validate
 ```
 
 Backend web run command:
 
 ```bash
-npm run web -w apps/server
+npm run web
 ```
 
 Backend worker run command:
 
 ```bash
-npm run worker -w apps/server
+npm run worker
 ```
 
 ### Backend infrastructure ownership
@@ -94,9 +97,10 @@ Prisma is now treated as a backend deployment concern, not a manual post-deploy 
 Backend CI/deploy flow:
 
 ```bash
+cd apps/server
 npm ci
-npm run validate -w apps/server
-npm run prisma:migrate:deploy -w apps/server
+npm run validate
+npm run prisma:migrate:deploy
 ```
 
 ## Runtime Environment Ownership
@@ -106,14 +110,16 @@ npm run prisma:migrate:deploy -w apps/server
 - `VITE_SITE_URL`
 - `VITE_ADMIN_URL`
 - `VITE_API_BASE`
-- `VITE_ASSET_BASE`
+- local icons come from `apps/site/public/favicon.svg` and `apps/site/public/apple-touch-icon.svg`
 
 ### Admin app
 
 - `VITE_SITE_URL`
 - `VITE_ADMIN_URL`
 - `VITE_API_BASE`
-- `VITE_ASSET_BASE`
+- local icon comes from `apps/admin/public/favicon.svg`
+
+Shared organization contact/social metadata is persisted in DB and maintained from the admin `Settings` tab through `/api/site-settings`.
 
 ### Backend app
 

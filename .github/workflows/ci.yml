@@ -49,15 +49,3 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Typecheck server workspace
-        run: npm run typecheck -w apps/server
-
-      - name: Build site workspace
-        run: npm run build -w apps/site
-
-      - name: Build admin workspace
-        run: npm run build -w apps/admin
-
-      - name: Validate server workspace build
-        run: npm run build -w apps/server

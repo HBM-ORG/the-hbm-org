@@ -53,11 +53,7 @@ export function getApiBase() {
 }
 
 export function getAssetBase() {
-  const explicitAssetBase = readEnvValue("VITE_ASSET_BASE");
-  if (explicitAssetBase) return explicitAssetBase;
-
-  const apiBase = getApiBase();
-  return apiBase || "";
+  return getApiBase() || "";
 }
 
 export function resolveAssetUrl(rawPath) {
@@ -80,15 +76,6 @@ export function getSiteUrl() {
 
 export function getAdminUrl() {
   return readEnvValue("VITE_ADMIN_URL") || deriveAdminUrl();
-}
-
-export function getCmsUploadsBase() {
-  const explicitBase =
-    readEnvValue("VITE_CMS_UPLOADS_BASE") || readEnvValue("VITE_WP_CONTENT_BASE");
-  if (explicitBase) return explicitBase;
-
-  const siteUrl = getSiteUrl();
-  return siteUrl ? joinUrl(siteUrl, "/wp-content/uploads") : "";
 }
 
 export function getAbsoluteSiteUrl(path = "/") {

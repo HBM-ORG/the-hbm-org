@@ -89,11 +89,7 @@ These values live in DigitalOcean App Platform, not in GitHub variables.
 - [ ] `VITE_SITE_URL=https://testwww.thehbm.org`
 - [ ] `VITE_ADMIN_URL=https://testadmin.thehbm.org`
 - [ ] `VITE_API_BASE=https://testapi.thehbm.org`
-- [ ] `VITE_ASSET_BASE=https://testapi.thehbm.org`
-- [ ] `VITE_CMS_UPLOADS_BASE=https://testapi.thehbm.org`
 - [ ] `VITE_SITE_OG_IMAGE_URL=https://testwww.thehbm.org/og-default.png`
-- [ ] `VITE_FAVICON_URL=https://testwww.thehbm.org/favicon.ico`
-- [ ] `VITE_APPLE_TOUCH_ICON_URL=https://testwww.thehbm.org/apple-touch-icon.png`
 - [ ] `VITE_GA_ID=G-XXXXXXXXXX`
 - [ ] `VITE_CLARITY_ID=replace_me`
 - [ ] `VITE_FB_PIXEL_ID=123456789012345`
@@ -103,10 +99,13 @@ These values live in DigitalOcean App Platform, not in GitHub variables.
 - [ ] `VITE_SITE_URL=https://testwww.thehbm.org`
 - [ ] `VITE_ADMIN_URL=https://testadmin.thehbm.org`
 - [ ] `VITE_API_BASE=https://testapi.thehbm.org`
-- [ ] `VITE_ASSET_BASE=https://testapi.thehbm.org`
-- [ ] `VITE_CMS_UPLOADS_BASE=https://testapi.thehbm.org`
-- [ ] `VITE_FAVICON_URL=https://testadmin.thehbm.org/favicon.ico`
 - [ ] `VITE_CLARITY_ID=replace_me`
+
+### Frontend ownership notes
+
+- [ ] Site favicon comes from `apps/site/public/favicon.svg` and `apps/site/public/apple-touch-icon.svg`
+- [ ] Admin favicon comes from `apps/admin/public/favicon.svg`
+- [ ] Shared organization contact and social links are maintained in the admin `Settings` tab and persisted in DB via `/api/site-settings`
 
 ### Backend app shared runtime
 

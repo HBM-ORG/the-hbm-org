@@ -1,5 +1,9 @@
 # ⚙️ Environment Variables (Render / Production)
 
+> Historical document only.
+> The active environment ownership and deployment flow now live in `CI_CD_VARIABLES.md`, `CI_CD_EXAMPLE_VALUES_CHECKLIST.md`, and `DEPLOY_INSTRUCTIONS.md`.
+> This file is retained only for legacy Render/Hostinger operational context.
+
 Set these in **Render Dashboard → Your Service → Environment** so the HBM admin, email queue, and automations work end-to-end.
 
 ## Minimum for email sending to work (fix GETADDRINFO / test email)
@@ -23,7 +27,7 @@ Without these, test send and automations will fail (e.g. GETADDRINFO ENOTFOUND o
 ## Required (Render + Hostinger MySQL)
 
 | Variable | Description | Example |
-|----------|-------------|---------|
+| --- | --- | --- |
 | `DATABASE_URL` | Hostinger MySQL connection string | `mysql://u123_abc:YOUR_PASSWORD@srv123.hostinger.com:3306/u123_hbm` |
 | `PORT` | Server port (Render sets automatically) | `3001` |
 | `NODE_ENV` | Environment | `production` |
@@ -34,7 +38,7 @@ Without these, test send and automations will fail (e.g. GETADDRINFO ENOTFOUND o
 SMTP can be configured in the **Admin → Email Architect → Automation Settings**. If you prefer env vars (recommended for production), you can add:
 
 | Variable | Description | Example |
-|----------|-------------|---------|
+| --- | --- | --- |
 | `SMTP_HOST` | SMTP server | `smtp.office365.com` or `smtp.hostinger.com` |
 | `SMTP_PORT` | Port (587 or 465) | `587` |
 | `SMTP_USER` | Email / login | `office@thehbm.org` |
@@ -48,7 +52,7 @@ SMTP can be configured in the **Admin → Email Architect → Automation Setting
 So images uploaded in the Email Architect are stored on Hostinger and don’t disappear on Render restarts:
 
 | Variable | Description | Example |
-|----------|-------------|---------|
+| --- | --- | --- |
 | `FTP_HOST` | Hostinger FTP hostname | `ftp.hostinger.com` or your server host |
 | `FTP_USER` | FTP username (from Hostinger) | Your FTP user |
 | `FTP_PASS` | FTP password | (secret) |
@@ -60,7 +64,7 @@ Uploaded email images are stored under `public_html/assets/emails/` on Hostinger
 ## Optional
 
 | Variable | Description |
-|----------|-------------|
+| --- | --- |
 | `ADMIN_PASSWORD` | Used if you add admin auth later |
 | `GEMINI_API_KEY` | For Email Architect “Improve copy” AI |
 | `GOOGLE_BOOKS_API_KEY` | For Magic Fetch book covers |

@@ -1,16 +1,16 @@
 # The HBM Workspace
 
-Standard procedures for developing, testing, and deploying the platform. **Handoff:** see [docs/](docs/) (especially [ARCHITECTURE](docs/ARCHITECTURE.md) and [EMAIL_SYSTEM](docs/EMAIL_SYSTEM.md)) for structure and email setup.
+Standard procedures for developing, testing, and deploying the platform. **Handoff:** see [docs/](docs/) (especially [ARCHITECTURE](docs/ARCHITECTURE.md), [DEPLOY_INSTRUCTIONS](docs/DEPLOY_INSTRUCTIONS.md), and [EMAIL_SYSTEM](docs/EMAIL_SYSTEM.md)).
 
 ## 📁 Project structure
 
-The repo now uses **npm workspaces** with separate app roots:
+The repo now uses separate app roots with independent installs/builds:
 
 - **`/apps/site`** — Public React/Vite site for `thehbm.org` / `www.thehbm.org`
 - **`/apps/admin`** — Admin React/Vite app for `admin.thehbm.org`
 - **`/apps/server`** — Express API + worker entrypoints (`src/web.ts`, `src/worker.ts`, `prisma/`)
 - **`/config`** — PM2, ESLint, Node version hints (e.g. `ecosystem.config.cjs`, `.nvmrc`)
-- **`/docs`** — All documentation (deploy, Hostinger, Render, QA, sitemap); see [docs/README.md](docs/README.md)
+- **`/docs`** — All documentation (deploy, CI/CD, legacy deployment history, sitemap); see [docs/README.md](docs/README.md)
 - **`/data`** — Shared runtime/exported data kept at repo root
 - **`/scripts`** — Reclassified helpers under `build/`, `dev/`, `ops/`, `one-off/`
 
@@ -18,23 +18,24 @@ Full layout and stack: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## 🛠 1. Environment Setup
 
-Node **18+** (recommended: 20; see `config/.nvmrc`). Copy:
+Node **20.x** (see `config/.nvmrc`). Copy:
 
 - `apps/server/.env.example` to `apps/server/.env`
 - `apps/site/.env.example` to `apps/site/.env`
 - `apps/admin/.env.example` to `apps/admin/.env`
 
-The repo root `.env` is still supported as a temporary fallback for server-side scripts during transition.
+The repo root `.env` may still be used by some historical one-off scripts, but active app runtime ownership now lives under each app root.
 
 Always ensure your local environment is synchronized with the latest dependencies.
 
 ```bash
-# Clean install (if you encounter strange bugs)
-rm -rf node_modules
-npm install --legacy-peer-deps
+# Root helper dependencies
+npm ci
 
-# Standard update
-npm install --legacy-peer-deps
+# App-local installs
+npm run install:site
+npm run install:admin
+npm run install:backend
 ```
 
 ## 🚀 2. Development Execution

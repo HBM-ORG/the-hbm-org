@@ -1,7 +1,7 @@
-import { getCmsUploadsBase } from "../utils/api";
 import { PUBLIC_BRAND } from "../config/public-brand";
 
-const WP = getCmsUploadsBase();
+const LEGACY_MEDIA_BASE =
+  "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media";
 
 export const siteContent = {
   global: {
@@ -205,7 +205,7 @@ export const siteContent = {
         he: "זה הזמן המושלם להיפתח, ליצור חיבור אמיתי, ולצאת עם משהו משמעותי",
       },
       ctaText: { en: "It's Just 8-Minutes", he: "זה רק 8 דקות" },
-      video: `${WP}/2025/05/banner-video.mp4`,
+      video: `${LEGACY_MEDIA_BASE}/2025/05/banner-video.mp4`,
       // PLACEHOLDER: Replace with Elad's YouTube video URL
       eladYoutubeUrl: "https://www.youtube.com/watch?v=R7smYF02Kjo",
       eladVideoTitle: {
@@ -317,7 +317,7 @@ export const siteContent = {
       },
       items: [
         {
-          icon: `${WP}/2025/06/Show-up-as-yourself.svg`,
+          icon: `${LEGACY_MEDIA_BASE}/2025/06/Show-up-as-yourself.svg`,
           title: { en: "Show up as yourself.", he: "הגיעו כמו שאתם." },
           text: {
             en: 'Not your LinkedIn bio. Not your "I\'m totally fine" voice. Just you.',
@@ -325,7 +325,7 @@ export const siteContent = {
           },
         },
         {
-          icon: `${WP}/2025/06/Show-up-as-yourself.-1.svg`,
+          icon: `${LEGACY_MEDIA_BASE}/2025/06/Show-up-as-yourself.-1.svg`,
           title: {
             en: "Give your full attention.",
             he: "תנו את מלוא תשומת הלב.",
@@ -336,7 +336,7 @@ export const siteContent = {
           },
         },
         {
-          icon: `${WP}/2025/06/Lead-with-curiosity.svg`,
+          icon: `${LEGACY_MEDIA_BASE}/2025/06/Lead-with-curiosity.svg`,
           title: { en: "Lead with curiosity.", he: "הובילו עם סקרנות." },
           text: {
             en: "Ask real questions. Listen like you mean it.",
@@ -344,7 +344,7 @@ export const siteContent = {
           },
         },
         {
-          icon: `${WP}/2025/06/Be-generous.svg`,
+          icon: `${LEGACY_MEDIA_BASE}/2025/06/Be-generous.svg`,
           title: { en: "Be generous.", he: "היו נדיבים." },
           text: {
             en: "With your words, your time, your kindness.",
@@ -352,7 +352,7 @@ export const siteContent = {
           },
         },
         {
-          icon: `${WP}/2025/06/Respect-every-vibe.svg`,
+          icon: `${LEGACY_MEDIA_BASE}/2025/06/Respect-every-vibe.svg`,
           title: { en: "Respect every vibe.", he: "כבדו כל אווירה." },
           text: {
             en: "Quiet? Loud? Awkward? It's all welcome here.",
@@ -360,7 +360,7 @@ export const siteContent = {
           },
         },
         {
-          icon: `${WP}/2025/06/Keep-it-light-when-needed.svg`,
+          icon: `${LEGACY_MEDIA_BASE}/2025/06/Keep-it-light-when-needed.svg`,
           title: {
             en: "Talk Light. Talk Deep. Talk Real.",
             he: "דברו קל. דברו לעומק. דברו אמיתי.",
@@ -371,7 +371,7 @@ export const siteContent = {
           },
         },
         {
-          icon: `${WP}/2025/06/Celebrate-different-perspectives.svg`,
+          icon: `${LEGACY_MEDIA_BASE}/2025/06/Celebrate-different-perspectives.svg`,
           title: {
             en: "Celebrate different perspectives.",
             he: "חגגו נקודות מבט שונות.",
@@ -382,7 +382,7 @@ export const siteContent = {
           },
         },
         {
-          icon: `${WP}/2025/06/End-strong.svg`,
+          icon: `${LEGACY_MEDIA_BASE}/2025/06/End-strong.svg`,
           title: { en: "End strong.", he: "סיימו חזק." },
           text: {
             en: "A kind word, a smile, a thank you.",
@@ -599,7 +599,7 @@ export const siteContent = {
     // PLACEHOLDER: Replace handholding video with event footage
     vision: {
       title: { en: "Our Vision", he: "החזון שלנו" },
-      video: `${WP}/2025/06/vision-video.mp4`, // PLACEHOLDER: Replace with event video
+      video: `${LEGACY_MEDIA_BASE}/2025/06/vision-video.mp4`, // PLACEHOLDER: Replace with event video
       textOnVideo: {
         en: "We imagine a future where HBM isn't just an app—it's a part of everyday life.",
         he: "אנחנו מדמיינים עתיד שבו HBM הוא לא רק אפליקציה — הוא חלק מהחיים.",
@@ -791,7 +791,7 @@ export const siteContent = {
       title: { en: "Our Values", he: "הערכים שלנו" },
       groups: [
         {
-          bgVideo: `${WP}/2025/06/0_Blue-Sky_Clouds_1920x1080-1.mp4`,
+          bgVideo: `${LEGACY_MEDIA_BASE}/2025/06/0_Blue-Sky_Clouds_1920x1080-1.mp4`,
           items: [
             {
               title: { en: "Generosity", he: "נדיבות" },
@@ -799,7 +799,7 @@ export const siteContent = {
                 en: "Time, attention, care—we give these freely.",
                 he: "זמן, תשומת לב, אכפתיות — אנחנו נותנים בחופשיות.",
               },
-              image: `${WP}/2025/06/64b98af75218168718545305b74f140db8fdf320.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/64b98af75218168718545305b74f140db8fdf320.jpg`,
             },
             {
               title: { en: "Transparency", he: "שקיפות" },
@@ -807,7 +807,7 @@ export const siteContent = {
                 en: "No secrets, no smoke and mirrors.",
                 he: "בלי סודות, בלי עשן ומראות.",
               },
-              image: `${WP}/2025/06/add7278ee0a03cd074c76a1e5065f3b8eb071b8d-min.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/add7278ee0a03cd074c76a1e5065f3b8eb071b8d-min.jpg`,
             },
             {
               title: { en: "Positivity", he: "חיוביות" },
@@ -815,7 +815,7 @@ export const siteContent = {
                 en: 'Optimism isn\'t naive— positivity is a big "+"!',
                 he: "אופטימיות היא לא נאיבית — חיוביות זה פלוס גדול!",
               },
-              image: `${WP}/2025/06/64b98af75218168718545305b74f140db8fdf320.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/64b98af75218168718545305b74f140db8fdf320.jpg`,
             },
             {
               title: { en: "Acceptance", he: "קבלה" },
@@ -823,7 +823,7 @@ export const siteContent = {
                 en: "Every story, every person, every feeling is welcome.",
                 he: "כל סיפור, כל אדם, כל רגש מוזמן.",
               },
-              image: `${WP}/2025/06/f85d08655c800c423fc2b7c577e95bd8a1541397-min.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/f85d08655c800c423fc2b7c577e95bd8a1541397-min.jpg`,
             },
             {
               title: { en: "Responsibility", he: "אחריות" },
@@ -831,7 +831,7 @@ export const siteContent = {
                 en: "We own our words, our actions, and the space we're shaping.",
                 he: "אנחנו אחראים למילים שלנו, לפעולות שלנו, ולמרחב שאנחנו מעצבים.",
               },
-              image: `${WP}/2025/06/df61281a9cb4e8a73b2ea532dd3ea9eaf0754d77-min.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/df61281a9cb4e8a73b2ea532dd3ea9eaf0754d77-min.jpg`,
             },
           ],
         },
@@ -844,7 +844,7 @@ export const siteContent = {
                 en: "Between speaking and listening, giving and receiving.",
                 he: "בין דיבור להקשבה, נתינה לקבלה.",
               },
-              image: `${WP}/2025/06/3e9a2f16dffdd7c84f9c8b3050635f8572aa90d2.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/3e9a2f16dffdd7c84f9c8b3050635f8572aa90d2.jpg`,
             },
             {
               title: { en: "Mental Flexibility", he: "גמישות מחשבתית" },
@@ -852,7 +852,7 @@ export const siteContent = {
                 en: "Growth means being open to change.",
                 he: "צמיחה זה להיות פתוח לשינוי.",
               },
-              image: `${WP}/2025/06/df61281a9cb4e8a73b2ea532dd3ea9eaf0754d77-min.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/df61281a9cb4e8a73b2ea532dd3ea9eaf0754d77-min.jpg`,
             },
             {
               title: { en: "Honesty", he: "כנות" },
@@ -860,7 +860,7 @@ export const siteContent = {
                 en: "We say the real thing, even when it's hard.",
                 he: "אנחנו אומרים את האמת, גם כשזה קשה.",
               },
-              image: `${WP}/2025/06/fa6fdd033d2e5c63c227f0f5b0e0ed1b966f4f1e.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/fa6fdd033d2e5c63c227f0f5b0e0ed1b966f4f1e.jpg`,
             },
             {
               title: { en: "Compassion", he: "חמלה" },
@@ -868,7 +868,7 @@ export const siteContent = {
                 en: "We show up with warmth, not judgment.",
                 he: "אנחנו מגיעים עם חום, לא עם שיפוט.",
               },
-              image: `${WP}/2025/06/c9e281bfd1b044faaa101d5cfd29bf2c896deb94.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/c9e281bfd1b044faaa101d5cfd29bf2c896deb94.jpg`,
             },
             {
               title: { en: "Modesty", he: "צניעות" },
@@ -876,7 +876,7 @@ export const siteContent = {
                 en: "We don't pretend to have all the answers.",
                 he: "אנחנו לא מתיימרים שיש לנו את כל התשובות.",
               },
-              image: `${WP}/2025/06/df61281a9cb4e8a73b2ea532dd3ea9eaf0754d77-min.jpg`,
+              image: `${LEGACY_MEDIA_BASE}/2025/06/df61281a9cb4e8a73b2ea532dd3ea9eaf0754d77-min.jpg`,
             },
           ],
         },
@@ -990,7 +990,7 @@ export const siteContent = {
     tabs: [
       {
         label: { en: "Companies and Businesses", he: "חברות ועסקים" },
-        bgVideo: `${WP}/2025/06/scene-theme-companies-businessesa.mp4`,
+        bgVideo: `${LEGACY_MEDIA_BASE}/2025/06/scene-theme-companies-businessesa.mp4`,
         cards: [
           {
             title: {
@@ -1026,7 +1026,7 @@ export const siteContent = {
       },
       {
         label: { en: "Shared Workspaces", he: "חללי עבודה משותפים" },
-        bgVideo: `${WP}/2025/07/20250703_1555_Heartfelt-Office-Conversation_simple_compose_01jz85pbtyee3v7wkazg6vqgr1.mp4`,
+        bgVideo: `${LEGACY_MEDIA_BASE}/2025/07/20250703_1555_Heartfelt-Office-Conversation_simple_compose_01jz85pbtyee3v7wkazg6vqgr1.mp4`,
         cards: [
           {
             title: {
@@ -1062,7 +1062,7 @@ export const siteContent = {
       },
       {
         label: { en: "Communities and Organizations", he: "קהילות וארגונים" },
-        bgVideo: `${WP}/2025/06/vision-video.mp4`,
+        bgVideo: `${LEGACY_MEDIA_BASE}/2025/06/vision-video.mp4`,
         cards: [
           {
             title: {
@@ -1114,7 +1114,7 @@ export const siteContent = {
             en: "Set up your event in minutes with our admin dashboard.",
             he: "הקימו אירוע בדקות עם לוח הבקרה שלנו.",
           },
-          image: `${WP}/2025/06/11.png`,
+          image: `${LEGACY_MEDIA_BASE}/2025/06/11.png`,
         },
         {
           title: { en: "Send the Link", he: "שלחו את הקישור" },
@@ -1122,7 +1122,7 @@ export const siteContent = {
             en: "Share the invitation with all participants.",
             he: "שתפו את ההזמנה עם כל המשתתפים.",
           },
-          image: `${WP}/2025/06/22.png`,
+          image: `${LEGACY_MEDIA_BASE}/2025/06/22.png`,
         },
         {
           title: { en: "Run the Event", he: "הריצו את האירוע" },
@@ -1130,7 +1130,7 @@ export const siteContent = {
             en: "Watch the magic happen as people connect.",
             he: "צפו בקסם כשאנשים מתחברים.",
           },
-          image: `${WP}/2025/06/33.png`,
+          image: `${LEGACY_MEDIA_BASE}/2025/06/33.png`,
         },
         {
           title: { en: "Get the Data", he: "קבלו נתונים" },
@@ -1138,7 +1138,7 @@ export const siteContent = {
             en: "Receive insights and analytics from the event.",
             he: "קבלו תובנות ואנליטיקות מהאירוע.",
           },
-          image: `${WP}/2025/06/44.png`,
+          image: `${LEGACY_MEDIA_BASE}/2025/06/44.png`,
         },
       ],
     },
@@ -1157,7 +1157,7 @@ export const siteContent = {
       subtitle: { en: "See what awaits you", he: "ראו מה מחכה לכם" },
       items: [
         {
-          image: `${WP}/2025/06/22.png`,
+          image: `${LEGACY_MEDIA_BASE}/2025/06/22.png`,
           title: {
             en: "A branded platform that feels like yours",
             he: "פלטפורמה ממותגת שמרגישה שלכם",
@@ -1168,7 +1168,7 @@ export const siteContent = {
           },
         },
         {
-          image: `${WP}/2025/06/44.png`,
+          image: `${LEGACY_MEDIA_BASE}/2025/06/44.png`,
           title: {
             en: "Tools that make managing easy",
             he: "כלים שמקלים על הניהול",
@@ -1179,7 +1179,7 @@ export const siteContent = {
           },
         },
         {
-          image: `${WP}/2025/06/22.png`,
+          image: `${LEGACY_MEDIA_BASE}/2025/06/22.png`,
           title: {
             en: "Hands-on support from our team",
             he: "תמיכה צמודה מהצוות שלנו",
@@ -1190,7 +1190,7 @@ export const siteContent = {
           },
         },
         {
-          image: `${WP}/2025/06/11.png`,
+          image: `${LEGACY_MEDIA_BASE}/2025/06/11.png`,
           title: {
             en: "A foundation for future collaboration",
             he: "בסיס לשיתוף פעולה עתידי",
@@ -1201,7 +1201,7 @@ export const siteContent = {
           },
         },
       ],
-      phoneMockup: `${WP}/2025/05/Settings-3.png`,
+      phoneMockup: `${LEGACY_MEDIA_BASE}/2025/05/Settings-3.png`,
     },
     cta: {
       title: { en: "You don't need more tools", he: "אתם לא צריכים עוד כלים" },

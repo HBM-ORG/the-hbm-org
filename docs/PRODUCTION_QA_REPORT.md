@@ -1,5 +1,8 @@
 # Production QA Report
 
+> Historical report only.
+> This file reflects the previous Hostinger/Render-oriented production handoff and is not the active deployment checklist.
+
 **Date:** February 2026  
 **Scope:** Full technical QA and audit before Hostinger deploy and CTO handover.
 

@@ -9,10 +9,6 @@ on:
       - "apps/site/**"
       - "apps/admin/**"
       - "apps/server/**"
-      - "data/public-brand.js"
-      - "scripts/build/**"
-      - "package.json"
-      - "package-lock.json"
       - "config/.nvmrc"
       - ".github/workflows/deploy-do.yml"
   workflow_dispatch:
@@ -48,21 +44,12 @@ jobs:
           filters: |
             site:
               - 'apps/site/**'
-              - 'data/public-brand.js'
-              - 'scripts/build/**'
-              - 'package.json'
-              - 'package-lock.json'
               - 'config/.nvmrc'
             admin:
               - 'apps/admin/**'
-              - 'data/public-brand.js'
-              - 'package.json'
-              - 'package-lock.json'
               - 'config/.nvmrc'
             backend:
               - 'apps/server/**'
-              - 'package.json'
-              - 'package-lock.json'
               - 'config/.nvmrc'
 
       - name: Setup Node.js
@@ -71,28 +58,28 @@ jobs:
         with:
           node-version-file: config/.nvmrc
           cache: npm
-
-      - name: Install dependencies
-        if: steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true'
-        run: npm ci
+          cache-dependency-path: |
+            apps/site/package-lock.json
+            apps/admin/package-lock.json
+            apps/server/package-lock.json
 
       - name: Build site workspace
         if: steps.changes.outputs.site == 'true'
-        run: npm run validate -w apps/site
+        run: npm ci --prefix apps/site && npm --prefix apps/site run validate
 
       - name: Build admin workspace
         if: steps.changes.outputs.admin == 'true'
-        run: npm run validate -w apps/admin
+        run: npm ci --prefix apps/admin && npm --prefix apps/admin run validate
 
       - name: Validate backend workspace
         if: steps.changes.outputs.backend == 'true'
-        run: npm run validate -w apps/server
+        run: npm ci --prefix apps/server && npm --prefix apps/server run validate
 
       - name: Apply backend Prisma migrations
         if: steps.changes.outputs.backend == 'true' && env.BACKEND_DATABASE_URL != ''
         env:
           DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
-        run: npm run prisma:migrate:deploy -w apps/server
+        run: npm --prefix apps/server run prisma:migrate:deploy
 
       - name: Setup doctl
         if: env.DO_API_TOKEN != '' && (steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true')
@@ -141,21 +128,12 @@ jobs:
           filters: |
             site:
               - 'apps/site/**'
-              - 'data/public-brand.js'
-              - 'scripts/build/**'
-              - 'package.json'
-              - 'package-lock.json'
               - 'config/.nvmrc'
             admin:
               - 'apps/admin/**'
-              - 'data/public-brand.js'
-              - 'package.json'
-              - 'package-lock.json'
               - 'config/.nvmrc'
             backend:
               - 'apps/server/**'
-              - 'package.json'
-              - 'package-lock.json'
               - 'config/.nvmrc'
 
       - name: Setup Node.js
@@ -164,28 +142,28 @@ jobs:
         with:
           node-version-file: config/.nvmrc
           cache: npm
-
-      - name: Install dependencies
-        if: steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true'
-        run: npm ci
+          cache-dependency-path: |
+            apps/site/package-lock.json
+            apps/admin/package-lock.json
+            apps/server/package-lock.json
 
       - name: Build site workspace
         if: steps.changes.outputs.site == 'true'
-        run: npm run validate -w apps/site
+        run: npm ci --prefix apps/site && npm --prefix apps/site run validate
 
       - name: Build admin workspace
         if: steps.changes.outputs.admin == 'true'
-        run: npm run validate -w apps/admin
+        run: npm ci --prefix apps/admin && npm --prefix apps/admin run validate
 
       - name: Validate backend workspace
         if: steps.changes.outputs.backend == 'true'
-        run: npm run validate -w apps/server
+        run: npm ci --prefix apps/server && npm --prefix apps/server run validate
 
       - name: Apply backend Prisma migrations
         if: steps.changes.outputs.backend == 'true' && env.BACKEND_DATABASE_URL != ''
         env:
           DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
-        run: npm run prisma:migrate:deploy -w apps/server
+        run: npm --prefix apps/server run prisma:migrate:deploy
 
       - name: Setup doctl
         if: env.DO_API_TOKEN != '' && (steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true')
