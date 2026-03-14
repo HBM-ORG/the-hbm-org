@@ -28,6 +28,14 @@ export function startWebServer(): RunningServer {
     console.log(`📦 Worker in web process: ${shouldRunWorker ? "enabled" : "disabled"}`);
   });
 
+  process.on("unhandledRejection", (reason) => {
+    console.error("[web] Unhandled rejection:", reason);
+  });
+
+  process.on("uncaughtException", (error) => {
+    console.error("[web] Uncaught exception:", error);
+  });
+
   process.on("SIGINT", () => {
     console.log("\n⏹️  Shutting down gracefully...");
     server.close(() => {

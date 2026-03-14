@@ -11,10 +11,7 @@ import { runtimeConfig } from "../config/runtime-config.js";
 import { isAuthorizedRequest } from "../middleware/admin-auth.js";
 
 function logCmsError(context: string, error: unknown) {
-  console.error(
-    `[cms.controller:${context}]`,
-    error instanceof Error ? error.message : error,
-  );
+  console.error(`[cms.controller:${context}]`, error);
 }
 
 /**

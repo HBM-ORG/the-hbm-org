@@ -89,9 +89,23 @@ export default function HowItWorks() {
   }, []);
 
   const { howItWorks } = siteContent.home
-  const steps = cmsContent 
+  const staticSteps = mode === 'video' ? howItWorks.videoSteps : howItWorks.physicalSteps
+  const cmsSteps = cmsContent
     ? (mode === 'video' ? cmsContent.videoSteps : cmsContent.physicalSteps)
-    : (mode === 'video' ? howItWorks.videoSteps : howItWorks.physicalSteps)
+    : null
+  const steps = Array.isArray(cmsSteps) && cmsSteps.length > 0 ? cmsSteps : staticSteps
+  const currentStep = steps[activeStep] || steps[0] || null
+
+  useEffect(() => {
+    if (!steps.length) {
+      setActiveStep(0)
+      return
+    }
+
+    if (activeStep >= steps.length) {
+      setActiveStep(0)
+    }
+  }, [activeStep, steps])
 
   const formatDesc = (text) => {
     // Highlight keywords logic
@@ -177,16 +191,18 @@ export default function HowItWorks() {
                     
                     {/* Dynamic Screen Content */}
                     <AnimatePresence mode="wait">
-                      {mode === 'physical' && activeStep === 4 ? (
+                      {!currentStep ? (
+                        <div className="w-full aspect-[9/19] rounded-[2rem] bg-white/70 border border-white/70 shadow-2xl" />
+                      ) : mode === 'physical' && activeStep === 4 ? (
                         // Step 5 F2F: Connection Card Magic Tilt
                         <div className="w-full aspect-[9/19] relative">
-                             <MagicCard key="magic-card" image={steps[activeStep].image} />
+                             <MagicCard key="magic-card" image={currentStep.image} />
                         </div>
                       ) : (
                          // Standard Image Fade
                         <motion.img
-                          key={steps[activeStep].image}
-                          src={steps[activeStep].image}
+                          key={currentStep.image || `step-${activeStep}`}
+                          src={currentStep.image}
                           alt={`Step ${activeStep + 1}`}
                           className="w-full h-auto object-contain drop-shadow-2xl"
                           initial={{ opacity: 0, scale: 1.05 }}

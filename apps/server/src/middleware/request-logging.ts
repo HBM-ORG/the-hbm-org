@@ -7,11 +7,21 @@ export function requestLoggingMiddleware(
 ): void {
   const shouldSkip = req.path.startsWith("/assets/");
   const startedAt = Date.now();
+  const isApiRequest = req.path.startsWith("/api");
+  const origin = typeof req.headers.origin === "string" ? req.headers.origin : "-";
+  const userAgent = typeof req.headers["user-agent"] === "string"
+    ? req.headers["user-agent"]
+    : "-";
 
   if (!shouldSkip) {
+    if (isApiRequest) {
+      console.log(
+        `[${new Date().toISOString()}] --> ${req.method} ${req.url} (Host: ${req.headers.host}, Origin: ${origin}, UA: ${userAgent})`,
+      );
+    }
+
     res.on("finish", () => {
       const durationMs = Date.now() - startedAt;
-      const isApiRequest = req.path.startsWith("/api");
       const shouldLog =
         isApiRequest ||
         req.path === "/visual-sitemap.html" ||
@@ -23,7 +33,7 @@ export function requestLoggingMiddleware(
       }
 
       console.log(
-        `[${new Date().toISOString()}] ${req.method} ${req.url} -> ${res.statusCode} (${durationMs}ms, Host: ${req.headers.host})`,
+        `[${new Date().toISOString()}] <-- ${req.method} ${req.url} -> ${res.statusCode} (${durationMs}ms, Host: ${req.headers.host}, Origin: ${origin})`,
       );
     });
   }

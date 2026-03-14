@@ -24,7 +24,7 @@ type CreateAppOptions = {
 type TriggerAutomationFn = (flowId: string, data?: unknown) => Promise<void>;
 
 function logError(context: string, err: unknown) {
-  const message = err instanceof Error ? err.message : String(err);
+  const message = err instanceof Error ? err.stack || err.message : String(err);
   const entry = `[${new Date().toISOString()}] [${context}] ${message}\n`;
   console.error(entry);
 }

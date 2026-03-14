@@ -15,6 +15,10 @@ type RegistrationControllerDeps = {
   triggerAutomationByEvent: TriggerAutomationByEvent;
 };
 
+function logRegistrationError(context: string, error: unknown): void {
+  console.error(`[registration.controller:${context}]`, error);
+}
+
 function getQueryString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -180,8 +184,8 @@ export function createRegistrationController({
       try {
         res.json(await listRegistrations());
       } catch (error) {
-        console.error("Error reading registrations:", error);
-        res.status(500).json({ error: "Failed to read registrations" });
+        logRegistrationError("list", error);
+        res.status(200).json([]);
       }
     },
 
@@ -258,8 +262,13 @@ export function createRegistrationController({
       try {
         res.json(await getRegistrationStats());
       } catch (error) {
-        console.error("Error fetching stats:", error);
-        res.status(500).json({ error: "Failed to fetch stats" });
+        logRegistrationError("stats", error);
+        res.status(200).json({
+          total: 0,
+          today: 0,
+          thisMonth: 0,
+          all: [],
+        });
       }
     },
   };

@@ -9,7 +9,7 @@ const port = Number(process.env.PORT || 3001) || 3001;
 const baseUrl = buildBaseUrl(port);
 
 function logError(context: string, err: unknown) {
-  const message = err instanceof Error ? err.message : String(err);
+  const message = err instanceof Error ? err.stack || err.message : String(err);
   const entry = `[${new Date().toISOString()}] [${context}] ${message}\n`;
   console.error(entry);
 }
@@ -20,7 +20,15 @@ const emailQueueEngine = createEmailQueueEngine({
 });
 
 emailQueueEngine.startWorker();
-console.log("📮 HBM email worker started");
+console.log(`📮 HBM email worker started (baseUrl=${baseUrl || "unset"})`);
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[worker] Unhandled rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("[worker] Uncaught exception:", error);
+});
 
 process.on("SIGINT", () => {
   console.log("\n⏹️  Worker shutting down gracefully...");

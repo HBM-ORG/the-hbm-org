@@ -115,6 +115,9 @@ export function createEmailQueueEngine({
     processQueueRunning = true;
 
     try {
+      console.log(
+        `[Email] processQueue start (specificItemId=${specificItemId || "all"})`,
+      );
       const now = new Date();
       const config = await loadAutomationRuntimeConfig();
 
@@ -135,7 +138,10 @@ export function createEmailQueueEngine({
         email.toLowerCase(),
       );
 
-      if (!config?.smtp?.host) return false;
+      if (!config?.smtp?.host) {
+        console.log("[Email] processQueue skipped: SMTP host is not configured");
+        return false;
+      }
 
       const port = parseInt(String(config.smtp.port), 10) || 587;
       const secure =
@@ -164,6 +170,8 @@ export function createEmailQueueEngine({
       const items = await prisma.emailQueue.findMany({
         where: specificItemId ? { ...baseWhere, id: specificItemId } : baseWhere,
       });
+
+      console.log(`[Email] processQueue found ${items.length} pending item(s)`);
 
       let success = true;
 
@@ -428,9 +436,11 @@ export function createEmailQueueEngine({
   function startWorker(): void {
     if (workerStarted) return;
     workerStarted = true;
+    console.log("[Email] Worker polling started (interval=60000ms)");
 
     setInterval(() => {
       if (!processQueueRunning) {
+        console.log("[Email] Worker tick: processing pending queue items");
         processQueue().catch((error) =>
           console.error("[Email] Interval run failed:", error),
         );

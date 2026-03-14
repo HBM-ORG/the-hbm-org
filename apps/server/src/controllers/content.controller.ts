@@ -21,10 +21,7 @@ import {
 import { isAuthorizedRequest } from "../middleware/admin-auth.js";
 
 function logContentError(context: string, error: unknown) {
-  console.error(
-    `[content.controller:${context}]`,
-    error instanceof Error ? error.message : error,
-  );
+  console.error(`[content.controller:${context}]`, error);
 }
 
 function isForced(req: Request): boolean {
