@@ -59,12 +59,33 @@ function getLocalizedValue(
   return "";
 }
 
+function isMissingTableError(error: unknown): boolean {
+  return (
+    typeof error === "object"
+    && error !== null
+    && "code" in error
+    && error.code === "P2021"
+  );
+}
+
 export async function loadAutomationRuntimeConfig(): Promise<AutomationRuntimeConfig> {
   const [flows, sequences, smtpConfig, globalStyling] = await Promise.all([
-    prisma.emailFlow.findMany(),
-    prisma.emailSequence.findMany(),
-    prisma.smtpConfig.findFirst(),
-    prisma.globalStyling.findFirst(),
+    prisma.emailFlow.findMany().catch((error) => {
+      if (isMissingTableError(error)) return [];
+      throw error;
+    }),
+    prisma.emailSequence.findMany().catch((error) => {
+      if (isMissingTableError(error)) return [];
+      throw error;
+    }),
+    prisma.smtpConfig.findFirst().catch((error) => {
+      if (isMissingTableError(error)) return null;
+      throw error;
+    }),
+    prisma.globalStyling.findFirst().catch((error) => {
+      if (isMissingTableError(error)) return null;
+      throw error;
+    }),
   ]);
 
   return {

@@ -16,7 +16,7 @@ Current short-term deployment target:
 
 ## DigitalOcean Deployment Shape
 
-### Site app
+### Site app runtime
 
 - deploys `apps/site`
 - static site app
@@ -35,7 +35,7 @@ Output directory:
 dist
 ```
 
-### Admin app
+### Admin app runtime
 
 - deploys `apps/admin`
 - static site app
@@ -54,7 +54,7 @@ Output directory:
 dist
 ```
 
-### Backend app
+### Backend app runtime
 
 - deploys `apps/server`
 - one App Platform app with:
@@ -102,6 +102,8 @@ npm ci
 npm run validate
 npm run prisma:migrate:deploy
 ```
+
+For DigitalOcean dev/staging, do not run `prisma migrate deploy` from the GitHub-hosted runner if the managed MySQL instance is restricted to trusted sources. Run migrations from the backend App Platform deployment/runtime path instead. GitHub-triggered DO deploys should validate and trigger the backend deployment, while the backend app itself owns DB reachability.
 
 ## Runtime Environment Ownership
 

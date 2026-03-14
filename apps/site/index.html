@@ -49,15 +49,8 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
     <script>
-      function readBuildEnvValue(raw) {
-        return raw && !/^%.*%$/.test(raw) ? raw : "";
-      }
-
-      const configuredSiteUrl = readBuildEnvValue("%VITE_SITE_URL%");
-      const configuredOgImage = readBuildEnvValue("%VITE_SITE_OG_IMAGE_URL%");
-
-      const siteUrl = (configuredSiteUrl || window.location.origin).replace(/\/+$/, "");
-      const ogImage = configuredOgImage || `${siteUrl}/og-default.png`;
+      const siteUrl = window.location.origin.replace(/\/+$/, "");
+      const ogImage = `${siteUrl}/og-default.png`;
       document.querySelector('meta[property="og:image"]')?.setAttribute("content", ogImage);
       document.querySelector('meta[property="og:image:secure_url"]')?.setAttribute("content", ogImage);
       document.querySelector('meta[property="og:url"]')?.setAttribute("content", `${siteUrl}/`);

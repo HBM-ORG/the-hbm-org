@@ -695,11 +695,12 @@ flowchart TD
           const rawSrc = iframe.getAttribute("data-src");
           if (rawSrc) {
             const separator = rawSrc.includes("?") ? "&" : "?";
+            const resolvedPath = rawSrc === "/admin-dashboard" ? "/" : rawSrc;
             const targetBase =
               rawSrc === "/admin-dashboard" && adminBaseUrl
                 ? adminBaseUrl
                 : siteBaseUrl;
-            iframe.src = targetBase + rawSrc + separator + "embedPreview=1";
+            iframe.src = targetBase + resolvedPath + separator + "embedPreview=1";
           }
         });
 
@@ -710,7 +711,7 @@ flowchart TD
               anchor.getAttribute("href") ||
               anchor.getAttribute("xlink:href");
             if (href === "/admin-dashboard" && adminBaseUrl) {
-              const target = `${adminBaseUrl}/admin-dashboard`;
+              const target = `${adminBaseUrl}/`;
               anchor.setAttribute("href", target);
               anchor.setAttribute("xlink:href", target);
               anchor.setAttribute("target", "_blank");

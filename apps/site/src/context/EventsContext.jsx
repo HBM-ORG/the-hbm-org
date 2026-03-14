@@ -21,7 +21,9 @@ export const EventsProvider = ({ children }) => {
         const response = await fetch(apiUrl);
         if (response.ok) {
           const data = await response.json();
-          if (Array.isArray(data)) setEvents(data);
+          if (Array.isArray(data) && data.length > 0) {
+            setEvents(data);
+          }
         }
       } catch (error) {
         console.warn(

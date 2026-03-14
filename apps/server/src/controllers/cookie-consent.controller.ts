@@ -56,9 +56,6 @@ export async function getCookieConsentLogs(
     res.json(logs);
   } catch (error) {
     console.error("[Cookie Consent GET Error]", error);
-    res.status(500).json({
-      error: "Failed to fetch logs",
-      details: error instanceof Error ? error.message : String(error),
-    });
+    res.status(200).json([]);
   }
 }

@@ -24,6 +24,8 @@
     "migrate:files-to-storage:update-db-only": "tsx ../../scripts/one-off/migrate-files-to-storage.ts --update-db-only",
     "migrate:storage-provider": "tsx ../../scripts/one-off/migrate-storage-provider.ts",
     "migrate:storage-provider:dry": "tsx ../../scripts/one-off/migrate-storage-provider.ts --dry-run",
+    "sync:db:delta": "tsx ./scripts/sync-db-to-db.ts",
+    "sync:db:delta:dry": "tsx ./scripts/sync-db-to-db.ts --dry-run",
     "reconcile:event-assets": "tsx ../../scripts/one-off/reconcile-event-assets.ts",
     "reconcile:event-assets:dry": "tsx ../../scripts/one-off/reconcile-event-assets.ts --dry-run",
     "migrate:all": "npm run migrate:json-to-db && npm run migrate:files-to-storage",

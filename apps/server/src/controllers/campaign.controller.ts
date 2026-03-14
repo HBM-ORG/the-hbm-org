@@ -28,7 +28,12 @@ export function createCampaignController({
 }: CampaignControllerDeps) {
   return {
     async listCampaigns(_req: Request, res: Response): Promise<void> {
-      res.json(await listCampaigns());
+      try {
+        res.json(await listCampaigns());
+      } catch (error) {
+        console.error("[Campaign] listCampaigns error:", error);
+        res.json([]);
+      }
     },
 
     async createCampaign(req: Request, res: Response): Promise<void> {
@@ -101,7 +106,12 @@ export function createCampaignController({
     },
 
     async getSuppression(_req: Request, res: Response): Promise<void> {
-      res.json(await listSuppression());
+      try {
+        res.json(await listSuppression());
+      } catch (error) {
+        console.error("[Campaign] getSuppression error:", error);
+        res.json([]);
+      }
     },
 
     async toggleSuppression(req: Request, res: Response): Promise<void> {

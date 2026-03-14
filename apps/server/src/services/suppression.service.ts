@@ -6,15 +6,31 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+function isMissingTableError(error: unknown): boolean {
+  return (
+    typeof error === "object"
+    && error !== null
+    && "code" in error
+    && error.code === "P2021"
+  );
+}
+
 export function buildUnsubscribeHtml(email: string): string {
   return `<h1>Successfully Unsubscribed</h1><p>The email ${email} has been removed from our marketing list.</p>`;
 }
 
 export async function listSuppression(): Promise<string[]> {
-  const rows = await prisma.emailSuppression.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-  return rows.map((row) => row.email);
+  try {
+    const rows = await prisma.emailSuppression.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map((row) => row.email);
+  } catch (error) {
+    if (isMissingTableError(error)) {
+      return [];
+    }
+    throw error;
+  }
 }
 
 export async function unsubscribeEmail(

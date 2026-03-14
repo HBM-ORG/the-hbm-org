@@ -85,7 +85,7 @@ Purpose:
 - `site` DO App Platform app ID for `testwww.thehbm.org`
 - `admin` DO App Platform app ID for `testadmin.thehbm.org`
 - `backend` DO App Platform app ID for `testapi.thehbm.org`
-- `BACKEND_DATABASE_URL` is used by backend CI/deploy automation to run `prisma migrate deploy`
+- Prisma migrations for DigitalOcean should run from the backend App Platform deployment/runtime path, not from the GitHub runner
 
 ### `staging` environment
 
@@ -127,13 +127,13 @@ Purpose:
 
 ## Why `BACKEND_DATABASE_URL` Lives In GitHub
 
-Runtime application config should still live in the hosting platform, but backend schema deployment now runs automatically in CI/CD.
+Runtime application config should still live in the hosting platform. For GCP production, backend schema deployment can run automatically in CI/CD from GitHub Actions. For DigitalOcean dev/staging, GitHub-hosted runners may not have trusted network access to the managed MySQL instance.
 
 That means GitHub Actions needs a DB connection string for:
 
 - `npm --prefix apps/server run prisma:migrate:deploy`
 
-This is a CI/deploy secret, separate from the hosting platform’s runtime env values, even if both point to the same database.
+Use `BACKEND_DATABASE_URL` in GitHub for environments where the runner can actually reach the database. For DO dev/staging, keep `DATABASE_URL` on the backend app itself and run Prisma migrations from the backend App Platform deployment/runtime path instead.
 
 ## Runtime Application Environment Variables
 

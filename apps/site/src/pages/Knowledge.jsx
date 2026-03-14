@@ -470,18 +470,21 @@ export default function Knowledge() {
     fetch(`${getApiBase()}/api/cms/knowledge-base`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data && (Array.isArray(data.books) || Array.isArray(data.videos))) {
+        const hasBooks = Array.isArray(data?.books) && data.books.length > 0;
+        const hasVideos = Array.isArray(data?.videos) && data.videos.length > 0;
+
+        if (hasBooks || hasVideos) {
           setCmsData(data);
         } else {
           setCmsData({
-            books: [],
+            books: knowledgeData,
             videos: [],
           });
         }
       })
       .catch(() =>
         setCmsData({
-          books: [],
+          books: knowledgeData,
           videos: [],
         }),
       );

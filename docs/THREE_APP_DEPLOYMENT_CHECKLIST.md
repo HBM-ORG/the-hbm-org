@@ -114,7 +114,7 @@ This is the agreed transition model for now:
 
 ### Backend deploy
 
-- [x] Run `npm run prisma:migrate:deploy -w apps/server` automatically during backend deployment flow
+- [x] Keep Prisma migration execution in the backend deployment flow, but do not require GitHub-hosted DO runners to reach the managed MySQL instance directly
 - [ ] Ensure migrations run before backend rollout completes
 - [ ] Ensure worker rollout happens only after schema compatibility is guaranteed
 

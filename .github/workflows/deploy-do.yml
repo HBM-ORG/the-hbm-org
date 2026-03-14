@@ -31,7 +31,6 @@ jobs:
       DO_APP_ID_SITE: ${{ vars.DO_APP_ID_SITE }}
       DO_APP_ID_ADMIN: ${{ vars.DO_APP_ID_ADMIN }}
       DO_APP_ID_BACKEND: ${{ vars.DO_APP_ID_BACKEND }}
-      BACKEND_DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
 
     steps:
       - name: Checkout
@@ -75,11 +74,12 @@ jobs:
         if: steps.changes.outputs.backend == 'true'
         run: npm ci --prefix apps/server && npm --prefix apps/server run validate
 
-      - name: Apply backend Prisma migrations
-        if: steps.changes.outputs.backend == 'true' && env.BACKEND_DATABASE_URL != ''
-        env:
-          DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
-        run: npm --prefix apps/server run prisma:migrate:deploy
+      - name: Prisma migration note
+        if: steps.changes.outputs.backend == 'true'
+        run: |
+          echo "Skipping prisma migrate deploy from GitHub Actions for DO."
+          echo "Reason: GitHub-hosted runners are outside the trusted network for the managed MySQL instance."
+          echo "Run Prisma migrations from the backend App Platform deployment/runtime path instead."
 
       - name: Setup doctl
         if: env.DO_API_TOKEN != '' && (steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true')
@@ -115,7 +115,6 @@ jobs:
       DO_APP_ID_SITE: ${{ vars.DO_APP_ID_SITE }}
       DO_APP_ID_ADMIN: ${{ vars.DO_APP_ID_ADMIN }}
       DO_APP_ID_BACKEND: ${{ vars.DO_APP_ID_BACKEND }}
-      BACKEND_DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
 
     steps:
       - name: Checkout
@@ -159,11 +158,12 @@ jobs:
         if: steps.changes.outputs.backend == 'true'
         run: npm ci --prefix apps/server && npm --prefix apps/server run validate
 
-      - name: Apply backend Prisma migrations
-        if: steps.changes.outputs.backend == 'true' && env.BACKEND_DATABASE_URL != ''
-        env:
-          DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
-        run: npm --prefix apps/server run prisma:migrate:deploy
+      - name: Prisma migration note
+        if: steps.changes.outputs.backend == 'true'
+        run: |
+          echo "Skipping prisma migrate deploy from GitHub Actions for DO."
+          echo "Reason: GitHub-hosted runners are outside the trusted network for the managed MySQL instance."
+          echo "Run Prisma migrations from the backend App Platform deployment/runtime path instead."
 
       - name: Setup doctl
         if: env.DO_API_TOKEN != '' && (steps.changes.outputs.site == 'true' || steps.changes.outputs.admin == 'true' || steps.changes.outputs.backend == 'true')

@@ -78,7 +78,12 @@ export function createEmailController({
      *     tags: [Email]
      */
     async getEngagement(_req: Request, res: Response): Promise<void> {
-      res.json(await listEngagement());
+      try {
+        res.json(await listEngagement());
+      } catch (error) {
+        console.error("[Email] GET engagement error:", error);
+        res.json([]);
+      }
     },
 
     /**
