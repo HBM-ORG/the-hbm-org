@@ -4,6 +4,7 @@ import {
   deleteObject,
   extractKeyFromUrl,
   getStorageConfigSummary,
+  uploadObject,
 } from '../storage/index.js';
 
 const ALLOWED_IMAGE_TYPES = [
@@ -24,7 +25,8 @@ const ALL_ALLOWED_TYPES = [
   'application/octet-stream',
 ];
 const VALID_KEY_PREFIXES = ['events', 'team', 'partner-logos', 'emails', 'uploads', 'cms'];
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024;
+const SITE_SETTINGS_MEDIA_MAX_FILE_SIZE = 500 * 1024 * 1024;
 
 type UploadOptions = {
   filename: string;
@@ -36,6 +38,14 @@ type UploadOptions = {
 
 export function checkStorageStatus() {
   return getStorageConfigSummary();
+}
+
+function getMaxFileSizeForPrefix(keyPrefix: string) {
+  if (keyPrefix === 'cms/site-settings' || keyPrefix.startsWith('cms/site-settings/')) {
+    return SITE_SETTINGS_MEDIA_MAX_FILE_SIZE;
+  }
+
+  return DEFAULT_MAX_FILE_SIZE;
 }
 
 export async function generateUploadUrl(options: UploadOptions) {
@@ -53,12 +63,17 @@ export async function generateUploadUrl(options: UploadOptions) {
     throw new Error(`Unsupported content type: ${contentType}`);
   }
 
-  if (options.contentLength && Number(options.contentLength) > MAX_FILE_SIZE) {
-    throw new Error(`File too large (max ${MAX_FILE_SIZE / (1024 * 1024)}MB)`);
+  const keyPrefix = options.keyPrefix || 'uploads';
+  const maxFileSize = getMaxFileSizeForPrefix(keyPrefix);
+
+  if (options.contentLength && Number(options.contentLength) > maxFileSize) {
+    throw new Error(`File too large (max ${maxFileSize / (1024 * 1024)}MB)`);
   }
 
-  const keyPrefix = options.keyPrefix || 'uploads';
-  if (!VALID_KEY_PREFIXES.includes(keyPrefix) && !keyPrefix.startsWith('events/')) {
+  const isValidPrefix = VALID_KEY_PREFIXES.some(
+    (prefix) => keyPrefix === prefix || keyPrefix.startsWith(`${prefix}/`),
+  );
+  if (!isValidPrefix) {
     throw new Error(`Invalid key prefix: ${keyPrefix}`);
   }
 
@@ -67,6 +82,44 @@ export async function generateUploadUrl(options: UploadOptions) {
     contentType,
     keyPrefix,
     expiresInSeconds: options.expiresInSeconds || 900,
+  });
+}
+
+export async function uploadBufferToStorage(options: UploadOptions & { body: Buffer }) {
+  const status = checkStorageStatus();
+  if (!status.isReady) {
+    throw new Error(`Storage not configured: ${status.missingKeys.join(', ')}`);
+  }
+
+  if (!options.filename || typeof options.filename !== 'string') {
+    throw new Error('filename is required');
+  }
+
+  const contentType = options.contentType || 'application/octet-stream';
+  if (!ALL_ALLOWED_TYPES.includes(contentType)) {
+    throw new Error(`Unsupported content type: ${contentType}`);
+  }
+
+  const keyPrefix = options.keyPrefix || 'uploads';
+  const maxFileSize = getMaxFileSizeForPrefix(keyPrefix);
+  const contentLength = Number(options.contentLength || options.body.byteLength || 0);
+
+  if (contentLength > maxFileSize) {
+    throw new Error(`File too large (max ${maxFileSize / (1024 * 1024)}MB)`);
+  }
+
+  const isValidPrefix = VALID_KEY_PREFIXES.some(
+    (prefix) => keyPrefix === prefix || keyPrefix.startsWith(`${prefix}/`),
+  );
+  if (!isValidPrefix) {
+    throw new Error(`Invalid key prefix: ${keyPrefix}`);
+  }
+
+  return uploadObject({
+    filename: options.filename,
+    contentType,
+    keyPrefix,
+    body: options.body,
   });
 }
 

@@ -4,10 +4,11 @@
  * Route declarations only. Business logic lives in controllers/services.
  */
 
-import { Router } from 'express';
+import express, { Router } from 'express';
 import {
   deleteUpload,
   getStatus,
+  proxyUpload,
   signDownload,
   signUpload,
   viewUpload,
@@ -16,6 +17,7 @@ import {
 const router = Router();
 
 router.post('/sign', signUpload);
+router.post('/proxy', express.raw({ type: '*/*', limit: '550mb' }), proxyUpload);
 router.post('/sign-download', signDownload);
 router.post('/delete', deleteUpload);
 router.get('/status', getStatus);

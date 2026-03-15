@@ -13,6 +13,8 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type {
+  DirectUploadOptions,
+  DirectUploadResult,
   PresignedGetOptions,
   PresignedPutOptions,
   PresignedPutResult,
@@ -65,6 +67,20 @@ function getClient(): S3Client {
   return client;
 }
 
+function buildObjectKey(opts: { keyPrefix?: string; filename?: string }) {
+  const keyPrefix = String(opts.keyPrefix || 'uploads').replace(/^\/+|\/+$/g, '');
+  const safeName = String(opts.filename || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+  return `${keyPrefix}/${randomUUID()}-${safeName}`;
+}
+
+function buildViewUrl(key: string) {
+  const endpoint = String(process.env.SPACES_ENDPOINT || '')
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/+$/, '');
+  const bucket = getSpacesBucket();
+  return endpoint && bucket ? `https://${bucket}.${endpoint}/${key}` : key;
+}
+
 /**
  * DigitalOcean Spaces Storage Adapter
  */
@@ -83,10 +99,7 @@ export class SpacesStorageAdapter implements StorageAdapter {
   async createPresignedPutUrl(opts: PresignedPutOptions): Promise<PresignedPutResult> {
     const s3 = getClient();
 
-    // Sanitize key prefix and filename
-    const keyPrefix = String(opts.keyPrefix || 'uploads').replace(/^\/+|\/+$/g, '');
-    const safeName = String(opts.filename || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
-    const key = `${keyPrefix}/${randomUUID()}-${safeName}`;
+    const key = buildObjectKey(opts);
 
     const params: PutObjectCommandInput = {
       Bucket: getSpacesBucket(),
@@ -102,13 +115,29 @@ export class SpacesStorageAdapter implements StorageAdapter {
     );
 
     // Build view URL
-    const endpoint = String(process.env.SPACES_ENDPOINT || '')
-      .replace(/^https?:\/\//i, '')
-      .replace(/\/+$/, '');
-    const bucket = getSpacesBucket();
-    const viewUrl = endpoint && bucket ? `https://${bucket}.${endpoint}/${key}` : key;
+    const viewUrl = buildViewUrl(key);
 
     return { uploadUrl, key, viewUrl };
+  }
+
+  async uploadObject(opts: DirectUploadOptions): Promise<DirectUploadResult> {
+    const s3 = getClient();
+    const key = buildObjectKey(opts);
+
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: getSpacesBucket(),
+        Key: key,
+        Body: opts.body,
+        ContentType: opts.contentType || 'application/octet-stream',
+        ACL: 'public-read',
+      }),
+    );
+
+    return {
+      key,
+      viewUrl: buildViewUrl(key),
+    };
   }
 
   async createPresignedGetUrl(opts: PresignedGetOptions): Promise<string> {

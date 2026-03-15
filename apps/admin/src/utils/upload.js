@@ -1,11 +1,49 @@
 import { getApiBase } from "./api";
 import { getStoredAdminPassword } from "./admin-auth.js";
 
+function shouldUseProxyUpload(keyPrefix) {
+  return keyPrefix === 'cms/site-settings' || keyPrefix.startsWith('cms/site-settings/');
+}
+
+async function uploadFileViaProxy(file, { keyPrefix, adminPassword, base }) {
+  const query = new URLSearchParams({
+    filename: file.name,
+    keyPrefix,
+  });
+
+  const response = await fetch(`${base}/api/upload/proxy?${query.toString()}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type || 'application/octet-stream',
+      'X-Admin-Password': adminPassword,
+    },
+    body: file,
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    return {
+      success: false,
+      error: data.error || `Upload failed: ${response.status}`,
+    };
+  }
+
+  return {
+    success: true,
+    url: data.viewUrl,
+    key: data.key,
+  };
+}
+
 export async function uploadFile(file, options = {}) {
   const { keyPrefix = 'uploads', adminPassword = getStoredAdminPassword() } = options;
 
   try {
     const base = getApiBase();
+    if (shouldUseProxyUpload(keyPrefix)) {
+      return await uploadFileViaProxy(file, { keyPrefix, adminPassword, base });
+    }
+
     const signRes = await fetch(`${base}/api/upload/sign`, {
       method: 'POST',
       headers: {
@@ -29,19 +67,21 @@ export async function uploadFile(file, options = {}) {
     }
 
     const { uploadUrl, key, viewUrl } = signData;
-    const uploadRes = await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type || 'application/octet-stream',
-      },
-    });
+    let uploadRes;
+    try {
+      uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+        },
+      });
+    } catch (_err) {
+      return await uploadFileViaProxy(file, { keyPrefix, adminPassword, base });
+    }
 
     if (!uploadRes.ok) {
-      return {
-        success: false,
-        error: `Upload failed: ${uploadRes.status} ${uploadRes.statusText}`,
-      };
+      return await uploadFileViaProxy(file, { keyPrefix, adminPassword, base });
     }
 
     return { success: true, url: viewUrl, key };

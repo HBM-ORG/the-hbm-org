@@ -3,6 +3,10 @@ const DEFAULT_PUBLIC_BRAND_STATE = Object.freeze({
   contactEmail: "office@thehbm.org",
   whatsappPhoneE164: "972587073136",
   whatsappPhoneDisplay: "0587073136",
+  siteMedia: Object.freeze({
+    joinMovementVideoUrl:
+      "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/05/banner-video.mp4",
+  }),
   socialLinks: Object.freeze({
     instagram: "https://www.instagram.com/the__hbm/",
     facebook: "https://www.facebook.com/people/The-HBM/61573100935457/",
@@ -14,11 +18,13 @@ const DEFAULT_PUBLIC_BRAND_STATE = Object.freeze({
 
 let publicBrandState = {
   ...DEFAULT_PUBLIC_BRAND_STATE,
+  siteMedia: { ...DEFAULT_PUBLIC_BRAND_STATE.siteMedia },
   socialLinks: { ...DEFAULT_PUBLIC_BRAND_STATE.socialLinks },
 };
 
 export function applyPublicBrandSettings(settings = {}) {
   const socialLinks = settings?.socialLinks || {};
+  const siteMedia = settings?.siteMedia || {};
   publicBrandState = {
     organizationName:
       String(settings?.organizationName || "").trim()
@@ -32,6 +38,11 @@ export function applyPublicBrandSettings(settings = {}) {
     whatsappPhoneDisplay:
       String(settings?.whatsappPhoneDisplay || "").trim()
       || DEFAULT_PUBLIC_BRAND_STATE.whatsappPhoneDisplay,
+    siteMedia: {
+      joinMovementVideoUrl:
+        String(siteMedia.joinMovementVideoUrl || "").trim()
+        || DEFAULT_PUBLIC_BRAND_STATE.siteMedia.joinMovementVideoUrl,
+    },
     socialLinks: {
       instagram:
         String(socialLinks.instagram || "").trim()
@@ -80,6 +91,11 @@ export const PUBLIC_BRAND = {
       linkedin: publicBrandState.socialLinks.linkedin,
       youtube: publicBrandState.socialLinks.youtube,
       email: `mailto:${publicBrandState.contactEmail}`,
+    });
+  },
+  get siteMedia() {
+    return Object.freeze({
+      joinMovementVideoUrl: publicBrandState.siteMedia.joinMovementVideoUrl,
     });
   },
   get socialProfiles() {

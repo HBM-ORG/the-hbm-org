@@ -5,6 +5,7 @@ import {
   generateUploadUrl,
   getKeyFromUrl,
   removeFile,
+  uploadBufferToStorage,
 } from '../services/storage.service.js';
 import { isAuthorizedRequest } from '../middleware/admin-auth.js';
 
@@ -35,6 +36,49 @@ export async function signUpload(req: Request, res: Response): Promise<void> {
   } catch (error) {
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to generate upload URL',
+    });
+  }
+}
+
+export async function proxyUpload(req: Request, res: Response): Promise<void> {
+  try {
+    if (!(await isAuthorizedRequest(req))) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const filename = String(req.query.filename || '').trim();
+    const keyPrefix = String(req.query.keyPrefix || '').trim();
+    const contentType = String(req.headers['content-type'] || 'application/octet-stream');
+    const body =
+      Buffer.isBuffer(req.body)
+        ? req.body
+        : req.body instanceof Uint8Array
+          ? Buffer.from(req.body)
+          : null;
+
+    if (!filename) {
+      res.status(400).json({ error: 'filename query parameter is required' });
+      return;
+    }
+
+    if (!body || body.byteLength === 0) {
+      res.status(400).json({ error: 'file body is required' });
+      return;
+    }
+
+    const result = await uploadBufferToStorage({
+      filename,
+      keyPrefix,
+      contentType,
+      contentLength: body.byteLength,
+      body,
+    });
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to upload file',
     });
   }
 }

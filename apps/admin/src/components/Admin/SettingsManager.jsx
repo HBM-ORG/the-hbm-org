@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Save, Settings as SettingsIcon } from "lucide-react";
+import {
+  Film,
+  Save,
+  Settings as SettingsIcon,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { getStoredAdminPassword } from "../../utils/admin-auth.js";
-import { getApiBase } from "../../utils/api.js";
+import { getApiBase, resolveAssetUrl } from "../../utils/api.js";
+import { deleteUploadedFile, uploadFile } from "../../utils/upload.js";
 
 const DEFAULT_SETTINGS = {
   organizationName: "The HBM",
@@ -15,12 +22,19 @@ const DEFAULT_SETTINGS = {
     youtube: "https://www.youtube.com/@TheHBM",
   },
   inquiryWhatsappMessage: "אשמח לקבל פרטים נוספים על הארגון",
+  siteMedia: {
+    joinMovementVideoUrl:
+      "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/05/banner-video.mp4",
+  },
 };
 
 export default function SettingsManager() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [activePanel, setActivePanel] = useState("organization");
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState("");
+  const [mediaUploadStatus, setMediaUploadStatus] = useState("");
+  const [uploadingMedia, setUploadingMedia] = useState(false);
   const base = getApiBase();
 
   useEffect(() => {
@@ -34,6 +48,10 @@ export default function SettingsManager() {
           setSettings({
             ...DEFAULT_SETTINGS,
             ...data,
+            siteMedia: {
+              ...DEFAULT_SETTINGS.siteMedia,
+              ...(data?.siteMedia || {}),
+            },
             socialLinks: {
               ...DEFAULT_SETTINGS.socialLinks,
               ...(data?.socialLinks || {}),
@@ -75,6 +93,59 @@ export default function SettingsManager() {
     }));
   }
 
+  function updateSiteMedia(field, value) {
+    setSettings((current) => ({
+      ...current,
+      siteMedia: {
+        ...current.siteMedia,
+        [field]: value,
+      },
+    }));
+  }
+
+  async function handleJoinMovementUpload(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setUploadingMedia(true);
+    setMediaUploadStatus("Uploading...");
+
+    try {
+      const previousUrl = settings.siteMedia.joinMovementVideoUrl;
+      const result = await uploadFile(file, { keyPrefix: "cms/site-settings" });
+      if (!result.success || !result.url) {
+        throw new Error(result.error || "Upload failed");
+      }
+
+      updateSiteMedia("joinMovementVideoUrl", result.url);
+      setMediaUploadStatus("Upload complete. Save settings to publish.");
+
+      if (previousUrl && previousUrl !== result.url) {
+        deleteUploadedFile(previousUrl).catch(() => {});
+      }
+    } catch (error) {
+      console.error("Failed to upload Join The Movement media", error);
+      setMediaUploadStatus(
+        error instanceof Error ? error.message : "Upload failed",
+      );
+    } finally {
+      setUploadingMedia(false);
+      window.setTimeout(() => setMediaUploadStatus(""), 4000);
+    }
+  }
+
+  async function clearJoinMovementVideo() {
+    const previousUrl = settings.siteMedia.joinMovementVideoUrl;
+    updateSiteMedia("joinMovementVideoUrl", "");
+    setMediaUploadStatus("Removed. Save settings to publish.");
+
+    if (previousUrl) {
+      deleteUploadedFile(previousUrl).catch(() => {});
+    }
+    window.setTimeout(() => setMediaUploadStatus(""), 4000);
+  }
+
   async function saveSettings() {
     setSaveStatus("Saving...");
     try {
@@ -95,6 +166,10 @@ export default function SettingsManager() {
       setSettings({
         ...DEFAULT_SETTINGS,
         ...(data.settings || settings),
+        siteMedia: {
+          ...DEFAULT_SETTINGS.siteMedia,
+          ...((data.settings || settings).siteMedia || {}),
+        },
         socialLinks: {
           ...DEFAULT_SETTINGS.socialLinks,
           ...((data.settings || settings).socialLinks || {}),
@@ -110,6 +185,9 @@ export default function SettingsManager() {
 
   const fieldClassName =
     "w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100";
+  const joinMovementPreviewUrl = resolveAssetUrl(
+    settings.siteMedia.joinMovementVideoUrl,
+  );
 
   if (loading) {
     return (
@@ -148,9 +226,35 @@ export default function SettingsManager() {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <section className="space-y-5">
-          <h3 className="text-lg font-black text-gray-900">Organization</h3>
+      <div className="mb-8 flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => setActivePanel("organization")}
+          className={`rounded-2xl px-4 py-2 text-xs font-black uppercase tracking-widest transition-colors ${
+            activePanel === "organization"
+              ? "bg-indigo-600 text-white shadow-lg"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Organization
+        </button>
+        <button
+          type="button"
+          onClick={() => setActivePanel("media")}
+          className={`rounded-2xl px-4 py-2 text-xs font-black uppercase tracking-widest transition-colors ${
+            activePanel === "media"
+              ? "bg-indigo-600 text-white shadow-lg"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Site Media
+        </button>
+      </div>
+
+      {activePanel === "organization" ? (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <section className="space-y-5">
+            <h3 className="text-lg font-black text-gray-900">Organization</h3>
 
           <label className="block">
             <span className="mb-2 block text-xs font-black uppercase tracking-widest text-gray-500">
@@ -209,10 +313,10 @@ export default function SettingsManager() {
               }
             />
           </label>
-        </section>
+          </section>
 
-        <section className="space-y-5">
-          <h3 className="text-lg font-black text-gray-900">Social Links</h3>
+          <section className="space-y-5">
+            <h3 className="text-lg font-black text-gray-900">Social Links</h3>
 
           <label className="block">
             <span className="mb-2 block text-xs font-black uppercase tracking-widest text-gray-500">
@@ -257,8 +361,94 @@ export default function SettingsManager() {
               onChange={(event) => updateSocialLink("youtube", event.target.value)}
             />
           </label>
+          </section>
+        </div>
+      ) : (
+        <section className="space-y-6">
+          <div className="rounded-[2rem] border border-gray-100 bg-gray-50 p-6 md:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
+                <Film className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-black text-gray-900">
+                  Join The Movement Media
+                </h3>
+                <p className="mt-2 text-sm text-gray-500">
+                  Upload the reel/video shown on the home page under
+                  {" "}
+                  <span className="font-semibold text-gray-700">
+                    Join The Movement
+                  </span>
+                  . Files are stored in object storage under the site settings media folder.
+                  Large site media supports up to 500 MB.
+                </p>
+              </div>
+            </div>
+
+            {mediaUploadStatus ? (
+              <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+                {mediaUploadStatus}
+              </div>
+            ) : null}
+
+            <div className="mt-6 space-y-5">
+              <label className="block">
+                <span className="mb-2 block text-xs font-black uppercase tracking-widest text-gray-500">
+                  Movement Video URL
+                </span>
+                <input
+                  className={fieldClassName}
+                  value={settings.siteMedia.joinMovementVideoUrl}
+                  onChange={(event) =>
+                    updateSiteMedia("joinMovementVideoUrl", event.target.value)
+                  }
+                  placeholder="https://..."
+                />
+              </label>
+
+              <div className="flex flex-wrap gap-3">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-gray-900 px-5 py-3 text-sm font-black uppercase tracking-widest text-white shadow-lg hover:bg-black">
+                  <Upload className="h-4 w-4" />
+                  {uploadingMedia ? "Uploading..." : "Upload Video"}
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="video/*"
+                    onChange={handleJoinMovementUpload}
+                    disabled={uploadingMedia}
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={clearJoinMovementVideo}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-red-200 px-5 py-3 text-sm font-black uppercase tracking-widest text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Clear
+                </button>
+              </div>
+
+              {joinMovementPreviewUrl ? (
+                <div className="overflow-hidden rounded-[2rem] border border-gray-200 bg-black shadow-sm">
+                  <video
+                    src={joinMovementPreviewUrl}
+                    controls
+                    muted
+                    playsInline
+                    className="aspect-[9/16] max-h-[520px] w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="rounded-[2rem] border border-dashed border-gray-300 bg-white px-6 py-12 text-center text-sm font-semibold text-gray-400">
+                  No media selected yet.
+                </div>
+              )}
+            </div>
+          </div>
         </section>
-      </div>
+      )}
     </div>
   );
 }

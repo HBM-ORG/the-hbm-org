@@ -13,6 +13,8 @@ const VIDEO_EVENT_KEY = "videoEvent";
 const HOW_IT_WORKS_KEY = "howItWorks";
 const KNOWLEDGE_BASE_KEY = "knowledgeBase";
 const SITE_SETTINGS_KEY = "siteSettings";
+const DEFAULT_JOIN_MOVEMENT_VIDEO_URL =
+  "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/05/banner-video.mp4";
 
 const DEFAULT_SITE_SETTINGS = Object.freeze({
   organizationName: "The HBM",
@@ -26,6 +28,9 @@ const DEFAULT_SITE_SETTINGS = Object.freeze({
     youtube: "https://www.youtube.com/@TheHBM",
   }),
   inquiryWhatsappMessage: "אשמח לקבל פרטים נוספים על הארגון",
+  siteMedia: Object.freeze({
+    joinMovementVideoUrl: DEFAULT_JOIN_MOVEMENT_VIDEO_URL,
+  }),
 });
 
 export function getDefaultSiteSettingsConfig(): SiteSettingsConfig {
@@ -137,11 +142,15 @@ export type SiteSettingsConfig = {
     youtube: string;
   };
   inquiryWhatsappMessage: string;
+  siteMedia: {
+    joinMovementVideoUrl: string;
+  };
 };
 
 function normalizeSiteSettingsConfig(value: unknown): SiteSettingsConfig {
   const source = isRecord(value) ? value : {};
   const socialLinks = isRecord(source.socialLinks) ? source.socialLinks : {};
+  const siteMedia = isRecord(source.siteMedia) ? source.siteMedia : {};
 
   return {
     organizationName:
@@ -183,6 +192,13 @@ function normalizeSiteSettingsConfig(value: unknown): SiteSettingsConfig {
       && source.inquiryWhatsappMessage.trim()
         ? source.inquiryWhatsappMessage.trim()
         : DEFAULT_SITE_SETTINGS.inquiryWhatsappMessage,
+    siteMedia: {
+      joinMovementVideoUrl:
+        typeof siteMedia.joinMovementVideoUrl === "string"
+        && siteMedia.joinMovementVideoUrl.trim()
+          ? siteMedia.joinMovementVideoUrl.trim()
+          : DEFAULT_SITE_SETTINGS.siteMedia.joinMovementVideoUrl,
+    },
   };
 }
 

@@ -15,7 +15,16 @@ export const generateGoogleCalendarUrl = ({ title, description, location, startT
   return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}&dates=${start}/${end}`;
 };
 
-export const downloadIcsFile = ({ title, description, location, startTime, endTime }) => {
+const escapeIcsText = (value) =>
+  String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\r?\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+
+const formatIcsDate = (d) => d.toISOString().replace(/-|:|\.\d+/g, '') + 'Z';
+
+export const downloadIcsFile = async ({ title, description, location, startTime, endTime, id }) => {
   const startDate = new Date(startTime);
   const endDate = new Date(endTime);
   
@@ -24,29 +33,67 @@ export const downloadIcsFile = ({ title, description, location, startTime, endTi
     return;
   }
 
-  const format = (d) => d.toISOString().replace(/-|:|\.\d+/g, '') + 'Z';
-  const start = format(startDate);
-  const end = format(endDate);
+  const start = formatIcsDate(startDate);
+  const end = formatIcsDate(endDate);
+  const stamp = formatIcsDate(new Date());
+  const uid = `${String(id || title || 'event').replace(/[^a-zA-Z0-9_-]/g, '-')}-${start}@thehbm.org`;
   
   const icsData = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
+    'PRODID:-//The HBM//Event Calendar//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
     'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${stamp}`,
     `DTSTART:${start}`,
     `DTEND:${end}`,
-    `SUMMARY:${title}`,
-    `DESCRIPTION:${description}`,
-    `LOCATION:${location}`,
+    'STATUS:CONFIRMED',
+    `SUMMARY:${escapeIcsText(title)}`,
+    `DESCRIPTION:${escapeIcsText(description)}`,
+    `LOCATION:${escapeIcsText(location)}`,
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n');
   
   const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+  const file = typeof File !== 'undefined'
+    ? new File([blob], 'event.ics', { type: 'text/calendar;charset=utf-8' })
+    : null;
+
+  if (
+    file
+    && navigator.share
+    && typeof navigator.canShare === 'function'
+    && navigator.canShare({ files: [file] })
+  ) {
+    try {
+      await navigator.share({
+        title: title || 'HBM Event',
+        text: title || 'HBM Event',
+        files: [file],
+      });
+      return;
+    } catch (_err) {
+      // Fall through to URL-based download/open.
+    }
+  }
+
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.setAttribute('download', 'event.ics');
+  link.setAttribute('target', '_blank');
+  link.setAttribute('rel', 'noopener noreferrer');
   document.body.appendChild(link);
-  link.click();
+
+  if ('download' in HTMLAnchorElement.prototype) {
+    link.click();
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
   document.body.removeChild(link);
+  window.setTimeout(() => window.URL.revokeObjectURL(url), 30_000);
 };

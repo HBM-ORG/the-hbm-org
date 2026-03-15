@@ -1,5 +1,7 @@
 import { getStorageAdapter } from './adapter.js';
 import type {
+  DirectUploadOptions,
+  DirectUploadResult,
   PresignedGetOptions,
   PresignedPutOptions,
   PresignedPutResult,
@@ -18,6 +20,10 @@ export function createPresignedPutUrl(
 
 export function createPresignedGetUrl(opts: PresignedGetOptions): Promise<string> {
   return getStorageAdapter().createPresignedGetUrl(opts);
+}
+
+export function uploadObject(opts: DirectUploadOptions): Promise<DirectUploadResult> {
+  return getStorageAdapter().uploadObject(opts);
 }
 
 export function deleteObject(key: string): Promise<void> {

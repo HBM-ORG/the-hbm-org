@@ -18,6 +18,18 @@ export type PresignedPutResult = {
   viewUrl: string;
 };
 
+export type DirectUploadOptions = {
+  keyPrefix?: string;
+  filename?: string;
+  contentType?: string;
+  body: Buffer;
+};
+
+export type DirectUploadResult = {
+  key: string;
+  viewUrl: string;
+};
+
 export type PresignedGetOptions = {
   key: string;
   expiresInSeconds?: number;
@@ -51,6 +63,11 @@ export interface StorageAdapter {
    * Create a pre-signed URL for downloading/viewing a file
    */
   createPresignedGetUrl(opts: PresignedGetOptions): Promise<string>;
+
+  /**
+   * Upload an object from the server process directly to storage
+   */
+  uploadObject(opts: DirectUploadOptions): Promise<DirectUploadResult>;
 
   /**
    * Delete an object from storage

@@ -6,6 +6,8 @@
 import { randomUUID } from 'crypto';
 import { Storage } from '@google-cloud/storage';
 import type {
+  DirectUploadOptions,
+  DirectUploadResult,
   PresignedGetOptions,
   PresignedPutOptions,
   PresignedPutResult,
@@ -64,6 +66,16 @@ function getBucketName(): string {
   return bucket;
 }
 
+function buildObjectKey(opts: { keyPrefix?: string; filename?: string }) {
+  const keyPrefix = String(opts.keyPrefix || 'uploads').replace(/^\/+|\/+$/g, '');
+  const safeName = String(opts.filename || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+  return `${keyPrefix}/${randomUUID()}-${safeName}`;
+}
+
+function buildViewUrl(key: string) {
+  return `https://storage.googleapis.com/${getBucketName()}/${key}`;
+}
+
 /**
  * Google Cloud Storage Adapter
  */
@@ -82,10 +94,7 @@ export class GcsStorageAdapter implements StorageAdapter {
   async createPresignedPutUrl(opts: PresignedPutOptions): Promise<PresignedPutResult> {
     const storage = getClient();
 
-    // Sanitize key prefix and filename
-    const keyPrefix = String(opts.keyPrefix || 'uploads').replace(/^\/+|\/+$/g, '');
-    const safeName = String(opts.filename || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
-    const key = `${keyPrefix}/${randomUUID()}-${safeName}`;
+    const key = buildObjectKey(opts);
 
     const bucketName = getBucketName();
     const file = storage.bucket(bucketName).file(key);
@@ -99,9 +108,27 @@ export class GcsStorageAdapter implements StorageAdapter {
     });
 
     // GCS public URL format
-    const viewUrl = `https://storage.googleapis.com/${bucketName}/${key}`;
+    const viewUrl = buildViewUrl(key);
 
     return { uploadUrl, key, viewUrl };
+  }
+
+  async uploadObject(opts: DirectUploadOptions): Promise<DirectUploadResult> {
+    const storage = getClient();
+    const key = buildObjectKey(opts);
+    const bucketName = getBucketName();
+    const file = storage.bucket(bucketName).file(key);
+
+    await file.save(opts.body, {
+      contentType: opts.contentType || 'application/octet-stream',
+      resumable: false,
+      public: true,
+    });
+
+    return {
+      key,
+      viewUrl: buildViewUrl(key),
+    };
   }
 
   async createPresignedGetUrl(opts: PresignedGetOptions): Promise<string> {
