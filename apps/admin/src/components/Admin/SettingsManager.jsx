@@ -35,7 +35,26 @@ export default function SettingsManager() {
   const [saveStatus, setSaveStatus] = useState("");
   const [mediaUploadStatus, setMediaUploadStatus] = useState("");
   const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [joinMovementPreviewMode, setJoinMovementPreviewMode] = useState("portrait");
   const base = getApiBase();
+
+  function mergeSettings(data = {}, fallback = settings) {
+    return {
+      ...DEFAULT_SETTINGS,
+      ...fallback,
+      ...data,
+      siteMedia: {
+        ...DEFAULT_SETTINGS.siteMedia,
+        ...(fallback?.siteMedia || {}),
+        ...(data?.siteMedia || {}),
+      },
+      socialLinks: {
+        ...DEFAULT_SETTINGS.socialLinks,
+        ...(fallback?.socialLinks || {}),
+        ...(data?.socialLinks || {}),
+      },
+    };
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -45,18 +64,7 @@ export default function SettingsManager() {
         const response = await fetch(`${base}/api/site-settings`);
         const data = response.ok ? await response.json() : DEFAULT_SETTINGS;
         if (!cancelled) {
-          setSettings({
-            ...DEFAULT_SETTINGS,
-            ...data,
-            siteMedia: {
-              ...DEFAULT_SETTINGS.siteMedia,
-              ...(data?.siteMedia || {}),
-            },
-            socialLinks: {
-              ...DEFAULT_SETTINGS.socialLinks,
-              ...(data?.socialLinks || {}),
-            },
-          });
+          setSettings(mergeSettings(data, DEFAULT_SETTINGS));
         }
       } catch (error) {
         console.error("Failed to load site settings", error);
@@ -103,6 +111,26 @@ export default function SettingsManager() {
     }));
   }
 
+  async function persistSettings(nextSettings) {
+    const response = await fetch(`${base}/api/site-settings`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Admin-Password": getStoredAdminPassword(),
+      },
+      body: JSON.stringify(nextSettings),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "Failed to save settings");
+    }
+
+    const merged = mergeSettings(data.settings || nextSettings, nextSettings);
+    setSettings(merged);
+    return merged;
+  }
+
   async function handleJoinMovementUpload(event) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -111,21 +139,33 @@ export default function SettingsManager() {
     setUploadingMedia(true);
     setMediaUploadStatus("Uploading...");
 
+    let uploadedUrl = "";
     try {
       const previousUrl = settings.siteMedia.joinMovementVideoUrl;
       const result = await uploadFile(file, { keyPrefix: "cms/site-settings" });
       if (!result.success || !result.url) {
         throw new Error(result.error || "Upload failed");
       }
+      uploadedUrl = result.url;
 
-      updateSiteMedia("joinMovementVideoUrl", result.url);
-      setMediaUploadStatus("Upload complete. Save settings to publish.");
+      const nextSettings = mergeSettings({
+        siteMedia: {
+          joinMovementVideoUrl: uploadedUrl,
+        },
+      });
 
-      if (previousUrl && previousUrl !== result.url) {
+      await persistSettings(nextSettings);
+      setJoinMovementPreviewMode("portrait");
+      setMediaUploadStatus("Upload complete and saved.");
+
+      if (previousUrl && previousUrl !== uploadedUrl) {
         deleteUploadedFile(previousUrl).catch(() => {});
       }
     } catch (error) {
       console.error("Failed to upload Join The Movement media", error);
+      if (uploadedUrl) {
+        deleteUploadedFile(uploadedUrl).catch(() => {});
+      }
       setMediaUploadStatus(
         error instanceof Error ? error.message : "Upload failed",
       );
@@ -137,44 +177,33 @@ export default function SettingsManager() {
 
   async function clearJoinMovementVideo() {
     const previousUrl = settings.siteMedia.joinMovementVideoUrl;
-    updateSiteMedia("joinMovementVideoUrl", "");
-    setMediaUploadStatus("Removed. Save settings to publish.");
+    try {
+      const nextSettings = mergeSettings({
+        siteMedia: {
+          joinMovementVideoUrl: "",
+        },
+      });
+      await persistSettings(nextSettings);
+      setJoinMovementPreviewMode("portrait");
+      setMediaUploadStatus("Removed and saved.");
 
-    if (previousUrl) {
-      deleteUploadedFile(previousUrl).catch(() => {});
+      if (previousUrl) {
+        deleteUploadedFile(previousUrl).catch(() => {});
+      }
+    } catch (error) {
+      console.error("Failed to remove Join The Movement media", error);
+      setMediaUploadStatus(
+        error instanceof Error ? error.message : "Failed to remove media",
+      );
     }
+
     window.setTimeout(() => setMediaUploadStatus(""), 4000);
   }
 
   async function saveSettings() {
     setSaveStatus("Saving...");
     try {
-      const response = await fetch(`${base}/api/site-settings`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Admin-Password": getStoredAdminPassword(),
-        },
-        body: JSON.stringify(settings),
-      });
-
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to save settings");
-      }
-
-      setSettings({
-        ...DEFAULT_SETTINGS,
-        ...(data.settings || settings),
-        siteMedia: {
-          ...DEFAULT_SETTINGS.siteMedia,
-          ...((data.settings || settings).siteMedia || {}),
-        },
-        socialLinks: {
-          ...DEFAULT_SETTINGS.socialLinks,
-          ...((data.settings || settings).socialLinks || {}),
-        },
-      });
+      await persistSettings(settings);
       setSaveStatus("Saved successfully!");
       window.setTimeout(() => setSaveStatus(""), 3000);
     } catch (error) {
@@ -431,15 +460,43 @@ export default function SettingsManager() {
               </div>
 
               {joinMovementPreviewUrl ? (
-                <div className="overflow-hidden rounded-[2rem] border border-gray-200 bg-black shadow-sm">
-                  <video
-                    src={joinMovementPreviewUrl}
-                    controls
-                    muted
-                    playsInline
-                    className="aspect-[9/16] max-h-[520px] w-full object-cover"
-                  />
-                </div>
+                joinMovementPreviewMode === "portrait" ? (
+                  <div className="mx-auto w-full max-w-[320px]">
+                    <div className="relative aspect-[9/16] overflow-hidden rounded-[2rem] border-[6px] border-gray-900 bg-black shadow-2xl">
+                      <video
+                        src={joinMovementPreviewUrl}
+                        controls
+                        muted
+                        playsInline
+                        onLoadedMetadata={(event) => {
+                          const { videoWidth, videoHeight } = event.currentTarget;
+                          if (!videoWidth || !videoHeight) return;
+                          setJoinMovementPreviewMode(
+                            videoHeight > videoWidth ? "portrait" : "landscape",
+                          );
+                        }}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-hidden rounded-[2rem] border border-gray-200 bg-black shadow-sm">
+                    <video
+                      src={joinMovementPreviewUrl}
+                      controls
+                      muted
+                      playsInline
+                      onLoadedMetadata={(event) => {
+                        const { videoWidth, videoHeight } = event.currentTarget;
+                        if (!videoWidth || !videoHeight) return;
+                        setJoinMovementPreviewMode(
+                          videoHeight > videoWidth ? "portrait" : "landscape",
+                        );
+                      }}
+                      className="aspect-video max-h-[520px] w-full object-contain"
+                    />
+                  </div>
+                )
               ) : (
                 <div className="rounded-[2rem] border border-dashed border-gray-300 bg-white px-6 py-12 text-center text-sm font-semibold text-gray-400">
                   No media selected yet.
