@@ -22,8 +22,8 @@ export function createRegistrationRoutes({
   router.post("/newsletter", controller.newsletter);
   router.post("/contact", controller.contact);
   router.get("/registrations", controller.list);
-  router.delete("/registrations/:id", controller.remove);
   router.delete("/registrations/by-contact", controller.removeByContact);
+  router.delete("/registrations/:id", controller.remove);
   router.get("/registrations/stats", controller.stats);
 
   return router;

@@ -145,6 +145,7 @@ const AdminDashboard = () => {
   const [contactProfileData, setContactProfileData] = useState(null);
   const [contactProfileLoading, setContactProfileLoading] = useState(false);
   const [contactProfileError, setContactProfileError] = useState(null);
+  const [crmConfirmDialog, setCrmConfirmDialog] = useState(null);
 
   const refetchRegistrations = () => {
     const base = getApiBase();
@@ -152,6 +153,64 @@ const AdminDashboard = () => {
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setRegistrationsList(Array.isArray(data) ? data : []))
       .catch(() => setRegistrationsList([]));
+  };
+
+  const deleteRegistrationsForContact = async (email) => {
+    const normalizedEmail = String(email || "").trim();
+    if (!normalizedEmail) return;
+    const base = getApiBase();
+    const response = await fetch(
+      `${base}/api/registrations/by-contact?email=${encodeURIComponent(normalizedEmail)}`,
+      {
+        method: "DELETE",
+        headers: {
+          "X-Admin-Password": getStoredAdminPassword(),
+        },
+      },
+    );
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body?.error || "Failed to delete contact registrations");
+    }
+    if (
+      selectedContactEmail &&
+      selectedContactEmail.toLowerCase() === normalizedEmail.toLowerCase()
+    ) {
+      setSelectedContactEmail(null);
+    }
+    refetchRegistrations();
+  };
+
+  const deleteRegistrationRecord = async (registrationId, registrationEmail) => {
+    if (!registrationId) return;
+    const base = getApiBase();
+    const response = await fetch(`${base}/api/registrations/${registrationId}`, {
+      method: "DELETE",
+      headers: {
+        "X-Admin-Password": getStoredAdminPassword(),
+      },
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body?.error || "Failed to delete registration");
+    }
+    refetchRegistrations();
+    if (
+      selectedContactEmail &&
+      String(registrationEmail || "").toLowerCase().trim() ===
+        selectedContactEmail.toLowerCase()
+    ) {
+      setContactProfileData((prev) =>
+        prev
+          ? {
+              ...prev,
+              registrations: (prev.registrations || []).filter(
+                (x) => x.id !== registrationId,
+              ),
+            }
+          : null,
+      );
+    }
   };
 
   // Sync local events when context updates (e.g. after API fetch on load) so list doesn't revert
@@ -490,31 +549,52 @@ const AdminDashboard = () => {
   };
 
   const exportToCSV = () => {
-    const dataToExport = filteredRegistrations;
+    const isByPerson = crmViewMode === "byPerson";
+    const dataToExport = isByPerson ? sortedContacts : filteredRegistrations;
     if (dataToExport.length === 0)
       return alert("No data to export for current filters");
-    const headers = [
-      "Name",
-      "Email",
-      "Phone",
-      "Source",
-      "Event",
-      "EventId",
-      "Date",
-      "Status",
-      "Language",
-    ];
-    const rows = dataToExport.map((r) => [
-      `"${(r.name || "").replace(/"/g, '""')}"`,
-      `"${(r.email || "").replace(/"/g, '""')}"`,
-      `"${(r.phone || "").replace(/"/g, '""')}"`,
-      `"${(r.source || "").replace(/"/g, '""')}"`,
-      `"${(r.eventName || "").replace(/"/g, '""')}"`,
-      `"${(r.eventId || "").toString().replace(/"/g, '""')}"`,
-      `"${r.date ? new Date(r.date).toLocaleString() : ""}"`,
-      `"${r.status || "confirmed"}"`,
-      `"${r.language || ""}"`,
-    ]);
+    const headers = isByPerson
+      ? [
+          "Name",
+          "Email",
+          "Phone",
+          "RegistrationCount",
+          "Events",
+          "Sources",
+          "LastRegistration",
+        ]
+      : [
+          "Name",
+          "Email",
+          "Phone",
+          "Source",
+          "Event",
+          "EventId",
+          "Date",
+          "Status",
+          "Language",
+        ];
+    const rows = isByPerson
+      ? dataToExport.map((contact) => [
+          `"${(contact.name || "").replace(/"/g, '""')}"`,
+          `"${(contact.email || "").replace(/"/g, '""')}"`,
+          `"${(contact.phone || "").replace(/"/g, '""')}"`,
+          `"${String(contact.count || 0).replace(/"/g, '""')}"`,
+          `"${(contact.eventNames || []).join(" | ").replace(/"/g, '""')}"`,
+          `"${(contact.sources || []).join(" | ").replace(/"/g, '""')}"`,
+          `"${contact.lastDate ? new Date(contact.lastDate).toLocaleString() : ""}"`,
+        ])
+      : dataToExport.map((r) => [
+          `"${(r.name || "").replace(/"/g, '""')}"`,
+          `"${(r.email || "").replace(/"/g, '""')}"`,
+          `"${(r.phone || "").replace(/"/g, '""')}"`,
+          `"${(r.source || "").replace(/"/g, '""')}"`,
+          `"${(r.eventName || "").replace(/"/g, '""')}"`,
+          `"${(r.eventId || "").toString().replace(/"/g, '""')}"`,
+          `"${r.date ? new Date(r.date).toLocaleString() : ""}"`,
+          `"${r.status || "confirmed"}"`,
+          `"${r.language || ""}"`,
+        ]);
     const csvContent =
       "\uFEFF" +
       headers.join(",") +
@@ -1324,29 +1404,14 @@ const AdminDashboard = () => {
                                 type="button"
                                 onClick={() => {
                                   const email = (contact.email || "").trim();
-                                  if (
-                                    !email ||
-                                    !window.confirm(
-                                      `Delete all ${contact.count} registration(s) for this person?`,
-                                    )
-                                  )
-                                    return;
-                                  const base = getApiBase();
-                                  fetch(
-                                    `${base}/api/registrations/by-contact?email=${encodeURIComponent(email)}`,
-                                    { method: "DELETE" },
-                                  )
-                                    .then((res) => res.json())
-                                    .then(() => {
-                                      if (
-                                        selectedContactEmail &&
-                                        selectedContactEmail.toLowerCase() ===
-                                          email.toLowerCase()
-                                      )
-                                        setSelectedContactEmail(null);
-                                      refetchRegistrations();
-                                    })
-                                    .catch(() => {});
+                                  if (!email) return;
+                                  setCrmConfirmDialog({
+                                    title: "Delete Contact",
+                                    message: `Delete all ${contact.count} registration(s) for this contact?`,
+                                    confirmLabel: "Delete Contact",
+                                    action: "deleteContact",
+                                    email,
+                                  });
                                 }}
                                 className="text-[10px] font-bold text-red-600 hover:underline uppercase tracking-wider"
                               >
@@ -1441,31 +1506,15 @@ const AdminDashboard = () => {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  if (
-                                    !reg.id ||
-                                    !window.confirm(
-                                      "Delete this registration?",
-                                    )
-                                  )
-                                    return;
-                                  const base = getApiBase();
-                                  fetch(
-                                    `${base}/api/registrations/${reg.id}`,
-                                    { method: "DELETE" },
-                                  )
-                                    .then((res) => res.json())
-                                    .then(() => {
-                                      if (
-                                        selectedContactEmail &&
-                                        (reg.email || "")
-                                          .toLowerCase()
-                                          .trim() ===
-                                          selectedContactEmail.toLowerCase()
-                                      )
-                                        setSelectedContactEmail(null);
-                                      refetchRegistrations();
-                                    })
-                                    .catch(() => {});
+                                  if (!reg.id) return;
+                                  setCrmConfirmDialog({
+                                    title: "Delete Registration",
+                                    message: "Delete this registration?",
+                                    confirmLabel: "Delete Registration",
+                                    action: "deleteRegistration",
+                                    registrationId: reg.id,
+                                    registrationEmail: reg.email || "",
+                                  });
                                 }}
                                 className="text-[10px] font-bold text-red-600 hover:underline uppercase tracking-wider"
                               >
@@ -1626,35 +1675,15 @@ const AdminDashboard = () => {
                                       <button
                                         type="button"
                                         onClick={() => {
-                                          if (
-                                            !r.id ||
-                                            !window.confirm(
-                                              "Delete this registration?",
-                                            )
-                                          )
-                                            return;
-                                          const base = getApiBase();
-                                          fetch(
-                                            `${base}/api/registrations/${r.id}`,
-                                            { method: "DELETE" },
-                                          )
-                                            .then(() => {
-                                              refetchRegistrations();
-                                              setContactProfileData((prev) =>
-                                                prev
-                                                  ? {
-                                                      ...prev,
-                                                      registrations: (
-                                                        prev.registrations ||
-                                                        []
-                                                      ).filter(
-                                                        (x) => x.id !== r.id,
-                                                      ),
-                                                    }
-                                                  : null,
-                                              );
-                                            })
-                                            .catch(() => {});
+                                          if (!r.id) return;
+                                          setCrmConfirmDialog({
+                                            title: "Delete Registration",
+                                            message: "Delete this registration?",
+                                            confirmLabel: "Delete Registration",
+                                            action: "deleteRegistration",
+                                            registrationId: r.id,
+                                            registrationEmail: r.email || "",
+                                          });
                                         }}
                                         className="text-[10px] font-bold text-red-600 hover:underline"
                                       >
@@ -1709,22 +1738,13 @@ const AdminDashboard = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            if (
-                              !window.confirm(
-                                "Delete all registrations for this contact?",
-                              )
-                            )
-                              return;
-                            const base = getApiBase();
-                            fetch(
-                              `${base}/api/registrations/by-contact?email=${encodeURIComponent(contactProfileData.email)}`,
-                              { method: "DELETE" },
-                            )
-                              .then(() => {
-                                setSelectedContactEmail(null);
-                                refetchRegistrations();
-                              })
-                              .catch(() => {});
+                            setCrmConfirmDialog({
+                              title: "Delete Contact",
+                              message: "Delete all registrations for this contact?",
+                              confirmLabel: "Delete Contact",
+                              action: "deleteContact",
+                              email: contactProfileData.email,
+                            });
                           }}
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-wider hover:opacity-90"
                         >
@@ -1734,6 +1754,59 @@ const AdminDashboard = () => {
                       </div>
                     </>
                   )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {crmConfirmDialog && (
+            <div
+              className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4"
+              onClick={() => setCrmConfirmDialog(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-label={crmConfirmDialog.title}
+            >
+              <div
+                className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl border border-gray-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-lg font-black text-gray-900">
+                  {crmConfirmDialog.title}
+                </h3>
+                <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+                  {crmConfirmDialog.message}
+                </p>
+                <div className="mt-6 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCrmConfirmDialog(null)}
+                    className="rounded-2xl border border-gray-200 px-5 py-3 text-xs font-black uppercase tracking-widest text-gray-600 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const dialog = crmConfirmDialog;
+                      setCrmConfirmDialog(null);
+                      try {
+                        if (dialog.action === "deleteContact") {
+                          await deleteRegistrationsForContact(dialog.email);
+                        } else if (dialog.action === "deleteRegistration") {
+                          await deleteRegistrationRecord(
+                            dialog.registrationId,
+                            dialog.registrationEmail,
+                          );
+                        }
+                      } catch (error) {
+                        console.error(error);
+                      }
+                    }}
+                    className="rounded-2xl bg-red-500 px-5 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-red-600"
+                  >
+                    {crmConfirmDialog.confirmLabel}
+                  </button>
                 </div>
               </div>
             </div>
