@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 import { getApiBase, resolveAssetUrl } from '../../utils/api';
+import { getStoredAdminPassword } from '../../utils/admin-auth.js';
 import { uploadFile } from '../../utils/upload';
 
 // ── Utility ─────────────────────────────────────────────────────────────────
@@ -155,6 +156,39 @@ const SmtpBadge = ({ config }) => {
             <span className={`text-[9px] font-black uppercase tracking-widest ${map.text}`}>{map.label}</span>
             {latency != null && status !== 'unconfigured' && <span className="text-[8px] text-gray-500 font-mono ml-1">{latency}ms</span>}
             <button onClick={check} className="ml-1 text-gray-600 hover:text-gray-400 transition-colors" title="Recheck SMTP"><RefreshCw className="w-2.5 h-2.5" /></button>
+        </div>
+    );
+};
+
+const ProviderBadge = () => {
+    const API = getApiBase();
+    const [status, setStatus] = useState(null);
+
+    const check = useCallback(async () => {
+        try {
+            const r = await fetch(`${API}/api/providers/status`, {
+                headers: { 'X-Admin-Password': getStoredAdminPassword() }
+            });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d?.error || 'Provider status unavailable');
+            setStatus(d);
+        } catch (_error) {
+            setStatus(null);
+        }
+    }, [API]);
+
+    useEffect(() => { check(); }, [check]);
+
+    const provider = String(status?.emailProvider || 'smtp').toUpperCase();
+    const brevoConfigured = Boolean(status?.brevo?.configured);
+    const espoConfigured = Boolean(status?.espocrm?.configured);
+
+    return (
+        <div className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-xl" title={`Brevo: ${brevoConfigured ? 'configured' : 'off'} · EspoCRM: ${espoConfigured ? 'configured' : 'off'}`}>
+            <div className={`w-1.5 h-1.5 rounded-full ${provider === 'BREVO' ? 'bg-purple-400 shadow-[0_0_8px_#c084fc]' : 'bg-blue-400 shadow-[0_0_8px_#60a5fa]'}`} />
+            <span className="text-[9px] font-black uppercase tracking-widest text-white">{provider}</span>
+            <span className="text-[8px] text-gray-500 font-mono">{brevoConfigured ? 'brevo:on' : 'brevo:off'} · {espoConfigured ? 'espo:on' : 'espo:off'}</span>
+            <button onClick={check} className="ml-1 text-gray-600 hover:text-gray-400 transition-colors" title="Recheck providers"><RefreshCw className="w-2.5 h-2.5" /></button>
         </div>
     );
 };
@@ -612,6 +646,7 @@ const EmailEngine = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <BackendBadge />
+                    <ProviderBadge />
                     <SmtpBadge config={config} />
                     {saveStatus && <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest animate-pulse">{saveStatus}</span>}
                     <button onClick={handleSave} className="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all flex items-center gap-2 shadow-lg">

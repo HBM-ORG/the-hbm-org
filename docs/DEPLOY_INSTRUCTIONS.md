@@ -90,6 +90,15 @@ These belong only to the backend app:
 - backend secrets
 - Prisma schema migrations
 
+### External integrated systems
+
+These are not deployed from this monorepo and should remain separate from the three app roots:
+
+- Brevo as the outbound email and engagement provider
+- EspoCRM as an optional external CRM/workflow runtime
+
+Integration credentials for both still belong only to the backend app.
+
 ## Prisma Deployment Flow
 
 Prisma is now treated as a backend deployment concern, not a manual post-deploy step.

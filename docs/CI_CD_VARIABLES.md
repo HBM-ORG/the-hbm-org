@@ -184,6 +184,15 @@ These live in the hosting platform, not in GitHub Actions variables.
 - `SMTP_USER`
 - `SMTP_PASS`
 - `SMTP_FROM`
+- `EMAIL_PROVIDER`
+- `BREVO_API_URL`
+- `BREVO_API_KEY`
+- `BREVO_WEBHOOK_SECRET`
+- `BREVO_LIST_IDS`
+- `ESPOCRM_URL`
+- `ESPOCRM_API_KEY`
+- `ESPOCRM_WEBHOOK_SECRET`
+- `ESPOCRM_CONTACT_ENTITY`
 - `GEMINI_API_KEY`
 - `GOOGLE_BOOKS_API_KEY`
 - `OPENAI_API_KEY`
@@ -198,6 +207,8 @@ Do not expose these as `VITE_*` vars in `apps/site` or `apps/admin`:
 - `DATABASE_URL`
 - storage credentials
 - SMTP credentials
+- Brevo API credentials
+- EspoCRM API credentials
 
 ## Environment-Specific Hostname Matrix
 

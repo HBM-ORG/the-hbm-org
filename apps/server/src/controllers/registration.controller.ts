@@ -10,6 +10,7 @@ import {
   logContactSubmission,
   type TriggerAutomationByEvent,
 } from "../services/registration.service.js";
+import { syncContactToProviders } from "../services/provider-sync.service.js";
 
 type RegistrationControllerDeps = {
   triggerAutomationByEvent: TriggerAutomationByEvent;
@@ -76,6 +77,7 @@ export function createRegistrationController({
 
         setImmediate(async () => {
           try {
+            await syncContactToProviders(automationPayload.email);
             if (eventId === "video-event") {
               await triggerAutomationByEvent(
                 "onVideoRegistration",
@@ -133,6 +135,14 @@ export function createRegistrationController({
 
         await triggerAutomationByEvent("onNewsletterSignup", automationPayload);
         res.json({ success: true, message: "Newsletter signup successful" });
+
+        setImmediate(async () => {
+          try {
+            await syncContactToProviders(automationPayload.email);
+          } catch (error) {
+            console.error("[CRM] Newsletter provider sync error:", error);
+          }
+        });
       } catch (error) {
         console.error("Newsletter error:", error);
         res.status(500).json({ error: "Failed" });
@@ -159,7 +169,7 @@ export function createRegistrationController({
           return;
         }
 
-        logContactSubmission({
+        await logContactSubmission({
           name: typeof name === "string" ? name : "",
           email,
           message: typeof message === "string" ? message : "",
@@ -167,6 +177,14 @@ export function createRegistrationController({
         });
 
         res.json({ success: true, message: "Message received" });
+
+        setImmediate(async () => {
+          try {
+            await syncContactToProviders(email);
+          } catch (error) {
+            console.error("[CRM] Contact submission provider sync error:", error);
+          }
+        });
       } catch (error) {
         console.error("Contact form error:", error);
         res.status(500).json({ error: "Failed to submit" });

@@ -10,6 +10,7 @@ import cookieConsentRoutes from "./routes/cookie-consent.routes.js";
 import crmRoutes from "./routes/crm.routes.js";
 import { createEmailRoutes } from "./routes/email.routes.js";
 import { createRegistrationRoutes } from "./routes/registration.routes.js";
+import providerRoutes from "./routes/provider.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import { corsMiddleware } from "./middleware/cors.js";
 import { requestLoggingMiddleware } from "./middleware/request-logging.js";
@@ -60,6 +61,7 @@ export function createApp({ baseUrl, startWorker = false }: CreateAppOptions) {
   app.use("/api", cmsRoutes);
   app.use("/api", contentRoutes);
   app.use("/api", crmRoutes);
+  app.use("/api", providerRoutes);
   app.use(
     "/api",
     createRegistrationRoutes({

@@ -30,6 +30,10 @@ model EmailQueue {
   attempts     Int       @default(0)
   error        String?   @db.Text
   sentAt       DateTime?
+  provider     String?
+  providerMessageId String?
+  providerStatus String?
+  providerData Json?
   createdAt    DateTime  @default(now())
 }
 
@@ -60,6 +64,88 @@ model Registration {
   status             String?
   history            Json?    // [{ type, date, message }]
   createdAt          DateTime @default(now())
+}
+
+model ContactProfile {
+  id                     String   @id @default(uuid())
+  email                  String   @unique
+  name                   String
+  phone                  String?
+  language               String?
+  status                 String?
+  categories             Json?
+  sourceChannels         Json?
+  acquisitionSources     Json?
+  registrationSources    Json?
+  eventIds               Json?
+  eventNames             Json?
+  registrationCount      Int      @default(0)
+  contactSubmissionCount Int      @default(0)
+  firstSeenAt            DateTime?
+  lastSeenAt             DateTime?
+  lastRegistrationAt     DateTime?
+  lastContactSubmissionAt DateTime?
+  lastAcquisitionSource  String?
+  lastRegistrationSource String?
+  lastSource             String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  providerSyncs          ContactProviderSync[]
+
+  @@index([lastSeenAt])
+}
+
+model ContactSubmission {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String
+  type      String?
+  message   String   @db.Text
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model ContactProviderSync {
+  id              String   @id @default(uuid())
+  provider        String
+  email           String
+  contactProfileId String?
+  externalId      String?
+  syncStatus      String   @default("pending")
+  lastSyncedAt    DateTime?
+  lastError       String?  @db.Text
+  isUnsubscribed  Boolean  @default(false)
+  isBlocklisted   Boolean  @default(false)
+  lastEventType   String?
+  lastEventAt     DateTime?
+  details         Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  contactProfile  ContactProfile? @relation(fields: [contactProfileId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, email])
+  @@index([provider, externalId])
+}
+
+model ProviderWebhookEvent {
+  id         String   @id @default(uuid())
+  provider   String
+  eventKey   String
+  eventType  String
+  email      String?
+  externalId String?
+  payload    Json
+  processedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  @@unique([provider, eventKey])
+  @@index([provider, email])
+  @@index([provider, externalId])
 }
 
 /// Replaces events.json — event data with object storage URLs

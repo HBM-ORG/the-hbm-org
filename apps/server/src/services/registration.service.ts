@@ -1,4 +1,9 @@
 import { PrismaClient } from "@prisma/client";
+import {
+  normalizeRegistrationEmail,
+  rebuildContactProfileByEmail,
+  recordContactSubmission,
+} from "./contact-profile.service.js";
 
 const prisma = new PrismaClient();
 
@@ -76,6 +81,7 @@ export async function createRegistration(input: {
   eventName?: string;
   language?: string;
 }) {
+  const normalizedEmail = normalizeRegistrationEmail(input.email);
   const history = [
     {
       type: "registration",
@@ -87,7 +93,7 @@ export async function createRegistration(input: {
   const row = await prisma.registration.create({
     data: {
       name: input.name,
-      email: input.email,
+      email: normalizedEmail,
       phone: input.phone,
       acquisitionSource: input.source || "Direct",
       registrationSource: input.regSource || "website_general",
@@ -102,12 +108,14 @@ export async function createRegistration(input: {
     },
   });
 
+  await rebuildContactProfileByEmail(normalizedEmail);
+
   return {
     row,
     automationPayload: {
       id: row.id,
       name: row.name,
-      email: row.email,
+      email: normalizedEmail,
       phone: row.phone,
       acquisitionSource: row.acquisitionSource,
       registrationSource: row.registrationSource,
@@ -129,15 +137,16 @@ export async function createOrUpdateNewsletterRegistration(input: {
   language?: string;
   source?: string;
 }) {
+  const normalizedEmail = normalizeRegistrationEmail(input.email);
   const existing = await prisma.registration.findFirst({
-    where: { email: input.email },
+    where: { email: normalizedEmail },
   });
 
   if (!existing) {
     const row = await prisma.registration.create({
       data: {
         name: input.name || "Subscriber",
-        email: input.email,
+        email: normalizedEmail,
         phone: "",
         acquisitionSource: null,
         registrationSource: null,
@@ -157,6 +166,8 @@ export async function createOrUpdateNewsletterRegistration(input: {
         ],
       },
     });
+
+    await rebuildContactProfileByEmail(normalizedEmail);
 
     return {
       automationPayload: {
@@ -192,6 +203,8 @@ export async function createOrUpdateNewsletterRegistration(input: {
     data: { category, history: newHistory },
   });
 
+  await rebuildContactProfileByEmail(normalizedEmail);
+
   return {
     automationPayload: {
       id: existing.id,
@@ -208,15 +221,16 @@ export async function createOrUpdateNewsletterRegistration(input: {
   };
 }
 
-export function logContactSubmission(input: {
+export async function logContactSubmission(input: {
   name?: string;
   email: string;
   message: string;
   type?: string | null;
 }) {
+  await recordContactSubmission(input);
   console.log("[Contact]", {
     name: input.name || "",
-    email: input.email.trim(),
+    email: normalizeRegistrationEmail(input.email),
     message: input.message.slice(0, 200),
     type: input.type ?? null,
   });
@@ -231,13 +245,20 @@ export async function listRegistrations() {
 }
 
 export async function deleteRegistrationById(id: number) {
+  const existing = await prisma.registration.findUnique({ where: { id } });
   await prisma.registration.delete({ where: { id } });
+  if (existing?.email) {
+    await rebuildContactProfileByEmail(existing.email);
+  }
 }
 
 export async function deleteRegistrationsByEmail(email: string) {
-  return prisma.registration.deleteMany({
-    where: { email: email.trim().toLowerCase() },
+  const normalizedEmail = normalizeRegistrationEmail(email);
+  const result = await prisma.registration.deleteMany({
+    where: { email: normalizedEmail },
   });
+  await rebuildContactProfileByEmail(normalizedEmail);
+  return result;
 }
 
 export async function getRegistrationStats() {

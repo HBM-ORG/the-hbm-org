@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { getProviderStatusSummary } from "./provider-sync.service.js";
 
 const prisma = new PrismaClient();
 
@@ -56,10 +57,36 @@ function serializeRegistration(row: {
 
 export async function getCrmContactByEmail(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
-  const registrations = await prisma.registration.findMany({
-    where: { email: normalizedEmail },
-    orderBy: { date: "desc" },
-  });
+  const [registrations, allQueue, engagementRows, profile, submissions, providerSyncs, providerEvents] =
+    await Promise.all([
+      prisma.registration.findMany({
+        where: { email: normalizedEmail },
+        orderBy: { date: "desc" },
+      }),
+      prisma.emailQueue.findMany({
+        orderBy: { scheduledFor: "desc" },
+      }),
+      prisma.emailEngagement.findMany({
+        where: { email: normalizedEmail },
+        orderBy: { timestamp: "desc" },
+      }),
+      prisma.contactProfile.findUnique({
+        where: { email: normalizedEmail },
+      }),
+      prisma.contactSubmission.findMany({
+        where: { email: normalizedEmail },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.contactProviderSync.findMany({
+        where: { email: normalizedEmail },
+        orderBy: { updatedAt: "desc" },
+      }),
+      prisma.providerWebhookEvent.findMany({
+        where: { email: normalizedEmail },
+        orderBy: { createdAt: "desc" },
+        take: 25,
+      }),
+    ]);
 
   const regList = registrations.map((row) => ({
     id: row.id,
@@ -67,6 +94,9 @@ export async function getCrmContactByEmail(email: string) {
     email: row.email,
     phone: row.phone,
     source: row.source,
+    acquisitionSource: row.acquisitionSource,
+    registrationSource: row.registrationSource,
+    category: row.category,
     eventId: row.eventId,
     eventName: row.eventName,
     date: row.date ? new Date(row.date).toISOString() : null,
@@ -74,10 +104,6 @@ export async function getCrmContactByEmail(email: string) {
     status: row.status,
     history: row.history,
   }));
-
-  const allQueue = await prisma.emailQueue.findMany({
-    orderBy: { scheduledFor: "desc" },
-  });
 
   const emailActivity = allQueue
     .filter(
@@ -92,30 +118,93 @@ export async function getCrmContactByEmail(email: string) {
       flowId: item.flowId,
       attempts: item.attempts,
       error: item.error,
+      provider: item.provider,
+      providerStatus: item.providerStatus,
+      providerMessageId: item.providerMessageId,
+      providerData:
+        item.providerData && typeof item.providerData === "object"
+          ? item.providerData
+          : null,
     }));
-
-  const engagementRows = await prisma.emailEngagement.findMany({
-    where: { email: normalizedEmail },
-    orderBy: { timestamp: "desc" },
-  });
 
   const engagement = engagementRows.map((entry) => ({
     type: entry.eventType,
     timestamp: entry.timestamp.toISOString(),
     id: entry.trackingId || entry.id,
+    metadata:
+      entry.metadata && typeof entry.metadata === "object" && !Array.isArray(entry.metadata)
+        ? entry.metadata
+        : null,
   }));
 
-  const name = regList.length > 0 ? regList[0].name : "";
-  const phone = regList.length > 0 ? regList[0].phone : "";
+  const contactSubmissions = submissions.map((entry) => ({
+    id: entry.id,
+    type: entry.type,
+    message: entry.message,
+    status: entry.status,
+    createdAt: entry.createdAt.toISOString(),
+  }));
+
+  const providerSyncEntries = providerSyncs.map((entry) => ({
+    provider: entry.provider,
+    externalId: entry.externalId,
+    syncStatus: entry.syncStatus,
+    lastSyncedAt: entry.lastSyncedAt?.toISOString() || null,
+    lastError: entry.lastError,
+    isUnsubscribed: entry.isUnsubscribed,
+    isBlocklisted: entry.isBlocklisted,
+    lastEventType: entry.lastEventType,
+    lastEventAt: entry.lastEventAt?.toISOString() || null,
+    details:
+      entry.details && typeof entry.details === "object" && !Array.isArray(entry.details)
+        ? entry.details
+        : null,
+  }));
+
+  const providerTimeline = providerEvents.map((entry) => ({
+    id: entry.id,
+    provider: entry.provider,
+    eventType: entry.eventType,
+    externalId: entry.externalId,
+    createdAt: entry.createdAt.toISOString(),
+    processedAt: entry.processedAt?.toISOString() || null,
+    payload:
+      entry.payload && typeof entry.payload === "object" && !Array.isArray(entry.payload)
+        ? entry.payload
+        : null,
+  }));
+
+  const name = profile?.name || (regList.length > 0 ? regList[0].name : "");
+  const phone = profile?.phone || (regList.length > 0 ? regList[0].phone : "");
+  const providerStatus = getProviderStatusSummary();
 
   return {
     contact: {
       email: normalizedEmail,
       name,
       phone,
+      language: profile?.language || regList[0]?.language || "",
+      status: profile?.status || regList[0]?.status || "",
+      registrationCount: profile?.registrationCount || regList.length,
+      contactSubmissionCount:
+        profile?.contactSubmissionCount || contactSubmissions.length,
+      categories: Array.isArray(profile?.categories) ? profile.categories : [],
+      sourceChannels: Array.isArray(profile?.sourceChannels)
+        ? profile.sourceChannels
+        : [],
+      eventNames: Array.isArray(profile?.eventNames) ? profile.eventNames : [],
+      firstSeenAt: profile?.firstSeenAt?.toISOString() || null,
+      lastSeenAt: profile?.lastSeenAt?.toISOString() || null,
+      lastRegistrationAt: profile?.lastRegistrationAt?.toISOString() || null,
+      lastContactSubmissionAt:
+        profile?.lastContactSubmissionAt?.toISOString() || null,
       registrations: regList,
+      contactSubmissions,
       emailActivity,
       engagement,
+      providerStatus,
+      providerSyncs: providerSyncEntries,
+      providerTimeline,
     },
   };
 }

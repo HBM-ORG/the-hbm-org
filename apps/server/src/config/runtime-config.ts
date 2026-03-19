@@ -37,6 +37,33 @@ export const runtimeConfig = {
   get publicSiteUrl() {
     return readEnv("SITE_PUBLIC_URL", readEnv("SITE_APP_URL"));
   },
+  get emailProvider() {
+    return readEnv("EMAIL_PROVIDER", "smtp").toLowerCase();
+  },
+  get brevoApiUrl() {
+    return readEnv("BREVO_API_URL", "https://api.brevo.com/v3");
+  },
+  get brevoApiKey() {
+    return readEnv("BREVO_API_KEY");
+  },
+  get brevoWebhookSecret() {
+    return readEnv("BREVO_WEBHOOK_SECRET");
+  },
+  get brevoListIds() {
+    return readEnv("BREVO_LIST_IDS");
+  },
+  get espoCrmUrl() {
+    return readEnv("ESPOCRM_URL");
+  },
+  get espoCrmApiKey() {
+    return readEnv("ESPOCRM_API_KEY");
+  },
+  get espoCrmWebhookSecret() {
+    return readEnv("ESPOCRM_WEBHOOK_SECRET");
+  },
+  get espoCrmContactEntity() {
+    return readEnv("ESPOCRM_CONTACT_ENTITY", "Contact");
+  },
   get defaultVideoEventTitleEn() {
     return readEnv("DEFAULT_VIDEO_EVENT_TITLE_EN", "Video Event");
   },

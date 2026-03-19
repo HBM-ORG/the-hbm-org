@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 class FlowsErrorBoundary extends React.Component {
@@ -81,6 +81,7 @@ import {
   AlignLeft,
   Activity,
   Flame,
+  RefreshCw,
   ShieldCheck,
   Filter,
   UserCircle,
@@ -145,6 +146,7 @@ const AdminDashboard = () => {
   const [contactProfileData, setContactProfileData] = useState(null);
   const [contactProfileLoading, setContactProfileLoading] = useState(false);
   const [contactProfileError, setContactProfileError] = useState(null);
+  const [contactSyncStatus, setContactSyncStatus] = useState("");
   const [crmConfirmDialog, setCrmConfirmDialog] = useState(null);
 
   const refetchRegistrations = () => {
@@ -213,6 +215,79 @@ const AdminDashboard = () => {
     }
   };
 
+  const loadContactProfile = useCallback((email, { reset = false } = {}) => {
+    const normalizedEmail = String(email || "").trim();
+    if (!normalizedEmail) return;
+    const encodedEmail = encodeURIComponent(normalizedEmail);
+    const base = getApiBase() || "";
+    const url = base
+      ? `${base.replace(/\/$/, "")}/api/crm/contact?email=${encodedEmail}`
+      : `/api/crm/contact?email=${encodedEmail}`;
+    setContactProfileLoading(true);
+    if (reset) {
+      setContactProfileData(null);
+      setContactProfileError(null);
+    }
+    fetch(url)
+      .then((res) => {
+        if (!res.ok)
+          return res
+            .json()
+            .then((body) =>
+              Promise.reject({ message: body?.error || res.statusText, status: res.status }),
+            );
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.contact) {
+          setContactProfileData(data.contact);
+          setContactProfileError(null);
+        } else {
+          setContactProfileData(null);
+          setContactProfileError("Invalid response");
+        }
+      })
+      .catch((err) => {
+        console.error("[CRM profile fetch failed]", err);
+        setContactProfileData(null);
+        setContactProfileError(err?.message || "Network error");
+      })
+      .finally(() => setContactProfileLoading(false));
+  }, []);
+
+  const handleProviderResync = async (email) => {
+    const normalizedEmail = String(email || "").trim();
+    if (!normalizedEmail) return;
+    setContactSyncStatus("Resyncing providers...");
+    try {
+      const base = getApiBase() || "";
+      const response = await fetch(
+        `${base}/api/providers/contact/resync`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Password": getStoredAdminPassword(),
+          },
+          body: JSON.stringify({ email: normalizedEmail }),
+        },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to resync providers");
+      }
+      setContactSyncStatus("Provider sync complete.");
+      loadContactProfile(normalizedEmail, { reset: false });
+    } catch (error) {
+      console.error(error);
+      setContactSyncStatus(
+        error instanceof Error ? error.message : "Provider sync failed",
+      );
+    } finally {
+      window.setTimeout(() => setContactSyncStatus(""), 4000);
+    }
+  };
+
   // Sync local events when context updates (e.g. after API fetch on load) so list doesn't revert
   useEffect(() => {
     if (!isEditing && Array.isArray(initialEvents)) {
@@ -257,34 +332,8 @@ const AdminDashboard = () => {
       setContactProfileError(null);
       return;
     }
-    const email = encodeURIComponent(selectedContactEmail);
-    // Use same base as rest of admin: relative /api in dev so Vite proxy hits backend; port 3001 uses same origin
-    const base = getApiBase() || "";
-    const url = base ? `${base.replace(/\/$/, "")}/api/crm/contact?email=${email}` : `/api/crm/contact?email=${email}`;
-    setContactProfileLoading(true);
-    setContactProfileData(null);
-    setContactProfileError(null);
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) return res.json().then((body) => Promise.reject({ message: body?.error || res.statusText, status: res.status }));
-        return res.json();
-      })
-      .then((data) => {
-        if (data && data.contact) {
-          setContactProfileData(data.contact);
-          setContactProfileError(null);
-        } else {
-          setContactProfileData(null);
-          setContactProfileError("Invalid response");
-        }
-      })
-      .catch((err) => {
-        console.error("[CRM profile fetch failed]", err);
-        setContactProfileData(null);
-        setContactProfileError(err?.message || "Network error");
-      })
-      .finally(() => setContactProfileLoading(false));
-  }, [selectedContactEmail]);
+    loadContactProfile(selectedContactEmail, { reset: true });
+  }, [loadContactProfile, selectedContactEmail]);
 
   // Aggregate registrations by person (email or phone+name)
   const contactsAggregated = useMemo(() => {
@@ -1596,20 +1645,7 @@ const AdminDashboard = () => {
                           setContactProfileError(null);
                           const email = selectedContactEmail;
                           if (!email) return;
-                          const base = getApiBase() || "";
-                          setContactProfileLoading(true);
-                          const url = base ? `${base.replace(/\/$/, "")}/api/crm/contact?email=${encodeURIComponent(email)}` : `/api/crm/contact?email=${encodeURIComponent(email)}`;
-                          fetch(url)
-                            .then((res) => {
-                              if (!res.ok) return res.json().then((body) => Promise.reject({ message: body?.error || res.statusText }));
-                              return res.json();
-                            })
-                            .then((data) => {
-                              if (data?.contact) setContactProfileData(data.contact);
-                              setContactProfileError(null);
-                            })
-                            .catch((err) => setContactProfileError(err?.message || "Network error"))
-                            .finally(() => setContactProfileLoading(false));
+                          loadContactProfile(email, { reset: false });
                         }}
                         className="mt-4 px-4 py-2 rounded-xl bg-[#6160AB] text-white text-xs font-bold uppercase tracking-wider hover:opacity-90"
                       >
@@ -1638,11 +1674,97 @@ const AdminDashboard = () => {
                             {contactProfileData.phone || "—"}
                           </p>
                           <p className="text-[10px] text-gray-400 mt-1">
-                            {contactProfileData.registrations?.length || 0}{" "}
+                            {contactProfileData.registrationCount
+                              || contactProfileData.registrations?.length
+                              || 0}{" "}
                             registration(s)
                           </p>
                         </div>
                       </div>
+                      {contactSyncStatus ? (
+                        <div className="mb-6 rounded-2xl border border-[#6160AB]/15 bg-[#6160AB]/5 px-4 py-3 text-xs font-bold text-[#6160AB]">
+                          {contactSyncStatus}
+                        </div>
+                      ) : null}
+                      <section className="mb-6">
+                        <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2">
+                          Connected systems
+                        </h4>
+                        <div className="grid gap-3">
+                          {["brevo", "espocrm"].map((providerKey) => {
+                            const sync = (contactProfileData.providerSyncs || []).find(
+                              (entry) => entry.provider === providerKey,
+                            );
+                            const providerMeta =
+                              contactProfileData.providerStatus?.[providerKey] || {};
+                            const isConfigured = Boolean(providerMeta.configured);
+                            return (
+                              <div
+                                key={providerKey}
+                                className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-black uppercase tracking-widest text-gray-900">
+                                      {providerKey === "brevo" ? "Brevo" : "EspoCRM"}
+                                    </p>
+                                    <p className="mt-1 text-[11px] text-gray-500">
+                                      {sync?.syncStatus
+                                        ? `Sync: ${sync.syncStatus}`
+                                        : isConfigured
+                                          ? "Configured but not synced yet"
+                                          : "Not configured"}
+                                    </p>
+                                  </div>
+                                  <span
+                                    className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest ${
+                                      sync?.isBlocklisted || sync?.isUnsubscribed
+                                        ? "bg-red-50 text-red-600"
+                                        : sync?.syncStatus === "synced"
+                                          ? "bg-green-50 text-green-600"
+                                          : "bg-gray-200 text-gray-500"
+                                    }`}
+                                  >
+                                    {sync?.isBlocklisted
+                                      ? "Blocklisted"
+                                      : sync?.isUnsubscribed
+                                        ? "Unsubscribed"
+                                        : sync?.syncStatus || "idle"}
+                                  </span>
+                                </div>
+                                <div className="mt-3 grid grid-cols-2 gap-3 text-[11px] text-gray-600">
+                                  <div>
+                                    <span className="block text-[9px] font-black uppercase tracking-widest text-gray-400">
+                                      Last sync
+                                    </span>
+                                    <span>
+                                      {sync?.lastSyncedAt
+                                        ? new Date(sync.lastSyncedAt).toLocaleString()
+                                        : "—"}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="block text-[9px] font-black uppercase tracking-widest text-gray-400">
+                                      Last event
+                                    </span>
+                                    <span>
+                                      {sync?.lastEventType || "—"}
+                                      {sync?.lastEventAt
+                                        ? ` · ${new Date(sync.lastEventAt).toLocaleDateString()}`
+                                        : ""}
+                                    </span>
+                                  </div>
+                                </div>
+                                {sync?.lastError ? (
+                                  <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-[11px] text-red-600">
+                                    {sync.lastError}
+                                  </p>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </section>
                       <section className="mb-6">
                         <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2">
                           Registrations
@@ -1725,7 +1847,70 @@ const AdminDashboard = () => {
                           </ul>
                         </section>
                       )}
+                      {(contactProfileData.contactSubmissions?.length > 0) && (
+                        <section className="mb-6">
+                          <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2">
+                            Contact submissions
+                          </h4>
+                          <div className="space-y-3">
+                            {contactProfileData.contactSubmissions.map((entry) => (
+                              <div
+                                key={entry.id}
+                                className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4"
+                              >
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                                    {entry.type || "General"}
+                                  </span>
+                                  <span className="text-[10px] text-gray-400">
+                                    {entry.createdAt
+                                      ? new Date(entry.createdAt).toLocaleString()
+                                      : "—"}
+                                  </span>
+                                </div>
+                                <p className="mt-2 text-sm text-gray-700 leading-relaxed">
+                                  {entry.message}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+                      )}
+                      {(contactProfileData.providerTimeline?.length > 0) && (
+                        <section className="mb-6">
+                          <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2">
+                            Provider timeline
+                          </h4>
+                          <ul className="space-y-2 text-xs text-gray-600">
+                            {contactProfileData.providerTimeline.map((entry) => (
+                              <li
+                                key={entry.id}
+                                className="rounded-2xl border border-gray-100 bg-white px-4 py-3"
+                              >
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className="font-black text-gray-800 uppercase tracking-wide text-[10px]">
+                                    {entry.provider} · {entry.eventType}
+                                  </span>
+                                  <span className="text-[10px] text-gray-400">
+                                    {entry.createdAt
+                                      ? new Date(entry.createdAt).toLocaleString()
+                                      : "—"}
+                                  </span>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      )}
                       <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleProviderResync(contactProfileData.email)}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 text-white text-[10px] font-black uppercase tracking-wider hover:opacity-90"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          Resync providers
+                        </button>
                         <a
                           href={`${getApiBase() || ""}/api/crm/contact/export?email=${encodeURIComponent(contactProfileData.email)}`}
                           target="_blank"

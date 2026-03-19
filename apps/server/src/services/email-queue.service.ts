@@ -4,6 +4,7 @@ import inlineCss from "inline-css";
 import { Liquid } from "liquidjs";
 import nodemailer from "nodemailer";
 import { v4 as uuidv4 } from "uuid";
+import { runtimeConfig } from "../config/runtime-config.js";
 import {
   deliverEmail,
   getEmailTemplate,
@@ -12,6 +13,7 @@ import {
   type SmtpConfigShape,
 } from "./email-support.service.js";
 import { loadAutomationRuntimeConfig } from "./automation-runtime.service.js";
+import { sendBrevoTransactionalEmail } from "./brevo.service.js";
 import { getCampaignById } from "./campaign.service.js";
 import { logEngagement } from "./email-tracking.service.js";
 import { listSuppression } from "./suppression.service.js";
@@ -137,8 +139,9 @@ export function createEmailQueueEngine({
       const suppressionList = (await listSuppression()).map((email) =>
         email.toLowerCase(),
       );
+      const emailProvider = runtimeConfig.emailProvider;
 
-      if (!config?.smtp?.host) {
+      if (emailProvider !== "brevo" && !config?.smtp?.host) {
         console.log("[Email] processQueue skipped: SMTP host is not configured");
         return false;
       }
@@ -147,18 +150,20 @@ export function createEmailQueueEngine({
       const secure =
         typeof config.smtp.secure === "boolean" ? config.smtp.secure : port === 465;
 
-      let transporter;
-      try {
-        transporter = nodemailer.createTransport({
-          host: config.smtp.host,
-          port,
-          secure,
-          requireTLS: port === 587 && !secure,
-          auth: { user: config.smtp.user, pass: config.smtp.pass || "" },
-        });
-      } catch (error) {
-        console.error("[Email] processQueue: createTransport failed", error);
-        return false;
+      let transporter = null;
+      if (emailProvider !== "brevo") {
+        try {
+          transporter = nodemailer.createTransport({
+            host: config.smtp.host,
+            port,
+            secure,
+            requireTLS: port === 587 && !secure,
+            auth: { user: config.smtp.user, pass: config.smtp.pass || "" },
+          });
+        } catch (error) {
+          console.error("[Email] processQueue: createTransport failed", error);
+          return false;
+        }
       }
 
       const baseWhere = {
@@ -286,13 +291,47 @@ export function createEmailQueueEngine({
             }
           }
 
-          await deliverEmail(transporter, mailOptions);
+          if (emailProvider === "brevo") {
+            const providerResult = await sendBrevoTransactionalEmail({
+              from: mailOptions.from || runtimeConfig.defaultSmtpFrom,
+              to: data.email,
+              toName: typeof data.name === "string" ? data.name : data.email,
+              subject,
+              html,
+              attachments: mailOptions.attachments,
+            });
 
-          await prisma.emailQueue.update({
-            where: { id: item.id },
-            data: { status: "sent", sentAt: new Date() },
-          });
-          await logEngagement(trackingId, "sent", data.email);
+            await prisma.emailQueue.update({
+              where: { id: item.id },
+              data: {
+                status: "sent",
+                sentAt: new Date(),
+                provider: providerResult.provider,
+                providerMessageId: providerResult.messageId,
+                providerStatus: providerResult.status,
+                providerData: providerResult.raw as Prisma.InputJsonValue,
+              },
+            });
+            await logEngagement(trackingId, "sent", data.email, {
+              provider: providerResult.provider,
+              providerMessageId: providerResult.messageId,
+            });
+          } else {
+            await deliverEmail(transporter!, mailOptions);
+
+            await prisma.emailQueue.update({
+              where: { id: item.id },
+              data: {
+                status: "sent",
+                sentAt: new Date(),
+                provider: "smtp",
+                providerStatus: "sent",
+              },
+            });
+            await logEngagement(trackingId, "sent", data.email, {
+              provider: "smtp",
+            });
+          }
           console.log("[Email] Sent successfully to", data.email);
         } catch (error) {
           logError("SMTP/Queue", error);
@@ -321,6 +360,8 @@ export function createEmailQueueEngine({
               status,
               error: errMsg,
               attempts,
+              provider: emailProvider === "brevo" ? "brevo" : "smtp",
+              providerStatus: status === "failed" ? "failed" : "retrying",
               ...(status === "pending"
                 ? { scheduledFor: new Date(Date.now() + 60000) }
                 : {}),
