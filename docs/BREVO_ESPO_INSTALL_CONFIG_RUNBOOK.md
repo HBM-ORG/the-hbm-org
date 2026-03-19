@@ -118,6 +118,21 @@ This gives you a safe validation step before Brevo actually becomes the live sen
 
 ### Step 4: Validate Brevo contact sync before transport cutover
 
+- [ ] the additional fields to add to contact in Brevo:
+  - LANGUAGE
+  - STATUS
+  - CATEGORY
+  - EVENT_ID
+  - EVENT_NAME
+  - LAST_SOURCE
+  - ACQUISITION_SOURCE
+  - REGISTRATION_SOURCE
+  - REGISTRATION_COUNT
+  - CONTACT_SUBMISSION_COUNT
+  - FIRST_SEEN_AT
+  - LAST_SEEN_AT
+  - LAST_REGISTERED_AT
+
 - [ ] Keep `EMAIL_PROVIDER=smtp`
 - [ ] Submit a new event registration
 - [ ] Confirm the local contact sync row updates for provider `brevo`
