@@ -10,8 +10,19 @@ import { getApiBase } from "../utils/api";
 
 const EventsContext = createContext();
 
+function normalizeEventStatus(event) {
+  const raw = String(event?.status || "").trim().toLowerCase();
+  return raw === "draft" || raw === "past" ? raw : "published";
+}
+
+function getPublicEvents(list) {
+  return (Array.isArray(list) ? list : []).filter(
+    (event) => normalizeEventStatus(event) !== "draft",
+  );
+}
+
 export const EventsProvider = ({ children }) => {
-  const [events, setEvents] = useState(fallbackEvents);
+  const [events, setEvents] = useState(getPublicEvents(fallbackEvents));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +33,7 @@ export const EventsProvider = ({ children }) => {
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
-            setEvents(data);
+            setEvents(getPublicEvents(data));
           }
         }
       } catch (error) {

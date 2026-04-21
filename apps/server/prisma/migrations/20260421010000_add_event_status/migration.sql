@@ -1,0 +1,2 @@
+ALTER TABLE `Event`
+    ADD COLUMN `status` VARCHAR(191) NOT NULL DEFAULT 'published';

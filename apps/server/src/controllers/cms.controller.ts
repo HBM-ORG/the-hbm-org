@@ -14,6 +14,14 @@ function logCmsError(context: string, error: unknown) {
   console.error(`[cms.controller:${context}]`, error);
 }
 
+function getEventStatus(event: unknown): string {
+  const raw =
+    typeof event === "object" && event !== null && "status" in event
+      ? (event as { status?: unknown }).status
+      : undefined;
+  return typeof raw === "string" && raw.trim() ? raw : "published";
+}
+
 /**
  * @openapi
  * /api/events:
@@ -27,6 +35,7 @@ export async function getEvents(_req: Request, res: Response): Promise<void> {
     res.json(
       events.map((event) => ({
         id: event.legacyId || event.id,
+        status: getEventStatus(event),
         folderName: event.folderName,
         title: event.title,
         description: event.description,

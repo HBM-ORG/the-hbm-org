@@ -126,8 +126,12 @@ async function migrateEvents(): Promise<{ count: number; errors: string[] }> {
 
   for (const event of events) {
     try {
+      const normalizedStatus = ['draft', 'published', 'past'].includes(String(event.status || '').toLowerCase())
+        ? String(event.status).toLowerCase()
+        : 'published';
       const data = {
         legacyId: String(event.id || ''),
+        status: normalizedStatus,
         folderName: event.folderName || null,
         title: event.title || { en: '', he: '' },
         description: event.description || { en: '', he: '' },

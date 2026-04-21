@@ -42,6 +42,14 @@ dotenv.config({ path: path.join(PROJECT_ROOT, ".env"), override: false });
 const prisma = new PrismaClient();
 const dryRun = process.argv.includes("--dry-run");
 
+function getEventStatus(event: unknown): string {
+  const raw =
+    typeof event === "object" && event !== null && "status" in event
+      ? (event as { status?: unknown }).status
+      : undefined;
+  return typeof raw === "string" && raw.trim() ? raw : "published";
+}
+
 function readUrlMapping(): Record<string, string> {
   if (!fs.existsSync(URL_MAPPING_PATH)) {
     return {};
@@ -92,6 +100,7 @@ function asArray<T>(value: unknown): T[] {
 function serializeEvent(event: EventRecord) {
   return {
     id: event.legacyId || event.id,
+    status: getEventStatus(event),
     folderName: event.folderName,
     title: event.title,
     description: event.description,

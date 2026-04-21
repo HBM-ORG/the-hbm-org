@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "typeRoots": ["../apps/server/node_modules/@types"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "baseUrl": "..",
+    "paths": {
+      "@prisma/client": ["apps/server/node_modules/@prisma/client/index.d.ts"],
+      "dotenv": ["apps/server/node_modules/dotenv/lib/main.d.ts"]
+    }
+  },
+  "include": [
+    "./one-off/reconcile-event-assets.ts",
+    "./one-off/migrate-json-to-db.ts"
+  ],
+  "exclude": ["./output", "../node_modules"]
+}

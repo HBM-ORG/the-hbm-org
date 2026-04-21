@@ -3,6 +3,11 @@ import { eventsConfig } from '../data/eventsConfig';
 // Helper to parse date string (YYYY-MM-DD)
 const parseDate = (dateStr) => new Date(dateStr);
 
+const getEventStatus = (event) => {
+    const raw = String(event?.status || '').trim().toLowerCase();
+    return raw === 'draft' || raw === 'past' ? raw : 'published';
+};
+
 // Helper to get today's date at midnight for comparison
 const getToday = () => {
     const today = new Date();
@@ -16,6 +21,7 @@ const getToday = () => {
 export const getUpcomingEvents = (data = eventsConfig) => {
     const today = getToday();
     return data
+        .filter(event => getEventStatus(event) === 'published')
         .filter(event => parseDate(event.date) >= today)
         .sort((a, b) => parseDate(a.date) - parseDate(b.date));
 };
@@ -35,7 +41,8 @@ export const getNextEvent = (data = eventsConfig) => {
 export const getPastEvents = (data = eventsConfig) => {
     const today = getToday();
     return data
-        .filter(event => parseDate(event.date) < today)
+        .filter(event => getEventStatus(event) !== 'draft')
+        .filter(event => getEventStatus(event) === 'past' || parseDate(event.date) < today)
         .sort((a, b) => parseDate(b.date) - parseDate(a.date)); // Newest first
 };
 

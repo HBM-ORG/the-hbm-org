@@ -152,6 +152,7 @@ model ProviderWebhookEvent {
 model Event {
   id                      String   @id @default(uuid())
   legacyId                String?  @unique // Original numeric ID for migration
+  status                  String   @default("published") // draft | published | past
   folderName              String?
   title                   Json     // { en: string, he: string }
   description             Json     // { en: string, he: string }
