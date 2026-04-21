@@ -204,6 +204,20 @@ export async function sendBrevoTransactionalEmail(
     throw new Error("BREVO_API_KEY not configured");
   }
 
+  const attachmentPayload = (input.attachments || [])
+    .filter(
+      (entry) =>
+        entry
+        && typeof entry.filename === "string"
+        && entry.filename.trim().length > 0
+        && typeof entry.content === "string"
+        && entry.content.trim().length > 0,
+    )
+    .map((entry) => ({
+      name: entry.filename,
+      content: Buffer.from(entry.content, "utf8").toString("base64"),
+    }));
+
   const data = await brevoRequest("/smtp/email", {
     method: "POST",
     headers: getBrevoHeaders(),
@@ -222,10 +236,7 @@ export async function sendBrevoTransactionalEmail(
       ],
       subject: input.subject,
       htmlContent: input.html,
-      attachment: (input.attachments || []).map((entry) => ({
-        name: entry.filename,
-        content: Buffer.from(entry.content, "utf8").toString("base64"),
-      })),
+      attachment: attachmentPayload.length > 0 ? attachmentPayload : undefined,
     }),
   });
 
