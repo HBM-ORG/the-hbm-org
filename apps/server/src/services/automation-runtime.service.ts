@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { runtimeConfig } from "../config/runtime-config.js";
 import type { SmtpConfigShape } from "./email-support.service.js";
+import { resolveEmailProviderConfig, type ResolvedEmailProviderConfig } from "./email-provider-config.service.js";
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,13 @@ export type AutomationFlowRuntime = {
   id?: string;
   active?: boolean;
   trigger?: string;
+  icon?: string;
+  status?: string;
+  deliveryMode?: string;
+  brevoTemplateId?: string;
+  brevoTemplateIdEn?: string;
+  brevoTemplateIdHe?: string;
+  templateOverrides?: JsonRecord;
   delayValue?: string | number;
   delayUnit?: string;
   subject_he?: string;
@@ -42,6 +50,7 @@ export type AutomationRuntimeConfig = {
   sequences?: AutomationSequenceRuntime[];
   smtp?: SmtpConfigShape | null;
   globalStyling?: JsonRecord;
+  providerConfig?: ResolvedEmailProviderConfig;
 };
 
 function isRecord(value: unknown): value is JsonRecord {
@@ -68,8 +77,51 @@ function isMissingTableError(error: unknown): boolean {
   );
 }
 
+function normalizeAutomationTrigger(trigger: unknown) {
+  const value = String(trigger || "").trim();
+  const aliases: Record<string, string> = {
+    site_signup: "on8MinJourney",
+    on_site_signup: "on8MinJourney",
+  };
+  return aliases[value] || value;
+}
+
+function getFlowPriority(flow: {
+  active?: boolean;
+  deliveryMode?: string | null;
+  legacyId?: string | null;
+  updatedAt?: Date;
+}) {
+  let score = 0;
+  if (flow.active) score += 10;
+  if (flow.deliveryMode && flow.deliveryMode !== "architect_html") score += 5;
+  if (flow.legacyId && !String(flow.legacyId).startsWith("flow_")) score += 3;
+  if (flow.updatedAt instanceof Date) score += flow.updatedAt.getTime() / 1_000_000_000_000;
+  return score;
+}
+
+function dedupeAutomationFlows<T extends {
+  trigger: string;
+  active?: boolean;
+  deliveryMode?: string | null;
+  legacyId?: string | null;
+  updatedAt?: Date;
+}>(flows: T[]) {
+  const byTrigger = new Map<string, T>();
+  for (const flow of flows) {
+    const normalized = { ...flow, trigger: normalizeAutomationTrigger(flow.trigger) };
+    const key = normalized.trigger.toLowerCase();
+    if (!key) continue;
+    const current = byTrigger.get(key);
+    if (!current || getFlowPriority(normalized) >= getFlowPriority(current)) {
+      byTrigger.set(key, normalized);
+    }
+  }
+  return Array.from(byTrigger.values());
+}
+
 export async function loadAutomationRuntimeConfig(): Promise<AutomationRuntimeConfig> {
-  const [flows, sequences, smtpConfig, globalStyling] = await Promise.all([
+  const [flows, sequences, smtpConfig, globalStyling, providerConfig] = await Promise.all([
     prisma.emailFlow.findMany().catch((error) => {
       if (isMissingTableError(error)) return [];
       throw error;
@@ -86,14 +138,22 @@ export async function loadAutomationRuntimeConfig(): Promise<AutomationRuntimeCo
       if (isMissingTableError(error)) return null;
       throw error;
     }),
+    resolveEmailProviderConfig(),
   ]);
 
   return {
-    flows: flows.map((flow) => ({
+    flows: dedupeAutomationFlows(flows).map((flow) => ({
       id: flow.legacyId || flow.id,
       name: flow.name,
-      trigger: flow.trigger,
+      trigger: normalizeAutomationTrigger(flow.trigger),
+      icon: flow.icon || undefined,
+      status: flow.status || "published",
       active: flow.active,
+      deliveryMode: flow.deliveryMode || "architect_html",
+      brevoTemplateId: flow.brevoTemplateId || undefined,
+      brevoTemplateIdEn: flow.brevoTemplateIdEn || undefined,
+      brevoTemplateIdHe: flow.brevoTemplateIdHe || undefined,
+      templateOverrides: isRecord(flow.templateOverrides) ? flow.templateOverrides : undefined,
       subject_en: getLocalizedValue(flow.subject, "en"),
       subject_he: getLocalizedValue(flow.subject, "he"),
       body_en: getLocalizedValue(flow.body, "en"),
@@ -125,12 +185,47 @@ export async function loadAutomationRuntimeConfig(): Promise<AutomationRuntimeCo
           secondaryColor: globalStyling.secondaryColor,
           logoUrl: globalStyling.logoUrl,
           fontFamily: globalStyling.fontFamily,
+          useDefaultHeader: globalStyling.useDefaultHeader,
+          useDefaultFooter: globalStyling.useDefaultFooter,
+          headerMode: globalStyling.headerMode,
+          headerImageUrl: globalStyling.headerImageUrl,
+          headerTitle: globalStyling.headerTitle,
+          headerSubtitle: globalStyling.headerSubtitle,
+          headerBackgroundColor: globalStyling.headerBackgroundColor,
+          headerBackgroundType: globalStyling.headerBackgroundType,
+          headerGradientFrom: globalStyling.headerGradientFrom,
+          headerGradientTo: globalStyling.headerGradientTo,
+          headerGradientAngle: globalStyling.headerGradientAngle,
+          headerTextColor: globalStyling.headerTextColor,
+          headerTextType: globalStyling.headerTextType,
+          headerTextGradientFrom: globalStyling.headerTextGradientFrom,
+          headerTextGradientTo: globalStyling.headerTextGradientTo,
+          headerTextGradientAngle: globalStyling.headerTextGradientAngle,
+          footerText: globalStyling.footerText,
+          footerImageUrl: globalStyling.footerImageUrl,
+          footerBackgroundColor: globalStyling.footerBackgroundColor,
+          footerBackgroundType: globalStyling.footerBackgroundType,
+          footerGradientFrom: globalStyling.footerGradientFrom,
+          footerGradientTo: globalStyling.footerGradientTo,
+          footerGradientAngle: globalStyling.footerGradientAngle,
+          footerTextColor: globalStyling.footerTextColor,
+          footerTextType: globalStyling.footerTextType,
+          footerTextGradientFrom: globalStyling.footerTextGradientFrom,
+          footerTextGradientTo: globalStyling.footerTextGradientTo,
+          footerTextGradientAngle: globalStyling.footerTextGradientAngle,
+          unsubscribeLabel: globalStyling.unsubscribeLabel,
+          unsubscribeUrl: globalStyling.unsubscribeUrl,
+          signatureUrl: globalStyling.signatureUrl,
         }
       : {
           primaryColor: runtimeConfig.emailPrimaryColor,
           secondaryColor: runtimeConfig.emailSecondaryColor,
           logoUrl: runtimeConfig.emailLogoUrl,
           fontFamily: runtimeConfig.emailFontFamily,
+          useDefaultHeader: true,
+          useDefaultFooter: true,
+          headerMode: "gradient",
         },
+    providerConfig,
   };
 }

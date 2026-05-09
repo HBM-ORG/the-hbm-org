@@ -22,26 +22,253 @@ const TAG_COLORS = {
 };
 
 const DEFAULT_FLOWS = [
-    { id: 'newsletter', trigger: 'onNewsletterSignup', name: 'Newsletter Welcome', icon: Mail, desc: 'Sent when explicitly signing up for the newsletter' },
-    { id: 'physical', trigger: 'onPhysicalRegistration', name: 'Physical Event Reg', icon: Calendar, desc: 'Sent when booking a spot for a real-world event' },
-    { id: 'video', trigger: 'onVideoRegistration', name: 'Video Event Reg', icon: Video, desc: 'Sent when registering for an upcoming video session' },
-    { id: 'journey', trigger: 'on8MinJourney', name: '8-Min Journey', icon: Zap, desc: 'Funnel or re-engagement for the general journey' }
+    { id: 'newsletter', trigger: 'onNewsletterSignup', name: 'Newsletter Welcome', icon: Mail, iconId: 'mail', desc: 'Sent when explicitly signing up for the newsletter' },
+    { id: 'physical', trigger: 'onPhysicalRegistration', name: 'Physical Event Reg', icon: Calendar, iconId: 'calendar', desc: 'Sent when booking a spot for a real-world event' },
+    { id: 'video', trigger: 'onVideoRegistration', name: 'Video Event Reg', icon: Video, iconId: 'video', desc: 'Sent when registering for an upcoming video session' },
+    { id: 'journey', trigger: 'on8MinJourney', name: '8-Min Journey', icon: Zap, iconId: 'zap', desc: 'Funnel or re-engagement for the general journey' }
 ];
+
+const ICON_OPTIONS = [
+    { id: '', label: 'Auto / Default', icon: Sparkles },
+    { id: 'bell', label: 'Bell', icon: Bell },
+    { id: 'mail', label: 'Mail', icon: Mail },
+    { id: 'calendar', label: 'Calendar', icon: Calendar },
+    { id: 'video', label: 'Video', icon: Video },
+    { id: 'zap', label: 'Lightning', icon: Zap },
+    { id: 'users', label: 'Users', icon: Users },
+    { id: 'clock', label: 'Clock', icon: Clock },
+    { id: 'send', label: 'Send', icon: Send },
+    { id: 'sparkles', label: 'Sparkles', icon: Sparkles },
+    { id: 'activity', label: 'Activity', icon: Activity },
+    { id: 'mousePointer', label: 'Pointer', icon: MousePointer },
+    { id: 'eye', label: 'Eye', icon: Eye },
+    { id: 'database', label: 'Database', icon: Database },
+    { id: 'layers', label: 'Layers', icon: Layers },
+    { id: 'radio', label: 'Radio', icon: Radio },
+    { id: 'smartphone', label: 'Mobile', icon: Smartphone },
+    { id: 'monitor', label: 'Desktop', icon: Monitor },
+    { id: 'checkCircle', label: 'Check', icon: CheckCircle2 },
+    { id: 'alertCircle', label: 'Alert', icon: AlertCircle },
+    { id: 'flask', label: 'Experiment', icon: FlaskConical },
+];
+
+const ICON_BY_ID = ICON_OPTIONS.reduce((acc, item) => {
+    if (item.id) acc[item.id] = item.icon;
+    return acc;
+}, {});
+
+function getFlowIcon(flow, definition) {
+    return ICON_BY_ID[flow?.icon] || definition?.icon || Bell;
+}
+
+const TRIGGER_ALIASES = {
+    site_signup: 'on8MinJourney',
+    on_site_signup: 'on8MinJourney',
+};
+
+function normalizeTriggerKey(trigger) {
+    const raw = String(trigger || '').trim();
+    return TRIGGER_ALIASES[raw] || raw;
+}
+
+const DELIVERY_MODE_META = {
+    architect_html: {
+        label: 'Email Architect',
+        shortLabel: 'Architect',
+        card: 'bg-blue-50 text-blue-600',
+        dot: 'bg-blue-500',
+        description: 'This trigger sends the local Email Architect template.',
+    },
+    brevo_template: {
+        label: 'Brevo Template',
+        shortLabel: 'Brevo Template',
+        card: 'bg-violet-50 text-violet-600',
+        dot: 'bg-violet-500',
+        description: 'This trigger sends a Brevo transactional template ID.',
+    },
+    brevo_automation: {
+        label: 'Brevo Automation',
+        shortLabel: 'Brevo Auto',
+        card: 'bg-amber-50 text-amber-700',
+        dot: 'bg-amber-500',
+        description: 'No local email is sent; Brevo automations own delivery after contact sync.',
+    },
+};
+
+function getDeliveryMeta(flow) {
+    return DELIVERY_MODE_META[flow?.deliveryMode] || DELIVERY_MODE_META.architect_html;
+}
+
+function isDefaultFlow(flow) {
+    return DEFAULT_FLOWS.some(df => String(df.trigger || '').toLowerCase() === normalizeTriggerKey(flow?.trigger).toLowerCase());
+}
+
+function getFlowDefinition(flow) {
+    const match = DEFAULT_FLOWS.find(df => String(df.trigger || '').toLowerCase() === normalizeTriggerKey(flow?.trigger).toLowerCase());
+    if (match) return match;
+    return {
+        id: flow?.id || flow?.trigger || 'custom',
+        trigger: flow?.trigger || '',
+        name: flow?.name || 'Custom Trigger',
+        icon: Bell,
+        desc: 'Custom automation trigger. It will run when the backend emits this trigger key.',
+        custom: true,
+    };
+}
+
+function getFlowPriority(flow) {
+    let score = 0;
+    if (flow?.active) score += 10;
+    if (flow?.deliveryMode && flow.deliveryMode !== 'architect_html') score += 5;
+    if (flow?.legacyId && !String(flow.legacyId).startsWith('flow_')) score += 3;
+    if (flow?.id && !String(flow.id).startsWith('flow_')) score += 1;
+    return score;
+}
+
+function dedupeFlowsByTrigger(flows) {
+    const byTrigger = new Map();
+    flows.forEach(flow => {
+        const normalized = normalizeFlow(flow);
+        const key = normalizeTriggerKey(normalized.trigger).toLowerCase();
+        if (!key) return;
+        const current = byTrigger.get(key);
+        if (!current || getFlowPriority(normalized) >= getFlowPriority(current)) {
+            byTrigger.set(key, normalized);
+        }
+    });
+    return Array.from(byTrigger.values());
+}
+
+const DEFAULT_PROVIDER_CONFIG = {
+    emailProvider: 'smtp',
+    brevoApiUrl: 'https://api.brevo.com/v3',
+    brevoApiKey: '',
+    brevoApiKeyMasked: '',
+    brevoApiKeySource: 'none',
+    brevoConfigured: false,
+    brevoSenderName: 'The HBM',
+    brevoSenderEmail: '',
+    brevoAutomationEnabled: false,
+};
+
+const DEFAULT_GLOBAL_STYLING = {
+    primaryColor: '#6160AB',
+    secondaryColor: '#F07B3C',
+    logoUrl: '',
+    fontFamily: 'Sora, Arial, sans-serif',
+    useDefaultHeader: true,
+    useDefaultFooter: true,
+    headerMode: 'gradient',
+    headerImageUrl: '',
+    headerTitle: 'The Human Being Movement',
+    headerSubtitle: 'Crafting deep human connections, 8 minutes at a time.',
+    headerBackgroundColor: '#6160AB',
+    headerBackgroundType: 'gradient',
+    headerGradientFrom: '#6160AB',
+    headerGradientTo: '#F07B3C',
+    headerGradientAngle: 135,
+    headerTextColor: '#ffffff',
+    headerTextType: 'flat',
+    headerTextGradientFrom: '#ffffff',
+    headerTextGradientTo: '#F7D5FF',
+    headerTextGradientAngle: 135,
+    footerText: '© 2026 The Human Being Movement<br>Crafting deep human connections, 8 minutes at a time.',
+    footerImageUrl: '',
+    footerBackgroundColor: '#fafafc',
+    footerBackgroundType: 'flat',
+    footerGradientFrom: '#fafafc',
+    footerGradientTo: '#F07B3C',
+    footerGradientAngle: 135,
+    footerTextColor: '#a0a0b0',
+    footerTextType: 'flat',
+    footerTextGradientFrom: '#a0a0b0',
+    footerTextGradientTo: '#6160AB',
+    footerTextGradientAngle: 135,
+    unsubscribeLabel: 'Unsubscribe from these emails',
+    unsubscribeUrl: '',
+    signatureUrl: '',
+};
+
+function normalizeGlobalStyling(styling = {}) {
+    return { ...DEFAULT_GLOBAL_STYLING, ...styling };
+}
+
+function getEffectiveTemplateSettings(config, flow) {
+    const global = normalizeGlobalStyling(config?.globalStyling);
+    const overrides = flow?.templateOverrides && typeof flow.templateOverrides === 'object' ? flow.templateOverrides : {};
+    return { ...global, ...overrides };
+}
+
+function getBackgroundStyle(settings, prefix, fallbackFlat, fallbackTo) {
+    const type = settings?.[`${prefix}BackgroundType`] || 'flat';
+    const flat = settings?.[`${prefix}BackgroundColor`] || fallbackFlat;
+    const from = settings?.[`${prefix}GradientFrom`] || flat;
+    const to = settings?.[`${prefix}GradientTo`] || fallbackTo || flat;
+    const angle = Number(settings?.[`${prefix}GradientAngle`] ?? 135);
+    return type === 'gradient'
+        ? `linear-gradient(${Number.isFinite(angle) ? angle : 135}deg, ${from}, ${to})`
+        : flat;
+}
+
+function getTextStyle(settings, prefix, fallbackFlat, fallbackTo) {
+    const type = settings?.[`${prefix}TextType`] || 'flat';
+    const flat = settings?.[`${prefix}TextColor`] || fallbackFlat;
+    const from = settings?.[`${prefix}TextGradientFrom`] || flat;
+    const to = settings?.[`${prefix}TextGradientTo`] || fallbackTo || flat;
+    const angle = Number(settings?.[`${prefix}TextGradientAngle`] ?? 135);
+    if (type !== 'gradient') return { color: flat };
+    return {
+        color: flat,
+        backgroundImage: `linear-gradient(${Number.isFinite(angle) ? angle : 135}deg, ${from}, ${to})`,
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+    };
+}
+
+function createDefaultFlow(df) {
+    return {
+        id: `flow_${df.id}`,
+        name: df.name,
+        trigger: df.trigger,
+        icon: df.iconId || '',
+        active: false,
+        status: 'published',
+        deliveryMode: 'architect_html',
+        brevoTemplateId: '',
+        brevoTemplateIdEn: '',
+        brevoTemplateIdHe: '',
+        templateOverrides: {},
+        subject_en: `Welcome - ${df.name}`,
+        subject_he: `ברוכים הבאים - ${df.name}`,
+        body_en: `Hello {{name}},\n\nThank you for joining us.\n\nBest regards,\nThe HBM Team`,
+        body_he: `שלום {{name}},\n\nתודה שהצטרפת אלינו.\n\nבברכה,\nצוות HBM`
+    };
+}
+
+function normalizeFlow(flow) {
+    const deliveryMode = ['architect_html', 'brevo_template', 'brevo_automation'].includes(String(flow?.deliveryMode || '').toLowerCase())
+        ? String(flow.deliveryMode).toLowerCase()
+        : 'architect_html';
+    return {
+        ...flow,
+        trigger: normalizeTriggerKey(flow?.trigger),
+        icon: ICON_BY_ID[flow?.icon] ? flow.icon : '',
+        status: String(flow?.status || '').toLowerCase() === 'draft' ? 'draft' : 'published',
+        deliveryMode,
+        brevoTemplateId: flow?.brevoTemplateId || '',
+        brevoTemplateIdEn: flow?.brevoTemplateIdEn || '',
+        brevoTemplateIdHe: flow?.brevoTemplateIdHe || '',
+        templateOverrides: flow?.templateOverrides && typeof flow.templateOverrides === 'object' ? flow.templateOverrides : {},
+    };
+}
 
 function getDefaultConfig() {
     return {
         smtp: { host: '', port: 587, user: '', pass: '', from: '' },
-        globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' },
-        flows: DEFAULT_FLOWS.map(df => ({
-            id: `flow_${df.id}`,
-            name: df.name,
-            trigger: df.trigger,
-            active: false,
-            subject_en: `Welcome - ${df.name}`,
-            subject_he: `ברוכים הבאים - ${df.name}`,
-            body_en: `Hello {{name}},\n\nThank you for joining us.\n\nBest regards,\nThe HBM Team`,
-            body_he: `שלום {{name}},\n\nתודה שהצטרפת אלינו.\n\nבברכה,\nצוות HBM`
-        }))
+        providerConfig: { ...DEFAULT_PROVIDER_CONFIG },
+        globalStyling: normalizeGlobalStyling(),
+        flows: DEFAULT_FLOWS.map(createDefaultFlow)
     };
 }
 
@@ -84,6 +311,114 @@ const Toggle = ({ checked, onChange, label }) => (
     </label>
 );
 
+const ColorModeControl = ({ label, prefix, tone = 'Background', values, onChange, fallbackFlat = '#ffffff', fallbackTo = '#F07B3C' }) => {
+    const isBackground = tone === 'Background';
+    const typeKey = `${prefix}${tone}Type`;
+    const flatKey = `${prefix}${tone}Color`;
+    const fromKey = isBackground ? `${prefix}GradientFrom` : `${prefix}${tone}GradientFrom`;
+    const toKey = isBackground ? `${prefix}GradientTo` : `${prefix}${tone}GradientTo`;
+    const angleKey = isBackground ? `${prefix}GradientAngle` : `${prefix}${tone}GradientAngle`;
+    const type = values?.[typeKey] || 'flat';
+    const flat = values?.[flatKey] || fallbackFlat;
+    const from = values?.[fromKey] || flat;
+    const to = values?.[toKey] || fallbackTo;
+    const angle = values?.[angleKey] ?? 135;
+    const preview = type === 'gradient' ? `linear-gradient(${angle}deg, ${from}, ${to})` : flat;
+
+    return (
+        <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{label}</label>
+                <div className="w-10 h-10 rounded-xl border border-white shadow-sm" style={{ background: preview }} />
+            </div>
+            <div className="flex bg-white rounded-xl p-1 gap-1">
+                {[
+                    { id: 'flat', label: 'Flat' },
+                    { id: 'gradient', label: 'Gradient' },
+                ].map(option => (
+                    <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => onChange({ [typeKey]: option.id })}
+                        className={`flex-1 rounded-lg px-3 py-2 text-[9px] font-black uppercase tracking-widest ${type === option.id ? 'bg-purple-50 text-purple-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                        {option.label}
+                    </button>
+                ))}
+            </div>
+            {type === 'gradient' ? (
+                <div className="grid grid-cols-3 gap-3">
+                    <div>
+                        <span className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">From</span>
+                        <input type="color" value={from} onChange={e => onChange({ [fromKey]: e.target.value })} className="w-full h-10 rounded-lg border-none p-0 cursor-pointer" />
+                    </div>
+                    <div>
+                        <span className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">To</span>
+                        <input type="color" value={to} onChange={e => onChange({ [toKey]: e.target.value })} className="w-full h-10 rounded-lg border-none p-0 cursor-pointer" />
+                    </div>
+                    <div>
+                        <span className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Angle</span>
+                        <input type="number" min="0" max="360" value={angle} onChange={e => onChange({ [angleKey]: Number(e.target.value) })} className="w-full h-10 rounded-lg bg-white px-2 text-xs font-bold outline-none" />
+                    </div>
+                </div>
+            ) : (
+                <div>
+                    <span className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Color</span>
+                    <input type="color" value={flat} onChange={e => onChange({ [flatKey]: e.target.value })} className="w-14 h-10 rounded-lg border-none p-0 cursor-pointer" />
+                </div>
+            )}
+        </div>
+    );
+};
+
+const IconPicker = ({ value, onChange }) => {
+    const [open, setOpen] = useState(false);
+    const selected = ICON_OPTIONS.find(option => option.id === value) || ICON_OPTIONS[0];
+    const SelectedIcon = selected.icon;
+
+    return (
+        <div className="relative">
+            <button
+                type="button"
+                onClick={() => setOpen(prev => !prev)}
+                className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 flex items-center justify-between gap-3"
+            >
+                <span className="flex items-center gap-2 min-w-0">
+                    <span className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                        <SelectedIcon className="w-4 h-4" />
+                    </span>
+                    <span className="truncate">{selected.label}</span>
+                </span>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+            </button>
+            {open && (
+                <div className="absolute z-30 mt-2 w-full max-h-72 overflow-y-auto rounded-2xl border border-gray-100 bg-white shadow-xl p-2">
+                    {ICON_OPTIONS.map(option => {
+                        const OptionIcon = option.icon;
+                        const active = option.id === value;
+                        return (
+                            <button
+                                key={option.id || 'auto'}
+                                type="button"
+                                onClick={() => {
+                                    onChange(option.id);
+                                    setOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-[10px] font-black uppercase tracking-widest transition-all ${active ? 'bg-purple-50 text-purple-700' : 'text-gray-500 hover:bg-gray-50'}`}
+                            >
+                                <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${active ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500'}`}>
+                                    <OptionIcon className="w-4 h-4" />
+                                </span>
+                                <span className="truncate">{option.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+};
+
 // Backend connection status (API reachable)
 const BackendBadge = () => {
     const [status, setStatus] = useState('checking');
@@ -125,19 +460,24 @@ const SmtpBadge = ({ config }) => {
     const [latency, setLatency] = useState(null);
 
     const check = useCallback(async () => {
-        if (!config?.smtp?.host) { setStatus('unconfigured'); setMsg('Not configured'); return; }
+        if (!config?.smtp?.host || !config?.smtp?.user || !config?.smtp?.pass) { setStatus('unconfigured'); setMsg('SMTP host, user, and password/app key are required'); return; }
         setStatus('checking');
         const t0 = Date.now();
         try {
             const r = await fetch(`${API}/api/smtp-check`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': getStoredAdminPassword()
+                },
                 body: JSON.stringify(config.smtp)
             });
-            const d = await r.json();
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d?.error || 'SMTP check failed');
             setLatency(Date.now() - t0);
-            setStatus(d.success ? 'ok' : 'error');
+            setStatus(d.connected || d.success ? 'ok' : 'error');
             setMsg(d.message || '');
-        } catch (e) { setStatus('error'); setMsg('Connection refused'); }
+        } catch (e) { setStatus('error'); setMsg(e.message || 'Connection refused'); }
     }, [config, API]);
 
     useEffect(() => { check(); }, [check]);
@@ -181,13 +521,14 @@ const ProviderBadge = () => {
 
     const provider = String(status?.emailProvider || 'smtp').toUpperCase();
     const brevoConfigured = Boolean(status?.brevo?.configured);
+    const brevoConnected = Boolean(status?.brevo?.connected);
     const espoConfigured = Boolean(status?.espocrm?.configured);
 
     return (
-        <div className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-xl" title={`Brevo: ${brevoConfigured ? 'configured' : 'off'} · EspoCRM: ${espoConfigured ? 'configured' : 'off'}`}>
-            <div className={`w-1.5 h-1.5 rounded-full ${provider === 'BREVO' ? 'bg-purple-400 shadow-[0_0_8px_#c084fc]' : 'bg-blue-400 shadow-[0_0_8px_#60a5fa]'}`} />
+        <div className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-xl" title={`Brevo: ${brevoConnected ? 'connected' : brevoConfigured ? status?.brevo?.message || 'configured' : 'off'} · EspoCRM: ${espoConfigured ? 'configured' : 'off'}`}>
+            <div className={`w-1.5 h-1.5 rounded-full ${provider === 'BREVO' && brevoConnected ? 'bg-purple-400 shadow-[0_0_8px_#c084fc]' : provider === 'BREVO' ? 'bg-amber-400 shadow-[0_0_8px_#facc15]' : 'bg-blue-400 shadow-[0_0_8px_#60a5fa]'}`} />
             <span className="text-[9px] font-black uppercase tracking-widest text-white">{provider}</span>
-            <span className="text-[8px] text-gray-500 font-mono">{brevoConfigured ? 'brevo:on' : 'brevo:off'} · {espoConfigured ? 'espo:on' : 'espo:off'}</span>
+            <span className="text-[8px] text-gray-500 font-mono">{brevoConnected ? 'brevo:ok' : brevoConfigured ? 'brevo:check' : 'brevo:off'} · {espoConfigured ? 'espo:on' : 'espo:off'}</span>
             <button onClick={check} className="ml-1 text-gray-600 hover:text-gray-400 transition-colors" title="Recheck providers"><RefreshCw className="w-2.5 h-2.5" /></button>
         </div>
     );
@@ -198,7 +539,8 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
     const isHe = activeLang === 'he';
     const rawSubject = (isHe && flow?.subject_he) ? flow.subject_he : (flow?.subject_en || flow?.subject || '');
     const rawBody = (isHe && flow?.body_he) ? flow.body_he : (flow?.body_en || flow?.body || '');
-    const signatureUrl = resolveAssetUrl(config?.globalStyling?.signatureUrl);
+    const template = getEffectiveTemplateSettings(config, flow);
+    const signatureUrl = resolveAssetUrl(template.signatureUrl);
 
     const body = rawBody.replace(/\n/g, '<br>')
         .replace(/{{name}}/g, isHe ? 'אלכס' : 'Alex')
@@ -211,9 +553,12 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
         .replace(/{{name}}/g, isHe ? 'אלכס' : 'Alex')
         .replace(/{{eventName}}/g, isHe ? 'HBM תל אביב' : 'HBM Tel Aviv');
 
-    const primary = config?.globalStyling?.primaryColor || '#6160AB';
-    const secondary = config?.globalStyling?.secondaryColor || '#F07B3C';
-    const logoUrl = resolveAssetUrl(config?.globalStyling?.logoUrl);
+    const primary = template.primaryColor || '#6160AB';
+    const secondary = template.secondaryColor || '#F07B3C';
+    const logoUrl = resolveAssetUrl(template.logoUrl);
+    const headerImageUrl = resolveAssetUrl(template.headerImageUrl);
+    const footerImageUrl = resolveAssetUrl(template.footerImageUrl);
+    const headerLogoUrl = headerImageUrl || logoUrl;
 
     const dir = isHe ? 'rtl' : 'ltr';
     const align = isHe ? 'right' : 'left';
@@ -221,12 +566,23 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
     return (
         <div className={`border-[8px] border-white rounded-[2rem] shadow-2xl overflow-hidden bg-[#f7f7fc] transition-all duration-500 ${device === 'mobile' ? 'w-[260px] mx-auto' : 'w-full'}`}>
             <div className="overflow-y-auto max-h-[520px]" dir={dir} style={{ textAlign: align }}>
-                {/* Header */}
-                <div className="h-24 flex items-center justify-center p-4" style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}>
-                    {logoUrl ? (
-                        <img src={logoUrl} className="h-10 object-contain drop-shadow-lg" alt="HBM" onError={(e) => e.target.style.display='none'} />
-                    ) : null}
-                </div>
+                {template.useDefaultHeader !== false && (
+                    <div
+                        className="min-h-24 flex flex-col items-center justify-center p-4 text-center"
+                        style={{
+                            color: template.headerTextColor || '#ffffff',
+                            background: template.headerMode === 'image' && headerImageUrl
+                                ? `linear-gradient(135deg, ${primary}aa, ${secondary}aa), url(${headerImageUrl}) center/cover`
+                                : getBackgroundStyle(template, 'header', primary, secondary)
+                        }}
+                    >
+                        {headerLogoUrl ? (
+                            <img src={headerLogoUrl} className="max-h-12 max-w-[150px] object-contain drop-shadow-lg mb-2" alt="HBM" onError={(e) => e.target.style.display='none'} />
+                        ) : null}
+                        {template.headerTitle && <div className="text-[14px] font-black leading-tight" style={getTextStyle(template, 'header', template.headerTextColor || '#ffffff', '#F7D5FF')}>{template.headerTitle}</div>}
+                        {template.headerSubtitle && <div className="text-[9px] font-bold opacity-80 mt-1" style={getTextStyle(template, 'header', template.headerTextColor || '#ffffff', '#F7D5FF')}>{template.headerSubtitle}</div>}
+                    </div>
+                )}
                 {/* Body */}
                 <div className="p-6 bg-white shrink-0 min-h-[200px]">
                     <h3 className="text-[13px] font-black text-gray-900 leading-snug mb-3">{subject}</h3>
@@ -234,10 +590,16 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
                     {signatureUrl && <div className="mt-8"><img src={signatureUrl} alt="Signature" className="max-w-[120px] rounded" /></div>}
                 </div>
                 {/* Footer */}
-                <div className="px-6 py-4 bg-[#fafafc] text-center text-[8px] text-gray-400 font-bold border-t border-gray-100 uppercase tracking-widest mt-auto">
-                    © 2026 The Human Being Movement<br />
-                    <span className="underline cursor-pointer text-gray-300 inline-block mt-2">Unsubscribe</span>
-                </div>
+                {template.useDefaultFooter !== false && (
+                    <div
+                        className="px-6 py-4 text-center text-[8px] font-bold border-t border-gray-100 mt-auto"
+                        style={{ background: getBackgroundStyle(template, 'footer', '#fafafc', secondary), ...getTextStyle(template, 'footer', template.footerTextColor || '#a0a0b0', secondary) }}
+                    >
+                        {footerImageUrl && <img src={footerImageUrl} className="h-8 object-contain mx-auto mb-2" alt="" />}
+                        <div dangerouslySetInnerHTML={{ __html: template.footerText || DEFAULT_GLOBAL_STYLING.footerText }} />
+                        <span className="underline cursor-pointer inline-block mt-2 opacity-70">{template.unsubscribeLabel || 'Unsubscribe'}</span>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -248,6 +610,7 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
 const EmailEngine = () => {
     const API = getApiBase();
     const [config, setConfig] = useState(getDefaultConfig);
+    const [lastSavedConfig, setLastSavedConfig] = useState(getDefaultConfig);
     const [backendOffline, setBackendOffline] = useState(false);
     const [activeFlowId, setActiveFlowId] = useState(null);
     const [activeFlowTrigger, setActiveFlowTrigger] = useState(null);
@@ -256,6 +619,7 @@ const EmailEngine = () => {
     const textareaRef = useRef(null);
     const [previewDevice, setPreviewDevice] = useState('mobile');
     const [saveStatus, setSaveStatus] = useState('');
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [error, setError] = useState(null);
     const [engagementLog, setEngagementLog] = useState([]);
     const [registrations, setRegistrations] = useState([]);
@@ -263,6 +627,9 @@ const EmailEngine = () => {
     const [aiLoading, setAiLoading] = useState(false);
     const [testEmail, setTestEmail] = useState('');
     const [testStatus, setTestStatus] = useState('');
+    const [smtpTestStatus, setSmtpTestStatus] = useState('');
+    const [brevoTestStatus, setBrevoTestStatus] = useState('');
+    const [templateUploadStatus, setTemplateUploadStatus] = useState('');
     const [queue, setQueue] = useState([]);
     const [editorLang, setEditorLang] = useState('en'); 
     const [aiPrompt, setAiPrompt] = useState('');
@@ -293,21 +660,9 @@ const EmailEngine = () => {
             ]);
             if (cfg === null || typeof cfg !== 'object') {
                 setBackendOffline(true);
-                const fallback = {
-                    smtp: { host: '', port: 587, user: '', pass: '', from: '' },
-                    globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' },
-                    flows: DEFAULT_FLOWS.map(df => ({
-                        id: `flow_${df.id}`,
-                        name: df.name,
-                        trigger: df.trigger,
-                        active: false,
-                        subject_en: `Welcome - ${df.name}`,
-                        subject_he: `ברוכים הבאים - ${df.name}`,
-                        body_en: `Hello {{name}},\n\nThank you for joining us.\n\nBest regards,\nThe HBM Team`,
-                        body_he: `שלום {{name}},\n\nתודה שהצטרפת אלינו.\n\nבברכה,\nצוות HBM`
-                    }))
-                };
+                const fallback = getDefaultConfig();
                 setConfig(fallback);
+                setLastSavedConfig(fallback);
                 setEngagementLog([]);
                 setRegistrations([]);
                 setQueue([]);
@@ -319,27 +674,20 @@ const EmailEngine = () => {
 
             setBackendOffline(false);
             if (!cfg.smtp) cfg.smtp = { host: '', port: 587, user: '', pass: '', from: '' };
-            if (!cfg.globalStyling) cfg.globalStyling = { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' };
+            cfg.providerConfig = { ...DEFAULT_PROVIDER_CONFIG, ...(cfg.providerConfig || {}) };
+            cfg.globalStyling = normalizeGlobalStyling(cfg.globalStyling);
 
-            const existingFlows = Array.isArray(cfg.flows) ? cfg.flows : [];
+            const existingFlows = dedupeFlowsByTrigger(Array.isArray(cfg.flows) ? cfg.flows : []);
             const triggerKey = (t) => (t || '').toLowerCase();
             DEFAULT_FLOWS.forEach(df => {
                 if (!existingFlows.find(f => triggerKey(f.trigger) === triggerKey(df.trigger))) {
-                    existingFlows.push({
-                        id: `flow_${df.id}`,
-                        name: df.name,
-                        trigger: df.trigger,
-                        active: false,
-                        subject_en: `Welcome - ${df.name}`,
-                        subject_he: `ברוכים הבאים - ${df.name}`,
-                        body_en: `Hello {{name}},\n\nThank you for joining us.\n\nBest regards,\nThe HBM Team`,
-                        body_he: `שלום {{name}},\n\nתודה שהצטרפת אלינו.\n\nבברכה,\nצוות HBM`
-                    });
+                    existingFlows.push(createDefaultFlow(df));
                 }
             });
             cfg.flows = existingFlows;
 
             setConfig(cfg);
+            setLastSavedConfig(cfg);
             setEngagementLog(Array.isArray(eng) ? eng : []);
             setRegistrations(Array.isArray(regs) ? regs : []);
             setQueue(Array.isArray(q) ? q : []);
@@ -348,21 +696,9 @@ const EmailEngine = () => {
             setError(null);
         } catch (err) {
             setBackendOffline(true);
-            const fallback = {
-                smtp: { host: '', port: 587, user: '', pass: '', from: '' },
-                globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' },
-                flows: DEFAULT_FLOWS.map(df => ({
-                    id: `flow_${df.id}`,
-                    name: df.name,
-                    trigger: df.trigger,
-                    active: false,
-                    subject_en: `Welcome - ${df.name}`,
-                    subject_he: `ברוכים הבאים - ${df.name}`,
-                    body_en: `Hello {{name}},\n\nThank you for joining us.\n\nBest regards,\nThe HBM Team`,
-                    body_he: `שלום {{name}},\n\nתודה שהצטרפת אלינו.\n\nבברכה,\nצוות HBM`
-                }))
-            };
+            const fallback = getDefaultConfig();
             setConfig(fallback);
+            setLastSavedConfig(fallback);
             setEngagementLog([]);
             setRegistrations([]);
             setQueue([]);
@@ -375,9 +711,24 @@ const EmailEngine = () => {
     const handleSave = async () => {
         setSaveStatus('Deploying...');
         try {
+            const invalidBrevoFlow = (Array.isArray(config.flows) ? config.flows : []).find(flow => {
+                if (flow.status === 'draft') return false;
+                if (flow.deliveryMode !== 'brevo_template') return false;
+                return !(flow.brevoTemplateId || flow.brevoTemplateIdEn || flow.brevoTemplateIdHe);
+            });
+            if (invalidBrevoFlow) {
+                setSaveStatus(`✗ Missing Brevo template: ${invalidBrevoFlow.name || invalidBrevoFlow.id}`);
+                setTimeout(() => setSaveStatus(''), 5000);
+                return;
+            }
+
+            const authHeaders = {
+                'Content-Type': 'application/json',
+                'X-Admin-Password': getStoredAdminPassword()
+            };
             const [settingsRes, campaignsRes] = await Promise.all([
                 fetch(`${API}/api/automation-settings`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: authHeaders,
                     body: JSON.stringify(config)
                 }),
                 fetch(`${API}/api/campaigns/save-all`, {
@@ -385,21 +736,186 @@ const EmailEngine = () => {
                     body: JSON.stringify({ campaigns: Array.isArray(campaigns) ? campaigns : [] })
                 })
             ]);
-            if (settingsRes.ok && campaignsRes.ok) setSaveStatus('✓ Live');
-            else setSaveStatus('✗ Failed');
-        } catch { setSaveStatus('✗ Failed'); }
-        setTimeout(() => setSaveStatus(''), 3000);
+            if (settingsRes.ok && campaignsRes.ok) {
+                setSaveStatus('✓ Live');
+                setLastSavedConfig(config);
+                setHasUnsavedChanges(false);
+            } else {
+                const body = await settingsRes.json().catch(() => ({}));
+                setSaveStatus(settingsRes.status === 401 ? '✗ Unauthorized' : `✗ ${body?.error || 'Failed'}`);
+            }
+        } catch (error) { setSaveStatus(`✗ ${error.message || 'Backend unavailable'}`); }
+        setTimeout(() => setSaveStatus(''), 5000);
     };
 
-    const updateFlow = (id, updates) => {
+    const persistAutomationSettings = async (nextConfig, { quiet = false } = {}) => {
+        if (!quiet) setSaveStatus('Synchronizing...');
+        const response = await fetch(`${API}/api/automation-settings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Password': getStoredAdminPassword()
+            },
+            body: JSON.stringify(nextConfig)
+        });
+        if (!response.ok) {
+            const body = await response.json().catch(() => ({}));
+            throw new Error(response.status === 401 ? 'Unauthorized' : body?.error || 'Failed to save automation settings');
+        }
+        setLastSavedConfig(nextConfig);
+        setHasUnsavedChanges(false);
+        if (!quiet) {
+            setSaveStatus('✓ Saved');
+            setTimeout(() => setSaveStatus(''), 3000);
+        }
+    };
+
+    const updateFlow = (id, updates, options = {}) => {
+        setHasUnsavedChanges(true);
         if (activeView === 'campaigns') {
             setCampaigns(prev => (Array.isArray(prev) ? prev : []).map(c => c.id === id ? { ...c, ...updates } : c));
+            return;
         } else {
-            setConfig(prev => ({
-                ...prev,
-                flows: (Array.isArray(prev.flows) ? prev.flows : []).map(f => f.id === id ? { ...f, ...updates } : f)
-            }));
+            const nextConfig = {
+                ...config,
+                flows: (Array.isArray(config.flows) ? config.flows : []).map(f => f.id === id ? { ...f, ...updates } : f)
+            };
+            setConfig(nextConfig);
+            if (options.autoSave) {
+                persistAutomationSettings(nextConfig)
+                    .catch(error => {
+                        setSaveStatus(`✗ ${error.message || 'Save failed'}`);
+                        setTimeout(() => setSaveStatus(''), 5000);
+                    });
+            }
+            return;
         }
+    };
+
+    const updateFlowTemplateOverrides = (id, updates, options = {}) => {
+        const existing = flowsList.find(flow => flow.id === id)?.templateOverrides || {};
+        updateFlow(id, { templateOverrides: { ...existing, ...updates } }, options);
+    };
+
+    const saveFlowTemplateOverrides = async () => {
+        if (!currentFlow) return;
+        setTemplateUploadStatus('Saving trigger template...');
+        try {
+            await persistAutomationSettings(config, { quiet: true });
+            setTemplateUploadStatus('✓ Trigger template saved');
+        } catch (error) {
+            setTemplateUploadStatus(`✗ ${error.message || 'Save failed'}`);
+        }
+        setTimeout(() => setTemplateUploadStatus(''), 6000);
+    };
+
+    const cancelFlowTemplateOverrides = () => {
+        if (!currentFlow) return;
+        const savedFlow = (Array.isArray(lastSavedConfig.flows) ? lastSavedConfig.flows : []).find(flow => flow.id === currentFlow.id);
+        const savedOverrides = savedFlow?.templateOverrides || {};
+        const nextConfig = {
+            ...config,
+            flows: (Array.isArray(config.flows) ? config.flows : []).map(flow =>
+                flow.id === currentFlow.id ? { ...flow, templateOverrides: savedOverrides } : flow
+            )
+        };
+        setConfig(nextConfig);
+        setHasUnsavedChanges(JSON.stringify(nextConfig) !== JSON.stringify(lastSavedConfig));
+        setTemplateUploadStatus('Trigger template changes cancelled');
+        setTimeout(() => setTemplateUploadStatus(''), 4000);
+    };
+
+    const handleFlowTemplateImageUpload = async (e, key) => {
+        const file = e.target.files?.[0];
+        if (!file || !activeFlowId) return;
+        setTemplateUploadStatus('Uploading image...');
+        try {
+            const result = await uploadFile(file, { keyPrefix: 'emails' });
+            if (result.success && result.url) {
+                updateFlowTemplateOverrides(activeFlowId, { [key]: result.url });
+                setTemplateUploadStatus('✓ Image uploaded. Save trigger to keep it.');
+            } else {
+                setTemplateUploadStatus(`✗ ${result.error || 'Upload failed'}`);
+            }
+        } catch (err) {
+            console.error('Flow Template Image Upload Error:', err);
+            setTemplateUploadStatus(`✗ ${err.message || 'Upload failed'}`);
+        }
+        setTimeout(() => setTemplateUploadStatus(''), 6000);
+    };
+
+    const createCustomFlow = () => {
+        const timestamp = Date.now();
+        const flow = normalizeFlow({
+            id: `custom_${timestamp}`,
+            name: 'New Custom Trigger',
+            trigger: `onCustom${timestamp}`,
+            icon: '',
+            active: false,
+            status: 'draft',
+            deliveryMode: 'architect_html',
+            subject_en: 'New custom trigger',
+            subject_he: 'טריגר מותאם חדש',
+            body_en: 'Hello {{name}},\n\nYour custom automation is ready.',
+            body_he: 'שלום {{name}},\n\nהאוטומציה המותאמת מוכנה.',
+        });
+        const nextConfig = {
+            ...config,
+            flows: [...(Array.isArray(config.flows) ? config.flows : []), flow],
+        };
+        setConfig(nextConfig);
+        setSaveStatus('Saving draft...');
+        persistAutomationSettings(nextConfig, { quiet: true })
+            .then(() => setSaveStatus('✓ Draft saved'))
+            .catch(error => {
+                setHasUnsavedChanges(true);
+                setSaveStatus(`✗ ${error.message || 'Save failed'}`);
+            })
+            .finally(() => setTimeout(() => setSaveStatus(''), 5000));
+        setActiveFlowId(flow.id);
+        setActiveFlowTrigger(flow.trigger);
+        setTimeout(() => editorPanelRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }), 100);
+    };
+
+    const deleteFlow = async (flow) => {
+        if (!flow?.id) return;
+        const defaultFlow = isDefaultFlow(flow);
+        const message = defaultFlow
+            ? 'This is a built-in trigger. Delete is not recommended because it will be recreated by the defaults. Use Draft instead.'
+            : `Delete "${flow.name || flow.id}"? This removes it from Email Architect.`;
+        if (defaultFlow) {
+            alert(message);
+            return;
+        }
+        if (!confirm(message)) return;
+
+        const nextConfig = {
+            ...config,
+            flows: (Array.isArray(config.flows) ? config.flows : []).filter(f => f.id !== flow.id),
+        };
+        setConfig(nextConfig);
+        setActiveFlowId(null);
+        setActiveFlowTrigger(null);
+        setSaveStatus('Deleting...');
+
+        try {
+            const response = await fetch(`${API}/api/automation-settings/flows/${encodeURIComponent(flow.id)}`, {
+                method: 'DELETE',
+                headers: { 'X-Admin-Password': getStoredAdminPassword() }
+            });
+            const body = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(body?.error || 'Delete failed');
+            setSaveStatus('✓ Deleted');
+            setLastSavedConfig(nextConfig);
+            setHasUnsavedChanges(false);
+        } catch (error) {
+            setConfig(config);
+            setActiveFlowId(flow.id);
+            setActiveFlowTrigger(flow.trigger || null);
+            setSaveStatus(`✗ ${error.message || 'Delete failed'}`);
+            setHasUnsavedChanges(true);
+        }
+        setTimeout(() => setSaveStatus(''), 5000);
     };
 
     const improveWithAI = async () => {
@@ -446,7 +962,11 @@ const EmailEngine = () => {
         setTestStatus('⏳ Sending...');
         try {
             const r = await fetch(`${API}/api/test-flow`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': getStoredAdminPassword()
+                },
                 body: JSON.stringify({ email: testEmail, flowId: activeFlowId, language: editorLang })
             });
             const d = await r.json().catch(() => ({}));
@@ -458,6 +978,39 @@ const EmailEngine = () => {
             if (msg.toLowerCase().includes('app password')) setTestStatus(`❌ ${msg} (Check Automation → SMTP)`);
         }
         setTimeout(() => setTestStatus(''), 10000);
+    };
+
+    const checkSmtpStatus = async () => {
+        setSmtpTestStatus('Checking...');
+        try {
+            const r = await fetch(`${API}/api/smtp-check`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': getStoredAdminPassword()
+                },
+                body: JSON.stringify(config.smtp || {})
+            });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d?.error || 'SMTP check failed');
+            setSmtpTestStatus(d.connected || d.success ? 'Connected' : d.message || 'Not connected');
+        } catch (error) {
+            setSmtpTestStatus(error.message || 'SMTP check failed');
+        }
+    };
+
+    const checkBrevoStatus = async () => {
+        setBrevoTestStatus('Checking...');
+        try {
+            const r = await fetch(`${API}/api/providers/status`, {
+                headers: { 'X-Admin-Password': getStoredAdminPassword() }
+            });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d?.error || 'Brevo check failed');
+            setBrevoTestStatus(d?.brevo?.connected ? 'Connected' : d?.brevo?.message || 'Not connected');
+        } catch (error) {
+            setBrevoTestStatus(error.message || 'Brevo check failed');
+        }
     };
 
     const toggleSuppression = async (email) => {
@@ -567,6 +1120,35 @@ const EmailEngine = () => {
         } catch (err) { console.error('Signature Upload Error:', err); }
     };
 
+    const handleTemplateImageUpload = async (e, key) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setTemplateUploadStatus('Uploading image...');
+        try {
+            const result = await uploadFile(file, { keyPrefix: 'emails' });
+            if (result.success && result.url) {
+                const nextConfig = {
+                    ...config,
+                    globalStyling: normalizeGlobalStyling({ ...config.globalStyling, [key]: result.url })
+                };
+                setConfig(nextConfig);
+                await persistAutomationSettings(nextConfig, { quiet: true });
+                setTemplateUploadStatus('✓ Image uploaded');
+            } else {
+                setTemplateUploadStatus(`✗ ${result.error || 'Upload failed'}`);
+            }
+        } catch (err) {
+            console.error('Template Image Upload Error:', err);
+            setTemplateUploadStatus(`✗ ${err.message || 'Upload failed'}`);
+        }
+        setTimeout(() => setTemplateUploadStatus(''), 6000);
+    };
+
+    const updateGlobalStyling = (updates) => {
+        setConfig(prev => ({ ...prev, globalStyling: normalizeGlobalStyling({ ...prev.globalStyling, ...updates }) }));
+        setHasUnsavedChanges(true);
+    };
+
     // ── derived ─────────────────────────────────────────────────────────────
     const flowsList = Array.isArray(config?.flows) ? config.flows : [];
     const triggerKey = (t) => (t || '').toLowerCase();
@@ -576,6 +1158,14 @@ const EmailEngine = () => {
         (activeView === 'flows' && activeFlowTrigger
             ? flowsList.find(f => triggerKey(f.trigger) === triggerKey(activeFlowTrigger))
             : null);
+    const lastSavedFlow = currentFlow
+        ? (Array.isArray(lastSavedConfig.flows) ? lastSavedConfig.flows : []).find(flow => flow.id === currentFlow.id)
+        : null;
+    const templateOverridesDirty = Boolean(
+        activeView === 'flows' &&
+        currentFlow &&
+        JSON.stringify(currentFlow.templateOverrides || {}) !== JSON.stringify(lastSavedFlow?.templateOverrides || {})
+    );
     const safeQueue = Array.isArray(queue) ? queue : [];
     const safeEngagement = Array.isArray(engagementLog) ? engagementLog : [];
     const sentCount = safeQueue.filter(q => q.status === 'sent').length;
@@ -635,6 +1225,7 @@ const EmailEngine = () => {
                             { id: 'campaigns', icon: Send, label: 'Campaigns' },
                             { id: 'crm', icon: Users, label: 'CRM' },
                             { id: 'analytics', icon: BarChart3, label: 'Stats' },
+                            { id: 'defaults', icon: Layers, label: 'Defaults' },
                             { id: 'settings', icon: Settings, label: 'Setup' },
                         ].map(({ id, icon: Icon, label }) => (
                             <button key={id} onClick={() => { setActiveView(id); setActiveFlowId(null); setActiveFlowTrigger(null); }}
@@ -648,6 +1239,7 @@ const EmailEngine = () => {
                     <BackendBadge />
                     <ProviderBadge />
                     <SmtpBadge config={config} />
+                    {hasUnsavedChanges && !saveStatus && <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest animate-pulse">Unsaved changes</span>}
                     {saveStatus && <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest animate-pulse">{saveStatus}</span>}
                     <button onClick={handleSave} className="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all flex items-center gap-2 shadow-lg">
                         <Save className="w-3.5 h-3.5" /> Synchronize
@@ -658,22 +1250,28 @@ const EmailEngine = () => {
             {/* FLOWS VIEW */}
             {activeView === 'flows' && !activeFlowId && (
                 <div className="flex-1 p-10 overflow-y-auto">
-                    <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-2">Engagement Triggers</h3>
-                    <p className="text-xs text-gray-500 mb-8">לחץ על כרטיס לעריכת נושא וגוף המייל שנשלח אוטומטית מהמערכת. אירוע פיזי = רישום באירוע בעולם האמיתי. אירוע וידאו = רישום לאירוע וידאו.</p>
+                    <div className="flex items-start justify-between gap-4 mb-8">
+                        <div>
+                            <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-2">Engagement Triggers</h3>
+                            <p className="text-xs text-gray-500">לחץ על כרטיס לעריכת נושא וגוף המייל שנשלח אוטומטית מהמערכת. אירוע פיזי = רישום באירוע בעולם האמיתי. אירוע וידאו = רישום לאירוע וידאו.</p>
+                        </div>
+                        <button onClick={createCustomFlow} className="bg-purple-600 text-white px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-700 transition-all shadow-xl flex items-center gap-2 shrink-0">
+                            <PlusCircle className="w-4 h-4" /> New Trigger
+                        </button>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
-                        {DEFAULT_FLOWS.map((df) => {
-                            const candidates = flowsList.filter(f => (f.trigger || '').toLowerCase() === (df.trigger || '').toLowerCase());
-                            const flow = candidates.length > 0
-                                ? candidates.find(f => f.subject_en || f.subject) || candidates[0]
-                                : null;
-                            if (!flow) return null;
+                        {flowsList.map((flow) => {
+                            const df = getFlowDefinition(flow);
+                            const deliveryMeta = getDeliveryMeta(flow);
+                            const isDraft = flow.status === 'draft';
+                            const Icon = getFlowIcon(flow, df);
                             const openEditor = () => {
                                 setActiveFlowId(flow.id);
                                 setActiveFlowTrigger(flow.trigger || null);
                                 setTimeout(() => editorPanelRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }), 100);
                             };
                             return (
-                                <div key={df.id}
+                                <div key={flow.id || flow.trigger}
                                     role="button"
                                     tabIndex={0}
                                     onClick={openEditor}
@@ -681,18 +1279,30 @@ const EmailEngine = () => {
                                     className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer overflow-hidden group">
                                     <div className="p-8 pb-6 flex items-start justify-between border-b border-gray-50 bg-gray-50/50">
                                         <div className="bg-purple-100 w-12 h-12 rounded-2xl flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                                            <df.icon className="w-6 h-6" />
+                                            <Icon className="w-6 h-6" />
                                         </div>
-                                        <Toggle checked={flow.active} onChange={(e) => { e.stopPropagation(); updateFlow(flow.id, { active: !flow.active }); }} />
+                                        <div className="flex flex-col items-end gap-2">
+                                            <span className={`px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${isDraft ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                                {isDraft ? 'Draft' : 'Published'}
+                                            </span>
+                                            <Toggle checked={flow.active} onChange={(e) => { e.stopPropagation(); updateFlow(flow.id, { active: !flow.active }, { autoSave: true }); }} />
+                                        </div>
                                     </div>
                                     <div className="p-8 pt-6">
-                                        <h4 className="text-lg font-black text-gray-900 tracking-tight mb-2">{df.name}</h4>
+                                        <h4 className="text-lg font-black text-gray-900 tracking-tight mb-2">{flow.name || df.name}</h4>
                                         <p className="text-xs text-gray-400 font-bold mb-2">{df.desc}</p>
+                                        <div className={`mt-4 mb-3 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${deliveryMeta.card}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${deliveryMeta.dot}`} />
+                                            <span>{isDraft ? `Draft · ${deliveryMeta.shortLabel}` : flow.active ? deliveryMeta.shortLabel : `Off · ${deliveryMeta.shortLabel}`}</span>
+                                        </div>
+                                        <p className="text-[9px] text-gray-400 font-bold leading-relaxed mb-2">
+                                            {isDraft ? 'Draft triggers are saved in Email Architect but will not run from HBM.' : flow.active ? deliveryMeta.description : 'Trigger is off in HBM; Brevo can still own automations after contact sync if configured in Brevo.'}
+                                        </p>
                                         <button type="button" onClick={e => { e.stopPropagation(); openEditor(); }} className="w-full mt-3 py-3 rounded-xl bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-purple-700 transition-all flex items-center justify-center gap-2">
                                             <Edit3 className="w-4 h-4" /> ערוך נושא וגוף המייל
                                         </button>
                                         <div className="flex items-center gap-2 mt-4">
-                                            <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest font-mono truncate">on_{(df.trigger || '').replace(/^on/i, '')}</span>
+                                            <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest font-mono truncate">on_{(flow.trigger || df.trigger || '').replace(/^on/i, '')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -824,19 +1434,271 @@ const EmailEngine = () => {
                             </div>
                         </div>
 
+                        {activeView === 'flows' && (
+                            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-4">Trigger Identity</label>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Display Name</label>
+                                        <input
+                                            value={currentFlow.name || ''}
+                                            onChange={e => updateFlow(activeFlowId, { name: e.target.value })}
+                                            className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Card Icon</label>
+                                        <IconPicker
+                                            value={currentFlow.icon || ''}
+                                            onChange={icon => updateFlow(activeFlowId, { icon }, { autoSave: true })}
+                                        />
+                                        <p className="mt-2 text-[8px] text-gray-400 font-bold uppercase tracking-wide">
+                                            Auto uses the default icon for predefined triggers.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Trigger Key</label>
+                                        <input
+                                            value={currentFlow.trigger || ''}
+                                            onChange={e => updateFlow(activeFlowId, { trigger: e.target.value })}
+                                            className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-mono font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20"
+                                        />
+                                        <p className="mt-2 text-[8px] text-gray-400 font-bold uppercase tracking-wide">Must match a backend trigger event to run automatically.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeView === 'flows' && (
+                            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Publish State</label>
+                                        <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
+                                            Draft keeps the trigger saved for editing. Published allows it to run when the trigger is also switched on.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${currentFlow.status === 'draft' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                            {currentFlow.status === 'draft' ? 'Draft' : 'Published'}
+                                        </span>
+                                        <Toggle
+                                            checked={currentFlow.status !== 'draft'}
+                                            onChange={() => updateFlow(activeFlowId, { status: currentFlow.status === 'draft' ? 'published' : 'draft' }, { autoSave: true })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between gap-4 mt-5 pt-5 border-t border-gray-100">
+                                    <p className="text-[10px] text-gray-400 font-bold leading-relaxed">
+                                        Delete is available for custom triggers. Built-in triggers should be moved to Draft when they are not ready.
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => deleteFlow(currentFlow)}
+                                        disabled={isDefaultFlow(currentFlow)}
+                                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${isDefaultFlow(currentFlow) ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" /> Delete Trigger
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeView === 'flows' && (
+                            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                    <div>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Delivery Provider Mode</label>
+                                        <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
+                                            Choose who owns this trigger. Brevo automation only syncs the contact and lets Brevo send its own automation.
+                                        </p>
+                                    </div>
+                                    <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-purple-50 text-purple-600">
+                                        {currentFlow.deliveryMode || 'architect_html'}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {[
+                                        { id: 'architect_html', title: 'Email Architect', desc: 'Use this editor and send rendered HTML.' },
+                                        { id: 'brevo_template', title: 'Brevo Template', desc: 'Send through Brevo using template ID.' },
+                                        { id: 'brevo_automation', title: 'Brevo Automation', desc: 'No local email; Brevo automation owns send.' },
+                                    ].map(mode => (
+                                        <button
+                                            key={mode.id}
+                                            type="button"
+                                            onClick={() => updateFlow(activeFlowId, { deliveryMode: mode.id }, { autoSave: true })}
+                                            className={`text-left rounded-2xl border p-4 transition-all ${currentFlow.deliveryMode === mode.id || (!currentFlow.deliveryMode && mode.id === 'architect_html') ? 'border-purple-300 bg-purple-50 text-purple-700 shadow-sm' : 'border-gray-100 bg-gray-50 text-gray-500 hover:bg-white'}`}
+                                        >
+                                            <div className="text-[10px] font-black uppercase tracking-widest">{mode.title}</div>
+                                            <div className="text-[9px] font-bold mt-1 leading-relaxed">{mode.desc}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                                {currentFlow.deliveryMode === 'brevo_template' && (
+                                    <div className="grid grid-cols-3 gap-3 mt-4">
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Default Template ID</label>
+                                            <input value={currentFlow.brevoTemplateId || ''} onChange={e => updateFlow(activeFlowId, { brevoTemplateId: e.target.value })} placeholder="123" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">English Template ID</label>
+                                            <input value={currentFlow.brevoTemplateIdEn || ''} onChange={e => updateFlow(activeFlowId, { brevoTemplateIdEn: e.target.value })} placeholder="optional" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Hebrew Template ID</label>
+                                            <input value={currentFlow.brevoTemplateIdHe || ''} onChange={e => updateFlow(activeFlowId, { brevoTemplateIdHe: e.target.value })} placeholder="optional" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                    </div>
+                                )}
+                                {currentFlow.deliveryMode === 'brevo_automation' && (
+                                    <div className="mt-4 rounded-2xl bg-amber-50 border border-amber-100 p-4 text-[10px] font-bold text-amber-700 leading-relaxed">
+                                        This flow will not queue or send an Email Architect template. The registration/newsletter contact is synced to Brevo, and Brevo automations/templates should send the email.
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeView === 'flows' && (
+                            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                    <div>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Template Header & Footer</label>
+                                        <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
+                                            Inherit defaults, hide sections for this trigger, or override copy/colors. Brevo templates receive these values as params; Brevo automation must mirror them inside Brevo.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${templateOverridesDirty ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-500'}`}>
+                                            {templateOverridesDirty ? 'Pending' : Object.keys(currentFlow.templateOverrides || {}).length ? 'Custom' : 'Defaults'}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={cancelFlowTemplateOverrides}
+                                            disabled={!templateOverridesDirty}
+                                            className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${templateOverridesDirty ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-gray-50 text-gray-300 cursor-not-allowed'}`}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={saveFlowTemplateOverrides}
+                                            disabled={!templateOverridesDirty}
+                                            className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${templateOverridesDirty ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm' : 'bg-purple-50 text-purple-200 cursor-not-allowed'}`}
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {templateUploadStatus && (
+                                        <div className={`col-span-2 rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest ${templateUploadStatus.startsWith('✗') ? 'bg-red-50 text-red-600' : 'bg-purple-50 text-purple-600'}`}>
+                                            {templateUploadStatus}
+                                        </div>
+                                    )}
+                                    <label className="flex items-center justify-between gap-4 bg-gray-50 rounded-xl px-4 py-3">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Use Header</span>
+                                        <Toggle checked={(currentFlow.templateOverrides?.useDefaultHeader ?? config.globalStyling?.useDefaultHeader) !== false} onChange={() => updateFlowTemplateOverrides(activeFlowId, { useDefaultHeader: (currentFlow.templateOverrides?.useDefaultHeader ?? config.globalStyling?.useDefaultHeader) === false })} />
+                                    </label>
+                                    <label className="flex items-center justify-between gap-4 bg-gray-50 rounded-xl px-4 py-3">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Use Footer</span>
+                                        <Toggle checked={(currentFlow.templateOverrides?.useDefaultFooter ?? config.globalStyling?.useDefaultFooter) !== false} onChange={() => updateFlowTemplateOverrides(activeFlowId, { useDefaultFooter: (currentFlow.templateOverrides?.useDefaultFooter ?? config.globalStyling?.useDefaultFooter) === false })} />
+                                    </label>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Override Header Title</label>
+                                        <input value={currentFlow.templateOverrides?.headerTitle || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { headerTitle: e.target.value })} placeholder={config.globalStyling?.headerTitle || 'Default title'} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Override Header Subtitle</label>
+                                        <input value={currentFlow.templateOverrides?.headerSubtitle || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { headerSubtitle: e.target.value })} placeholder={config.globalStyling?.headerSubtitle || 'Default subtitle'} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Image Override</label>
+                                        <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-2">
+                                            {currentFlow.templateOverrides?.headerImageUrl ? <img src={resolveAssetUrl(currentFlow.templateOverrides.headerImageUrl)} className="h-9 w-12 object-contain rounded-lg bg-white p-1" /> : <div className="h-9 w-12 rounded-lg bg-white text-gray-300 flex items-center justify-center"><ImageIcon className="w-4 h-4" /></div>}
+                                            <label className="ml-auto bg-purple-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase cursor-pointer">Upload<input type="file" className="hidden" accept="image/*" onChange={e => handleFlowTemplateImageUpload(e, 'headerImageUrl')} /></label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Footer Image Override</label>
+                                        <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-2">
+                                            {currentFlow.templateOverrides?.footerImageUrl ? <img src={resolveAssetUrl(currentFlow.templateOverrides.footerImageUrl)} className="h-9 w-12 object-contain rounded-lg" /> : <div className="h-9 w-12 rounded-lg bg-white text-gray-300 flex items-center justify-center"><ImageIcon className="w-4 h-4" /></div>}
+                                            <label className="ml-auto bg-purple-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase cursor-pointer">Upload<input type="file" className="hidden" accept="image/*" onChange={e => handleFlowTemplateImageUpload(e, 'footerImageUrl')} /></label>
+                                        </div>
+                                    </div>
+                                    <ColorModeControl
+                                        label="Header Background Override"
+                                        prefix="header"
+                                        values={{ ...config.globalStyling, ...(currentFlow.templateOverrides || {}) }}
+                                        onChange={updates => updateFlowTemplateOverrides(activeFlowId, updates)}
+                                        fallbackFlat={config.globalStyling?.headerBackgroundColor || config.globalStyling?.primaryColor || '#6160AB'}
+                                        fallbackTo={config.globalStyling?.headerGradientTo || config.globalStyling?.secondaryColor || '#F07B3C'}
+                                    />
+                                    <ColorModeControl
+                                        label="Header Text Override"
+                                        prefix="header"
+                                        tone="Text"
+                                        values={{ ...config.globalStyling, ...(currentFlow.templateOverrides || {}) }}
+                                        onChange={updates => updateFlowTemplateOverrides(activeFlowId, updates)}
+                                        fallbackFlat={config.globalStyling?.headerTextColor || '#ffffff'}
+                                        fallbackTo={config.globalStyling?.headerTextGradientTo || '#F7D5FF'}
+                                    />
+                                    <ColorModeControl
+                                        label="Footer Background Override"
+                                        prefix="footer"
+                                        values={{ ...config.globalStyling, ...(currentFlow.templateOverrides || {}) }}
+                                        onChange={updates => updateFlowTemplateOverrides(activeFlowId, updates)}
+                                        fallbackFlat={config.globalStyling?.footerBackgroundColor || '#fafafc'}
+                                        fallbackTo={config.globalStyling?.footerGradientTo || config.globalStyling?.secondaryColor || '#F07B3C'}
+                                    />
+                                    <ColorModeControl
+                                        label="Footer Text Override"
+                                        prefix="footer"
+                                        tone="Text"
+                                        values={{ ...config.globalStyling, ...(currentFlow.templateOverrides || {}) }}
+                                        onChange={updates => updateFlowTemplateOverrides(activeFlowId, updates)}
+                                        fallbackFlat={config.globalStyling?.footerTextColor || '#a0a0b0'}
+                                        fallbackTo={config.globalStyling?.footerTextGradientTo || config.globalStyling?.secondaryColor || '#F07B3C'}
+                                    />
+                                    <div className="col-span-2">
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Override Footer Text</label>
+                                        <textarea value={currentFlow.templateOverrides?.footerText || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { footerText: e.target.value })} rows={3} placeholder="Leave empty to inherit default footer text" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 resize-none placeholder:text-gray-300" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Unsubscribe Label Override</label>
+                                        <input value={currentFlow.templateOverrides?.unsubscribeLabel || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { unsubscribeLabel: e.target.value })} placeholder={config.globalStyling?.unsubscribeLabel || 'Default unsubscribe label'} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Unsubscribe URL Override</label>
+                                        <input value={currentFlow.templateOverrides?.unsubscribeUrl || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { unsubscribeUrl: e.target.value })} placeholder="Default unsubscribe endpoint" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                    </div>
+                                </div>
+                                {currentFlow.deliveryMode === 'brevo_template' && (
+                                    <div className="mt-4 rounded-2xl bg-violet-50 border border-violet-100 p-4 text-[10px] font-bold text-violet-700 leading-relaxed">
+                                        Brevo templates can include params such as <span className="font-mono">{"{{ params.headerHtml }}"}</span>, <span className="font-mono">{"{{ params.footerHtml }}"}</span>, <span className="font-mono">{"{{ params.bodyHtml }}"}</span>, and <span className="font-mono">{"{{ params.unsubscribeUrl }}"}</span>.
+                                    </div>
+                                )}
+                                {currentFlow.deliveryMode === 'brevo_automation' && (
+                                    <div className="mt-4 rounded-2xl bg-amber-50 border border-amber-100 p-4 text-[10px] font-bold text-amber-700 leading-relaxed">
+                                        Brevo automation sends its own email. Use this panel as the HBM reference, then mirror the same header/footer inside the Brevo automation template.
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Subject Input */}
-                        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm relative">
+                        <div className={`bg-white rounded-2xl p-5 border border-gray-100 shadow-sm relative ${currentFlow.deliveryMode === 'brevo_automation' ? 'opacity-50' : ''}`}>
                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2">{editorLang === 'he' ? 'שורת נושא' : 'Subject Line'}</label>
                             <input
                                 value={editorLang === 'he' ? currentFlow.subject_he : currentFlow.subject_en || currentFlow.subject || ''}
                                 onChange={e => updateFlow(activeFlowId, { [editorLang === 'he' ? 'subject_he' : 'subject_en']: e.target.value })}
+                                disabled={currentFlow.deliveryMode === 'brevo_automation'}
                                 dir={editorLang === 'he' ? 'rtl' : 'ltr'}
                                 className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900"
                             />
                         </div>
 
                         {/* Body Input */}
-                        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                        <div className={`bg-white rounded-2xl p-5 border border-gray-100 shadow-sm ${currentFlow.deliveryMode === 'brevo_automation' ? 'opacity-50' : ''}`}>
                             <div className="flex items-center justify-between mb-4">
                                 <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{editorLang === 'he' ? 'גוף ההודעה' : 'Email Body'}</label>
                                 <div className="flex gap-2">
@@ -857,6 +1719,7 @@ const EmailEngine = () => {
                                 rows={16}
                                 value={editorLang === 'he' ? (currentFlow.body_he || '') : (currentFlow.body_en || currentFlow.body || '')}
                                 onChange={e => updateFlow(activeFlowId, { [editorLang === 'he' ? 'body_he' : 'body_en']: e.target.value })}
+                                disabled={currentFlow.deliveryMode === 'brevo_automation'}
                                 dir={editorLang === 'he' ? 'rtl' : 'ltr'}
                                 className="w-full bg-gray-50 rounded-xl px-4 py-4 text-sm font-mono border-none outline-none focus:ring-2 focus:ring-purple-500/20 resize-none leading-relaxed text-gray-800"
                             />
@@ -1092,6 +1955,144 @@ const EmailEngine = () => {
                     </div>
                 )}
 
+                {/* DEFAULTS VIEW */}
+                {activeView === 'defaults' && (
+                    <div className="h-full p-10 overflow-y-auto">
+                        <div className="max-w-6xl mx-auto grid grid-cols-[1fr_320px] gap-8">
+                            <div className="space-y-8">
+                                <div>
+                                    <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-1">Template Defaults</h3>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Reusable header, footer, colors, images, and unsubscribe controls for Email Architect templates</p>
+                                    {templateUploadStatus && <p className={`text-[10px] font-black uppercase tracking-widest mt-3 ${templateUploadStatus.startsWith('✗') ? 'text-red-500' : 'text-purple-600'}`}>{templateUploadStatus}</p>}
+                                </div>
+
+                                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-6">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <h4 className="font-black text-gray-900 text-base">Default Header</h4>
+                                            <p className="text-[10px] text-gray-400 font-bold mt-1">Used by local Email Architect sends and exposed to Brevo templates as params.</p>
+                                        </div>
+                                        <Toggle checked={config.globalStyling?.useDefaultHeader !== false} onChange={() => updateGlobalStyling({ useDefaultHeader: config.globalStyling?.useDefaultHeader === false })} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Mode</label>
+                                            <select value={config.globalStyling?.headerMode || 'gradient'} onChange={e => updateGlobalStyling({ headerMode: e.target.value })} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none">
+                                                <option value="gradient">Gradient / Color</option>
+                                                <option value="image">Image Background</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Image</label>
+                                            <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-2">
+                                                {config.globalStyling?.headerImageUrl ? <img src={resolveAssetUrl(config.globalStyling.headerImageUrl)} className="h-9 w-12 object-contain rounded-lg bg-white p-1" /> : <div className="h-9 w-12 rounded-lg bg-white text-gray-300 flex items-center justify-center"><ImageIcon className="w-4 h-4" /></div>}
+                                                <label className="ml-auto bg-purple-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase cursor-pointer">Upload<input type="file" className="hidden" accept="image/*" onChange={e => handleTemplateImageUpload(e, 'headerImageUrl')} /></label>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Title</label>
+                                            <input value={config.globalStyling?.headerTitle || ''} onChange={e => updateGlobalStyling({ headerTitle: e.target.value })} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Subtitle</label>
+                                            <input value={config.globalStyling?.headerSubtitle || ''} onChange={e => updateGlobalStyling({ headerSubtitle: e.target.value })} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <ColorModeControl
+                                            label="Header Background"
+                                            prefix="header"
+                                            values={config.globalStyling}
+                                            onChange={updateGlobalStyling}
+                                            fallbackFlat={config.globalStyling?.primaryColor || '#6160AB'}
+                                            fallbackTo={config.globalStyling?.secondaryColor || '#F07B3C'}
+                                        />
+                                        <ColorModeControl
+                                            label="Header Text"
+                                            prefix="header"
+                                            tone="Text"
+                                            values={config.globalStyling}
+                                            onChange={updateGlobalStyling}
+                                            fallbackFlat="#ffffff"
+                                            fallbackTo="#F7D5FF"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-6">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <h4 className="font-black text-gray-900 text-base">Default Footer</h4>
+                                            <p className="text-[10px] text-gray-400 font-bold mt-1">Controls footer copy, footer image, and unsubscribe label/link.</p>
+                                        </div>
+                                        <Toggle checked={config.globalStyling?.useDefaultFooter !== false} onChange={() => updateGlobalStyling({ useDefaultFooter: config.globalStyling?.useDefaultFooter === false })} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Footer Image</label>
+                                            <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-2">
+                                                {config.globalStyling?.footerImageUrl ? <img src={resolveAssetUrl(config.globalStyling.footerImageUrl)} className="h-9 w-12 object-contain rounded-lg" /> : <div className="h-9 w-12 rounded-lg bg-white text-gray-300 flex items-center justify-center"><ImageIcon className="w-4 h-4" /></div>}
+                                                <label className="ml-auto bg-purple-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase cursor-pointer">Upload<input type="file" className="hidden" accept="image/*" onChange={e => handleTemplateImageUpload(e, 'footerImageUrl')} /></label>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Unsubscribe Label</label>
+                                            <input value={config.globalStyling?.unsubscribeLabel || ''} onChange={e => updateGlobalStyling({ unsubscribeLabel: e.target.value })} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Unsubscribe URL Override</label>
+                                            <input value={config.globalStyling?.unsubscribeUrl || ''} onChange={e => updateGlobalStyling({ unsubscribeUrl: e.target.value })} placeholder="Leave empty to use the local unsubscribe endpoint" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                        </div>
+                                        <ColorModeControl
+                                            label="Footer Background"
+                                            prefix="footer"
+                                            values={config.globalStyling}
+                                            onChange={updateGlobalStyling}
+                                            fallbackFlat="#fafafc"
+                                            fallbackTo={config.globalStyling?.secondaryColor || '#F07B3C'}
+                                        />
+                                        <ColorModeControl
+                                            label="Footer Text"
+                                            prefix="footer"
+                                            tone="Text"
+                                            values={config.globalStyling}
+                                            onChange={updateGlobalStyling}
+                                            fallbackFlat="#a0a0b0"
+                                            fallbackTo={config.globalStyling?.secondaryColor || '#F07B3C'}
+                                        />
+                                        <div className="col-span-2">
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Footer Text / HTML</label>
+                                            <textarea value={config.globalStyling?.footerText || ''} onChange={e => updateGlobalStyling({ footerText: e.target.value })} rows={4} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 resize-none" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="sticky top-6 self-start bg-white rounded-[2rem] border border-gray-100 p-6 shadow-sm">
+                                <div className="flex items-center justify-between mb-5">
+                                    <div>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Defaults Preview</p>
+                                        <h4 className="font-black text-gray-900">Sample Email</h4>
+                                    </div>
+                                    <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+                                        <button onClick={() => setEditorLang('en')} className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase ${editorLang === 'en' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400'}`}>EN</button>
+                                        <button onClick={() => setEditorLang('he')} className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase ${editorLang === 'he' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400'}`}>HE</button>
+                                    </div>
+                                </div>
+                                <EmailPreview
+                                    flow={{
+                                        subject_en: 'Welcome to The HBM',
+                                        subject_he: 'ברוכים הבאים ל-HBM',
+                                        body_en: 'Hello {{name}},\n\nThis preview uses your default header and footer settings.',
+                                        body_he: 'שלום {{name}},\n\nתצוגה זו משתמשת בהגדרות ברירת המחדל של הכותרת והתחתית.',
+                                    }}
+                                    config={config}
+                                    device="mobile"
+                                    activeLang={editorLang}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* SETTINGS VIEW */}
                 {activeView === 'settings' && (
                     <div className="h-full p-10 overflow-y-auto">
@@ -1116,10 +2117,10 @@ const EmailEngine = () => {
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Outbound mail server</p>
                                         </div>
                                         <div className={`ml-auto flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                                            config.smtp?.host ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                                            config.smtp?.host && config.smtp?.user && config.smtp?.pass ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
                                         }`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${config.smtp?.host ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
-                                            {config.smtp?.host ? 'Configured' : 'Not Set'}
+                                            <span className={`w-1.5 h-1.5 rounded-full ${config.smtp?.host && config.smtp?.user && config.smtp?.pass ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+                                            {config.smtp?.host && config.smtp?.user && config.smtp?.pass ? 'Configured' : 'Incomplete'}
                                         </div>
                                     </div>
                                     {[
@@ -1152,6 +2153,68 @@ const EmailEngine = () => {
                                             </select>
                                         </div>
                                     </div>
+                                    <button type="button" onClick={checkSmtpStatus} className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black">
+                                        Test SMTP Status
+                                    </button>
+                                    {smtpTestStatus && <p className="text-[10px] font-bold text-gray-500">{smtpTestStatus}</p>}
+                                </div>
+
+                                {/* Brevo Config */}
+                                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-5">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center">
+                                            <Radio className="w-5 h-5 text-violet-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-black text-gray-900 text-base">Brevo Provider</h4>
+                                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">API, templates, and automations</p>
+                                        </div>
+                                        <div className={`ml-auto flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                            config.providerConfig?.brevoConfigured ? 'bg-violet-50 text-violet-600' : 'bg-amber-50 text-amber-600'
+                                        }`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${config.providerConfig?.brevoConfigured ? 'bg-violet-500' : 'bg-amber-500 animate-pulse'}`} />
+                                            {config.providerConfig?.brevoConfigured ? 'Configured' : 'Not Set'}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Email Provider</label>
+                                            <select value={config.providerConfig?.emailProvider || 'smtp'} onChange={e => setConfig(prev => ({ ...prev, providerConfig: { ...DEFAULT_PROVIDER_CONFIG, ...prev.providerConfig, emailProvider: e.target.value } }))} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none">
+                                                <option value="smtp">SMTP</option>
+                                                <option value="brevo">Brevo</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Brevo API URL</label>
+                                            <input value={config.providerConfig?.brevoApiUrl || ''} onChange={e => setConfig(prev => ({ ...prev, providerConfig: { ...DEFAULT_PROVIDER_CONFIG, ...prev.providerConfig, brevoApiUrl: e.target.value } }))} placeholder="https://api.brevo.com/v3" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Brevo API Key Override</label>
+                                        <input type="password" value={config.providerConfig?.brevoApiKey || ''} onChange={e => setConfig(prev => ({ ...prev, providerConfig: { ...DEFAULT_PROVIDER_CONFIG, ...prev.providerConfig, brevoApiKey: e.target.value } }))} placeholder={config.providerConfig?.brevoApiKeyMasked || 'Use env BREVO_API_KEY'} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        <p className="text-[9px] text-gray-400 mt-2 font-bold">Current key source: {config.providerConfig?.brevoApiKeySource || 'none'}. Leave empty to keep the existing env/database key.</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Sender Name</label>
+                                            <input value={config.providerConfig?.brevoSenderName || ''} onChange={e => setConfig(prev => ({ ...prev, providerConfig: { ...DEFAULT_PROVIDER_CONFIG, ...prev.providerConfig, brevoSenderName: e.target.value } }))} placeholder="The HBM" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Sender Email</label>
+                                            <input value={config.providerConfig?.brevoSenderEmail || ''} onChange={e => setConfig(prev => ({ ...prev, providerConfig: { ...DEFAULT_PROVIDER_CONFIG, ...prev.providerConfig, brevoSenderEmail: e.target.value } }))} placeholder="office@thehbm.org" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between rounded-2xl bg-violet-50 border border-violet-100 p-4">
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-violet-700">Allow Brevo Automation Mode</p>
+                                            <p className="text-[9px] font-bold text-violet-500">Flow-level Brevo automation choices rely on contact sync/list attributes in Brevo.</p>
+                                        </div>
+                                        <Toggle checked={Boolean(config.providerConfig?.brevoAutomationEnabled)} onChange={() => setConfig(prev => ({ ...prev, providerConfig: { ...DEFAULT_PROVIDER_CONFIG, ...prev.providerConfig, brevoAutomationEnabled: !prev.providerConfig?.brevoAutomationEnabled } }))} />
+                                    </div>
+                                    <button type="button" onClick={checkBrevoStatus} className="w-full bg-violet-600 text-white px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-violet-700">
+                                        Test Brevo Status
+                                    </button>
+                                    {brevoTestStatus && <p className="text-[10px] font-bold text-gray-500">{brevoTestStatus}</p>}
                                 </div>
 
                                 {/* Branding Config */}

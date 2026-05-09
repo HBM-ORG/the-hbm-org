@@ -1,5 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { runtimeConfig } from '../config/runtime-config.js';
+import {
+  getPublicEmailProviderConfig,
+  saveEmailProviderConfig,
+} from './email-provider-config.service.js';
 
 const prisma = new PrismaClient();
 
@@ -8,6 +12,78 @@ function withLegacyId<T extends { id: string; legacyId?: string | null }>(row: T
     ...row,
     id: row.legacyId || row.id,
     databaseId: row.id,
+  };
+}
+
+function normalizeAutomationTrigger(trigger: unknown) {
+  const value = String(trigger || '').trim();
+  const aliases: Record<string, string> = {
+    site_signup: 'on8MinJourney',
+    on_site_signup: 'on8MinJourney',
+  };
+  return aliases[value] || value;
+}
+
+function getFlowPriority(flow: any) {
+  let score = 0;
+  if (flow?.active) score += 10;
+  if (flow?.deliveryMode && flow.deliveryMode !== 'architect_html') score += 5;
+  if (flow?.legacyId && !String(flow.legacyId).startsWith('flow_')) score += 3;
+  if (flow?.updatedAt instanceof Date) score += flow.updatedAt.getTime() / 1_000_000_000_000;
+  return score;
+}
+
+function dedupeAutomationFlows<T extends { trigger: string; active?: boolean; deliveryMode?: string | null; legacyId?: string | null; updatedAt?: Date }>(flows: T[]) {
+  const byTrigger = new Map<string, T>();
+  for (const flow of flows) {
+    const normalized = { ...flow, trigger: normalizeAutomationTrigger(flow.trigger) };
+    const key = normalized.trigger.toLowerCase();
+    if (!key) continue;
+    const current = byTrigger.get(key);
+    if (!current || getFlowPriority(normalized) >= getFlowPriority(current)) {
+      byTrigger.set(key, normalized);
+    }
+  }
+  return Array.from(byTrigger.values());
+}
+
+function getGlobalStylingData(globalStyling: any) {
+  return {
+    primaryColor: globalStyling.primaryColor || runtimeConfig.emailPrimaryColor,
+    secondaryColor: globalStyling.secondaryColor || runtimeConfig.emailSecondaryColor,
+    logoUrl: globalStyling.logoUrl || runtimeConfig.emailLogoUrl,
+    fontFamily: globalStyling.fontFamily || runtimeConfig.emailFontFamily,
+    useDefaultHeader: globalStyling.useDefaultHeader !== false,
+    useDefaultFooter: globalStyling.useDefaultFooter !== false,
+    headerMode: globalStyling.headerMode || 'gradient',
+    headerImageUrl: globalStyling.headerImageUrl || null,
+    headerTitle: globalStyling.headerTitle || null,
+    headerSubtitle: globalStyling.headerSubtitle || null,
+    headerBackgroundColor: globalStyling.headerBackgroundColor || null,
+    headerBackgroundType: globalStyling.headerBackgroundType || null,
+    headerGradientFrom: globalStyling.headerGradientFrom || null,
+    headerGradientTo: globalStyling.headerGradientTo || null,
+    headerGradientAngle: Number.isFinite(Number(globalStyling.headerGradientAngle)) ? Number(globalStyling.headerGradientAngle) : null,
+    headerTextColor: globalStyling.headerTextColor || null,
+    headerTextType: globalStyling.headerTextType || null,
+    headerTextGradientFrom: globalStyling.headerTextGradientFrom || null,
+    headerTextGradientTo: globalStyling.headerTextGradientTo || null,
+    headerTextGradientAngle: Number.isFinite(Number(globalStyling.headerTextGradientAngle)) ? Number(globalStyling.headerTextGradientAngle) : null,
+    footerText: globalStyling.footerText || null,
+    footerImageUrl: globalStyling.footerImageUrl || null,
+    footerBackgroundColor: globalStyling.footerBackgroundColor || null,
+    footerBackgroundType: globalStyling.footerBackgroundType || null,
+    footerGradientFrom: globalStyling.footerGradientFrom || null,
+    footerGradientTo: globalStyling.footerGradientTo || null,
+    footerGradientAngle: Number.isFinite(Number(globalStyling.footerGradientAngle)) ? Number(globalStyling.footerGradientAngle) : null,
+    footerTextColor: globalStyling.footerTextColor || null,
+    footerTextType: globalStyling.footerTextType || null,
+    footerTextGradientFrom: globalStyling.footerTextGradientFrom || null,
+    footerTextGradientTo: globalStyling.footerTextGradientTo || null,
+    footerTextGradientAngle: Number.isFinite(Number(globalStyling.footerTextGradientAngle)) ? Number(globalStyling.footerTextGradientAngle) : null,
+    unsubscribeLabel: globalStyling.unsubscribeLabel || null,
+    unsubscribeUrl: globalStyling.unsubscribeUrl || null,
+    signatureUrl: globalStyling.signatureUrl || null,
   };
 }
 
@@ -180,34 +256,38 @@ export async function saveSiteContentBundle({
 }
 
 export async function getAutomationSettingsBundle() {
-  const [flows, sequences, smtpConfig, globalStyling] = await Promise.all([
+  const [flows, sequences, smtpConfig, globalStyling, providerConfig] = await Promise.all([
     prisma.emailFlow.findMany({ orderBy: { name: 'asc' } }),
     prisma.emailSequence.findMany({ orderBy: { name: 'asc' } }),
     prisma.smtpConfig.findFirst(),
     prisma.globalStyling.findFirst(),
+    getPublicEmailProviderConfig(),
   ]);
 
   return {
-    flows: flows.map(withLegacyId),
+    flows: dedupeAutomationFlows(flows).map(withLegacyId),
     sequences: sequences.map(withLegacyId),
     smtpConfig,
     globalStyling,
+    providerConfig,
   };
 }
 
 export async function saveAutomationSettingsBundle({
   smtp,
   globalStyling,
+  providerConfig,
   flows = [],
   sequences = [],
 }: {
   smtp?: any;
   globalStyling?: any;
+  providerConfig?: any;
   flows?: any[];
   sequences?: any[];
 }) {
   const errors: string[] = [];
-  const results = { smtp: false, globalStyling: false, flows: 0, sequences: 0 };
+  const results = { smtp: false, globalStyling: false, providerConfig: false, flows: 0, sequences: 0 };
 
   if (smtp) {
     try {
@@ -239,20 +319,13 @@ export async function saveAutomationSettingsBundle({
 
   if (globalStyling) {
     try {
+      const data = getGlobalStylingData(globalStyling);
       await prisma.globalStyling.upsert({
         where: { id: 'default' },
-        update: {
-          primaryColor: globalStyling.primaryColor || runtimeConfig.emailPrimaryColor,
-          secondaryColor: globalStyling.secondaryColor || runtimeConfig.emailSecondaryColor,
-          logoUrl: globalStyling.logoUrl || runtimeConfig.emailLogoUrl,
-          fontFamily: globalStyling.fontFamily || runtimeConfig.emailFontFamily,
-        },
+        update: data,
         create: {
           id: 'default',
-          primaryColor: globalStyling.primaryColor || runtimeConfig.emailPrimaryColor,
-          secondaryColor: globalStyling.secondaryColor || runtimeConfig.emailSecondaryColor,
-          logoUrl: globalStyling.logoUrl || runtimeConfig.emailLogoUrl,
-          fontFamily: globalStyling.fontFamily || runtimeConfig.emailFontFamily,
+          ...data,
         },
       });
       results.globalStyling = true;
@@ -261,14 +334,34 @@ export async function saveAutomationSettingsBundle({
     }
   }
 
+  if (providerConfig) {
+    try {
+      await saveEmailProviderConfig(providerConfig);
+      results.providerConfig = true;
+    } catch (err) {
+      errors.push(`Provider Config: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  }
+
   for (const flow of flows) {
     try {
       const legacyId = String(flow.id || '');
+      const deliveryMode = ['architect_html', 'brevo_template', 'brevo_automation'].includes(String(flow.deliveryMode || '').toLowerCase())
+        ? String(flow.deliveryMode).toLowerCase()
+        : 'architect_html';
+      const status = String(flow.status || '').toLowerCase() === 'draft' ? 'draft' : 'published';
       const data = {
         legacyId,
         name: flow.name || '',
-        trigger: flow.trigger || '',
+        trigger: normalizeAutomationTrigger(flow.trigger),
+        icon: flow.icon ? String(flow.icon).trim() : null,
+        status,
         active: flow.active !== false,
+        deliveryMode,
+        brevoTemplateId: flow.brevoTemplateId ? String(flow.brevoTemplateId).trim() : null,
+        brevoTemplateIdEn: flow.brevoTemplateIdEn ? String(flow.brevoTemplateIdEn).trim() : null,
+        brevoTemplateIdHe: flow.brevoTemplateIdHe ? String(flow.brevoTemplateIdHe).trim() : null,
+        templateOverrides: flow.templateOverrides && typeof flow.templateOverrides === 'object' ? flow.templateOverrides : undefined,
         subject: {
           en: flow.subject || flow.subject_en || '',
           he: flow.subject_he || '',
@@ -316,4 +409,24 @@ export async function saveAutomationSettingsBundle({
   }
 
   return { results, errors };
+}
+
+export async function deleteAutomationFlow(id: string) {
+  const value = String(id || '').trim();
+  if (!value) {
+    throw new Error('Missing flow id');
+  }
+
+  const existing = await prisma.emailFlow.findFirst({
+    where: {
+      OR: [{ id: value }, { legacyId: value }],
+    },
+  });
+
+  if (!existing) {
+    return { deleted: false };
+  }
+
+  await prisma.emailFlow.delete({ where: { id: existing.id } });
+  return { deleted: true };
 }

@@ -1,5 +1,9 @@
 import { Buffer } from "buffer";
 import { runtimeConfig } from "../config/runtime-config.js";
+import {
+  resolveEmailProviderConfig,
+  type ResolvedEmailProviderConfig,
+} from "./email-provider-config.service.js";
 
 export type ContactSyncPayload = {
   email: string;
@@ -43,6 +47,15 @@ export type BrevoSendInput = {
   attachments?: Array<{ filename: string; content: string }>;
 };
 
+export type BrevoTemplateSendInput = {
+  from?: string;
+  to: string;
+  toName?: string;
+  templateId: number;
+  params?: Record<string, unknown>;
+  attachments?: Array<{ filename: string; content: string }>;
+};
+
 export type BrevoSendResult = {
   provider: "brevo";
   messageId: string;
@@ -54,15 +67,15 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
 }
 
-function getBrevoBaseUrl(): string {
-  return trimTrailingSlash(runtimeConfig.brevoApiUrl || "https://api.brevo.com/v3");
+function getBrevoBaseUrl(config?: Pick<ResolvedEmailProviderConfig, "brevoApiUrl">): string {
+  return trimTrailingSlash(config?.brevoApiUrl || runtimeConfig.brevoApiUrl || "https://api.brevo.com/v3");
 }
 
-function getBrevoHeaders(): HeadersInit {
+function getBrevoHeaders(apiKey = runtimeConfig.brevoApiKey): HeadersInit {
   return {
     Accept: "application/json",
     "Content-Type": "application/json",
-    "api-key": runtimeConfig.brevoApiKey,
+    "api-key": apiKey,
   };
 }
 
@@ -118,8 +131,12 @@ function splitName(name: string): { firstName: string; lastName: string } {
   };
 }
 
-async function brevoRequest(path: string, init: RequestInit) {
-  const response = await fetch(`${getBrevoBaseUrl()}${path}`, init);
+async function brevoRequest(
+  path: string,
+  init: RequestInit,
+  config?: Pick<ResolvedEmailProviderConfig, "brevoApiUrl">,
+) {
+  const response = await fetch(`${getBrevoBaseUrl(config)}${path}`, init);
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const message =
@@ -131,17 +148,21 @@ async function brevoRequest(path: string, init: RequestInit) {
   return data as Record<string, unknown>;
 }
 
-async function lookupBrevoContactByEmail(email: string) {
+async function lookupBrevoContactByEmail(
+  email: string,
+  config: ResolvedEmailProviderConfig,
+) {
   return brevoRequest(`/contacts/${encodeURIComponent(email)}`, {
     method: "GET",
-    headers: getBrevoHeaders(),
-  });
+    headers: getBrevoHeaders(config.brevoApiKey),
+  }, config);
 }
 
 export async function upsertBrevoContact(
   payload: ContactSyncPayload,
 ): Promise<ProviderSyncResult> {
-  if (!runtimeConfig.brevoApiKey) {
+  const config = await resolveEmailProviderConfig();
+  if (!config.brevoApiKey) {
     return {
       provider: "brevo",
       status: "skipped",
@@ -154,7 +175,7 @@ export async function upsertBrevoContact(
 
   await brevoRequest("/contacts", {
     method: "POST",
-    headers: getBrevoHeaders(),
+    headers: getBrevoHeaders(config.brevoApiKey),
     body: JSON.stringify({
       email: payload.email,
       updateEnabled: true,
@@ -180,9 +201,9 @@ export async function upsertBrevoContact(
         LAST_REGISTERED_AT: payload.lastRegisteredAt || undefined,
       },
     }),
-  });
+  }, config);
 
-  const contact = await lookupBrevoContactByEmail(payload.email);
+  const contact = await lookupBrevoContactByEmail(payload.email, config);
 
   return {
     provider: "brevo",
@@ -200,10 +221,15 @@ export async function upsertBrevoContact(
 export async function sendBrevoTransactionalEmail(
   input: BrevoSendInput,
 ): Promise<BrevoSendResult> {
-  if (!runtimeConfig.brevoApiKey) {
+  const config = await resolveEmailProviderConfig();
+  if (!config.brevoApiKey) {
     throw new Error("BREVO_API_KEY not configured");
   }
 
+  const fromEmail = input.from.match(/<([^>]+)>/)?.[1] || input.from || config.brevoSenderEmail;
+  const fromName = input.from.includes("<")
+    ? input.from.split("<")[0].trim()
+    : config.brevoSenderName || "The HBM";
   const attachmentPayload = (input.attachments || [])
     .filter(
       (entry) =>
@@ -220,13 +246,11 @@ export async function sendBrevoTransactionalEmail(
 
   const data = await brevoRequest("/smtp/email", {
     method: "POST",
-    headers: getBrevoHeaders(),
+    headers: getBrevoHeaders(config.brevoApiKey),
     body: JSON.stringify({
       sender: {
-        name: input.from.includes("<")
-          ? input.from.split("<")[0].trim()
-          : "The HBM",
-        email: input.from.match(/<([^>]+)>/)?.[1] || input.from,
+        name: fromName,
+        email: fromEmail,
       },
       to: [
         {
@@ -238,7 +262,7 @@ export async function sendBrevoTransactionalEmail(
       htmlContent: input.html,
       attachment: attachmentPayload.length > 0 ? attachmentPayload : undefined,
     }),
-  });
+  }, config);
 
   return {
     provider: "brevo",
@@ -246,6 +270,100 @@ export async function sendBrevoTransactionalEmail(
     status: "accepted",
     raw: data,
   };
+}
+
+export async function sendBrevoTemplateEmail(
+  input: BrevoTemplateSendInput,
+): Promise<BrevoSendResult> {
+  const config = await resolveEmailProviderConfig();
+  if (!config.brevoApiKey) {
+    throw new Error("BREVO_API_KEY not configured");
+  }
+  if (!Number.isFinite(input.templateId) || input.templateId <= 0) {
+    throw new Error("Brevo template ID is required");
+  }
+
+  const fromEmail = input.from?.match(/<([^>]+)>/)?.[1] || config.brevoSenderEmail;
+  const fromName = input.from?.includes("<")
+    ? input.from.split("<")[0].trim()
+    : config.brevoSenderName || "The HBM";
+  const attachmentPayload = (input.attachments || [])
+    .filter(
+      (entry) =>
+        entry
+        && typeof entry.filename === "string"
+        && entry.filename.trim().length > 0
+        && typeof entry.content === "string"
+        && entry.content.trim().length > 0,
+    )
+    .map((entry) => ({
+      name: entry.filename,
+      content: Buffer.from(entry.content, "utf8").toString("base64"),
+    }));
+
+  const data = await brevoRequest("/smtp/email", {
+    method: "POST",
+    headers: getBrevoHeaders(config.brevoApiKey),
+    body: JSON.stringify({
+      sender: {
+        name: fromName,
+        email: fromEmail,
+      },
+      to: [
+        {
+          email: input.to,
+          name: input.toName || input.to,
+        },
+      ],
+      templateId: input.templateId,
+      params: input.params || {},
+      attachment: attachmentPayload.length > 0 ? attachmentPayload : undefined,
+    }),
+  }, config);
+
+  return {
+    provider: "brevo",
+    messageId:
+      typeof data?.messageId === "string" ? data.messageId : JSON.stringify(data),
+    status: "accepted",
+    raw: data,
+  };
+}
+
+export async function checkBrevoConnection() {
+  const config = await resolveEmailProviderConfig();
+  if (!config.brevoApiKey) {
+    return {
+      configured: false,
+      connected: false,
+      message: "BREVO_API_KEY not configured",
+      apiUrl: config.brevoApiUrl,
+    };
+  }
+
+  try {
+    const data = await brevoRequest("/account", {
+      method: "GET",
+      headers: getBrevoHeaders(config.brevoApiKey),
+    }, config);
+    return {
+      configured: true,
+      connected: true,
+      message: "Brevo connection verified",
+      apiUrl: config.brevoApiUrl,
+      account: {
+        email: typeof data?.email === "string" ? data.email : undefined,
+        companyName: typeof data?.companyName === "string" ? data.companyName : undefined,
+      },
+    };
+  } catch (error) {
+    return {
+      configured: true,
+      connected: false,
+      message: error instanceof Error ? error.message : "Brevo connection failed",
+      apiUrl: config.brevoApiUrl,
+    };
+  }
 }
 
 export function verifyBrevoWebhookRequest(headers: Headers | Record<string, unknown>): boolean {

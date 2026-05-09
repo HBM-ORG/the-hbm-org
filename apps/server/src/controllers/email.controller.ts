@@ -12,6 +12,7 @@ import {
   resolveEmailForQueueItem,
 } from "../services/email-tracking.service.js";
 import { runtimeConfig } from "../config/runtime-config.js";
+import { isAuthorizedRequest } from "../middleware/admin-auth.js";
 
 type TriggerAutomationFn = (flowId: string, data?: unknown) => Promise<void>;
 type ProcessQueueFn = (specificItemId?: string | null) => Promise<boolean>;
@@ -110,6 +111,10 @@ export function createEmailController({
      *     tags: [Email]
      */
     async smtpCheck(req: Request, res: Response): Promise<void> {
+      if (!(await isAuthorizedRequest(req))) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
       res.json(await verifySmtpConnection(req.body || {}));
     },
 
@@ -121,6 +126,10 @@ export function createEmailController({
      *     tags: [Email]
      */
     async triggerAutomation(req: Request, res: Response): Promise<void> {
+      if (!(await isAuthorizedRequest(req))) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
       const flowId = typeof req.body?.flowId === "string" ? req.body.flowId : "";
       const data = req.body?.data;
 
@@ -142,6 +151,10 @@ export function createEmailController({
      *     tags: [Email]
      */
     async testFlow(req: Request, res: Response): Promise<void> {
+      if (!(await isAuthorizedRequest(req))) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
       const email = typeof req.body?.email === "string" ? req.body.email : "";
       const flowId = typeof req.body?.flowId === "string" ? req.body.flowId : "";
       const language =
