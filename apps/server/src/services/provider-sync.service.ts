@@ -1,8 +1,9 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { runtimeConfig } from "../config/runtime-config.js";
-import { upsertBrevoContact, verifyBrevoWebhookRequest } from "./brevo.service.js";
+import { checkBrevoConnection, upsertBrevoContact, verifyBrevoWebhookRequest } from "./brevo.service.js";
 import { getContactSyncPayloadByEmail } from "./contact-profile.service.js";
 import { upsertEspoContact, verifyEspoWebhookRequest } from "./espocrm.service.js";
+import { getPublicEmailProviderConfig, resolveEmailProviderConfig } from "./email-provider-config.service.js";
 import { logEngagement } from "./email-tracking.service.js";
 import { unsubscribeEmail } from "./suppression.service.js";
 
@@ -183,12 +184,21 @@ async function createWebhookAuditRecord(input: {
   return { created: true, eventKey, id: row.id };
 }
 
-export function getProviderStatusSummary() {
+export async function getProviderStatusSummary() {
+  const [providerConfig, publicProviderConfig, brevoConnection] = await Promise.all([
+    resolveEmailProviderConfig(),
+    getPublicEmailProviderConfig(),
+    checkBrevoConnection(),
+  ]);
+
   return {
-    emailProvider: runtimeConfig.emailProvider,
+    emailProvider: providerConfig.emailProvider,
+    providerConfig: publicProviderConfig,
     brevo: {
-      configured: Boolean(runtimeConfig.brevoApiKey),
-      apiUrl: runtimeConfig.brevoApiUrl,
+      configured: brevoConnection.configured,
+      connected: brevoConnection.connected,
+      message: brevoConnection.message,
+      apiUrl: brevoConnection.apiUrl,
       webhookConfigured: Boolean(runtimeConfig.brevoWebhookSecret),
     },
     espocrm: {

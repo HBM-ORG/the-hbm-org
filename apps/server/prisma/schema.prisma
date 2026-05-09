@@ -243,7 +243,13 @@ model EmailFlow {
   legacyId        String?  @unique // Original flow ID like "registration_confirmed"
   name            String
   trigger         String   // "on_registration", "48h_before_event", etc.
+  icon            String?
+  status          String   @default("published") // draft | published
   active          Boolean  @default(true)
+  deliveryMode    String   @default("architect_html") // architect_html | brevo_template | brevo_automation
+  brevoTemplateId String?
+  brevoTemplateIdEn String?
+  brevoTemplateIdHe String?
   subject         Json     // { en: string, he: string }
   body            Json     // { en: string, he: string }
   subjectB        Json?    // { en: string, he: string } — for A/B testing
@@ -254,6 +260,7 @@ model EmailFlow {
 
   @@index([trigger])
   @@index([active])
+  @@index([status])
 }
 
 /// Replaces automationConfig.json — email sequences
@@ -281,6 +288,19 @@ model SmtpConfig {
   from   String
   secure Boolean @default(false)
   updatedAt DateTime @updatedAt
+}
+
+/// Runtime email provider overrides. Env vars remain the default when fields are empty.
+model EmailProviderConfig {
+  id                     String   @id
+  emailProvider          String?
+  brevoApiUrl            String?
+  brevoApiKey            String?  @db.Text
+  brevoSenderName        String?
+  brevoSenderEmail       String?
+  brevoAutomationEnabled Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 /// Replaces automationConfig.json — global styling (single row config)

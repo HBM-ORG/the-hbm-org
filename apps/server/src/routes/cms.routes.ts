@@ -6,6 +6,7 @@
 
 import { Router } from 'express';
 import {
+  deleteAutomationFlowController,
   getAutomationSettings,
   getEvents,
   getSiteContent,
@@ -22,5 +23,6 @@ router.get('/site-content', getSiteContent);
 router.post('/site-content', saveSiteContent);
 router.get('/automation-settings', getAutomationSettings);
 router.post('/automation-settings', saveAutomationSettings);
+router.delete('/automation-settings/flows/:id', deleteAutomationFlowController);
 
 export default router;

@@ -1,5 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { runtimeConfig } from '../config/runtime-config.js';
+import {
+  getPublicEmailProviderConfig,
+  saveEmailProviderConfig,
+} from './email-provider-config.service.js';
 
 const prisma = new PrismaClient();
 
@@ -9,6 +13,38 @@ function withLegacyId<T extends { id: string; legacyId?: string | null }>(row: T
     id: row.legacyId || row.id,
     databaseId: row.id,
   };
+}
+
+function normalizeAutomationTrigger(trigger: unknown) {
+  const value = String(trigger || '').trim();
+  const aliases: Record<string, string> = {
+    site_signup: 'on8MinJourney',
+    on_site_signup: 'on8MinJourney',
+  };
+  return aliases[value] || value;
+}
+
+function getFlowPriority(flow: any) {
+  let score = 0;
+  if (flow?.active) score += 10;
+  if (flow?.deliveryMode && flow.deliveryMode !== 'architect_html') score += 5;
+  if (flow?.legacyId && !String(flow.legacyId).startsWith('flow_')) score += 3;
+  if (flow?.updatedAt instanceof Date) score += flow.updatedAt.getTime() / 1_000_000_000_000;
+  return score;
+}
+
+function dedupeAutomationFlows<T extends { trigger: string; active?: boolean; deliveryMode?: string | null; legacyId?: string | null; updatedAt?: Date }>(flows: T[]) {
+  const byTrigger = new Map<string, T>();
+  for (const flow of flows) {
+    const normalized = { ...flow, trigger: normalizeAutomationTrigger(flow.trigger) };
+    const key = normalized.trigger.toLowerCase();
+    if (!key) continue;
+    const current = byTrigger.get(key);
+    if (!current || getFlowPriority(normalized) >= getFlowPriority(current)) {
+      byTrigger.set(key, normalized);
+    }
+  }
+  return Array.from(byTrigger.values());
 }
 
 export async function listEvents() {
@@ -176,34 +212,38 @@ export async function saveSiteContentBundle({
 }
 
 export async function getAutomationSettingsBundle() {
-  const [flows, sequences, smtpConfig, globalStyling] = await Promise.all([
+  const [flows, sequences, smtpConfig, globalStyling, providerConfig] = await Promise.all([
     prisma.emailFlow.findMany({ orderBy: { name: 'asc' } }),
     prisma.emailSequence.findMany({ orderBy: { name: 'asc' } }),
     prisma.smtpConfig.findFirst(),
     prisma.globalStyling.findFirst(),
+    getPublicEmailProviderConfig(),
   ]);
 
   return {
-    flows: flows.map(withLegacyId),
+    flows: dedupeAutomationFlows(flows).map(withLegacyId),
     sequences: sequences.map(withLegacyId),
     smtpConfig,
     globalStyling,
+    providerConfig,
   };
 }
 
 export async function saveAutomationSettingsBundle({
   smtp,
   globalStyling,
+  providerConfig,
   flows = [],
   sequences = [],
 }: {
   smtp?: any;
   globalStyling?: any;
+  providerConfig?: any;
   flows?: any[];
   sequences?: any[];
 }) {
   const errors: string[] = [];
-  const results = { smtp: false, globalStyling: false, flows: 0, sequences: 0 };
+  const results = { smtp: false, globalStyling: false, providerConfig: false, flows: 0, sequences: 0 };
 
   if (smtp) {
     try {
@@ -257,14 +297,33 @@ export async function saveAutomationSettingsBundle({
     }
   }
 
+  if (providerConfig) {
+    try {
+      await saveEmailProviderConfig(providerConfig);
+      results.providerConfig = true;
+    } catch (err) {
+      errors.push(`Provider Config: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  }
+
   for (const flow of flows) {
     try {
       const legacyId = String(flow.id || '');
+      const deliveryMode = ['architect_html', 'brevo_template', 'brevo_automation'].includes(String(flow.deliveryMode || '').toLowerCase())
+        ? String(flow.deliveryMode).toLowerCase()
+        : 'architect_html';
+      const status = String(flow.status || '').toLowerCase() === 'draft' ? 'draft' : 'published';
       const data = {
         legacyId,
         name: flow.name || '',
-        trigger: flow.trigger || '',
+        trigger: normalizeAutomationTrigger(flow.trigger),
+        icon: flow.icon ? String(flow.icon).trim() : null,
+        status,
         active: flow.active !== false,
+        deliveryMode,
+        brevoTemplateId: flow.brevoTemplateId ? String(flow.brevoTemplateId).trim() : null,
+        brevoTemplateIdEn: flow.brevoTemplateIdEn ? String(flow.brevoTemplateIdEn).trim() : null,
+        brevoTemplateIdHe: flow.brevoTemplateIdHe ? String(flow.brevoTemplateIdHe).trim() : null,
         subject: {
           en: flow.subject || flow.subject_en || '',
           he: flow.subject_he || '',
@@ -312,4 +371,24 @@ export async function saveAutomationSettingsBundle({
   }
 
   return { results, errors };
+}
+
+export async function deleteAutomationFlow(id: string) {
+  const value = String(id || '').trim();
+  if (!value) {
+    throw new Error('Missing flow id');
+  }
+
+  const existing = await prisma.emailFlow.findFirst({
+    where: {
+      OR: [{ id: value }, { legacyId: value }],
+    },
+  });
+
+  if (!existing) {
+    return { deleted: false };
+  }
+
+  await prisma.emailFlow.delete({ where: { id: existing.id } });
+  return { deleted: true };
 }

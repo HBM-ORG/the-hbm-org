@@ -17,11 +17,16 @@ export async function verifySmtpConnection(input: {
   user?: string;
   pass?: string;
   secure?: boolean;
-}): Promise<{ success: boolean; message: string }> {
+}): Promise<{ success: boolean; configured: boolean; connected: boolean; message: string }> {
   let { host, port, user, pass, secure } = input;
 
-  if (!host || !user) {
-    return { success: false, message: "SMTP not configured" };
+  if (!host || !user || !pass) {
+    return {
+      success: false,
+      configured: false,
+      connected: false,
+      message: !host || !user ? "SMTP not configured" : "SMTP password/app key is missing",
+    };
   }
 
   const normalized = normalizeSmtpConfig({ host, port, secure });
@@ -48,7 +53,12 @@ export async function verifySmtpConnection(input: {
       connectionTimeout: 10000,
     });
     await transporter.verify();
-    return { success: true, message: "SMTP connection verified" };
+    return {
+      success: true,
+      configured: true,
+      connected: true,
+      message: "SMTP connection verified",
+    };
   } catch (error) {
     console.error("SMTP Check Error:", error);
     let message =
@@ -68,6 +78,8 @@ export async function verifySmtpConnection(input: {
 
     return {
       success: false,
+      configured: true,
+      connected: false,
       message,
     };
   }

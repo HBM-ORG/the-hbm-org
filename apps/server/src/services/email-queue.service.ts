@@ -13,7 +13,7 @@ import {
   type SmtpConfigShape,
 } from "./email-support.service.js";
 import { loadAutomationRuntimeConfig } from "./automation-runtime.service.js";
-import { sendBrevoTransactionalEmail } from "./brevo.service.js";
+import { sendBrevoTemplateEmail, sendBrevoTransactionalEmail } from "./brevo.service.js";
 import { getCampaignById } from "./campaign.service.js";
 import { logEngagement } from "./email-tracking.service.js";
 import { listSuppression } from "./suppression.service.js";
@@ -36,6 +36,11 @@ type AutomationFlow = {
   id?: string;
   active?: boolean;
   trigger?: string;
+  status?: string;
+  deliveryMode?: string;
+  brevoTemplateId?: string;
+  brevoTemplateIdEn?: string;
+  brevoTemplateIdHe?: string;
   delayValue?: string | number;
   delayUnit?: string;
   subject_he?: string;
@@ -105,6 +110,26 @@ function parseDelay(str: string | number): number {
   return 0;
 }
 
+function getDeliveryMode(source: { deliveryMode?: unknown } | null | undefined): string {
+  const raw = String(source?.deliveryMode || "").trim().toLowerCase();
+  return raw === "brevo_template" || raw === "brevo_automation"
+    ? raw
+    : "architect_html";
+}
+
+function isPublishedFlow(flow: AutomationFlow | undefined): boolean {
+  return String(flow?.status || "published").toLowerCase() !== "draft";
+}
+
+function getBrevoTemplateId(source: AutomationFlow, language: string): number | null {
+  const raw =
+    language === "he"
+      ? source.brevoTemplateIdHe || source.brevoTemplateId
+      : source.brevoTemplateIdEn || source.brevoTemplateId;
+  const parsed = Number(String(raw || "").trim());
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 export function createEmailQueueEngine({
   baseUrl,
   logError,
@@ -139,26 +164,26 @@ export function createEmailQueueEngine({
       const suppressionList = (await listSuppression()).map((email) =>
         email.toLowerCase(),
       );
-      const emailProvider = runtimeConfig.emailProvider;
+      const emailProvider = config.providerConfig?.emailProvider || runtimeConfig.emailProvider;
 
       if (emailProvider !== "brevo" && !config?.smtp?.host) {
         console.log("[Email] processQueue skipped: SMTP host is not configured");
         return false;
       }
 
-      const port = parseInt(String(config.smtp.port), 10) || 587;
+      const port = parseInt(String(config.smtp?.port), 10) || 587;
       const secure =
-        typeof config.smtp.secure === "boolean" ? config.smtp.secure : port === 465;
+        typeof config.smtp?.secure === "boolean" ? config.smtp.secure : port === 465;
 
       let transporter = null;
       if (emailProvider !== "brevo") {
         try {
           transporter = nodemailer.createTransport({
-            host: config.smtp.host,
+            host: config.smtp?.host,
             port,
             secure,
             requireTLS: port === 587 && !secure,
-            auth: { user: config.smtp.user, pass: config.smtp.pass || "" },
+            auth: { user: config.smtp?.user, pass: config.smtp?.pass || "" },
           });
         } catch (error) {
           console.error("[Email] processQueue: createTransport failed", error);
@@ -216,6 +241,29 @@ export function createEmailQueueEngine({
 
           const source: CampaignDefinition | AutomationFlow = flow || campaign!;
           const trackingId = item.id;
+          const deliveryMode = flow ? getDeliveryMode(flow) : "architect_html";
+          if (deliveryMode === "brevo_automation") {
+            await prisma.emailQueue.update({
+              where: { id: item.id },
+              data: {
+                status: "sent",
+                sentAt: new Date(),
+                provider: "brevo",
+                providerStatus: "automation-only",
+                providerData: {
+                  deliveryMode,
+                  message: "Skipped local send; Brevo automation owns delivery.",
+                } as Prisma.InputJsonValue,
+              },
+            });
+            await logEngagement(trackingId, "sent", data.email, {
+              provider: "brevo",
+              deliveryMode,
+              message: "Brevo automation only",
+            });
+            console.log("[Email] Skipped local send for Brevo automation flow", item.flowId);
+            continue;
+          }
           const lang = typeof data.language === "string" ? data.language : "en";
           const renderData = {
             ...data,
@@ -261,7 +309,7 @@ export function createEmailQueueEngine({
             html: string;
             attachments?: Array<{ filename: string; content: string }>;
           } = {
-            from: config.smtp.from,
+            from: config.smtp?.from,
             to: data.email,
             subject,
             html,
@@ -291,7 +339,39 @@ export function createEmailQueueEngine({
             }
           }
 
-          if (emailProvider === "brevo") {
+          if (deliveryMode === "brevo_template" && flow) {
+            const templateId = getBrevoTemplateId(flow, lang);
+            if (!templateId) {
+              throw new Error(`Brevo template ID missing for flow ${flow.id || item.flowId}`);
+            }
+
+            const providerResult = await sendBrevoTemplateEmail({
+              from: mailOptions.from || runtimeConfig.defaultSmtpFrom,
+              to: data.email,
+              toName: typeof data.name === "string" ? data.name : data.email,
+              templateId,
+              params: renderData,
+              attachments: mailOptions.attachments,
+            });
+
+            await prisma.emailQueue.update({
+              where: { id: item.id },
+              data: {
+                status: "sent",
+                sentAt: new Date(),
+                provider: providerResult.provider,
+                providerMessageId: providerResult.messageId,
+                providerStatus: providerResult.status,
+                providerData: providerResult.raw as Prisma.InputJsonValue,
+              },
+            });
+            await logEngagement(trackingId, "sent", data.email, {
+              provider: providerResult.provider,
+              providerMessageId: providerResult.messageId,
+              deliveryMode,
+              templateId,
+            });
+          } else if (emailProvider === "brevo") {
             const providerResult = await sendBrevoTransactionalEmail({
               from: mailOptions.from || runtimeConfig.defaultSmtpFrom,
               to: data.email,
@@ -315,6 +395,7 @@ export function createEmailQueueEngine({
             await logEngagement(trackingId, "sent", data.email, {
               provider: providerResult.provider,
               providerMessageId: providerResult.messageId,
+              deliveryMode,
             });
           } else {
             await deliverEmail(transporter!, mailOptions);
@@ -330,6 +411,7 @@ export function createEmailQueueEngine({
             });
             await logEngagement(trackingId, "sent", data.email, {
               provider: "smtp",
+              deliveryMode,
             });
           }
           console.log("[Email] Sent successfully to", data.email);
@@ -360,7 +442,7 @@ export function createEmailQueueEngine({
               status,
               error: errMsg,
               attempts,
-              provider: emailProvider === "brevo" ? "brevo" : "smtp",
+              provider: emailProvider === "brevo" || errMsg.includes("Brevo") ? "brevo" : "smtp",
               providerStatus: status === "failed" ? "failed" : "retrying",
               ...(status === "pending"
                 ? { scheduledFor: new Date(Date.now() + 60000) }
@@ -401,10 +483,17 @@ export function createEmailQueueEngine({
       const now = Date.now();
 
       const activeFlows = (config.flows || []).filter(
-        (flow) => flow.active && flow.trigger === triggerType,
+        (flow) => isPublishedFlow(flow) && flow.active && flow.trigger === triggerType,
       );
 
       for (const flow of activeFlows) {
+        if (getDeliveryMode(flow) === "brevo_automation") {
+          console.log(
+            `[Email] Flow ${flow.id || flow.trigger} uses Brevo automation only; skipping local queue.`,
+          );
+          continue;
+        }
+
         let scheduledFor = now;
         if (flow.delayValue && flow.delayUnit) {
           const multiplier =
@@ -440,6 +529,19 @@ export function createEmailQueueEngine({
           if (step.type === "wait") {
             cumulativeDelay += parseDelay(step.duration || "");
           } else if (step.type === "email") {
+            const stepFlow = (config.flows || []).find((flow) => flow.id === step.flowId);
+            if (stepFlow && !isPublishedFlow(stepFlow)) {
+              console.log(
+                `[Email] Sequence step ${step.flowId} is draft; skipping local queue.`,
+              );
+              continue;
+            }
+            if (stepFlow && getDeliveryMode(stepFlow) === "brevo_automation") {
+              console.log(
+                `[Email] Sequence step ${step.flowId} uses Brevo automation only; skipping local queue.`,
+              );
+              continue;
+            }
             const stepDelay = step.duration ? parseDelay(step.duration) : 0;
             toCreate.push({
               id: uuidv4(),

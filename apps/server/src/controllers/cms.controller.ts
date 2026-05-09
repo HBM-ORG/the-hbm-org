@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import {
+  deleteAutomationFlow,
   getAutomationSettingsBundle,
   getSiteContentBundle,
   listEvents,
@@ -189,7 +190,7 @@ export async function getAutomationSettings(
   res: Response,
 ): Promise<void> {
   try {
-    const { flows, sequences, smtpConfig, globalStyling } =
+    const { flows, sequences, smtpConfig, globalStyling, providerConfig } =
       await getAutomationSettingsBundle();
 
     res.json({
@@ -207,11 +208,18 @@ export async function getAutomationSettings(
         logoUrl: runtimeConfig.emailLogoUrl,
         fontFamily: runtimeConfig.emailFontFamily,
       },
-      flows: flows.map((f) => ({
+      providerConfig,
+      flows: flows.map((f: any) => ({
         id: f.legacyId || f.id,
         name: f.name,
         trigger: f.trigger,
+        icon: f.icon || '',
+        status: f.status || 'published',
         active: f.active,
+        deliveryMode: f.deliveryMode || 'architect_html',
+        brevoTemplateId: f.brevoTemplateId || '',
+        brevoTemplateIdEn: f.brevoTemplateIdEn || '',
+        brevoTemplateIdHe: f.brevoTemplateIdHe || '',
         subject: (f.subject as any)?.en || '',
         subject_en: (f.subject as any)?.en || '',
         subject_he: (f.subject as any)?.he || '',
@@ -247,6 +255,17 @@ export async function getAutomationSettings(
         logoUrl: runtimeConfig.emailLogoUrl,
         fontFamily: runtimeConfig.emailFontFamily,
       },
+      providerConfig: {
+        emailProvider: runtimeConfig.emailProvider,
+        brevoApiUrl: runtimeConfig.brevoApiUrl,
+        brevoApiKey: "",
+        brevoApiKeyMasked: runtimeConfig.brevoApiKey ? "********" : "",
+        brevoApiKeySource: runtimeConfig.brevoApiKey ? "env" : "none",
+        brevoConfigured: Boolean(runtimeConfig.brevoApiKey),
+        brevoSenderName: "The HBM",
+        brevoSenderEmail: runtimeConfig.defaultSmtpFrom,
+        brevoAutomationEnabled: false,
+      },
       flows: [],
       sequences: [],
     });
@@ -270,10 +289,11 @@ export async function saveAutomationSettings(
       return;
     }
 
-    const { smtp, globalStyling, flows, sequences } = req.body || {};
+    const { smtp, globalStyling, providerConfig, flows, sequences } = req.body || {};
     const { results, errors } = await saveAutomationSettingsBundle({
       smtp,
       globalStyling,
+      providerConfig,
       flows: Array.isArray(flows) ? flows : [],
       sequences: Array.isArray(sequences) ? sequences : [],
     });
@@ -288,6 +308,27 @@ export async function saveAutomationSettings(
     res.status(500).json({
       error:
         err instanceof Error ? err.message : 'Failed to save automation settings',
+    });
+  }
+}
+
+export async function deleteAutomationFlowController(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (!(await isAuthorizedRequest(req))) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const id = typeof req.params.id === 'string' ? req.params.id : '';
+    const result = await deleteAutomationFlow(id);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    logCmsError("deleteAutomationFlow", err);
+    res.status(500).json({
+      error: err instanceof Error ? err.message : 'Failed to delete automation flow',
     });
   }
 }

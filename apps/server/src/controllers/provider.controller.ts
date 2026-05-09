@@ -17,7 +17,7 @@ export async function getProvidersStatus(req: Request, res: Response): Promise<v
     return;
   }
 
-  res.json(getProviderStatusSummary());
+  res.json(await getProviderStatusSummary());
 }
 
 export async function resyncProviderContact(

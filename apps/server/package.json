@@ -12,7 +12,7 @@
     "web": "tsx src/web.ts",
     "worker": "tsx src/worker.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "build": "npm run typecheck",
+    "build": "npm run prisma:generate && npm run typecheck",
     "validate": "npm run prisma:generate && npm run build",
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:migrate:deploy": "prisma migrate deploy --schema prisma/schema.prisma",
