@@ -17,6 +17,7 @@ export type AutomationFlowRuntime = {
   brevoTemplateId?: string;
   brevoTemplateIdEn?: string;
   brevoTemplateIdHe?: string;
+  templateOverrides?: JsonRecord;
   delayValue?: string | number;
   delayUnit?: string;
   subject_he?: string;
@@ -152,6 +153,7 @@ export async function loadAutomationRuntimeConfig(): Promise<AutomationRuntimeCo
       brevoTemplateId: flow.brevoTemplateId || undefined,
       brevoTemplateIdEn: flow.brevoTemplateIdEn || undefined,
       brevoTemplateIdHe: flow.brevoTemplateIdHe || undefined,
+      templateOverrides: isRecord(flow.templateOverrides) ? flow.templateOverrides : undefined,
       subject_en: getLocalizedValue(flow.subject, "en"),
       subject_he: getLocalizedValue(flow.subject, "he"),
       body_en: getLocalizedValue(flow.body, "en"),
@@ -183,12 +185,46 @@ export async function loadAutomationRuntimeConfig(): Promise<AutomationRuntimeCo
           secondaryColor: globalStyling.secondaryColor,
           logoUrl: globalStyling.logoUrl,
           fontFamily: globalStyling.fontFamily,
+          useDefaultHeader: globalStyling.useDefaultHeader,
+          useDefaultFooter: globalStyling.useDefaultFooter,
+          headerMode: globalStyling.headerMode,
+          headerImageUrl: globalStyling.headerImageUrl,
+          headerTitle: globalStyling.headerTitle,
+          headerSubtitle: globalStyling.headerSubtitle,
+          headerBackgroundColor: globalStyling.headerBackgroundColor,
+          headerBackgroundType: globalStyling.headerBackgroundType,
+          headerGradientFrom: globalStyling.headerGradientFrom,
+          headerGradientTo: globalStyling.headerGradientTo,
+          headerGradientAngle: globalStyling.headerGradientAngle,
+          headerTextColor: globalStyling.headerTextColor,
+          headerTextType: globalStyling.headerTextType,
+          headerTextGradientFrom: globalStyling.headerTextGradientFrom,
+          headerTextGradientTo: globalStyling.headerTextGradientTo,
+          headerTextGradientAngle: globalStyling.headerTextGradientAngle,
+          footerText: globalStyling.footerText,
+          footerImageUrl: globalStyling.footerImageUrl,
+          footerBackgroundColor: globalStyling.footerBackgroundColor,
+          footerBackgroundType: globalStyling.footerBackgroundType,
+          footerGradientFrom: globalStyling.footerGradientFrom,
+          footerGradientTo: globalStyling.footerGradientTo,
+          footerGradientAngle: globalStyling.footerGradientAngle,
+          footerTextColor: globalStyling.footerTextColor,
+          footerTextType: globalStyling.footerTextType,
+          footerTextGradientFrom: globalStyling.footerTextGradientFrom,
+          footerTextGradientTo: globalStyling.footerTextGradientTo,
+          footerTextGradientAngle: globalStyling.footerTextGradientAngle,
+          unsubscribeLabel: globalStyling.unsubscribeLabel,
+          unsubscribeUrl: globalStyling.unsubscribeUrl,
+          signatureUrl: globalStyling.signatureUrl,
         }
       : {
           primaryColor: runtimeConfig.emailPrimaryColor,
           secondaryColor: runtimeConfig.emailSecondaryColor,
           logoUrl: runtimeConfig.emailLogoUrl,
           fontFamily: runtimeConfig.emailFontFamily,
+          useDefaultHeader: true,
+          useDefaultFooter: true,
+          headerMode: "gradient",
         },
     providerConfig,
   };

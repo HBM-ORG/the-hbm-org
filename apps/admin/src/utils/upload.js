@@ -2,7 +2,12 @@ import { getApiBase } from "./api";
 import { getStoredAdminPassword } from "./admin-auth.js";
 
 function shouldUseProxyUpload(keyPrefix) {
-  return keyPrefix === 'cms/site-settings' || keyPrefix.startsWith('cms/site-settings/');
+  return (
+    keyPrefix === 'emails'
+    || keyPrefix.startsWith('emails/')
+    || keyPrefix === 'cms/site-settings'
+    || keyPrefix.startsWith('cms/site-settings/')
+  );
 }
 
 async function uploadFileViaProxy(file, { keyPrefix, adminPassword, base }) {

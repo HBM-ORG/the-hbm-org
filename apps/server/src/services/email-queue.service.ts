@@ -8,6 +8,7 @@ import { runtimeConfig } from "../config/runtime-config.js";
 import {
   deliverEmail,
   getEmailTemplate,
+  getEmailTemplateParts,
   isValidEmail,
   normalizeSmtpConfig,
   type SmtpConfigShape,
@@ -294,6 +295,7 @@ export function createEmailQueueEngine({
             getEmailTemplate({
               body,
               config,
+              templateOverrides: flow?.templateOverrides,
               trackingId,
               email: data.email,
               language: lang,
@@ -344,13 +346,25 @@ export function createEmailQueueEngine({
             if (!templateId) {
               throw new Error(`Brevo template ID missing for flow ${flow.id || item.flowId}`);
             }
+            const templateParts = getEmailTemplateParts({
+              config,
+              templateOverrides: flow.templateOverrides,
+              email: data.email,
+              language: lang,
+              baseUrl,
+            });
 
             const providerResult = await sendBrevoTemplateEmail({
               from: mailOptions.from || runtimeConfig.defaultSmtpFrom,
               to: data.email,
               toName: typeof data.name === "string" ? data.name : data.email,
               templateId,
-              params: renderData,
+              params: {
+                ...renderData,
+                ...templateParts,
+                bodyHtml: body,
+                subject,
+              },
               attachments: mailOptions.attachments,
             });
 

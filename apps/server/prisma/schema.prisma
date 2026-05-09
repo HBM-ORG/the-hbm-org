@@ -250,6 +250,7 @@ model EmailFlow {
   brevoTemplateId String?
   brevoTemplateIdEn String?
   brevoTemplateIdHe String?
+  templateOverrides Json?
   subject         Json     // { en: string, he: string }
   body            Json     // { en: string, he: string }
   subjectB        Json?    // { en: string, he: string } — for A/B testing
@@ -305,12 +306,43 @@ model EmailProviderConfig {
 
 /// Replaces automationConfig.json — global styling (single row config)
 model GlobalStyling {
-  id             String @id @default(uuid())
-  primaryColor   String
-  secondaryColor String
-  logoUrl        String // Object storage URL
-  fontFamily     String
-  updatedAt      DateTime @updatedAt
+  id                    String  @id @default(uuid())
+  primaryColor          String
+  secondaryColor        String
+  logoUrl               String  // Object storage URL
+  fontFamily            String
+  useDefaultHeader      Boolean @default(true)
+  useDefaultFooter      Boolean @default(true)
+  headerMode            String?
+  headerImageUrl        String?
+  headerTitle           String?
+  headerSubtitle        String?
+  headerBackgroundColor String?
+  headerBackgroundType  String?
+  headerGradientFrom    String?
+  headerGradientTo      String?
+  headerGradientAngle   Int?
+  headerTextColor       String?
+  headerTextType        String?
+  headerTextGradientFrom String?
+  headerTextGradientTo  String?
+  headerTextGradientAngle Int?
+  footerText            String? @db.Text
+  footerImageUrl        String?
+  footerBackgroundColor String?
+  footerBackgroundType  String?
+  footerGradientFrom    String?
+  footerGradientTo      String?
+  footerGradientAngle   Int?
+  footerTextColor       String?
+  footerTextType        String?
+  footerTextGradientFrom String?
+  footerTextGradientTo  String?
+  footerTextGradientAngle Int?
+  unsubscribeLabel      String?
+  unsubscribeUrl        String?
+  signatureUrl          String?
+  updatedAt             DateTime @updatedAt
 }
 
 /// Replaces campaigns.json — one-off email campaigns

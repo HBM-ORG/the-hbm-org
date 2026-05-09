@@ -151,6 +151,81 @@ const DEFAULT_PROVIDER_CONFIG = {
     brevoAutomationEnabled: false,
 };
 
+const DEFAULT_GLOBAL_STYLING = {
+    primaryColor: '#6160AB',
+    secondaryColor: '#F07B3C',
+    logoUrl: '',
+    fontFamily: 'Sora, Arial, sans-serif',
+    useDefaultHeader: true,
+    useDefaultFooter: true,
+    headerMode: 'gradient',
+    headerImageUrl: '',
+    headerTitle: 'The Human Being Movement',
+    headerSubtitle: 'Crafting deep human connections, 8 minutes at a time.',
+    headerBackgroundColor: '#6160AB',
+    headerBackgroundType: 'gradient',
+    headerGradientFrom: '#6160AB',
+    headerGradientTo: '#F07B3C',
+    headerGradientAngle: 135,
+    headerTextColor: '#ffffff',
+    headerTextType: 'flat',
+    headerTextGradientFrom: '#ffffff',
+    headerTextGradientTo: '#F7D5FF',
+    headerTextGradientAngle: 135,
+    footerText: '© 2026 The Human Being Movement<br>Crafting deep human connections, 8 minutes at a time.',
+    footerImageUrl: '',
+    footerBackgroundColor: '#fafafc',
+    footerBackgroundType: 'flat',
+    footerGradientFrom: '#fafafc',
+    footerGradientTo: '#F07B3C',
+    footerGradientAngle: 135,
+    footerTextColor: '#a0a0b0',
+    footerTextType: 'flat',
+    footerTextGradientFrom: '#a0a0b0',
+    footerTextGradientTo: '#6160AB',
+    footerTextGradientAngle: 135,
+    unsubscribeLabel: 'Unsubscribe from these emails',
+    unsubscribeUrl: '',
+    signatureUrl: '',
+};
+
+function normalizeGlobalStyling(styling = {}) {
+    return { ...DEFAULT_GLOBAL_STYLING, ...styling };
+}
+
+function getEffectiveTemplateSettings(config, flow) {
+    const global = normalizeGlobalStyling(config?.globalStyling);
+    const overrides = flow?.templateOverrides && typeof flow.templateOverrides === 'object' ? flow.templateOverrides : {};
+    return { ...global, ...overrides };
+}
+
+function getBackgroundStyle(settings, prefix, fallbackFlat, fallbackTo) {
+    const type = settings?.[`${prefix}BackgroundType`] || 'flat';
+    const flat = settings?.[`${prefix}BackgroundColor`] || fallbackFlat;
+    const from = settings?.[`${prefix}GradientFrom`] || flat;
+    const to = settings?.[`${prefix}GradientTo`] || fallbackTo || flat;
+    const angle = Number(settings?.[`${prefix}GradientAngle`] ?? 135);
+    return type === 'gradient'
+        ? `linear-gradient(${Number.isFinite(angle) ? angle : 135}deg, ${from}, ${to})`
+        : flat;
+}
+
+function getTextStyle(settings, prefix, fallbackFlat, fallbackTo) {
+    const type = settings?.[`${prefix}TextType`] || 'flat';
+    const flat = settings?.[`${prefix}TextColor`] || fallbackFlat;
+    const from = settings?.[`${prefix}TextGradientFrom`] || flat;
+    const to = settings?.[`${prefix}TextGradientTo`] || fallbackTo || flat;
+    const angle = Number(settings?.[`${prefix}TextGradientAngle`] ?? 135);
+    if (type !== 'gradient') return { color: flat };
+    return {
+        color: flat,
+        backgroundImage: `linear-gradient(${Number.isFinite(angle) ? angle : 135}deg, ${from}, ${to})`,
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+    };
+}
+
 function createDefaultFlow(df) {
     return {
         id: `flow_${df.id}`,
@@ -163,6 +238,7 @@ function createDefaultFlow(df) {
         brevoTemplateId: '',
         brevoTemplateIdEn: '',
         brevoTemplateIdHe: '',
+        templateOverrides: {},
         subject_en: `Welcome - ${df.name}`,
         subject_he: `ברוכים הבאים - ${df.name}`,
         body_en: `Hello {{name}},\n\nThank you for joining us.\n\nBest regards,\nThe HBM Team`,
@@ -183,6 +259,7 @@ function normalizeFlow(flow) {
         brevoTemplateId: flow?.brevoTemplateId || '',
         brevoTemplateIdEn: flow?.brevoTemplateIdEn || '',
         brevoTemplateIdHe: flow?.brevoTemplateIdHe || '',
+        templateOverrides: flow?.templateOverrides && typeof flow.templateOverrides === 'object' ? flow.templateOverrides : {},
     };
 }
 
@@ -190,7 +267,7 @@ function getDefaultConfig() {
     return {
         smtp: { host: '', port: 587, user: '', pass: '', from: '' },
         providerConfig: { ...DEFAULT_PROVIDER_CONFIG },
-        globalStyling: { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' },
+        globalStyling: normalizeGlobalStyling(),
         flows: DEFAULT_FLOWS.map(createDefaultFlow)
     };
 }
@@ -233,6 +310,66 @@ const Toggle = ({ checked, onChange, label }) => (
         {label && <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest group-hover:text-gray-700 transition-colors">{label}</span>}
     </label>
 );
+
+const ColorModeControl = ({ label, prefix, tone = 'Background', values, onChange, fallbackFlat = '#ffffff', fallbackTo = '#F07B3C' }) => {
+    const isBackground = tone === 'Background';
+    const typeKey = `${prefix}${tone}Type`;
+    const flatKey = `${prefix}${tone}Color`;
+    const fromKey = isBackground ? `${prefix}GradientFrom` : `${prefix}${tone}GradientFrom`;
+    const toKey = isBackground ? `${prefix}GradientTo` : `${prefix}${tone}GradientTo`;
+    const angleKey = isBackground ? `${prefix}GradientAngle` : `${prefix}${tone}GradientAngle`;
+    const type = values?.[typeKey] || 'flat';
+    const flat = values?.[flatKey] || fallbackFlat;
+    const from = values?.[fromKey] || flat;
+    const to = values?.[toKey] || fallbackTo;
+    const angle = values?.[angleKey] ?? 135;
+    const preview = type === 'gradient' ? `linear-gradient(${angle}deg, ${from}, ${to})` : flat;
+
+    return (
+        <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{label}</label>
+                <div className="w-10 h-10 rounded-xl border border-white shadow-sm" style={{ background: preview }} />
+            </div>
+            <div className="flex bg-white rounded-xl p-1 gap-1">
+                {[
+                    { id: 'flat', label: 'Flat' },
+                    { id: 'gradient', label: 'Gradient' },
+                ].map(option => (
+                    <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => onChange({ [typeKey]: option.id })}
+                        className={`flex-1 rounded-lg px-3 py-2 text-[9px] font-black uppercase tracking-widest ${type === option.id ? 'bg-purple-50 text-purple-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                        {option.label}
+                    </button>
+                ))}
+            </div>
+            {type === 'gradient' ? (
+                <div className="grid grid-cols-3 gap-3">
+                    <div>
+                        <span className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">From</span>
+                        <input type="color" value={from} onChange={e => onChange({ [fromKey]: e.target.value })} className="w-full h-10 rounded-lg border-none p-0 cursor-pointer" />
+                    </div>
+                    <div>
+                        <span className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">To</span>
+                        <input type="color" value={to} onChange={e => onChange({ [toKey]: e.target.value })} className="w-full h-10 rounded-lg border-none p-0 cursor-pointer" />
+                    </div>
+                    <div>
+                        <span className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Angle</span>
+                        <input type="number" min="0" max="360" value={angle} onChange={e => onChange({ [angleKey]: Number(e.target.value) })} className="w-full h-10 rounded-lg bg-white px-2 text-xs font-bold outline-none" />
+                    </div>
+                </div>
+            ) : (
+                <div>
+                    <span className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Color</span>
+                    <input type="color" value={flat} onChange={e => onChange({ [flatKey]: e.target.value })} className="w-14 h-10 rounded-lg border-none p-0 cursor-pointer" />
+                </div>
+            )}
+        </div>
+    );
+};
 
 const IconPicker = ({ value, onChange }) => {
     const [open, setOpen] = useState(false);
@@ -402,7 +539,8 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
     const isHe = activeLang === 'he';
     const rawSubject = (isHe && flow?.subject_he) ? flow.subject_he : (flow?.subject_en || flow?.subject || '');
     const rawBody = (isHe && flow?.body_he) ? flow.body_he : (flow?.body_en || flow?.body || '');
-    const signatureUrl = resolveAssetUrl(config?.globalStyling?.signatureUrl);
+    const template = getEffectiveTemplateSettings(config, flow);
+    const signatureUrl = resolveAssetUrl(template.signatureUrl);
 
     const body = rawBody.replace(/\n/g, '<br>')
         .replace(/{{name}}/g, isHe ? 'אלכס' : 'Alex')
@@ -415,9 +553,12 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
         .replace(/{{name}}/g, isHe ? 'אלכס' : 'Alex')
         .replace(/{{eventName}}/g, isHe ? 'HBM תל אביב' : 'HBM Tel Aviv');
 
-    const primary = config?.globalStyling?.primaryColor || '#6160AB';
-    const secondary = config?.globalStyling?.secondaryColor || '#F07B3C';
-    const logoUrl = resolveAssetUrl(config?.globalStyling?.logoUrl);
+    const primary = template.primaryColor || '#6160AB';
+    const secondary = template.secondaryColor || '#F07B3C';
+    const logoUrl = resolveAssetUrl(template.logoUrl);
+    const headerImageUrl = resolveAssetUrl(template.headerImageUrl);
+    const footerImageUrl = resolveAssetUrl(template.footerImageUrl);
+    const headerLogoUrl = headerImageUrl || logoUrl;
 
     const dir = isHe ? 'rtl' : 'ltr';
     const align = isHe ? 'right' : 'left';
@@ -425,12 +566,23 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
     return (
         <div className={`border-[8px] border-white rounded-[2rem] shadow-2xl overflow-hidden bg-[#f7f7fc] transition-all duration-500 ${device === 'mobile' ? 'w-[260px] mx-auto' : 'w-full'}`}>
             <div className="overflow-y-auto max-h-[520px]" dir={dir} style={{ textAlign: align }}>
-                {/* Header */}
-                <div className="h-24 flex items-center justify-center p-4" style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}>
-                    {logoUrl ? (
-                        <img src={logoUrl} className="h-10 object-contain drop-shadow-lg" alt="HBM" onError={(e) => e.target.style.display='none'} />
-                    ) : null}
-                </div>
+                {template.useDefaultHeader !== false && (
+                    <div
+                        className="min-h-24 flex flex-col items-center justify-center p-4 text-center"
+                        style={{
+                            color: template.headerTextColor || '#ffffff',
+                            background: template.headerMode === 'image' && headerImageUrl
+                                ? `linear-gradient(135deg, ${primary}aa, ${secondary}aa), url(${headerImageUrl}) center/cover`
+                                : getBackgroundStyle(template, 'header', primary, secondary)
+                        }}
+                    >
+                        {headerLogoUrl ? (
+                            <img src={headerLogoUrl} className="max-h-12 max-w-[150px] object-contain drop-shadow-lg mb-2" alt="HBM" onError={(e) => e.target.style.display='none'} />
+                        ) : null}
+                        {template.headerTitle && <div className="text-[14px] font-black leading-tight" style={getTextStyle(template, 'header', template.headerTextColor || '#ffffff', '#F7D5FF')}>{template.headerTitle}</div>}
+                        {template.headerSubtitle && <div className="text-[9px] font-bold opacity-80 mt-1" style={getTextStyle(template, 'header', template.headerTextColor || '#ffffff', '#F7D5FF')}>{template.headerSubtitle}</div>}
+                    </div>
+                )}
                 {/* Body */}
                 <div className="p-6 bg-white shrink-0 min-h-[200px]">
                     <h3 className="text-[13px] font-black text-gray-900 leading-snug mb-3">{subject}</h3>
@@ -438,10 +590,16 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
                     {signatureUrl && <div className="mt-8"><img src={signatureUrl} alt="Signature" className="max-w-[120px] rounded" /></div>}
                 </div>
                 {/* Footer */}
-                <div className="px-6 py-4 bg-[#fafafc] text-center text-[8px] text-gray-400 font-bold border-t border-gray-100 uppercase tracking-widest mt-auto">
-                    © 2026 The Human Being Movement<br />
-                    <span className="underline cursor-pointer text-gray-300 inline-block mt-2">Unsubscribe</span>
-                </div>
+                {template.useDefaultFooter !== false && (
+                    <div
+                        className="px-6 py-4 text-center text-[8px] font-bold border-t border-gray-100 mt-auto"
+                        style={{ background: getBackgroundStyle(template, 'footer', '#fafafc', secondary), ...getTextStyle(template, 'footer', template.footerTextColor || '#a0a0b0', secondary) }}
+                    >
+                        {footerImageUrl && <img src={footerImageUrl} className="h-8 object-contain mx-auto mb-2" alt="" />}
+                        <div dangerouslySetInnerHTML={{ __html: template.footerText || DEFAULT_GLOBAL_STYLING.footerText }} />
+                        <span className="underline cursor-pointer inline-block mt-2 opacity-70">{template.unsubscribeLabel || 'Unsubscribe'}</span>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -452,6 +610,7 @@ const EmailPreview = ({ flow, config, device, activeLang }) => {
 const EmailEngine = () => {
     const API = getApiBase();
     const [config, setConfig] = useState(getDefaultConfig);
+    const [lastSavedConfig, setLastSavedConfig] = useState(getDefaultConfig);
     const [backendOffline, setBackendOffline] = useState(false);
     const [activeFlowId, setActiveFlowId] = useState(null);
     const [activeFlowTrigger, setActiveFlowTrigger] = useState(null);
@@ -470,6 +629,7 @@ const EmailEngine = () => {
     const [testStatus, setTestStatus] = useState('');
     const [smtpTestStatus, setSmtpTestStatus] = useState('');
     const [brevoTestStatus, setBrevoTestStatus] = useState('');
+    const [templateUploadStatus, setTemplateUploadStatus] = useState('');
     const [queue, setQueue] = useState([]);
     const [editorLang, setEditorLang] = useState('en'); 
     const [aiPrompt, setAiPrompt] = useState('');
@@ -502,6 +662,7 @@ const EmailEngine = () => {
                 setBackendOffline(true);
                 const fallback = getDefaultConfig();
                 setConfig(fallback);
+                setLastSavedConfig(fallback);
                 setEngagementLog([]);
                 setRegistrations([]);
                 setQueue([]);
@@ -514,7 +675,7 @@ const EmailEngine = () => {
             setBackendOffline(false);
             if (!cfg.smtp) cfg.smtp = { host: '', port: 587, user: '', pass: '', from: '' };
             cfg.providerConfig = { ...DEFAULT_PROVIDER_CONFIG, ...(cfg.providerConfig || {}) };
-            if (!cfg.globalStyling) cfg.globalStyling = { primaryColor: '#6160AB', secondaryColor: '#F07B3C', signatureUrl: '', logoUrl: '' };
+            cfg.globalStyling = normalizeGlobalStyling(cfg.globalStyling);
 
             const existingFlows = dedupeFlowsByTrigger(Array.isArray(cfg.flows) ? cfg.flows : []);
             const triggerKey = (t) => (t || '').toLowerCase();
@@ -526,6 +687,7 @@ const EmailEngine = () => {
             cfg.flows = existingFlows;
 
             setConfig(cfg);
+            setLastSavedConfig(cfg);
             setEngagementLog(Array.isArray(eng) ? eng : []);
             setRegistrations(Array.isArray(regs) ? regs : []);
             setQueue(Array.isArray(q) ? q : []);
@@ -536,6 +698,7 @@ const EmailEngine = () => {
             setBackendOffline(true);
             const fallback = getDefaultConfig();
             setConfig(fallback);
+            setLastSavedConfig(fallback);
             setEngagementLog([]);
             setRegistrations([]);
             setQueue([]);
@@ -575,6 +738,7 @@ const EmailEngine = () => {
             ]);
             if (settingsRes.ok && campaignsRes.ok) {
                 setSaveStatus('✓ Live');
+                setLastSavedConfig(config);
                 setHasUnsavedChanges(false);
             } else {
                 const body = await settingsRes.json().catch(() => ({}));
@@ -598,6 +762,7 @@ const EmailEngine = () => {
             const body = await response.json().catch(() => ({}));
             throw new Error(response.status === 401 ? 'Unauthorized' : body?.error || 'Failed to save automation settings');
         }
+        setLastSavedConfig(nextConfig);
         setHasUnsavedChanges(false);
         if (!quiet) {
             setSaveStatus('✓ Saved');
@@ -625,6 +790,58 @@ const EmailEngine = () => {
             }
             return;
         }
+    };
+
+    const updateFlowTemplateOverrides = (id, updates, options = {}) => {
+        const existing = flowsList.find(flow => flow.id === id)?.templateOverrides || {};
+        updateFlow(id, { templateOverrides: { ...existing, ...updates } }, options);
+    };
+
+    const saveFlowTemplateOverrides = async () => {
+        if (!currentFlow) return;
+        setTemplateUploadStatus('Saving trigger template...');
+        try {
+            await persistAutomationSettings(config, { quiet: true });
+            setTemplateUploadStatus('✓ Trigger template saved');
+        } catch (error) {
+            setTemplateUploadStatus(`✗ ${error.message || 'Save failed'}`);
+        }
+        setTimeout(() => setTemplateUploadStatus(''), 6000);
+    };
+
+    const cancelFlowTemplateOverrides = () => {
+        if (!currentFlow) return;
+        const savedFlow = (Array.isArray(lastSavedConfig.flows) ? lastSavedConfig.flows : []).find(flow => flow.id === currentFlow.id);
+        const savedOverrides = savedFlow?.templateOverrides || {};
+        const nextConfig = {
+            ...config,
+            flows: (Array.isArray(config.flows) ? config.flows : []).map(flow =>
+                flow.id === currentFlow.id ? { ...flow, templateOverrides: savedOverrides } : flow
+            )
+        };
+        setConfig(nextConfig);
+        setHasUnsavedChanges(JSON.stringify(nextConfig) !== JSON.stringify(lastSavedConfig));
+        setTemplateUploadStatus('Trigger template changes cancelled');
+        setTimeout(() => setTemplateUploadStatus(''), 4000);
+    };
+
+    const handleFlowTemplateImageUpload = async (e, key) => {
+        const file = e.target.files?.[0];
+        if (!file || !activeFlowId) return;
+        setTemplateUploadStatus('Uploading image...');
+        try {
+            const result = await uploadFile(file, { keyPrefix: 'emails' });
+            if (result.success && result.url) {
+                updateFlowTemplateOverrides(activeFlowId, { [key]: result.url });
+                setTemplateUploadStatus('✓ Image uploaded. Save trigger to keep it.');
+            } else {
+                setTemplateUploadStatus(`✗ ${result.error || 'Upload failed'}`);
+            }
+        } catch (err) {
+            console.error('Flow Template Image Upload Error:', err);
+            setTemplateUploadStatus(`✗ ${err.message || 'Upload failed'}`);
+        }
+        setTimeout(() => setTemplateUploadStatus(''), 6000);
     };
 
     const createCustomFlow = () => {
@@ -689,6 +906,7 @@ const EmailEngine = () => {
             const body = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(body?.error || 'Delete failed');
             setSaveStatus('✓ Deleted');
+            setLastSavedConfig(nextConfig);
             setHasUnsavedChanges(false);
         } catch (error) {
             setConfig(config);
@@ -902,6 +1120,35 @@ const EmailEngine = () => {
         } catch (err) { console.error('Signature Upload Error:', err); }
     };
 
+    const handleTemplateImageUpload = async (e, key) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setTemplateUploadStatus('Uploading image...');
+        try {
+            const result = await uploadFile(file, { keyPrefix: 'emails' });
+            if (result.success && result.url) {
+                const nextConfig = {
+                    ...config,
+                    globalStyling: normalizeGlobalStyling({ ...config.globalStyling, [key]: result.url })
+                };
+                setConfig(nextConfig);
+                await persistAutomationSettings(nextConfig, { quiet: true });
+                setTemplateUploadStatus('✓ Image uploaded');
+            } else {
+                setTemplateUploadStatus(`✗ ${result.error || 'Upload failed'}`);
+            }
+        } catch (err) {
+            console.error('Template Image Upload Error:', err);
+            setTemplateUploadStatus(`✗ ${err.message || 'Upload failed'}`);
+        }
+        setTimeout(() => setTemplateUploadStatus(''), 6000);
+    };
+
+    const updateGlobalStyling = (updates) => {
+        setConfig(prev => ({ ...prev, globalStyling: normalizeGlobalStyling({ ...prev.globalStyling, ...updates }) }));
+        setHasUnsavedChanges(true);
+    };
+
     // ── derived ─────────────────────────────────────────────────────────────
     const flowsList = Array.isArray(config?.flows) ? config.flows : [];
     const triggerKey = (t) => (t || '').toLowerCase();
@@ -911,6 +1158,14 @@ const EmailEngine = () => {
         (activeView === 'flows' && activeFlowTrigger
             ? flowsList.find(f => triggerKey(f.trigger) === triggerKey(activeFlowTrigger))
             : null);
+    const lastSavedFlow = currentFlow
+        ? (Array.isArray(lastSavedConfig.flows) ? lastSavedConfig.flows : []).find(flow => flow.id === currentFlow.id)
+        : null;
+    const templateOverridesDirty = Boolean(
+        activeView === 'flows' &&
+        currentFlow &&
+        JSON.stringify(currentFlow.templateOverrides || {}) !== JSON.stringify(lastSavedFlow?.templateOverrides || {})
+    );
     const safeQueue = Array.isArray(queue) ? queue : [];
     const safeEngagement = Array.isArray(engagementLog) ? engagementLog : [];
     const sentCount = safeQueue.filter(q => q.status === 'sent').length;
@@ -970,6 +1225,7 @@ const EmailEngine = () => {
                             { id: 'campaigns', icon: Send, label: 'Campaigns' },
                             { id: 'crm', icon: Users, label: 'CRM' },
                             { id: 'analytics', icon: BarChart3, label: 'Stats' },
+                            { id: 'defaults', icon: Layers, label: 'Defaults' },
                             { id: 'settings', icon: Settings, label: 'Setup' },
                         ].map(({ id, icon: Icon, label }) => (
                             <button key={id} onClick={() => { setActiveView(id); setActiveFlowId(null); setActiveFlowTrigger(null); }}
@@ -1302,6 +1558,133 @@ const EmailEngine = () => {
                             </div>
                         )}
 
+                        {activeView === 'flows' && (
+                            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                    <div>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Template Header & Footer</label>
+                                        <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
+                                            Inherit defaults, hide sections for this trigger, or override copy/colors. Brevo templates receive these values as params; Brevo automation must mirror them inside Brevo.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${templateOverridesDirty ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-500'}`}>
+                                            {templateOverridesDirty ? 'Pending' : Object.keys(currentFlow.templateOverrides || {}).length ? 'Custom' : 'Defaults'}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={cancelFlowTemplateOverrides}
+                                            disabled={!templateOverridesDirty}
+                                            className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${templateOverridesDirty ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-gray-50 text-gray-300 cursor-not-allowed'}`}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={saveFlowTemplateOverrides}
+                                            disabled={!templateOverridesDirty}
+                                            className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${templateOverridesDirty ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm' : 'bg-purple-50 text-purple-200 cursor-not-allowed'}`}
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {templateUploadStatus && (
+                                        <div className={`col-span-2 rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest ${templateUploadStatus.startsWith('✗') ? 'bg-red-50 text-red-600' : 'bg-purple-50 text-purple-600'}`}>
+                                            {templateUploadStatus}
+                                        </div>
+                                    )}
+                                    <label className="flex items-center justify-between gap-4 bg-gray-50 rounded-xl px-4 py-3">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Use Header</span>
+                                        <Toggle checked={(currentFlow.templateOverrides?.useDefaultHeader ?? config.globalStyling?.useDefaultHeader) !== false} onChange={() => updateFlowTemplateOverrides(activeFlowId, { useDefaultHeader: (currentFlow.templateOverrides?.useDefaultHeader ?? config.globalStyling?.useDefaultHeader) === false })} />
+                                    </label>
+                                    <label className="flex items-center justify-between gap-4 bg-gray-50 rounded-xl px-4 py-3">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Use Footer</span>
+                                        <Toggle checked={(currentFlow.templateOverrides?.useDefaultFooter ?? config.globalStyling?.useDefaultFooter) !== false} onChange={() => updateFlowTemplateOverrides(activeFlowId, { useDefaultFooter: (currentFlow.templateOverrides?.useDefaultFooter ?? config.globalStyling?.useDefaultFooter) === false })} />
+                                    </label>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Override Header Title</label>
+                                        <input value={currentFlow.templateOverrides?.headerTitle || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { headerTitle: e.target.value })} placeholder={config.globalStyling?.headerTitle || 'Default title'} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Override Header Subtitle</label>
+                                        <input value={currentFlow.templateOverrides?.headerSubtitle || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { headerSubtitle: e.target.value })} placeholder={config.globalStyling?.headerSubtitle || 'Default subtitle'} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Image Override</label>
+                                        <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-2">
+                                            {currentFlow.templateOverrides?.headerImageUrl ? <img src={resolveAssetUrl(currentFlow.templateOverrides.headerImageUrl)} className="h-9 w-12 object-contain rounded-lg bg-white p-1" /> : <div className="h-9 w-12 rounded-lg bg-white text-gray-300 flex items-center justify-center"><ImageIcon className="w-4 h-4" /></div>}
+                                            <label className="ml-auto bg-purple-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase cursor-pointer">Upload<input type="file" className="hidden" accept="image/*" onChange={e => handleFlowTemplateImageUpload(e, 'headerImageUrl')} /></label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Footer Image Override</label>
+                                        <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-2">
+                                            {currentFlow.templateOverrides?.footerImageUrl ? <img src={resolveAssetUrl(currentFlow.templateOverrides.footerImageUrl)} className="h-9 w-12 object-contain rounded-lg" /> : <div className="h-9 w-12 rounded-lg bg-white text-gray-300 flex items-center justify-center"><ImageIcon className="w-4 h-4" /></div>}
+                                            <label className="ml-auto bg-purple-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase cursor-pointer">Upload<input type="file" className="hidden" accept="image/*" onChange={e => handleFlowTemplateImageUpload(e, 'footerImageUrl')} /></label>
+                                        </div>
+                                    </div>
+                                    <ColorModeControl
+                                        label="Header Background Override"
+                                        prefix="header"
+                                        values={{ ...config.globalStyling, ...(currentFlow.templateOverrides || {}) }}
+                                        onChange={updates => updateFlowTemplateOverrides(activeFlowId, updates)}
+                                        fallbackFlat={config.globalStyling?.headerBackgroundColor || config.globalStyling?.primaryColor || '#6160AB'}
+                                        fallbackTo={config.globalStyling?.headerGradientTo || config.globalStyling?.secondaryColor || '#F07B3C'}
+                                    />
+                                    <ColorModeControl
+                                        label="Header Text Override"
+                                        prefix="header"
+                                        tone="Text"
+                                        values={{ ...config.globalStyling, ...(currentFlow.templateOverrides || {}) }}
+                                        onChange={updates => updateFlowTemplateOverrides(activeFlowId, updates)}
+                                        fallbackFlat={config.globalStyling?.headerTextColor || '#ffffff'}
+                                        fallbackTo={config.globalStyling?.headerTextGradientTo || '#F7D5FF'}
+                                    />
+                                    <ColorModeControl
+                                        label="Footer Background Override"
+                                        prefix="footer"
+                                        values={{ ...config.globalStyling, ...(currentFlow.templateOverrides || {}) }}
+                                        onChange={updates => updateFlowTemplateOverrides(activeFlowId, updates)}
+                                        fallbackFlat={config.globalStyling?.footerBackgroundColor || '#fafafc'}
+                                        fallbackTo={config.globalStyling?.footerGradientTo || config.globalStyling?.secondaryColor || '#F07B3C'}
+                                    />
+                                    <ColorModeControl
+                                        label="Footer Text Override"
+                                        prefix="footer"
+                                        tone="Text"
+                                        values={{ ...config.globalStyling, ...(currentFlow.templateOverrides || {}) }}
+                                        onChange={updates => updateFlowTemplateOverrides(activeFlowId, updates)}
+                                        fallbackFlat={config.globalStyling?.footerTextColor || '#a0a0b0'}
+                                        fallbackTo={config.globalStyling?.footerTextGradientTo || config.globalStyling?.secondaryColor || '#F07B3C'}
+                                    />
+                                    <div className="col-span-2">
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Override Footer Text</label>
+                                        <textarea value={currentFlow.templateOverrides?.footerText || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { footerText: e.target.value })} rows={3} placeholder="Leave empty to inherit default footer text" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 resize-none placeholder:text-gray-300" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Unsubscribe Label Override</label>
+                                        <input value={currentFlow.templateOverrides?.unsubscribeLabel || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { unsubscribeLabel: e.target.value })} placeholder={config.globalStyling?.unsubscribeLabel || 'Default unsubscribe label'} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Unsubscribe URL Override</label>
+                                        <input value={currentFlow.templateOverrides?.unsubscribeUrl || ''} onChange={e => updateFlowTemplateOverrides(activeFlowId, { unsubscribeUrl: e.target.value })} placeholder="Default unsubscribe endpoint" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                    </div>
+                                </div>
+                                {currentFlow.deliveryMode === 'brevo_template' && (
+                                    <div className="mt-4 rounded-2xl bg-violet-50 border border-violet-100 p-4 text-[10px] font-bold text-violet-700 leading-relaxed">
+                                        Brevo templates can include params such as <span className="font-mono">{"{{ params.headerHtml }}"}</span>, <span className="font-mono">{"{{ params.footerHtml }}"}</span>, <span className="font-mono">{"{{ params.bodyHtml }}"}</span>, and <span className="font-mono">{"{{ params.unsubscribeUrl }}"}</span>.
+                                    </div>
+                                )}
+                                {currentFlow.deliveryMode === 'brevo_automation' && (
+                                    <div className="mt-4 rounded-2xl bg-amber-50 border border-amber-100 p-4 text-[10px] font-bold text-amber-700 leading-relaxed">
+                                        Brevo automation sends its own email. Use this panel as the HBM reference, then mirror the same header/footer inside the Brevo automation template.
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Subject Input */}
                         <div className={`bg-white rounded-2xl p-5 border border-gray-100 shadow-sm relative ${currentFlow.deliveryMode === 'brevo_automation' ? 'opacity-50' : ''}`}>
                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2">{editorLang === 'he' ? 'שורת נושא' : 'Subject Line'}</label>
@@ -1567,6 +1950,144 @@ const EmailEngine = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* DEFAULTS VIEW */}
+                {activeView === 'defaults' && (
+                    <div className="h-full p-10 overflow-y-auto">
+                        <div className="max-w-6xl mx-auto grid grid-cols-[1fr_320px] gap-8">
+                            <div className="space-y-8">
+                                <div>
+                                    <h3 className="text-2xl font-black text-gray-900 tracking-tighter mb-1">Template Defaults</h3>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Reusable header, footer, colors, images, and unsubscribe controls for Email Architect templates</p>
+                                    {templateUploadStatus && <p className={`text-[10px] font-black uppercase tracking-widest mt-3 ${templateUploadStatus.startsWith('✗') ? 'text-red-500' : 'text-purple-600'}`}>{templateUploadStatus}</p>}
+                                </div>
+
+                                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-6">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <h4 className="font-black text-gray-900 text-base">Default Header</h4>
+                                            <p className="text-[10px] text-gray-400 font-bold mt-1">Used by local Email Architect sends and exposed to Brevo templates as params.</p>
+                                        </div>
+                                        <Toggle checked={config.globalStyling?.useDefaultHeader !== false} onChange={() => updateGlobalStyling({ useDefaultHeader: config.globalStyling?.useDefaultHeader === false })} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Mode</label>
+                                            <select value={config.globalStyling?.headerMode || 'gradient'} onChange={e => updateGlobalStyling({ headerMode: e.target.value })} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none">
+                                                <option value="gradient">Gradient / Color</option>
+                                                <option value="image">Image Background</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Image</label>
+                                            <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-2">
+                                                {config.globalStyling?.headerImageUrl ? <img src={resolveAssetUrl(config.globalStyling.headerImageUrl)} className="h-9 w-12 object-contain rounded-lg bg-white p-1" /> : <div className="h-9 w-12 rounded-lg bg-white text-gray-300 flex items-center justify-center"><ImageIcon className="w-4 h-4" /></div>}
+                                                <label className="ml-auto bg-purple-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase cursor-pointer">Upload<input type="file" className="hidden" accept="image/*" onChange={e => handleTemplateImageUpload(e, 'headerImageUrl')} /></label>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Title</label>
+                                            <input value={config.globalStyling?.headerTitle || ''} onChange={e => updateGlobalStyling({ headerTitle: e.target.value })} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Header Subtitle</label>
+                                            <input value={config.globalStyling?.headerSubtitle || ''} onChange={e => updateGlobalStyling({ headerSubtitle: e.target.value })} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <ColorModeControl
+                                            label="Header Background"
+                                            prefix="header"
+                                            values={config.globalStyling}
+                                            onChange={updateGlobalStyling}
+                                            fallbackFlat={config.globalStyling?.primaryColor || '#6160AB'}
+                                            fallbackTo={config.globalStyling?.secondaryColor || '#F07B3C'}
+                                        />
+                                        <ColorModeControl
+                                            label="Header Text"
+                                            prefix="header"
+                                            tone="Text"
+                                            values={config.globalStyling}
+                                            onChange={updateGlobalStyling}
+                                            fallbackFlat="#ffffff"
+                                            fallbackTo="#F7D5FF"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-6">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <h4 className="font-black text-gray-900 text-base">Default Footer</h4>
+                                            <p className="text-[10px] text-gray-400 font-bold mt-1">Controls footer copy, footer image, and unsubscribe label/link.</p>
+                                        </div>
+                                        <Toggle checked={config.globalStyling?.useDefaultFooter !== false} onChange={() => updateGlobalStyling({ useDefaultFooter: config.globalStyling?.useDefaultFooter === false })} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Footer Image</label>
+                                            <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-2">
+                                                {config.globalStyling?.footerImageUrl ? <img src={resolveAssetUrl(config.globalStyling.footerImageUrl)} className="h-9 w-12 object-contain rounded-lg" /> : <div className="h-9 w-12 rounded-lg bg-white text-gray-300 flex items-center justify-center"><ImageIcon className="w-4 h-4" /></div>}
+                                                <label className="ml-auto bg-purple-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase cursor-pointer">Upload<input type="file" className="hidden" accept="image/*" onChange={e => handleTemplateImageUpload(e, 'footerImageUrl')} /></label>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Unsubscribe Label</label>
+                                            <input value={config.globalStyling?.unsubscribeLabel || ''} onChange={e => updateGlobalStyling({ unsubscribeLabel: e.target.value })} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20" />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Unsubscribe URL Override</label>
+                                            <input value={config.globalStyling?.unsubscribeUrl || ''} onChange={e => updateGlobalStyling({ unsubscribeUrl: e.target.value })} placeholder="Leave empty to use the local unsubscribe endpoint" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-gray-300" />
+                                        </div>
+                                        <ColorModeControl
+                                            label="Footer Background"
+                                            prefix="footer"
+                                            values={config.globalStyling}
+                                            onChange={updateGlobalStyling}
+                                            fallbackFlat="#fafafc"
+                                            fallbackTo={config.globalStyling?.secondaryColor || '#F07B3C'}
+                                        />
+                                        <ColorModeControl
+                                            label="Footer Text"
+                                            prefix="footer"
+                                            tone="Text"
+                                            values={config.globalStyling}
+                                            onChange={updateGlobalStyling}
+                                            fallbackFlat="#a0a0b0"
+                                            fallbackTo={config.globalStyling?.secondaryColor || '#F07B3C'}
+                                        />
+                                        <div className="col-span-2">
+                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Footer Text / HTML</label>
+                                            <textarea value={config.globalStyling?.footerText || ''} onChange={e => updateGlobalStyling({ footerText: e.target.value })} rows={4} className="w-full bg-gray-50 rounded-xl px-4 py-3 text-xs font-bold border-none outline-none focus:ring-2 focus:ring-purple-500/20 resize-none" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="sticky top-6 self-start bg-white rounded-[2rem] border border-gray-100 p-6 shadow-sm">
+                                <div className="flex items-center justify-between mb-5">
+                                    <div>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Defaults Preview</p>
+                                        <h4 className="font-black text-gray-900">Sample Email</h4>
+                                    </div>
+                                    <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+                                        <button onClick={() => setEditorLang('en')} className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase ${editorLang === 'en' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400'}`}>EN</button>
+                                        <button onClick={() => setEditorLang('he')} className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase ${editorLang === 'he' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400'}`}>HE</button>
+                                    </div>
+                                </div>
+                                <EmailPreview
+                                    flow={{
+                                        subject_en: 'Welcome to The HBM',
+                                        subject_he: 'ברוכים הבאים ל-HBM',
+                                        body_en: 'Hello {{name}},\n\nThis preview uses your default header and footer settings.',
+                                        body_he: 'שלום {{name}},\n\nתצוגה זו משתמשת בהגדרות ברירת המחדל של הכותרת והתחתית.',
+                                    }}
+                                    config={config}
+                                    device="mobile"
+                                    activeLang={editorLang}
+                                />
                             </div>
                         </div>
                     </div>

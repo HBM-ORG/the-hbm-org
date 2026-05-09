@@ -47,6 +47,46 @@ function dedupeAutomationFlows<T extends { trigger: string; active?: boolean; de
   return Array.from(byTrigger.values());
 }
 
+function getGlobalStylingData(globalStyling: any) {
+  return {
+    primaryColor: globalStyling.primaryColor || runtimeConfig.emailPrimaryColor,
+    secondaryColor: globalStyling.secondaryColor || runtimeConfig.emailSecondaryColor,
+    logoUrl: globalStyling.logoUrl || runtimeConfig.emailLogoUrl,
+    fontFamily: globalStyling.fontFamily || runtimeConfig.emailFontFamily,
+    useDefaultHeader: globalStyling.useDefaultHeader !== false,
+    useDefaultFooter: globalStyling.useDefaultFooter !== false,
+    headerMode: globalStyling.headerMode || 'gradient',
+    headerImageUrl: globalStyling.headerImageUrl || null,
+    headerTitle: globalStyling.headerTitle || null,
+    headerSubtitle: globalStyling.headerSubtitle || null,
+    headerBackgroundColor: globalStyling.headerBackgroundColor || null,
+    headerBackgroundType: globalStyling.headerBackgroundType || null,
+    headerGradientFrom: globalStyling.headerGradientFrom || null,
+    headerGradientTo: globalStyling.headerGradientTo || null,
+    headerGradientAngle: Number.isFinite(Number(globalStyling.headerGradientAngle)) ? Number(globalStyling.headerGradientAngle) : null,
+    headerTextColor: globalStyling.headerTextColor || null,
+    headerTextType: globalStyling.headerTextType || null,
+    headerTextGradientFrom: globalStyling.headerTextGradientFrom || null,
+    headerTextGradientTo: globalStyling.headerTextGradientTo || null,
+    headerTextGradientAngle: Number.isFinite(Number(globalStyling.headerTextGradientAngle)) ? Number(globalStyling.headerTextGradientAngle) : null,
+    footerText: globalStyling.footerText || null,
+    footerImageUrl: globalStyling.footerImageUrl || null,
+    footerBackgroundColor: globalStyling.footerBackgroundColor || null,
+    footerBackgroundType: globalStyling.footerBackgroundType || null,
+    footerGradientFrom: globalStyling.footerGradientFrom || null,
+    footerGradientTo: globalStyling.footerGradientTo || null,
+    footerGradientAngle: Number.isFinite(Number(globalStyling.footerGradientAngle)) ? Number(globalStyling.footerGradientAngle) : null,
+    footerTextColor: globalStyling.footerTextColor || null,
+    footerTextType: globalStyling.footerTextType || null,
+    footerTextGradientFrom: globalStyling.footerTextGradientFrom || null,
+    footerTextGradientTo: globalStyling.footerTextGradientTo || null,
+    footerTextGradientAngle: Number.isFinite(Number(globalStyling.footerTextGradientAngle)) ? Number(globalStyling.footerTextGradientAngle) : null,
+    unsubscribeLabel: globalStyling.unsubscribeLabel || null,
+    unsubscribeUrl: globalStyling.unsubscribeUrl || null,
+    signatureUrl: globalStyling.signatureUrl || null,
+  };
+}
+
 export async function listEvents() {
   const rows = await prisma.event.findMany({ orderBy: { date: 'desc' } });
   return rows.map(withLegacyId);
@@ -275,20 +315,13 @@ export async function saveAutomationSettingsBundle({
 
   if (globalStyling) {
     try {
+      const data = getGlobalStylingData(globalStyling);
       await prisma.globalStyling.upsert({
         where: { id: 'default' },
-        update: {
-          primaryColor: globalStyling.primaryColor || runtimeConfig.emailPrimaryColor,
-          secondaryColor: globalStyling.secondaryColor || runtimeConfig.emailSecondaryColor,
-          logoUrl: globalStyling.logoUrl || runtimeConfig.emailLogoUrl,
-          fontFamily: globalStyling.fontFamily || runtimeConfig.emailFontFamily,
-        },
+        update: data,
         create: {
           id: 'default',
-          primaryColor: globalStyling.primaryColor || runtimeConfig.emailPrimaryColor,
-          secondaryColor: globalStyling.secondaryColor || runtimeConfig.emailSecondaryColor,
-          logoUrl: globalStyling.logoUrl || runtimeConfig.emailLogoUrl,
-          fontFamily: globalStyling.fontFamily || runtimeConfig.emailFontFamily,
+          ...data,
         },
       });
       results.globalStyling = true;
@@ -324,6 +357,7 @@ export async function saveAutomationSettingsBundle({
         brevoTemplateId: flow.brevoTemplateId ? String(flow.brevoTemplateId).trim() : null,
         brevoTemplateIdEn: flow.brevoTemplateIdEn ? String(flow.brevoTemplateIdEn).trim() : null,
         brevoTemplateIdHe: flow.brevoTemplateIdHe ? String(flow.brevoTemplateIdHe).trim() : null,
+        templateOverrides: flow.templateOverrides && typeof flow.templateOverrides === 'object' ? flow.templateOverrides : undefined,
         subject: {
           en: flow.subject || flow.subject_en || '',
           he: flow.subject_he || '',
