@@ -39,6 +39,8 @@ const DEFAULT_SITE_SETTINGS = Object.freeze({
     bePartUsesEmailArchitect: false,
     appendGeneralListToCta: false,
     listIdsOverride: "",
+    /** When false, Brevo contact upserts omit SMS; public marketing opt-in copy mentions email only. */
+    syncSmsAttributeToBrevo: true,
   }),
 });
 
@@ -184,6 +186,11 @@ export type SiteBrevoSettings = {
    * When non-empty, replaces env catalog for list resolution and admin dropdowns.
    */
   listIdsOverride: string;
+  /**
+   * When false, Brevo `/contacts` upserts do not set the SMS attribute (reduces duplicate-SMS errors;
+   * use when Brevo SMS automation is off). Public site marketing checkbox copy omits SMS when false.
+   */
+  syncSmsAttributeToBrevo: boolean;
 };
 
 export type SiteSettingsConfig = {
@@ -270,6 +277,7 @@ function normalizeSiteSettingsConfig(value: unknown): SiteSettingsConfig {
         typeof brevoIn.listIdsOverride === "string"
           ? brevoIn.listIdsOverride.trim()
           : defaultBrevo.listIdsOverride,
+      syncSmsAttributeToBrevo: brevoIn.syncSmsAttributeToBrevo !== false,
     },
   };
 }

@@ -120,6 +120,16 @@ function splitName(name: string): { firstName: string; lastName: string } {
   };
 }
 
+/** Brevo allows only one contact per SMS globally; upsert-by-email can fail if the number sits on another profile. */
+function isBrevoSmsAlreadyLinkedError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const m = error.message;
+  return (
+    m.includes("SMS is already associated")
+    || (m.includes("duplicate_parameter") && m.includes("duplicate_identifiers") && m.includes("SMS"))
+  );
+}
+
 async function brevoRequest(
   path: string,
   init: RequestInit,
@@ -154,6 +164,11 @@ async function lookupBrevoContactByEmail(
 export type UpsertBrevoContactOptions = {
   /** When set and non-empty, use only these list ids (CTA admin configuration). */
   explicitListIds?: number[];
+  /**
+   * When false, do not send SMS on the contact (even if phone normalizes).
+   * Driven by site settings when syncing from registrations.
+   */
+  includeSmsAttribute?: boolean;
 };
 
 export async function upsertBrevoContact(
@@ -178,36 +193,52 @@ export async function upsertBrevoContact(
       : deriveBrevoListIdsWithCatalog(payload, catalog);
 
   const smsE164 = normalizePhoneForBrevo(payload.phone);
+  const allowSms = options?.includeSmsAttribute !== false;
+  const shouldSendSms = allowSms && Boolean(smsE164);
 
-  await brevoRequest("/contacts", {
-    method: "POST",
-    headers: getBrevoHeaders(config.brevoApiKey),
-    body: JSON.stringify({
-      email: payload.email,
-      updateEnabled: true,
-      listIds: listIds.length > 0 ? listIds : undefined,
-      emailBlacklisted: payload.status.toLowerCase() === "unsubscribed",
-      smsBlacklisted: false,
-      attributes: {
-        FIRSTNAME: firstName,
-        LASTNAME: lastName,
-        ...(smsE164 ? { SMS: smsE164 } : {}),
-        LANGUAGE: payload.language,
-        STATUS: payload.status,
-        CATEGORY: payload.categories.join(" | "),
-        EVENT_ID: payload.eventIds.join(" | "),
-        EVENT_NAME: payload.eventNames.join(" | "),
-        LAST_SOURCE: payload.lastSource,
-        ACQUISITION_SOURCE: payload.lastAcquisitionSource,
-        REGISTRATION_SOURCE: payload.lastRegistrationSource,
-        REGISTRATION_COUNT: payload.registrationCount,
-        CONTACT_SUBMISSION_COUNT: payload.contactSubmissionCount,
-        FIRST_SEEN_AT: payload.firstSeenAt || undefined,
-        LAST_SEEN_AT: payload.lastSeenAt || undefined,
-        LAST_REGISTERED_AT: payload.lastRegisteredAt || undefined,
-      },
-    }),
-  }, config);
+  const postContact = (includeSms: boolean) =>
+    brevoRequest("/contacts", {
+      method: "POST",
+      headers: getBrevoHeaders(config.brevoApiKey),
+      body: JSON.stringify({
+        email: payload.email,
+        updateEnabled: true,
+        listIds: listIds.length > 0 ? listIds : undefined,
+        emailBlacklisted: payload.status.toLowerCase() === "unsubscribed",
+        smsBlacklisted: false,
+        attributes: {
+          FIRSTNAME: firstName,
+          LASTNAME: lastName,
+          ...(includeSms && smsE164 ? { SMS: smsE164 } : {}),
+          LANGUAGE: payload.language,
+          STATUS: payload.status,
+          CATEGORY: payload.categories.join(" | "),
+          EVENT_ID: payload.eventIds.join(" | "),
+          EVENT_NAME: payload.eventNames.join(" | "),
+          LAST_SOURCE: payload.lastSource,
+          ACQUISITION_SOURCE: payload.lastAcquisitionSource,
+          REGISTRATION_SOURCE: payload.lastRegistrationSource,
+          REGISTRATION_COUNT: payload.registrationCount,
+          CONTACT_SUBMISSION_COUNT: payload.contactSubmissionCount,
+          FIRST_SEEN_AT: payload.firstSeenAt || undefined,
+          LAST_SEEN_AT: payload.lastSeenAt || undefined,
+          LAST_REGISTERED_AT: payload.lastRegisteredAt || undefined,
+        },
+      }),
+    }, config);
+
+  try {
+    await postContact(shouldSendSms);
+  } catch (error) {
+    if (shouldSendSms && smsE164 && isBrevoSmsAlreadyLinkedError(error)) {
+      console.warn(
+        `[CRM] Brevo: SMS ${smsE164} is already linked to another contact; syncing ${payload.email} without SMS`,
+      );
+      await postContact(false);
+    } else {
+      throw error;
+    }
+  }
 
   const contact = await lookupBrevoContactByEmail(payload.email, config);
 

@@ -11,6 +11,7 @@ import { getPublicEmailProviderConfig, resolveEmailProviderConfig } from "./emai
 import { logEngagement } from "./email-tracking.service.js";
 import { unsubscribeEmail } from "./suppression.service.js";
 import type { BrevoListsForSync } from "./cta-brevo-lists.service.js";
+import { getSiteSettingsConfig } from "./content.service.js";
 
 const prisma = new PrismaClient();
 
@@ -227,10 +228,13 @@ export async function syncContactToProviders(
     return [];
   }
 
+  const site = await getSiteSettingsConfig();
+  const includeSmsAttribute = site.brevo.syncSmsAttributeToBrevo;
+
   const brevoOptions =
     brevoLists?.strategy === "explicit"
-      ? { explicitListIds: brevoLists.listIds }
-      : {};
+      ? { explicitListIds: brevoLists.listIds, includeSmsAttribute }
+      : { includeSmsAttribute };
 
   const results: GenericSyncResult[] = [];
 

@@ -3,6 +3,8 @@ const DEFAULT_PUBLIC_BRAND_STATE = Object.freeze({
   contactEmail: "office@thehbm.org",
   whatsappPhoneE164: "972587073136",
   whatsappPhoneDisplay: "0587073136",
+  /** Mirrors site settings `brevo.syncSmsAttributeToBrevo` (default true). */
+  syncSmsAttributeToBrevo: true,
   siteMedia: Object.freeze({
     joinMovementVideoUrl:
       "https://test-org-site-media-files.nyc3.digitaloceanspaces.com/legacy/wordpress-media/2025/05/banner-video.mp4",
@@ -60,6 +62,7 @@ export function applyPublicBrandSettings(settings = {}) {
     inquiryWhatsappMessage:
       String(settings?.inquiryWhatsappMessage || "").trim()
       || DEFAULT_PUBLIC_BRAND_STATE.inquiryWhatsappMessage,
+    syncSmsAttributeToBrevo: settings?.brevo?.syncSmsAttributeToBrevo !== false,
   };
 }
 
@@ -106,5 +109,9 @@ export const PUBLIC_BRAND = {
   },
   get inquiryWhatsappUrl() {
     return buildWhatsappUrl(publicBrandState.inquiryWhatsappMessage);
+  },
+  /** When false, forms should not promise SMS in marketing opt-in copy. */
+  get syncSmsAttributeToBrevo() {
+    return publicBrandState.syncSmsAttributeToBrevo !== false;
   },
 };

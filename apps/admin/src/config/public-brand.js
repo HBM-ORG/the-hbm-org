@@ -3,6 +3,7 @@ const DEFAULT_PUBLIC_BRAND_STATE = Object.freeze({
   contactEmail: "office@thehbm.org",
   whatsappPhoneE164: "972587073136",
   whatsappPhoneDisplay: "0587073136",
+  syncSmsAttributeToBrevo: true,
   socialLinks: Object.freeze({
     instagram: "https://www.instagram.com/the__hbm/",
     facebook: "https://www.facebook.com/people/The-HBM/61573100935457/",
@@ -49,6 +50,7 @@ export function applyPublicBrandSettings(settings = {}) {
     inquiryWhatsappMessage:
       String(settings?.inquiryWhatsappMessage || "").trim()
       || DEFAULT_PUBLIC_BRAND_STATE.inquiryWhatsappMessage,
+    syncSmsAttributeToBrevo: settings?.brevo?.syncSmsAttributeToBrevo !== false,
   };
 }
 
@@ -90,5 +92,8 @@ export const PUBLIC_BRAND = {
   },
   get inquiryWhatsappUrl() {
     return buildWhatsappUrl(publicBrandState.inquiryWhatsappMessage);
+  },
+  get syncSmsAttributeToBrevo() {
+    return publicBrandState.syncSmsAttributeToBrevo !== false;
   },
 };

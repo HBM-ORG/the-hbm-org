@@ -37,6 +37,31 @@ function inferFieldFromProviderMessage(message: string | undefined): string | un
   return undefined;
 }
 
+type RegisterBrevoFailureCode =
+  | "brevo_sms_duplicate"
+  | "brevo_invalid_phone"
+  | "crm_sync_failed";
+
+function classifyBrevoSyncFailure(message: string | undefined): {
+  code: RegisterBrevoFailureCode;
+  field?: string;
+} {
+  const m = (message || "").toLowerCase();
+  if (
+    m.includes("sms is already associated")
+    || (m.includes("duplicate_parameter") && m.includes("sms"))
+  ) {
+    return { code: "brevo_sms_duplicate", field: "phone" };
+  }
+  if (m.includes("invalid phone") || (m.includes("invalid_parameter") && m.includes("phone"))) {
+    return { code: "brevo_invalid_phone", field: "phone" };
+  }
+  return {
+    code: "crm_sync_failed",
+    field: inferFieldFromProviderMessage(message),
+  };
+}
+
 function validationJsonBody(issue: RegisterValidationIssue): Record<string, unknown> {
   const body: Record<string, unknown> = {
     error: issue.message,
@@ -170,13 +195,10 @@ export function createRegistrationController({
 
         const brevoResult = syncResults.find((r) => r.provider === "brevo");
         if (brevoResult?.status === "failed") {
-          const field = inferFieldFromProviderMessage(brevoResult.message);
+          const { code, field } = classifyBrevoSyncFailure(brevoResult.message);
           res.status(502).json({
-            error:
-              brevoResult.message
-              || "Registration saved but email service could not be updated. Please try again or contact us.",
+            code,
             field,
-            code: "crm_sync_failed",
             leadId: row.id,
           });
           return;
@@ -217,7 +239,10 @@ export function createRegistrationController({
         });
       } catch (error) {
         console.error("Registration error:", error);
-        res.status(500).json({ error: "Failed to save registration" });
+        res.status(500).json({
+          error: "Failed to save registration",
+          code: "registration_save_failed",
+        });
       }
     },
 

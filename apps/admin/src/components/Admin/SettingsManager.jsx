@@ -9,6 +9,7 @@ import {
 import { getStoredAdminPassword } from "../../utils/admin-auth.js";
 import { getApiBase, resolveAssetUrl } from "../../utils/api.js";
 import { deleteUploadedFile, uploadFile } from "../../utils/upload.js";
+import { applyPublicBrandSettings } from "../../config/public-brand.js";
 
 function IosToggle({ checked, onChange, disabled }) {
   return (
@@ -71,6 +72,7 @@ const DEFAULT_SETTINGS = {
     bePartUsesEmailArchitect: false,
     appendGeneralListToCta: false,
     listIdsOverride: "",
+    syncSmsAttributeToBrevo: true,
   },
 };
 
@@ -253,6 +255,7 @@ export default function SettingsManager() {
 
     const merged = mergeSettings(data.settings || nextSettings, nextSettings);
     setSettings(merged);
+    applyPublicBrandSettings(merged);
     return merged;
   }
 
@@ -789,6 +792,13 @@ export default function SettingsManager() {
                 ))}
               </select>
             </label>
+
+            <ToggleRow
+              label="Sync phone (SMS) to Brevo contacts"
+              description="OFF: we do not send the SMS field on Brevo upserts (fewer errors when one phone is used with different emails). The public marketing checkbox will mention email only. Use when you are not running Brevo SMS automations."
+              checked={settings.brevo?.syncSmsAttributeToBrevo !== false}
+              onChange={(v) => updateBrevoField("syncSmsAttributeToBrevo", v)}
+            />
 
             <ToggleRow
               label="Bypass Email Architect for site CTAs"

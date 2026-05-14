@@ -8,6 +8,8 @@ import CalendarDropdown from '../Events/CalendarDropdown';
 import { MagicCard } from '../ui/MagicCard';
 import { getApiBase } from '../../utils/api';
 import { getCtaFormFieldsForVideo } from '../../../../../lib/cta-form-fields.js';
+import { registerApiFailureUi } from '../../../../../lib/register-api-error.js';
+import { PUBLIC_BRAND } from '../../config/public-brand.js';
 
 const VideoEventModal = ({ isOpen, onClose, config }) => {
     const { lang } = useI18n();
@@ -62,14 +64,11 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                 hbmAnalytics.recordRegComplete('video-event', config.title.en || config.title, formState.source);
                 setSubmitStatus('success');
             } else {
-                const hint = lang === 'he' && data.hintHe ? data.hintHe : data.hint;
+                const ui = registerApiFailureUi(data, t, lang);
                 setRegisterFieldError({
-                    field: typeof data.field === 'string' ? data.field : null,
-                    message:
-                        typeof data.error === 'string'
-                            ? data.error
-                            : t({en: 'Registration failed. Please try again.', he: 'ההרשמה נכשלה. אנא נסה שוב.'}, lang),
-                    hint: typeof hint === 'string' ? hint : undefined,
+                    field: ui.field,
+                    message: ui.message,
+                    hint: ui.hint,
                 });
                 setSubmitStatus('idle');
             }
@@ -235,10 +234,18 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                                             <label className="flex items-start gap-3 cursor-pointer group">
                                                 <input type="checkbox" className="mt-1 w-4 h-4 shrink-0 rounded border-white/40 bg-white/5 text-[#F07B3C] focus:ring-[#F07B3C]" checked={formState.marketingOptIn} onChange={(e) => setFormState({ ...formState, marketingOptIn: e.target.checked })} />
                                                 <span className="text-[10px] text-white/50 leading-tight">
-                                                    {t({
-                                                        en: "I am interested in receiving updates and marketing content from HBM via email and SMS.",
-                                                        he: "אני מעוניין/ת לקבל עדכונים ותוכן שיווקי מ-HBM באמצעות דוא\"ל ו-SMS."
-                                                    }, lang)}
+                                                    {t(
+                                                        PUBLIC_BRAND.syncSmsAttributeToBrevo
+                                                            ? {
+                                                                en: "I am interested in receiving updates and marketing content from HBM via email and SMS.",
+                                                                he: "אני מעוניין/ת לקבל עדכונים ותוכן שיווקי מ-HBM באמצעות דוא\"ל ו-SMS.",
+                                                              }
+                                                            : {
+                                                                en: "I am interested in receiving updates and marketing content from HBM by email.",
+                                                                he: "אני מעוניין/ת לקבל עדכונים ותוכן שיווקי מ-HBM באמצעות דוא\"ל.",
+                                                              },
+                                                        lang,
+                                                    )}
                                                 </span>
                                             </label>
                                             )}

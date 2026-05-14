@@ -18,6 +18,8 @@ import CalendarDropdown from "./CalendarDropdown";
 import { hbmAnalytics } from "../../utils/admin-analytics";
 import { getApiBase, resolveAssetUrl } from "../../utils/api";
 import { getCtaFormFieldsForEvent } from "../../../../../lib/cta-form-fields.js";
+import { registerApiFailureUi } from "../../../../../lib/register-api-error.js";
+import { PUBLIC_BRAND } from "../../config/public-brand.js";
 
 const NextEventHero = ({
   event,
@@ -109,21 +111,11 @@ const NextEventHero = ({
         );
         setSubmitStatus("success");
       } else {
-        const hint =
-          effectiveLang === "he" && data.hintHe ? data.hintHe : data.hint;
+        const ui = registerApiFailureUi(data, t, effectiveLang);
         setRegisterFieldError({
-          field: typeof data.field === "string" ? data.field : null,
-          message:
-            typeof data.error === "string"
-              ? data.error
-              : t(
-                  {
-                    en: "Registration failed. Please try again.",
-                    he: "ההרשמה נכשלה. אנא נסה שוב.",
-                  },
-                  effectiveLang,
-                ),
-          hint: typeof hint === "string" ? hint : undefined,
+          field: ui.field,
+          message: ui.message,
+          hint: ui.hint,
         });
         setSubmitStatus("idle");
       }
@@ -564,10 +556,15 @@ const NextEventHero = ({
                                 />
                                 <span className="text-[10px] text-white/50 leading-tight">
                                   {t(
-                                    {
-                                      en: "Keep me updated with community news and events via email and SMS.",
-                                      he: "אשמח לקבל עדכונים על אירועי הקהילה וחדשות ב-SMS ובמייל.",
-                                    },
+                                    PUBLIC_BRAND.syncSmsAttributeToBrevo
+                                      ? {
+                                          en: "Keep me updated with community news and events via email and SMS.",
+                                          he: "אשמח לקבל עדכונים על אירועי הקהילה וחדשות ב-SMS ובמייל.",
+                                        }
+                                      : {
+                                          en: "Keep me updated with community news and events by email.",
+                                          he: "אשמח לקבל עדכונים על אירועי הקהילה וחדשות במייל.",
+                                        },
                                     effectiveLang,
                                   )}
                                 </span>
