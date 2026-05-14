@@ -11,6 +11,16 @@ import {
   type TriggerAutomationByEvent,
 } from "../services/registration.service.js";
 import { syncContactToProviders } from "../services/provider-sync.service.js";
+import { getSiteSettingsConfig } from "../services/content.service.js";
+import {
+  resolveBrevoListsForNewsletter,
+  resolveBrevoListsForRegister,
+} from "../services/cta-brevo-lists.service.js";
+import {
+  getCtaFormConfigForRegister,
+  validateRegisterBodyAgainstRules,
+  type RegisterValidationIssue,
+} from "../services/register-cta-form.service.js";
 
 type RegistrationControllerDeps = {
   triggerAutomationByEvent: TriggerAutomationByEvent;
@@ -18,6 +28,24 @@ type RegistrationControllerDeps = {
 
 function logRegistrationError(context: string, error: unknown): void {
   console.error(`[registration.controller:${context}]`, error);
+}
+
+function inferFieldFromProviderMessage(message: string | undefined): string | undefined {
+  const m = (message || "").toLowerCase();
+  if (m.includes("phone") || m.includes("sms")) return "phone";
+  if (m.includes("email")) return "email";
+  return undefined;
+}
+
+function validationJsonBody(issue: RegisterValidationIssue): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    error: issue.message,
+    field: issue.field,
+    code: issue.code,
+  };
+  if (issue.hint) body.hint = issue.hint;
+  if (issue.hintHe) body.hintHe = issue.hintHe;
+  return body;
 }
 
 function getQueryString(value: unknown): string {
@@ -41,20 +69,7 @@ export function createRegistrationController({
      */
     async register(req: Request, res: Response): Promise<void> {
       try {
-        const { name, email, phone, source, regSource, eventId, eventName, language } =
-          req.body || {};
-
-        if (!name || !email || !phone) {
-          res.status(400).json({ error: "Missing required fields" });
-          return;
-        }
-
-        if (!isValidEmail(email)) {
-          res.status(400).json({ error: "Invalid email format" });
-          return;
-        }
-
-        const { row, automationPayload } = await createRegistration({
+        const {
           name,
           email,
           phone,
@@ -63,11 +78,98 @@ export function createRegistrationController({
           eventId,
           eventName,
           language,
+          termsAccepted,
+        } = req.body || {};
+
+        const effectiveEventId =
+          typeof eventId === "string" && eventId.trim() ? eventId.trim() : "general";
+
+        const termsBool = termsAccepted === true;
+        console.log(
+          "[CRM] Register attempt",
+          JSON.stringify({
+            eventId: effectiveEventId,
+            eventName:
+              typeof eventName === "string" ? eventName.trim().slice(0, 200) : null,
+            name: typeof name === "string" ? name.trim() : "",
+            email: typeof email === "string" ? email.trim().toLowerCase() : "",
+            phone: typeof phone === "string" ? phone.trim() : "",
+            source: typeof source === "string" ? source.trim() : "",
+            regSource:
+              typeof regSource === "string" ? regSource.trim() : null,
+            language: typeof language === "string" ? language.trim() : null,
+            termsAccepted: termsBool,
+          }),
+        );
+
+        const rules = await getCtaFormConfigForRegister(effectiveEventId);
+        const validationIssue = validateRegisterBodyAgainstRules(
+          { name, email, phone, source, termsAccepted: termsBool },
+          rules,
+        );
+        if (validationIssue) {
+          res.status(400).json(validationJsonBody(validationIssue));
+          return;
+        }
+
+        const emailStr = typeof email === "string" ? email.trim() : "";
+        if (emailStr && !isValidEmail(emailStr)) {
+          res.status(400).json({
+            error: "Invalid email format",
+            field: "email",
+            code: "invalid_email",
+          });
+          return;
+        }
+
+        const { row, automationPayload } = await createRegistration({
+          name: typeof name === "string" ? name : "",
+          email: typeof email === "string" ? email : "",
+          phone: typeof phone === "string" ? phone : "",
+          source,
+          regSource,
+          eventId: effectiveEventId,
+          eventName,
+          language,
         });
 
         console.log(
           `[CRM] New registration: ${name} (${email}) | Event: ${eventName} | Source: ${source}`,
         );
+
+        const site = await getSiteSettingsConfig();
+        const brevoLists = await resolveBrevoListsForRegister(
+          effectiveEventId,
+          site,
+        );
+        const syncResults = await syncContactToProviders(
+          automationPayload.email,
+          brevoLists,
+        );
+
+        for (const r of syncResults) {
+          if (r.provider !== "brevo") continue;
+          const extra = r.message ? ` — ${r.message}` : "";
+          if (r.status === "failed") {
+            console.error(`[CRM] Brevo sync failed for ${automationPayload.email}${extra}`);
+          } else {
+            console.log(`[CRM] Brevo sync ${r.status}${extra}`);
+          }
+        }
+
+        const brevoResult = syncResults.find((r) => r.provider === "brevo");
+        if (brevoResult?.status === "failed") {
+          const field = inferFieldFromProviderMessage(brevoResult.message);
+          res.status(502).json({
+            error:
+              brevoResult.message
+              || "Registration saved but email service could not be updated. Please try again or contact us.",
+            field,
+            code: "crm_sync_failed",
+            leadId: row.id,
+          });
+          return;
+        }
 
         res.json({
           success: true,
@@ -77,25 +179,27 @@ export function createRegistrationController({
 
         setImmediate(async () => {
           try {
-            await syncContactToProviders(automationPayload.email);
-            if (eventId === "video-event") {
-              await triggerAutomationByEvent(
-                "onVideoRegistration",
-                automationPayload,
-              );
-            } else {
-              await triggerAutomationByEvent(
-                "onPhysicalRegistration",
-                automationPayload,
-              );
-            }
+            const bypass = site.brevo.ctaBypassEmailArchitect;
+            if (!bypass) {
+              if (effectiveEventId === "video-event") {
+                await triggerAutomationByEvent(
+                  "onVideoRegistration",
+                  automationPayload,
+                );
+              } else {
+                await triggerAutomationByEvent(
+                  "onPhysicalRegistration",
+                  automationPayload,
+                );
+              }
 
-            if (source === "8min_journey") {
-              await triggerAutomationByEvent("on8MinJourney", automationPayload);
-            }
+              if (source === "8min_journey") {
+                await triggerAutomationByEvent("on8MinJourney", automationPayload);
+              }
 
-            await triggerAutomationByEvent("registration", automationPayload);
-            await triggerAutomationByEvent("site_signup", automationPayload);
+              await triggerAutomationByEvent("registration", automationPayload);
+              await triggerAutomationByEvent("site_signup", automationPayload);
+            }
           } catch (error) {
             console.error("[Email] Registration automation trigger error:", error);
           }
@@ -133,12 +237,21 @@ export function createRegistrationController({
           source,
         });
 
-        await triggerAutomationByEvent("onNewsletterSignup", automationPayload);
+        const site = await getSiteSettingsConfig();
+        const brevoLists = await resolveBrevoListsForNewsletter(site);
+
+        const runNewsletterArchitect =
+          !site.brevo.ctaBypassEmailArchitect
+          || Boolean(site.brevo.bePartUsesEmailArchitect);
+        if (runNewsletterArchitect) {
+          await triggerAutomationByEvent("onNewsletterSignup", automationPayload);
+        }
+
         res.json({ success: true, message: "Newsletter signup successful" });
 
         setImmediate(async () => {
           try {
-            await syncContactToProviders(automationPayload.email);
+            await syncContactToProviders(automationPayload.email, brevoLists);
           } catch (error) {
             console.error("[CRM] Newsletter provider sync error:", error);
           }

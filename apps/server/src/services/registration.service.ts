@@ -74,7 +74,7 @@ function serializeRegistration(row: {
 export async function createRegistration(input: {
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
   source?: string;
   regSource?: string;
   eventId?: string;
@@ -94,7 +94,7 @@ export async function createRegistration(input: {
     data: {
       name: input.name,
       email: normalizedEmail,
-      phone: input.phone,
+      phone: input.phone?.trim() || null,
       acquisitionSource: input.source || "Direct",
       registrationSource: input.regSource || "website_general",
       source: input.regSource || input.source || "Direct Web",

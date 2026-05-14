@@ -20,6 +20,11 @@ import { motion, Reorder, AnimatePresence } from "framer-motion";
 import NextEventHero from "../Events/NextEventHero";
 import { getAssetBase, resolveAssetUrl } from "../../utils/api";
 import { uploadFile } from "../../utils/upload";
+import {
+  dateTimeLocalInputToIso,
+  toDateTimeLocalValue,
+} from "../../utils/datetime-local.js";
+import CtaFormFieldsEditor from "./CtaFormFieldsEditor";
 
 // This component wraps the public NextEventHero but injects "Edit Mode" props
 const VisualEventEditor = ({
@@ -286,8 +291,10 @@ const VisualEventEditor = ({
                 </label>
                 <input
                   type="datetime-local"
-                  value={event.date}
-                  onChange={(e) => onUpdate("date", e.target.value)}
+                  value={toDateTimeLocalValue(event.date)}
+                  onChange={(e) =>
+                    onUpdate("date", dateTimeLocalInputToIso(e.target.value))
+                  }
                   className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all shadow-sm focus:bg-white"
                 />
               </div>
@@ -337,6 +344,23 @@ const VisualEventEditor = ({
                   placeholder="<iframe src=...>"
                 />
               </div>
+
+              {!isPastEvent && (
+                <div className="group">
+                  <label className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">
+                    Registration form (CTA)
+                  </label>
+                  <CtaFormFieldsEditor
+                    value={event.registration?.formFields}
+                    onChange={(next) =>
+                      onUpdate("registration", {
+                        ...(event.registration || {}),
+                        formFields: next,
+                      })
+                    }
+                  />
+                </div>
+              )}
             </div>
           )}
           {activeTab === "content" && (

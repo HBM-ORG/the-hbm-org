@@ -1,11 +1,16 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { runtimeConfig } from "../config/runtime-config.js";
-import { checkBrevoConnection, upsertBrevoContact, verifyBrevoWebhookRequest } from "./brevo.service.js";
+import {
+  checkBrevoConnection,
+  upsertBrevoContact,
+  verifyBrevoWebhookRequest,
+} from "./brevo.service.js";
 import { getContactSyncPayloadByEmail } from "./contact-profile.service.js";
 import { upsertEspoContact, verifyEspoWebhookRequest } from "./espocrm.service.js";
 import { getPublicEmailProviderConfig, resolveEmailProviderConfig } from "./email-provider-config.service.js";
 import { logEngagement } from "./email-tracking.service.js";
 import { unsubscribeEmail } from "./suppression.service.js";
+import type { BrevoListsForSync } from "./cta-brevo-lists.service.js";
 
 const prisma = new PrismaClient();
 
@@ -210,16 +215,27 @@ export async function getProviderStatusSummary() {
   };
 }
 
-export async function syncContactToProviders(email: string) {
+export async function syncContactToProviders(
+  email: string,
+  brevoLists?: BrevoListsForSync,
+) {
   const payload = await getContactSyncPayloadByEmail(email);
   if (!payload) {
+    console.warn(
+      `[provider-sync] No ContactProfile for ${email}; Brevo/EspoCRM sync skipped (profile should exist after registration rebuild)`,
+    );
     return [];
   }
+
+  const brevoOptions =
+    brevoLists?.strategy === "explicit"
+      ? { explicitListIds: brevoLists.listIds }
+      : {};
 
   const results: GenericSyncResult[] = [];
 
   try {
-    const brevoResult = await upsertBrevoContact(payload);
+    const brevoResult = await upsertBrevoContact(payload, brevoOptions);
     await persistProviderSync(payload.email, brevoResult);
     results.push(brevoResult);
   } catch (error) {

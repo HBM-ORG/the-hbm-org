@@ -7,6 +7,7 @@ import type {
   VideoEventConfig,
 } from "../types/content.js";
 import { runtimeConfig } from "../config/runtime-config.js";
+import { normalizeCtaFormFields } from "../utils/cta-form-fields.js";
 
 const prisma = new PrismaClient();
 const VIDEO_EVENT_KEY = "videoEvent";
@@ -31,6 +32,14 @@ const DEFAULT_SITE_SETTINGS = Object.freeze({
   siteMedia: Object.freeze({
     joinMovementVideoUrl: DEFAULT_JOIN_MOVEMENT_VIDEO_URL,
   }),
+  brevo: Object.freeze({
+    newsletterListKey: "newsletter",
+    ctaBypassEmailArchitect: false,
+    /** When CTAs bypass architect, still fire Email Architect for “Be Part” / footer newsletter if true. */
+    bePartUsesEmailArchitect: false,
+    appendGeneralListToCta: false,
+    listIdsOverride: "",
+  }),
 });
 
 export function getDefaultSiteSettingsConfig(): SiteSettingsConfig {
@@ -49,6 +58,7 @@ export function getDefaultVideoEventConfig(): VideoEventConfig {
     image: "",
     participants: 0,
     registrationFields: { name: true, email: true, phone: true },
+    brevoListKey: "",
   });
 }
 
@@ -78,6 +88,15 @@ function normalizeRegistrationFields(value: unknown): RegistrationFieldsConfig {
 function normalizeVideoEventConfig(value: unknown): VideoEventConfig {
   const source = isRecord(value) ? value : {};
   const title = isRecord(source.title) ? source.title : {};
+  const registrationFields = normalizeRegistrationFields(source.registrationFields);
+  const legacy: { name?: boolean; email?: boolean; phone?: boolean } = {};
+  if (!registrationFields.name) legacy.name = false;
+  if (!registrationFields.email) legacy.email = false;
+  if (!registrationFields.phone) legacy.phone = false;
+  const formFields = normalizeCtaFormFields(
+    source.formFields,
+    Object.keys(legacy).length ? legacy : null,
+  );
 
   return {
     ...source,
@@ -104,7 +123,12 @@ function normalizeVideoEventConfig(value: unknown): VideoEventConfig {
     image: typeof source.image === "string" ? source.image : "",
     participants:
       typeof source.participants === "number" ? source.participants : 0,
-    registrationFields: normalizeRegistrationFields(source.registrationFields),
+    registrationFields,
+    formFields,
+    brevoListKey:
+      typeof source.brevoListKey === "string" && source.brevoListKey.trim()
+        ? source.brevoListKey.trim().toLowerCase()
+        : "",
   };
 }
 
@@ -130,6 +154,25 @@ function normalizeKnowledgeBaseConfig(value: unknown): KnowledgeBaseConfig {
   };
 }
 
+export type SiteBrevoSettings = {
+  /** Key in BREVO_LIST_IDS for footer / “Be Part” /api/newsletter signups. */
+  newsletterListKey: string;
+  /** When true, CTA paths skip Email Architect triggers; Brevo list automations own email. */
+  ctaBypassEmailArchitect: boolean;
+  /**
+   * When `ctaBypassEmailArchitect` is true, newsletter can still run `onNewsletterSignup`
+   * through Email Architect if this is true (Brevo list + architect hybrid).
+   */
+  bePartUsesEmailArchitect: boolean;
+  /** When true, also add the `general` list to explicit CTA list resolution. */
+  appendGeneralListToCta: boolean;
+  /**
+   * Optional override of env `BREVO_LIST_IDS` (same format: `general:3,event:5,...`).
+   * When non-empty, replaces env catalog for list resolution and admin dropdowns.
+   */
+  listIdsOverride: string;
+};
+
 export type SiteSettingsConfig = {
   organizationName: string;
   contactEmail: string;
@@ -145,12 +188,15 @@ export type SiteSettingsConfig = {
   siteMedia: {
     joinMovementVideoUrl: string;
   };
+  brevo: SiteBrevoSettings;
 };
 
 function normalizeSiteSettingsConfig(value: unknown): SiteSettingsConfig {
   const source = isRecord(value) ? value : {};
   const socialLinks = isRecord(source.socialLinks) ? source.socialLinks : {};
   const siteMedia = isRecord(source.siteMedia) ? source.siteMedia : {};
+  const brevoIn = isRecord(source.brevo) ? source.brevo : {};
+  const defaultBrevo = DEFAULT_SITE_SETTINGS.brevo;
 
   return {
     organizationName:
@@ -198,6 +244,19 @@ function normalizeSiteSettingsConfig(value: unknown): SiteSettingsConfig {
         && siteMedia.joinMovementVideoUrl.trim()
           ? siteMedia.joinMovementVideoUrl.trim()
           : DEFAULT_SITE_SETTINGS.siteMedia.joinMovementVideoUrl,
+    },
+    brevo: {
+      newsletterListKey:
+        typeof brevoIn.newsletterListKey === "string"
+          ? brevoIn.newsletterListKey.trim().toLowerCase()
+          : defaultBrevo.newsletterListKey,
+      ctaBypassEmailArchitect: Boolean(brevoIn.ctaBypassEmailArchitect),
+      bePartUsesEmailArchitect: Boolean(brevoIn.bePartUsesEmailArchitect),
+      appendGeneralListToCta: Boolean(brevoIn.appendGeneralListToCta),
+      listIdsOverride:
+        typeof brevoIn.listIdsOverride === "string"
+          ? brevoIn.listIdsOverride.trim()
+          : defaultBrevo.listIdsOverride,
     },
   };
 }

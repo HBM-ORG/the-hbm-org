@@ -17,6 +17,7 @@ import CountdownTimer from "./CountdownTimer";
 import CalendarDropdown from "./CalendarDropdown";
 import { hbmAnalytics } from "../../utils/admin-analytics";
 import { getApiBase, resolveAssetUrl } from "../../utils/api";
+import { getCtaFormFieldsForEvent } from "../../../../../lib/cta-form-fields.js";
 
 const NextEventHero = ({
   event,
@@ -36,8 +37,18 @@ const NextEventHero = ({
     name: "",
     email: "",
     phone: "",
+    source: "",
+    termsAccepted: false,
+    marketingOptIn: false,
   });
   const [submitStatus, setSubmitStatus] = useState("idle");
+  const [registerFieldError, setRegisterFieldError] = useState(null);
+
+  const regFields = getCtaFormFieldsForEvent(event || {});
+
+  const clearRegisterFieldError = (field) => {
+    setRegisterFieldError((prev) => (prev?.field === field ? null : prev));
+  };
 
   // Normalize data access with defaults
   const promoBubbles = event.promoBubbles || [];
@@ -69,19 +80,26 @@ const NextEventHero = ({
   const handleRegister = async (e) => {
     e.preventDefault();
     setSubmitStatus("submitting");
+    setRegisterFieldError(null);
 
     try {
       const bodyData = {
-        ...formState,
+        name: formState.name,
+        email: formState.email,
+        phone: formState.phone,
+        source: formState.source,
         eventId: event.id || "physical",
         eventName: event.title?.en || event.title,
         language: lang,
+        termsAccepted: formState.termsAccepted === true,
       };
       const response = await fetch(`${getApiBase()}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),
       });
+
+      const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
         hbmAnalytics.recordRegComplete(
@@ -91,15 +109,44 @@ const NextEventHero = ({
         );
         setSubmitStatus("success");
       } else {
-        alert("Registration failed. Please try again.");
+        const hint =
+          effectiveLang === "he" && data.hintHe ? data.hintHe : data.hint;
+        setRegisterFieldError({
+          field: typeof data.field === "string" ? data.field : null,
+          message:
+            typeof data.error === "string"
+              ? data.error
+              : t(
+                  {
+                    en: "Registration failed. Please try again.",
+                    he: "ההרשמה נכשלה. אנא נסה שוב.",
+                  },
+                  effectiveLang,
+                ),
+          hint: typeof hint === "string" ? hint : undefined,
+        });
         setSubmitStatus("idle");
       }
     } catch (err) {
       console.error(err);
-      alert("Connection error. Is the server running?");
+      setRegisterFieldError({
+        field: null,
+        message: t(
+          {
+            en: "Connection error. Is the server running?",
+            he: "שגיאת חיבור. האם השרת פועל?",
+          },
+          effectiveLang,
+        ),
+      });
       setSubmitStatus("idle");
     }
   };
+
+  const fieldRingClass = (field) =>
+    registerFieldError?.field === field
+      ? "ring-2 ring-red-400 ring-offset-0 ring-offset-transparent"
+      : "";
 
   return (
     <div className="min-h-screen bg-[#FAF9F5] font-['Sora'] pb-20">
@@ -284,189 +331,264 @@ const NextEventHero = ({
                       </div>
                     ) : (
                       <>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <input
-                            type="text"
-                            placeholder={t(
-                              { en: "Full Name", he: "שם מלא" },
-                              effectiveLang,
-                            )}
-                            required
-                            className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm"
-                            value={formState.name}
-                            onChange={(e) =>
-                              setFormState({
-                                ...formState,
-                                name: e.target.value,
-                              })
+                        {(regFields.name.show || regFields.phone.show) && (
+                          <div
+                            className={
+                              regFields.name.show && regFields.phone.show
+                                ? "grid md:grid-cols-2 gap-4"
+                                : ""
                             }
-                          />
-                          <input
-                            type="tel"
-                            placeholder={t(
-                              { en: "Phone Number", he: "מספר טלפון" },
-                              effectiveLang,
-                            )}
-                            required
-                            className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm"
-                            value={formState.phone}
-                            onChange={(e) =>
-                              setFormState({
-                                ...formState,
-                                phone: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                        <input
-                          type="email"
-                          placeholder={t(
-                            { en: "Email Address", he: "כתובת אימייל" },
-                            effectiveLang,
-                          )}
-                          required
-                          className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm"
-                          value={formState.email}
-                          onChange={(e) =>
-                            setFormState({
-                              ...formState,
-                              email: e.target.value,
-                            })
-                          }
-                        />
-
-                        <div className="relative">
-                          <select
-                            className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm appearance-none"
-                            value={formState.source || ""}
-                            onChange={(e) =>
-                              setFormState({
-                                ...formState,
-                                source: e.target.value,
-                              })
-                            }
-                            required
                           >
-                            <option value="" disabled className="text-gray-500">
-                              {t(
-                                {
-                                  en: "How did you hear about us?",
-                                  he: "איך שמעת עלינו?",
-                                },
-                                effectiveLang,
-                              )}
-                            </option>
-                            <option value="social" className="text-black">
-                              {t(
-                                { en: "Social Networks", he: "רשתות חברתיות" },
-                                effectiveLang,
-                              )}
-                            </option>
-                            <option value="whatsapp" className="text-black">
-                              {t(
-                                { en: "WhatsApp Group", he: "קבוצת וואטסאפ" },
-                                effectiveLang,
-                              )}
-                            </option>
-                            <option value="friend" className="text-black">
-                              {t(
-                                {
-                                  en: "Friend / Word of Mouth",
-                                  he: "חבר / מפה לאוזן",
-                                },
-                                effectiveLang,
-                              )}
-                            </option>
-                            <option value="staff" className="text-black">
-                              HBM Staff
-                            </option>
-                            <option value="other" className="text-black">
-                              {t({ en: "Other", he: "אחר" }, effectiveLang)}
-                            </option>
-                          </select>
-                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
-                        </div>
-
-                        <div className="space-y-3 pt-2 text-left px-1">
-                          <label className="flex items-start gap-3 cursor-pointer group">
-                            <div className="relative flex items-center pt-0.5">
+                            {regFields.name.show && (
                               <input
-                                type="checkbox"
-                                required
-                                className="peer sr-only"
+                                type="text"
+                                placeholder={t(
+                                  { en: "Full Name", he: "שם מלא" },
+                                  effectiveLang,
+                                )}
+                                required={regFields.name.required}
+                                className={`w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm ${fieldRingClass("name")}`}
+                                value={formState.name}
+                                onChange={(e) => {
+                                  clearRegisterFieldError("name");
+                                  setFormState({
+                                    ...formState,
+                                    name: e.target.value,
+                                  });
+                                }}
                               />
-                              <div className="w-4 h-4 border border-white/40 rounded bg-white/5 peer-checked:bg-[#F07B3C] peer-checked:border-[#F07B3C] transition-all"></div>
-                              <CheckCircle className="w-3 h-3 text-white absolute top-0.5 left-0.5 opacity-0 peer-checked:opacity-100 transition-opacity" />
-                            </div>
-                            <span className="text-[10px] text-white/70 leading-tight">
-                              {t(
-                                {
-                                  en: (
-                                    <>
-                                      I approve that I have read and agree to
-                                      the{" "}
-                                      <a
-                                        href={resolveAssetUrl("/assets/events/ef3d3fe33_HBMTOU-FINAL (1).pdf")}
-                                        target="_blank"
-                                        className="text-[#F07B3C] hover:underline mx-1"
-                                      >
-                                        Terms of Use
-                                      </a>{" "}
-                                      and{" "}
-                                      <a
-                                        href={resolveAssetUrl("/assets/events/af6ef7603_HBMPrivacyPolicyFINAL.pdf")}
-                                        target="_blank"
-                                        className="text-[#F07B3C] hover:underline mx-1"
-                                      >
-                                        Privacy Policy
-                                      </a>
-                                      .
-                                    </>
-                                  ),
-                                  he: (
-                                    <>
-                                      אני מאשר/ת שקראתי והסכמתי ל
-                                      <a
-                                        href={resolveAssetUrl("/assets/events/ef3d3fe33_HBMTOU-FINAL (1).pdf")}
-                                        target="_blank"
-                                        className="text-[#F07B3C] hover:underline mx-1"
-                                      >
-                                        תנאי השימוש
-                                      </a>{" "}
-                                      ול
-                                      <a
-                                        href={resolveAssetUrl("/assets/events/af6ef7603_HBMPrivacyPolicyFINAL.pdf")}
-                                        target="_blank"
-                                        className="text-[#F07B3C] hover:underline mx-1"
-                                      >
-                                        מדיניות הפרטיות
-                                      </a>
-                                      .
-                                    </>
-                                  ),
-                                },
-                                effectiveLang,
-                              )}
-                            </span>
-                          </label>
+                            )}
+                            {regFields.phone.show && (
+                              <input
+                                type="tel"
+                                placeholder={t(
+                                  {
+                                    en: "Phone Number",
+                                    he: "מספר טלפון",
+                                  },
+                                  effectiveLang,
+                                )}
+                                required={regFields.phone.required}
+                                className={`w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm ${fieldRingClass("phone")}`}
+                                value={formState.phone}
+                                onChange={(e) => {
+                                  clearRegisterFieldError("phone");
+                                  setFormState({
+                                    ...formState,
+                                    phone: e.target.value,
+                                  });
+                                }}
+                              />
+                            )}
+                          </div>
+                        )}
+                        {regFields.email.show && (
+                          <input
+                            type="email"
+                            placeholder={t(
+                              {
+                                en: "Email Address",
+                                he: "כתובת אימייל",
+                              },
+                              effectiveLang,
+                            )}
+                            required={regFields.email.required}
+                            className={`w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm ${fieldRingClass("email")}`}
+                            value={formState.email}
+                            onChange={(e) => {
+                              clearRegisterFieldError("email");
+                              setFormState({
+                                ...formState,
+                                email: e.target.value,
+                              });
+                            }}
+                          />
+                        )}
 
-                          <label className="flex items-start gap-3 cursor-pointer group">
-                            <div className="relative flex items-center pt-0.5">
-                              <input type="checkbox" className="peer sr-only" />
-                              <div className="w-4 h-4 border border-white/40 rounded bg-white/5 peer-checked:bg-[#F07B3C] peer-checked:border-[#F07B3C] transition-all"></div>
-                              <CheckCircle className="w-3 h-3 text-white absolute top-0.5 left-0.5 opacity-0 peer-checked:opacity-100 transition-opacity" />
-                            </div>
-                            <span className="text-[10px] text-white/50 leading-tight">
-                              {t(
-                                {
-                                  en: "Keep me updated with community news and events via email and SMS.",
-                                  he: "אשמח לקבל עדכונים על אירועי הקהילה וחדשות ב-SMS ובמייל.",
-                                },
-                                effectiveLang,
-                              )}
-                            </span>
-                          </label>
-                        </div>
+                        {regFields.source.show && (
+                          <div className="relative">
+                            <select
+                              className={`w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm appearance-none ${fieldRingClass("source")}`}
+                              value={formState.source || ""}
+                              onChange={(e) => {
+                                clearRegisterFieldError("source");
+                                setFormState({
+                                  ...formState,
+                                  source: e.target.value,
+                                });
+                              }}
+                              required={regFields.source.required}
+                            >
+                              <option value="" disabled className="text-gray-500">
+                                {t(
+                                  {
+                                    en: "How did you hear about us?",
+                                    he: "איך שמעת עלינו?",
+                                  },
+                                  effectiveLang,
+                                )}
+                              </option>
+                              <option value="social" className="text-black">
+                                {t(
+                                  {
+                                    en: "Social Networks",
+                                    he: "רשתות חברתיות",
+                                  },
+                                  effectiveLang,
+                                )}
+                              </option>
+                              <option value="whatsapp" className="text-black">
+                                {t(
+                                  {
+                                    en: "WhatsApp Group",
+                                    he: "קבוצת וואטסאפ",
+                                  },
+                                  effectiveLang,
+                                )}
+                              </option>
+                              <option value="friend" className="text-black">
+                                {t(
+                                  {
+                                    en: "Friend / Word of Mouth",
+                                    he: "חבר / מפה לאוזן",
+                                  },
+                                  effectiveLang,
+                                )}
+                              </option>
+                              <option value="staff" className="text-black">
+                                HBM Staff
+                              </option>
+                              <option value="other" className="text-black">
+                                {t(
+                                  { en: "Other", he: "אחר" },
+                                  effectiveLang,
+                                )}
+                              </option>
+                            </select>
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
+                          </div>
+                        )}
+
+                        {(regFields.terms.show || regFields.marketing.show) && (
+                          <div
+                            className={`space-y-3 pt-2 text-left px-1 rounded-lg ${fieldRingClass("terms")}`}
+                          >
+                            {regFields.terms.show && (
+                              <label className="flex items-start gap-3 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  className="mt-1 w-4 h-4 shrink-0 rounded border-white/40 bg-white/5 text-[#F07B3C] focus:ring-[#F07B3C]"
+                                  checked={formState.termsAccepted}
+                                  onChange={(e) => {
+                                    clearRegisterFieldError("terms");
+                                    setFormState({
+                                      ...formState,
+                                      termsAccepted: e.target.checked,
+                                    });
+                                  }}
+                                  required={regFields.terms.required}
+                                />
+                                <span className="text-[10px] text-white/70 leading-tight">
+                                  {t(
+                                    {
+                                      en: (
+                                        <>
+                                          I approve that I have read and agree
+                                          to the{" "}
+                                          <a
+                                            href={resolveAssetUrl(
+                                              "/assets/events/ef3d3fe33_HBMTOU-FINAL (1).pdf",
+                                            )}
+                                            target="_blank"
+                                            className="text-[#F07B3C] hover:underline mx-1"
+                                          >
+                                            Terms of Use
+                                          </a>{" "}
+                                          and{" "}
+                                          <a
+                                            href={resolveAssetUrl(
+                                              "/assets/events/af6ef7603_HBMPrivacyPolicyFINAL.pdf",
+                                            )}
+                                            target="_blank"
+                                            className="text-[#F07B3C] hover:underline mx-1"
+                                          >
+                                            Privacy Policy
+                                          </a>
+                                          .
+                                        </>
+                                      ),
+                                      he: (
+                                        <>
+                                          אני מאשר/ת שקראתי והסכמתי ל
+                                          <a
+                                            href={resolveAssetUrl(
+                                              "/assets/events/ef3d3fe33_HBMTOU-FINAL (1).pdf",
+                                            )}
+                                            target="_blank"
+                                            className="text-[#F07B3C] hover:underline mx-1"
+                                          >
+                                            תנאי השימוש
+                                          </a>{" "}
+                                          ול
+                                          <a
+                                            href={resolveAssetUrl(
+                                              "/assets/events/af6ef7603_HBMPrivacyPolicyFINAL.pdf",
+                                            )}
+                                            target="_blank"
+                                            className="text-[#F07B3C] hover:underline mx-1"
+                                          >
+                                            מדיניות הפרטיות
+                                          </a>
+                                          .
+                                        </>
+                                      ),
+                                    },
+                                    effectiveLang,
+                                  )}
+                                </span>
+                              </label>
+                            )}
+
+                            {regFields.marketing.show && (
+                              <label className="flex items-start gap-3 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  className="mt-1 w-4 h-4 shrink-0 rounded border-white/40 bg-white/5 text-[#F07B3C] focus:ring-[#F07B3C]"
+                                  checked={formState.marketingOptIn}
+                                  onChange={(e) =>
+                                    setFormState({
+                                      ...formState,
+                                      marketingOptIn: e.target.checked,
+                                    })
+                                  }
+                                />
+                                <span className="text-[10px] text-white/50 leading-tight">
+                                  {t(
+                                    {
+                                      en: "Keep me updated with community news and events via email and SMS.",
+                                      he: "אשמח לקבל עדכונים על אירועי הקהילה וחדשות ב-SMS ובמייל.",
+                                    },
+                                    effectiveLang,
+                                  )}
+                                </span>
+                              </label>
+                            )}
+                          </div>
+                        )}
+
+                        {registerFieldError && (
+                          <div
+                            role="alert"
+                            className="rounded-xl border border-red-400/50 bg-red-950/40 px-4 py-3 text-left text-sm text-red-100"
+                          >
+                            <p className="font-semibold">{registerFieldError.message}</p>
+                            {registerFieldError.hint ? (
+                              <p className="mt-1 text-xs text-red-100/85">
+                                {registerFieldError.hint}
+                              </p>
+                            ) : null}
+                          </div>
+                        )}
 
                         <button
                           type="submit"

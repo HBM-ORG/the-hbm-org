@@ -88,6 +88,7 @@ import {
   List,
 } from "lucide-react";
 import VisualEventEditor from "../components/Admin/VisualEventEditor";
+import CtaFormFieldsEditor from "../components/Admin/CtaFormFieldsEditor";
 import EmailEngine from "../components/Admin/EmailEngine";
 import SiteContentManager from "../components/Admin/SiteContentManager";
 import AnalyticsDashboard from "../components/Admin/AnalyticsDashboard";
@@ -98,14 +99,7 @@ import { getApiBase, resolveAssetUrl } from "../utils/api";
 import { getStoredAdminPassword } from "../utils/admin-auth.js";
 import { deleteUploadedFile, uploadFile } from "../utils/upload";
 import { useAdminAuth } from "../hooks/useAdminAuth.js";
-
-function toDateTimeLocalValue(rawValue) {
-  if (!rawValue) return "";
-  const parsed = new Date(rawValue);
-  if (Number.isNaN(parsed.getTime())) return "";
-  const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 16);
-}
+import { toDateTimeLocalValue } from "../utils/datetime-local.js";
 
 const AdminDashboard = () => {
   const {
@@ -130,6 +124,7 @@ const AdminDashboard = () => {
   const [automationConfig, setAutomationConfig] = useState(null);
   const [emailEngineStatus, setEmailEngineStatus] = useState("loading"); // 'loading', 'online', 'error'
   const [videoEventConfig, setVideoEventConfig] = useState(null);
+  const [brevoListCatalog, setBrevoListCatalog] = useState([]);
   const [activeFlowId, setActiveFlowId] = useState("registration_confirmed");
   const [previewDevice, setPreviewDevice] = useState("desktop");
 
@@ -324,6 +319,13 @@ const AdminDashboard = () => {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => data && setVideoEventConfig(data))
       .catch(() => {});
+
+    fetch(`${base}/api/brevo-list-catalog`)
+      .then((res) => (res.ok ? res.json() : { entries: [] }))
+      .then((data) =>
+        setBrevoListCatalog(Array.isArray(data?.entries) ? data.entries : []),
+      )
+      .catch(() => setBrevoListCatalog([]));
   }, []);
 
   useEffect(() => {
@@ -2155,61 +2157,48 @@ const AdminDashboard = () => {
 
                   <div>
                     <label className="block text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest">
-                      Popup Registration Fields
+                      Popup registration form
                     </label>
-                    <div className="flex gap-6 bg-gray-50 p-4 rounded-xl">
-                      <label className="flex items-center gap-2 cursor-pointer font-bold text-xs">
-                        <input
-                          type="checkbox"
-                          checked={videoEventConfig.registrationFields?.name}
-                          onChange={(e) =>
-                            setVideoEventConfig((p) => ({
-                              ...p,
-                              registrationFields: {
-                                ...p.registrationFields,
-                                name: e.target.checked,
-                              },
-                            }))
-                          }
-                          className="w-4 h-4 text-purple-600 rounded"
-                        />
-                        Name
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer font-bold text-xs">
-                        <input
-                          type="checkbox"
-                          checked={videoEventConfig.registrationFields?.email}
-                          onChange={(e) =>
-                            setVideoEventConfig((p) => ({
-                              ...p,
-                              registrationFields: {
-                                ...p.registrationFields,
-                                email: e.target.checked,
-                              },
-                            }))
-                          }
-                          className="w-4 h-4 text-purple-600 rounded"
-                        />
-                        Email
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer font-bold text-xs">
-                        <input
-                          type="checkbox"
-                          checked={videoEventConfig.registrationFields?.phone}
-                          onChange={(e) =>
-                            setVideoEventConfig((p) => ({
-                              ...p,
-                              registrationFields: {
-                                ...p.registrationFields,
-                                phone: e.target.checked,
-                              },
-                            }))
-                          }
-                          className="w-4 h-4 text-purple-600 rounded"
-                        />
-                        Phone
-                      </label>
-                    </div>
+                    <CtaFormFieldsEditor
+                      value={videoEventConfig.formFields}
+                      legacyRegistrationFields={videoEventConfig.registrationFields}
+                      onChange={(next) =>
+                        setVideoEventConfig((p) => ({
+                          ...p,
+                          formFields: next,
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className="mt-6">
+                    <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
+                      Brevo list (video popup CTA)
+                    </label>
+                    <p className="text-[9px] text-gray-500 mb-2">
+                      Key from{" "}
+                      <span className="font-mono">BREVO_LIST_IDS</span>. Empty =
+                      server heuristic (typically{" "}
+                      <span className="font-mono">video</span>
+                      ).
+                    </p>
+                    <select
+                      value={videoEventConfig.brevoListKey || ""}
+                      onChange={(e) =>
+                        setVideoEventConfig((p) => ({
+                          ...p,
+                          brevoListKey: e.target.value,
+                        }))
+                      }
+                      className="w-full p-4 bg-gray-50 rounded-xl border-none font-bold text-xs"
+                    >
+                      <option value="">Default (heuristic from env)</option>
+                      {brevoListCatalog.map((entry) => (
+                        <option key={entry.key} value={entry.key}>
+                          {entry.key} → list #{entry.id}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -2640,6 +2629,56 @@ const AdminDashboard = () => {
                                 className="w-full p-4 bg-gray-50 rounded-xl border-none font-black"
                               />
                             </div>
+                          </div>
+
+                          <div className="mt-6 pt-6 border-t border-gray-100">
+                            <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">
+                              Brevo list (event registration CTA)
+                            </label>
+                            <p className="text-[9px] text-gray-500 mb-2 font-medium">
+                              Key from{" "}
+                              <span className="font-mono">BREVO_LIST_IDS</span>.
+                              Empty = server uses the default heuristic (event /
+                              general lists from contact profile).
+                            </p>
+                            <select
+                              value={
+                                currentEvent.registration?.brevoListKey || ""
+                              }
+                              onChange={(e) =>
+                                handleNestedChange(
+                                  "registration",
+                                  "brevoListKey",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full p-4 bg-gray-50 rounded-xl border-none font-bold text-xs"
+                            >
+                              <option value="">
+                                Default (heuristic from env)
+                              </option>
+                              {brevoListCatalog.map((entry) => (
+                                <option key={entry.key} value={entry.key}>
+                                  {entry.key} → list #{entry.id}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="mt-6 pt-6 border-t border-gray-100">
+                            <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
+                              Registration form (CTA)
+                            </label>
+                            <CtaFormFieldsEditor
+                              value={currentEvent.registration?.formFields}
+                              onChange={(next) =>
+                                handleNestedChange(
+                                  "registration",
+                                  "formFields",
+                                  next,
+                                )
+                              }
+                            />
                           </div>
 
                           <div className="mt-8 pt-8 border-t grid grid-cols-1 gap-4">
