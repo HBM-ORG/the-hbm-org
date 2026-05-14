@@ -9,6 +9,7 @@ import {
   getHowItWorksConfig,
   getHowItWorksStaging,
   getKnowledgeBaseConfig,
+  getPublicVideoEventPayload,
   getVideoEventConfig,
   publishHowItWorks,
   saveSiteSettingsConfig,
@@ -45,9 +46,14 @@ function getLockTarget(value: unknown): ContentLockTarget | null {
  *     summary: Get video event config
  *     tags: [Content]
  */
-export async function getVideoEvent(_req: Request, res: Response): Promise<void> {
+export async function getVideoEvent(req: Request, res: Response): Promise<void> {
   try {
-    res.json(await getVideoEventConfig());
+    const full = await getVideoEventConfig();
+    if (await isAuthorizedRequest(req)) {
+      res.json(full);
+      return;
+    }
+    res.json(getPublicVideoEventPayload(full));
   } catch (error) {
     logContentError("getVideoEvent", error);
     res.status(200).json(getDefaultVideoEventConfig());

@@ -25,6 +25,8 @@ export type CtaFormFieldsConfig = {
 };
 
 export type VideoEventConfig = {
+  /** When false, public site hides the video block and video registration is disabled. */
+  published: boolean;
   title: LocalizedText;
   date: string;
   time: string;

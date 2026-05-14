@@ -61,6 +61,14 @@ const Events = () => {
     fetch(`${getApiBase()}/api/video-event`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        if (!data) {
+          setVideoEventConfig(fallbackConfig);
+          return;
+        }
+        if (data.published === false) {
+          setVideoEventConfig(null);
+          return;
+        }
         if (data?.title && (data.title.en || data.title.he)) {
           setVideoEventConfig(data);
         } else {

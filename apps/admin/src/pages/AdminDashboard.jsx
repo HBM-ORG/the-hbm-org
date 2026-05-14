@@ -315,7 +315,12 @@ const AdminDashboard = () => {
       })
       .catch(() => setEmailEngineStatus("error"));
 
-    fetch(`${base}/api/video-event`)
+    fetch(`${base}/api/video-event`, {
+      headers: (() => {
+        const pw = getStoredAdminPassword();
+        return pw ? { "X-Admin-Password": pw } : {};
+      })(),
+    })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => data && setVideoEventConfig(data))
       .catch(() => {});
@@ -687,7 +692,7 @@ const AdminDashboard = () => {
   };
 
   const saveVideoEventToBackend = async () => {
-    setSaveStatus("Saving Video Event...");
+    setSaveStatus("Saving...");
     try {
       const base = getApiBase();
       const adminPassword = getStoredAdminPassword();
@@ -1999,7 +2004,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {!isEditing && topView === "videoevent" && videoEventConfig && (
+          {!isEditing && topView === "videoevent" && videoEventConfig?.title && (
             <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden animate-in fade-in duration-500 border p-8">
               <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-100">
                 <div>
@@ -2008,14 +2013,51 @@ const AdminDashboard = () => {
                     Video Event Configuration
                   </h2>
                   <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">
-                    Controls the popup registration on the homepage
+                    Controls the popup registration on the events page
                   </p>
                 </div>
                 <button
                   onClick={saveVideoEventToBackend}
                   className="bg-red-500 text-white px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 flex items-center gap-2"
                 >
-                  <Save className="w-4 h-4" /> Deploy Video Event
+                  <Save className="w-4 h-4" /> Save
+                </button>
+              </div>
+
+              <div className="mb-8 flex items-start justify-between gap-4 rounded-2xl border border-gray-200 bg-gray-50/80 p-5">
+                <div className="min-w-0 pr-2">
+                  <span className="block text-sm font-black uppercase tracking-widest text-gray-900">
+                    Published on site
+                  </span>
+                  <span className="mt-1 block text-xs font-medium leading-relaxed text-gray-500">
+                    When off, visitors do not see the video event block and cannot
+                    submit registrations for it.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={videoEventConfig.published !== false}
+                  aria-label="Published on public site"
+                  onClick={() =>
+                    setVideoEventConfig((p) => ({
+                      ...p,
+                      published: !(p.published !== false),
+                    }))
+                  }
+                  className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+                    videoEventConfig.published !== false
+                      ? "bg-emerald-500"
+                      : "bg-gray-300"
+                  } cursor-pointer`}
+                >
+                  <span
+                    className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                      videoEventConfig.published !== false
+                        ? "translate-x-5"
+                        : "translate-x-0"
+                    }`}
+                  />
                 </button>
               </div>
 

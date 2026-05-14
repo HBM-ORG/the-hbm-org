@@ -16,8 +16,14 @@ const NextVideoEvent = ({ config }) => {
     setImgSrc(config?.image || DEFAULT_VIDEO_THUMBNAIL);
   }, [config?.image]);
 
-  // If no config or config is completely empty, don't show
-  if (!config || !config.title?.en) return null;
+  // If unpublished or no usable title, don't show
+  if (
+    !config
+    || config.published === false
+    || !(config.title?.en || config.title?.he)
+  ) {
+    return null;
+  }
 
   return (
     <>

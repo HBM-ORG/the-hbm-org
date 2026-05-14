@@ -98,8 +98,11 @@ function normalizeVideoEventConfig(value: unknown): VideoEventConfig {
     Object.keys(legacy).length ? legacy : null,
   );
 
+  const published = source.published !== false;
+
   return {
     ...source,
+    published,
     title: {
       en:
         typeof title.en === "string"
@@ -130,6 +133,16 @@ function normalizeVideoEventConfig(value: unknown): VideoEventConfig {
         ? source.brevoListKey.trim().toLowerCase()
         : "",
   };
+}
+
+/** Public API: no event details when unpublished (draft / hidden). */
+export function getPublicVideoEventPayload(
+  config: VideoEventConfig,
+): VideoEventConfig | { published: false } {
+  if (!config.published) {
+    return { published: false };
+  }
+  return config;
 }
 
 function normalizeHowItWorksConfig(value: unknown): HowItWorksConfig {

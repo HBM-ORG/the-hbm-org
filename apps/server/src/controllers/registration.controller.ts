@@ -11,7 +11,7 @@ import {
   type TriggerAutomationByEvent,
 } from "../services/registration.service.js";
 import { syncContactToProviders } from "../services/provider-sync.service.js";
-import { getSiteSettingsConfig } from "../services/content.service.js";
+import { getSiteSettingsConfig, getVideoEventConfig } from "../services/content.service.js";
 import {
   resolveBrevoListsForNewsletter,
   resolveBrevoListsForRegister,
@@ -83,6 +83,17 @@ export function createRegistrationController({
 
         const effectiveEventId =
           typeof eventId === "string" && eventId.trim() ? eventId.trim() : "general";
+
+        if (effectiveEventId === "video-event") {
+          const videoCfg = await getVideoEventConfig();
+          if (!videoCfg.published) {
+            res.status(403).json({
+              error: "Video event registration is not available.",
+              code: "video_event_unpublished",
+            });
+            return;
+          }
+        }
 
         const termsBool = termsAccepted === true;
         console.log(
