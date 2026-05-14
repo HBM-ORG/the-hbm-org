@@ -6,6 +6,7 @@
 
 import { Router } from "express";
 import {
+  getBrevoListCatalog,
   getHowItWorks,
   getHowItWorksStage,
   getKnowledgeBase,
@@ -25,6 +26,7 @@ const router = Router();
 router.get("/video-event", getVideoEvent);
 router.post("/video-event", saveVideoEvent);
 router.get("/site-settings", getSiteSettings);
+router.get("/brevo-list-catalog", getBrevoListCatalog);
 router.post("/site-settings", saveSiteSettings);
 router.get("/cms/how-it-works/staging", getHowItWorksStage);
 router.post("/cms/how-it-works/staging", saveHowItWorksStage);

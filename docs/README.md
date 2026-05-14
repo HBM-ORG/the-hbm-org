@@ -7,6 +7,7 @@
 | [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md) | PM2 and deployment steps |
 | [DEPLOY_STATUS.md](DEPLOY_STATUS.md) | Status overview and handoff (CRM, content, email) |
 | [EMAIL_SYSTEM.md](EMAIL_SYSTEM.md) | **Email:** what exists, what’s needed, Mailchimp/Bravo options |
+| [BREVO_CTA_LIST_DIRECT_IMPLEMENTATION_PLAN.md](BREVO_CTA_LIST_DIRECT_IMPLEMENTATION_PLAN.md) | Trackable plan: CTA forms → Brevo lists (env catalog), optional Email Architect bypass, future re-wiring |
 | [MEDIA_STORAGE_AND_CDN_MIGRATION_CHECKLIST.md](MEDIA_STORAGE_AND_CDN_MIGRATION_CHECKLIST.md) | Trackable plan for moving CMS media to bucket/CDN and removing static duplicates |
 | [HOSTINGER_GUIDE.md](HOSTINGER_GUIDE.md) | Legacy Hostinger deployment history |
 | [QA_REPORT.md](QA_REPORT.md) | Legacy QA handoff notes |

@@ -7,45 +7,83 @@ import CountdownTimer from '../Events/CountdownTimer';
 import CalendarDropdown from '../Events/CalendarDropdown';
 import { MagicCard } from '../ui/MagicCard';
 import { getApiBase } from '../../utils/api';
+import { getCtaFormFieldsForVideo } from '../../../../../lib/cta-form-fields.js';
 
 const VideoEventModal = ({ isOpen, onClose, config }) => {
     const { lang } = useI18n();
     const [submitStatus, setSubmitStatus] = useState('idle');
+    const [registerFieldError, setRegisterFieldError] = useState(null);
     const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-    const [formState, setFormState] = useState({ name: '', email: '', phone: '', source: '' });
+    const [formState, setFormState] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        source: '',
+        termsAccepted: false,
+        marketingOptIn: false,
+    });
 
-    if (!isOpen || !config) return null;
+    const regFields = getCtaFormFieldsForVideo(config || {});
+
+    const clearRegisterFieldError = (field) => {
+        setRegisterFieldError((prev) => (prev?.field === field ? null : prev));
+    };
+
+    const fieldRingClass = (field) =>
+        registerFieldError?.field === field
+            ? 'ring-2 ring-red-400 ring-offset-0 ring-offset-transparent'
+            : '';
 
     const handleRegister = async (e) => {
         e.preventDefault();
         setSubmitStatus('submitting');
-        
+        setRegisterFieldError(null);
+
         try {
             const res = await fetch(`${getApiBase()}/api/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    ...formState,
+                    name: formState.name,
+                    email: formState.email,
+                    phone: formState.phone,
+                    source: formState.source,
                     eventId: 'video-event',
-                    eventName: config.title.en || config.title,
+                    eventName: config?.title?.en || config?.title,
                     language: lang,
-                    regSource: 'video_event_modal'
+                    regSource: 'video_event_modal',
+                    termsAccepted: formState.termsAccepted === true,
                 })
             });
-            
+
+            const data = await res.json().catch(() => ({}));
+
             if (res.ok) {
                 hbmAnalytics.recordRegComplete('video-event', config.title.en || config.title, formState.source);
                 setSubmitStatus('success');
             } else {
-                alert(t({en: 'Registration failed. Please try again.', he: 'ההרשמה נכשלה. אנא נסה שוב.'}, lang));
+                const hint = lang === 'he' && data.hintHe ? data.hintHe : data.hint;
+                setRegisterFieldError({
+                    field: typeof data.field === 'string' ? data.field : null,
+                    message:
+                        typeof data.error === 'string'
+                            ? data.error
+                            : t({en: 'Registration failed. Please try again.', he: 'ההרשמה נכשלה. אנא נסה שוב.'}, lang),
+                    hint: typeof hint === 'string' ? hint : undefined,
+                });
                 setSubmitStatus('idle');
             }
         } catch (err) {
             console.error(err);
-            alert(t({en: 'Connection error. Is the server running?', he: 'שגיאת חיבור. האם השרת פועל?'}, lang));
+            setRegisterFieldError({
+                field: null,
+                message: t({en: 'Connection error. Is the server running?', he: 'שגיאת חיבור. האם השרת פועל?'}, lang),
+            });
             setSubmitStatus('idle');
         }
     };
+
+    if (!isOpen || !config) return null;
 
     return (
         <AnimatePresence>
@@ -140,28 +178,31 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                                         </div>
                                 ) : (
                                     <>
-                                        {config.registrationFields?.name !== false && (
-                                            <input type="text" placeholder={t({en: "Full Name", he: "שם מלא"}, lang)} required className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm"
-                                                value={formState.name} onChange={(e) => setFormState({...formState, name: e.target.value})} />
+                                        {(regFields.name.show || regFields.phone.show) && (
+                                            <div className={regFields.name.show && regFields.phone.show ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : ''}>
+                                                {regFields.name.show && (
+                                                    <input type="text" placeholder={t({en: "Full Name", he: "שם מלא"}, lang)} required={regFields.name.required} className={`w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm ${fieldRingClass('name')}`}
+                                                        value={formState.name} onChange={(e) => { clearRegisterFieldError('name'); setFormState({...formState, name: e.target.value}); }} />
+                                                )}
+                                                {regFields.phone.show && (
+                                                    <input type="tel" placeholder={t({en: "Phone Number", he: "מספר טלפון"}, lang)} required={regFields.phone.required} className={`w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm ${fieldRingClass('phone')}`}
+                                                        value={formState.phone} onChange={(e) => { clearRegisterFieldError('phone'); setFormState({...formState, phone: e.target.value}); }} />
+                                                )}
+                                            </div>
                                         )}
-                                        
-                                        {config.registrationFields?.email !== false && (
-                                            <input type="email" placeholder={t({en: "Email Address", he: "כתובת אימייל"}, lang)} required className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm"
-                                                value={formState.email} onChange={(e) => setFormState({...formState, email: e.target.value})} />
+
+                                        {regFields.email.show && (
+                                            <input type="email" placeholder={t({en: "Email Address", he: "כתובת אימייל"}, lang)} required={regFields.email.required} className={`w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm ${fieldRingClass('email')}`}
+                                                value={formState.email} onChange={(e) => { clearRegisterFieldError('email'); setFormState({...formState, email: e.target.value}); }} />
                                         )}
-                                        
-                                        {config.registrationFields?.phone !== false && (
-                                            <input type="tel" placeholder={t({en: "Phone Number", he: "מספר טלפון"}, lang)} required className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm"
-                                                value={formState.phone} onChange={(e) => setFormState({...formState, phone: e.target.value})} />
-                                        )}
-                                        
-                                        {/* Source Dropdown */}
+
+                                        {regFields.source.show && (
                                         <div className="relative">
                                             <select 
-                                                className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm appearance-none"
+                                                className={`w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-[#F07B3C] focus:bg-black/50 transition-all text-sm backdrop-blur-sm appearance-none ${fieldRingClass('source')}`}
                                                 value={formState.source} 
-                                                onChange={(e) => setFormState({...formState, source: e.target.value})}
-                                                required
+                                                onChange={(e) => { clearRegisterFieldError('source'); setFormState({...formState, source: e.target.value}); }}
+                                                required={regFields.source.required}
                                             >
                                                 <option value="" disabled className="text-gray-500">
                                                     {t({en: "How did you hear about us?", he: "איך שמעת עלינו?"}, lang)}
@@ -174,15 +215,13 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                                             </select>
                                             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
                                         </div>
+                                        )}
 
-                                        {/* Legal Checkboxes */}
-                                        <div className="space-y-3 pt-2 text-left px-1">
+                                        {(regFields.terms.show || regFields.marketing.show) && (
+                                        <div className={`space-y-3 pt-2 text-left px-1 rounded-lg ${fieldRingClass('terms')}`}>
+                                            {regFields.terms.show && (
                                             <label className="flex items-start gap-3 cursor-pointer group">
-                                                <div className="relative flex items-center pt-0.5">
-                                                    <input type="checkbox" required className="peer sr-only" />
-                                                    <div className="w-4 h-4 border border-white/40 rounded bg-white/5 peer-checked:bg-[#F07B3C] peer-checked:border-[#F07B3C] transition-all"></div>
-                                                    <CheckCircle className="w-3 h-3 text-white absolute top-0.5 left-0.5 opacity-0 peer-checked:opacity-100 transition-opacity" />
-                                                </div>
+                                                <input type="checkbox" required={regFields.terms.required} className="mt-1 w-4 h-4 shrink-0 rounded border-white/40 bg-white/5 text-[#F07B3C] focus:ring-[#F07B3C]" checked={formState.termsAccepted} onChange={(e) => { clearRegisterFieldError('terms'); setFormState({ ...formState, termsAccepted: e.target.checked }); }} />
                                                 <span className="text-[10px] text-white/70 leading-tight">
                                                     {t({
                                                         en: <>I approve that I have read and agree to the <a href="/assets/events/ef3d3fe33_HBMTOU-FINAL (1).pdf" target="_blank" className="text-[#F07B3C] hover:underline mx-1">Terms of Use</a> and <a href="/assets/events/af6ef7603_HBMPrivacyPolicyFINAL.pdf" target="_blank" className="text-[#F07B3C] hover:underline mx-1">Privacy Policy</a>.</>,
@@ -190,13 +229,11 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                                                     }, lang)}
                                                 </span>
                                             </label>
+                                            )}
 
+                                            {regFields.marketing.show && (
                                             <label className="flex items-start gap-3 cursor-pointer group">
-                                                <div className="relative flex items-center pt-0.5">
-                                                    <input type="checkbox" className="peer sr-only" />
-                                                    <div className="w-4 h-4 border border-white/40 rounded bg-white/5 peer-checked:bg-[#F07B3C] peer-checked:border-[#F07B3C] transition-all"></div>
-                                                    <CheckCircle className="w-3 h-3 text-white absolute top-0.5 left-0.5 opacity-0 peer-checked:opacity-100 transition-opacity" />
-                                                </div>
+                                                <input type="checkbox" className="mt-1 w-4 h-4 shrink-0 rounded border-white/40 bg-white/5 text-[#F07B3C] focus:ring-[#F07B3C]" checked={formState.marketingOptIn} onChange={(e) => setFormState({ ...formState, marketingOptIn: e.target.checked })} />
                                                 <span className="text-[10px] text-white/50 leading-tight">
                                                     {t({
                                                         en: "I am interested in receiving updates and marketing content from HBM via email and SMS.",
@@ -204,7 +241,18 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                                                     }, lang)}
                                                 </span>
                                             </label>
+                                            )}
                                         </div>
+                                        )}
+
+                                        {registerFieldError && (
+                                        <div role="alert" className="rounded-xl border border-red-400/50 bg-red-950/40 px-4 py-3 text-left text-sm text-red-100">
+                                            <p className="font-semibold">{registerFieldError.message}</p>
+                                            {registerFieldError.hint ? (
+                                                <p className="mt-1 text-xs text-red-100/85">{registerFieldError.hint}</p>
+                                            ) : null}
+                                        </div>
+                                        )}
 
                                         <button type="submit" disabled={submitStatus === 'submitting'}
                                             className="w-full py-4 rounded-2xl font-bold text-white shadow-xl flex items-center justify-center gap-2 mt-6 hover:brightness-110 active:scale-95 transition-all text-lg border border-white/20"

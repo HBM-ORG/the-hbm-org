@@ -18,6 +18,11 @@ import {
   saveVideoEventConfig,
   toggleContentLock,
 } from "../services/content.service.js";
+import {
+  brevoCatalogToPublicEntries,
+  getRuntimeBrevoListCatalog,
+} from "../services/brevo-list-catalog.service.js";
+import { getEffectiveBrevoListCatalog } from "../services/brevo-catalog-resolve.service.js";
 import { isAuthorizedRequest } from "../middleware/admin-auth.js";
 
 function logContentError(context: string, error: unknown) {
@@ -79,8 +84,31 @@ export async function getSiteSettings(
   try {
     res.status(200).json(await getSiteSettingsConfig());
   } catch (error) {
-    logContentError("getSiteSettings", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.warn(`[getSiteSettings] ${msg}`);
     res.status(200).json(getDefaultSiteSettingsConfig());
+  }
+}
+
+/**
+ * @openapi
+ * /api/brevo-list-catalog:
+ *   get:
+ *     summary: Brevo list keys and numeric ids from BREVO_LIST_IDS (for admin UI)
+ *     tags: [Content]
+ */
+export async function getBrevoListCatalog(
+  _req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const catalog = await getEffectiveBrevoListCatalog();
+    res.status(200).json({ entries: brevoCatalogToPublicEntries(catalog) });
+  } catch (error) {
+    logContentError("getBrevoListCatalog", error);
+    res.status(200).json({
+      entries: brevoCatalogToPublicEntries(getRuntimeBrevoListCatalog()),
+    });
   }
 }
 

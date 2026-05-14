@@ -10,6 +10,9 @@ import {
 } from "../services/cms.service.js";
 import { runtimeConfig } from "../config/runtime-config.js";
 import { isAuthorizedRequest } from "../middleware/admin-auth.js";
+import { brevoAdminTestAddToList } from "../services/brevo.service.js";
+import { getEffectiveBrevoListCatalog } from "../services/brevo-catalog-resolve.service.js";
+import { resolveListIdsFromKeys } from "../services/brevo-list-catalog.service.js";
 
 function logCmsError(context: string, error: unknown) {
   console.error(`[cms.controller:${context}]`, error);
@@ -380,6 +383,63 @@ export async function saveAutomationSettings(
     res.status(500).json({
       error:
         err instanceof Error ? err.message : 'Failed to save automation settings',
+    });
+  }
+}
+
+/**
+ * Admin: upsert a contact into Brevo and add them to a list (triggers list-based automations).
+ */
+export async function postBrevoTestListSubscription(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (!(await isAuthorizedRequest(req))) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const { email, listKey, displayName } = req.body || {};
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+    const key = typeof listKey === "string" ? listKey.trim().toLowerCase() : "";
+
+    if (!normalizedEmail || !key) {
+      res.status(400).json({ error: "email and listKey are required" });
+      return;
+    }
+
+    const catalog = await getEffectiveBrevoListCatalog();
+    const { listIds, unknownKeys } = resolveListIdsFromKeys([key], catalog);
+    if (unknownKeys.length || listIds.length === 0) {
+      res.status(400).json({
+        error: `Unknown list key "${listKey}". Check Site Settings override or BREVO_LIST_IDS.`,
+      });
+      return;
+    }
+
+    const result = await brevoAdminTestAddToList({
+      email: normalizedEmail,
+      listIds,
+      displayName: typeof displayName === "string" ? displayName : undefined,
+    });
+
+    if (result.status === "skipped") {
+      res.status(400).json({ error: result.message || "Brevo not configured" });
+      return;
+    }
+
+    res.json({
+      success: true,
+      listIds,
+      listKey: key,
+      result,
+    });
+  } catch (err) {
+    logCmsError("postBrevoTestListSubscription", err);
+    res.status(500).json({
+      error: err instanceof Error ? err.message : "Failed to subscribe test contact",
     });
   }
 }

@@ -4,6 +4,8 @@ import {
   resolveEmailProviderConfig,
   type ResolvedEmailProviderConfig,
 } from "./email-provider-config.service.js";
+import { getEffectiveBrevoListCatalog } from "./brevo-catalog-resolve.service.js";
+import { normalizePhoneForBrevo } from "../utils/phone-e164.js";
 
 export type ContactSyncPayload = {
   email: string;
@@ -79,23 +81,10 @@ function getBrevoHeaders(apiKey = runtimeConfig.brevoApiKey): HeadersInit {
   };
 }
 
-function parseListIds(raw: string): Record<string, number> {
-  return String(raw || "")
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .reduce<Record<string, number>>((acc, entry) => {
-      const [label, id] = entry.split(":").map((value) => value.trim());
-      const parsed = Number(id);
-      if (label && Number.isFinite(parsed)) {
-        acc[label.toLowerCase()] = parsed;
-      }
-      return acc;
-    }, {});
-}
-
-function deriveBrevoListIds(payload: ContactSyncPayload): number[] {
-  const configured = parseListIds(runtimeConfig.brevoListIds);
+export function deriveBrevoListIdsWithCatalog(
+  payload: ContactSyncPayload,
+  configured: Record<string, number>,
+): number[] {
   const listIds = new Set<number>();
 
   if (payload.eventIds.includes("newsletter") && configured.newsletter) {
@@ -143,7 +132,11 @@ async function brevoRequest(
       typeof data?.message === "string"
         ? data.message
         : `Brevo request failed: ${response.status}`;
-    throw new Error(message);
+    const detail =
+      data && typeof data === "object" && Object.keys(data).length
+        ? ` ${JSON.stringify(data).slice(0, 500)}`
+        : "";
+    throw new Error(`${message}${detail}`);
   }
   return data as Record<string, unknown>;
 }
@@ -158,8 +151,14 @@ async function lookupBrevoContactByEmail(
   }, config);
 }
 
+export type UpsertBrevoContactOptions = {
+  /** When set and non-empty, use only these list ids (CTA admin configuration). */
+  explicitListIds?: number[];
+};
+
 export async function upsertBrevoContact(
   payload: ContactSyncPayload,
+  options?: UpsertBrevoContactOptions,
 ): Promise<ProviderSyncResult> {
   const config = await resolveEmailProviderConfig();
   if (!config.brevoApiKey) {
@@ -171,7 +170,14 @@ export async function upsertBrevoContact(
   }
 
   const { firstName, lastName } = splitName(payload.name);
-  const listIds = deriveBrevoListIds(payload);
+  const explicit = options?.explicitListIds;
+  const catalog = await getEffectiveBrevoListCatalog();
+  const listIds =
+    explicit && explicit.length > 0
+      ? explicit
+      : deriveBrevoListIdsWithCatalog(payload, catalog);
+
+  const smsE164 = normalizePhoneForBrevo(payload.phone);
 
   await brevoRequest("/contacts", {
     method: "POST",
@@ -185,7 +191,7 @@ export async function upsertBrevoContact(
       attributes: {
         FIRSTNAME: firstName,
         LASTNAME: lastName,
-        SMS: payload.phone || undefined,
+        ...(smsE164 ? { SMS: smsE164 } : {}),
         LANGUAGE: payload.language,
         STATUS: payload.status,
         CATEGORY: payload.categories.join(" | "),
@@ -215,6 +221,50 @@ export async function upsertBrevoContact(
     details: contact,
     isUnsubscribed: Boolean(contact?.emailBlacklisted),
     isBlocklisted: Boolean(contact?.emailBlacklisted),
+  };
+}
+
+/** Admin-only: add/update a contact and subscribe to specific lists (fires Brevo list automations). */
+export async function brevoAdminTestAddToList(input: {
+  email: string;
+  listIds: number[];
+  displayName?: string;
+}): Promise<ProviderSyncResult> {
+  const config = await resolveEmailProviderConfig();
+  if (!config.brevoApiKey) {
+    return {
+      provider: "brevo",
+      status: "skipped",
+      message: "BREVO_API_KEY not configured",
+    };
+  }
+  const normalized = input.email.trim().toLowerCase();
+  const { firstName, lastName } = splitName(input.displayName || "Admin Test");
+
+  await brevoRequest("/contacts", {
+    method: "POST",
+    headers: getBrevoHeaders(config.brevoApiKey),
+    body: JSON.stringify({
+      email: normalized,
+      updateEnabled: true,
+      listIds: input.listIds,
+      attributes: {
+        FIRSTNAME: firstName,
+        LASTNAME: lastName,
+      },
+    }),
+  }, config);
+
+  const contact = await lookupBrevoContactByEmail(normalized, config);
+
+  return {
+    provider: "brevo",
+    status: "synced",
+    externalId:
+      typeof contact?.id === "number" || typeof contact?.id === "string"
+        ? String(contact.id)
+        : normalized,
+    details: contact,
   };
 }
 
