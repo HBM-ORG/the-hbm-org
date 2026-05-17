@@ -13,7 +13,7 @@ import {
   coerceWallCalendarDate,
   coerceWallClockTime,
   normalizeEventTimezone,
-} from "../../../../lib/zoned-schedule.js";
+} from "../shared/zoned-schedule.js";
 
 const prisma = new PrismaClient();
 const VIDEO_EVENT_KEY = "videoEvent";

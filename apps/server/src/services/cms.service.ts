@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { eventDateFieldToUtcIso } from '../../../../lib/zoned-schedule.js';
+import { eventDateFieldToUtcIso } from '../shared/zoned-schedule.js';
 import { runtimeConfig } from '../config/runtime-config.js';
 import {
   getPublicEmailProviderConfig,
