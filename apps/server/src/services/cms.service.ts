@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { eventDateFieldToUtcIso } from '../../../../lib/zoned-schedule.js';
 import { runtimeConfig } from '../config/runtime-config.js';
 import {
   getPublicEmailProviderConfig,
@@ -45,6 +46,19 @@ function dedupeAutomationFlows<T extends { trigger: string; active?: boolean; de
     }
   }
   return Array.from(byTrigger.values());
+}
+
+function parseStoredEventInstant(raw: unknown, timezone: string): Date | null {
+  if (raw === null || raw === undefined) return null;
+  if (typeof raw === 'string' && !raw.trim()) return null;
+  const iso =
+    typeof raw === 'number' ||
+    typeof raw === 'string' ||
+    raw instanceof Date
+      ? eventDateFieldToUtcIso(raw as string | number | Date, timezone)
+      : '';
+  if (!iso) return null;
+  return new Date(iso);
 }
 
 function getGlobalStylingData(globalStyling: any) {
@@ -102,13 +116,33 @@ export async function saveEventsBatch(events: any[]) {
       const normalizedStatus = ['draft', 'published', 'past'].includes(String(event.status || '').toLowerCase())
         ? String(event.status).toLowerCase()
         : 'published';
+      const timezoneRaw = typeof event.timezone === 'string' ? event.timezone.trim() : '';
+      let tz = timezoneRaw || 'Asia/Jerusalem';
+      if (timezoneRaw) {
+        try {
+          Intl.DateTimeFormat(undefined, { timeZone: timezoneRaw });
+        } catch {
+          tz = 'Asia/Jerusalem';
+        }
+      }
+
+      const resolvedStart =
+        parseStoredEventInstant(event.date, tz) ??
+        (event.date ? new Date(event.date as string) : new Date());
+      const resolvedEndRaw =
+        event.endDate != null && String(event.endDate).trim()
+          ? parseStoredEventInstant(event.endDate, tz) ?? new Date(event.endDate as string)
+          : null;
+
       const data = {
         legacyId,
         status: normalizedStatus,
         folderName: event.folderName || null,
         title: event.title || { en: '', he: '' },
         description: event.description || { en: '', he: '' },
-        date: event.date ? new Date(event.date) : new Date(),
+        date: resolvedStart,
+        endDate: resolvedEndRaw,
+        timezone: tz,
         location: event.location || '',
         locationParams: event.locationParams || null,
         type: event.type || 'Face to Face',

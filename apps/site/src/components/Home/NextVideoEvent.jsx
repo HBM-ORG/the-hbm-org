@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar, MapPin, ArrowRight, Video } from 'lucide-react';
 import { useI18n, t } from '../../i18n/context';
 import VideoEventModal from './VideoEventModal';
+import { videoEventStartUtcIso } from '../../../../../lib/video-event-schedule.js';
 
 const DEFAULT_VIDEO_THUMBNAIL = '/assets/events/1_YouTube.png';
 
@@ -24,6 +25,8 @@ const NextVideoEvent = ({ config }) => {
   ) {
     return null;
   }
+
+  const startUtcIso = videoEventStartUtcIso(config);
 
   return (
     <>
@@ -73,7 +76,7 @@ const NextVideoEvent = ({ config }) => {
                   <div className="flex flex-wrap gap-6 text-gray-500 font-medium mb-8 font-['Sofia_Sans']">
                       <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg">
                           <Calendar className="w-5 h-5 text-[#6160AB]" />
-                          <span>{new Date(config.date).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })} at {config.time}</span>
+                          <span>{new Date(startUtcIso).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })} at {config.time}</span>
                       </div>
                       <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg">
                           <MapPin className="w-5 h-5 text-[#F07B3C]" />

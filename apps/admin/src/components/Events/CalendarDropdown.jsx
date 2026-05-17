@@ -25,8 +25,8 @@ const CalendarDropdown = ({ eventData }) => {
     setIsOpen(false);
   };
 
-  const handleApple = () => {
-    downloadIcsFile(eventData);
+  const handleApple = async () => {
+    await downloadIcsFile(eventData);
     setIsOpen(false);
   };
 

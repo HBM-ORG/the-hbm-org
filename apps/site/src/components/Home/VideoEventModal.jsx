@@ -10,6 +10,7 @@ import { getApiBase } from '../../utils/api';
 import { getCtaFormFieldsForVideo } from '../../../../../lib/cta-form-fields.js';
 import { registerApiFailureUi } from '../../../../../lib/register-api-error.js';
 import { PUBLIC_BRAND } from '../../config/public-brand.js';
+import { videoEventStartUtcIso, videoEventEndUtcIso } from '../../../../../lib/video-event-schedule.js';
 
 const VideoEventModal = ({ isOpen, onClose, config }) => {
     const { lang } = useI18n();
@@ -82,6 +83,9 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
         }
     };
 
+    const videoStartUtc = config ? videoEventStartUtcIso(config) : "";
+    const videoEndUtc = config ? videoEventEndUtcIso(config) : "";
+
     if (!isOpen || !config) return null;
 
     return (
@@ -117,7 +121,7 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                             {/* Header details */}
                             <div className="flex flex-col items-center gap-1 mb-6">
                                 <h3 className="text-xl font-bold text-white tracking-wide drop-shadow-md">
-                                     {new Date(config.date).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                     {new Date(videoStartUtc).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </h3>
                                 <div className="flex items-center gap-2 text-white/80 text-sm font-medium">
                                     <span className="flex items-center gap-1">
@@ -130,7 +134,7 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
 
                             {/* Countdown Timer */}
                             <div className="flex justify-center items-center mb-8 scale-90">
-                                <CountdownTimer targetDate={`${config.date.split('T')[0]}T${config.time}:00`} minimal={true} />
+                                <CountdownTimer targetDate={videoStartUtc} minimal={true} />
                             </div>
 
                             {/* Registration Form / Action */}
@@ -162,8 +166,9 @@ const VideoEventModal = ({ isOpen, onClose, config }) => {
                                                     title: t(config.title, lang),
                                                     description: t(config.description, lang),
                                                     location: config.location || 'Video Call',
-                                                    startTime: new Date(`${config.date.split('T')[0]}T${config.time}`),
-                                                    endTime: new Date(new Date(`${config.date.split('T')[0]}T${config.time}`).getTime() + 60 * 60 * 1000)
+                                                    id: 'video-event',
+                                                    startTime: new Date(videoStartUtc),
+                                                    endTime: new Date(videoEndUtc),
                                                 }}
                                             />
 

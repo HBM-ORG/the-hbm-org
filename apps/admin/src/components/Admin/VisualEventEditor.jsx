@@ -21,9 +21,10 @@ import NextEventHero from "../Events/NextEventHero";
 import { getAssetBase, resolveAssetUrl } from "../../utils/api";
 import { uploadFile } from "../../utils/upload";
 import {
-  dateTimeLocalInputToIso,
-  toDateTimeLocalValue,
+  EVENT_TIMEZONE_OPTIONS,
+  normalizeEventTimezone,
 } from "../../utils/datetime-local.js";
+import { ZonedUtcScheduleRow } from "./SchedulePickers.jsx";
 import CtaFormFieldsEditor from "./CtaFormFieldsEditor";
 
 // This component wraps the public NextEventHero but injects "Edit Mode" props
@@ -37,6 +38,7 @@ const VisualEventEditor = ({
   stats,
   registrations,
 }) => {
+  const scheduleTz = normalizeEventTimezone(event?.timezone);
   const isPastEvent = event?.date && new Date(event.date) < new Date();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("logistics"); // logistics, content, visuals, gallery, partners
@@ -284,19 +286,54 @@ const VisualEventEditor = ({
                 </div>
               )}
 
-              {/* Date & Location Inputs */}
-              <div className="group">
+              {/* Schedule (wall clock in chosen IANA timezone) */}
+              <div className="group space-y-2">
                 <label className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-purple-600 transition-colors">
-                  <Calendar className="w-4 h-4" /> Date & Time
+                  <Calendar className="w-4 h-4" /> Event timezone
                 </label>
-                <input
-                  type="datetime-local"
-                  value={toDateTimeLocalValue(event.date)}
+                <p className="text-[9px] text-gray-500 mb-2 leading-relaxed">
+                  Start/end fields are interpreted in this zone for the site countdown and calendar
+                  exports (Google · Apple ICS).
+                </p>
+                <select
+                  value={scheduleTz}
                   onChange={(e) =>
-                    onUpdate("date", dateTimeLocalInputToIso(e.target.value))
+                    onUpdate("timezone", normalizeEventTimezone(e.target.value))
                   }
-                  className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all shadow-sm focus:bg-white"
+                  className="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                >
+                  {EVENT_TIMEZONE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="group">
+                <ZonedUtcScheduleRow
+                  labelDate="DATE"
+                  labelTime="TIME"
+                  timezone={scheduleTz}
+                  isoUtc={event.date}
+                  onIsoUtc={(iso) => onUpdate("date", iso)}
+                  datePlaceholder="Select date"
                 />
+              </div>
+              <div className="group">
+                <ZonedUtcScheduleRow
+                  labelDate="END DATE"
+                  labelTime="END TIME"
+                  timezone={scheduleTz}
+                  isoUtc={event.endDate || ""}
+                  allowIsoClear
+                  onIsoUtc={(iso) => onUpdate("endDate", iso || "")}
+                  datePlaceholder="dd/mm/yyyy, --:--"
+                />
+                {!event.endDate ? (
+                  <p className="text-[9px] text-gray-400 mt-1">
+                    Leave empty to default to two hours after start on the public site calendar.
+                  </p>
+                ) : null}
               </div>
               <div className="group">
                 <label className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-pink-600 transition-colors">

@@ -2,6 +2,10 @@ FROM node:20-bookworm-slim AS build
 
 WORKDIR /app
 
+# `lib/*.js` is resolved from repo root — Node must find deps like `luxon` under /app/node_modules
+COPY package.json package-lock.json ./
+RUN npm ci
+
 COPY tsconfig.json prisma.config.ts ./
 COPY apps/server/package.json apps/server/package-lock.json apps/server/tsconfig.json ./apps/server/
 WORKDIR /app/apps/server

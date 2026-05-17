@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 
-const CountdownTimer = ({ targetDate }) => {
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+function parseTargetMs(targetDate) {
+  if (targetDate == null || targetDate === '') return NaN;
+  if (typeof targetDate === 'number' && Number.isFinite(targetDate)) return targetDate;
+  if (targetDate instanceof Date) return targetDate.getTime();
+  const s = String(targetDate).trim();
+  if (!s) return NaN;
+  const ts = Date.parse(s);
+  if (!Number.isNaN(ts)) return ts;
+  if (s.includes('T')) return new Date(s).getTime();
+  return new Date(`${s}T00:00:00`).getTime();
+}
 
+const CountdownTimer = ({ targetDate }) => {
   function calculateTimeLeft() {
     let difference;
-    if (!targetDate) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-    
-    // Handle ISO strings (from datetime-local) vs simple dates
-    if (targetDate.includes('T')) {
-        difference = new Date(targetDate) - new Date();
-    } else {
-        // Assume midnight if only date provided
-        difference = new Date(targetDate + 'T00:00:00') - new Date();
-    }
-    
+    const targetMs = parseTargetMs(targetDate);
+    if (!Number.isFinite(targetMs))
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+    difference = targetMs - Date.now();
+
     if (isNaN(difference) || difference <= 0) {
       return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
@@ -27,7 +33,10 @@ const CountdownTimer = ({ targetDate }) => {
     };
   }
 
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft);
+
   useEffect(() => {
+    setTimeLeft(calculateTimeLeft());
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);

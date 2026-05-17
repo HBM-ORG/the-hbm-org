@@ -8,6 +8,12 @@ import type {
 } from "../types/content.js";
 import { runtimeConfig } from "../config/runtime-config.js";
 import { normalizeCtaFormFields } from "../utils/cta-form-fields.js";
+import { DateTime } from "luxon";
+import {
+  coerceWallCalendarDate,
+  coerceWallClockTime,
+  normalizeEventTimezone,
+} from "../../../../lib/zoned-schedule.js";
 
 const prisma = new PrismaClient();
 const VIDEO_EVENT_KEY = "videoEvent";
@@ -54,7 +60,8 @@ export function getDefaultVideoEventConfig(): VideoEventConfig {
       en: runtimeConfig.defaultVideoEventTitleEn,
       he: runtimeConfig.defaultVideoEventTitleHe,
     },
-    date: new Date().toISOString(),
+    timezone: normalizeEventTimezone(""),
+    date: new Date().toISOString().slice(0, 10),
     time: runtimeConfig.defaultVideoEventTime,
     location: runtimeConfig.defaultVideoEventLocation,
     image: "",
@@ -102,6 +109,48 @@ function normalizeVideoEventConfig(value: unknown): VideoEventConfig {
 
   const published = source.published !== false;
 
+  const timezone = normalizeEventTimezone(
+    typeof source.timezone === "string" ? source.timezone : "",
+  );
+
+  const rawDate =
+    typeof source.date === "string" ? source.date.trim() : "";
+  let dateWall = coerceWallCalendarDate(rawDate);
+  if (!dateWall && rawDate) {
+    const parsed = DateTime.fromISO(rawDate, { setZone: true });
+    if (parsed.isValid) {
+      dateWall = parsed.setZone(timezone).toFormat("yyyy-MM-dd");
+    }
+  }
+  dateWall =
+    dateWall || new Date().toISOString().slice(0, 10);
+
+  const timeHm = coerceWallClockTime(
+    typeof source.time === "string" ? source.time : "",
+    runtimeConfig.defaultVideoEventTime,
+  );
+
+  const rawEnd =
+    typeof source.endDate === "string" ? source.endDate.trim() : "";
+  let endWall = coerceWallCalendarDate(rawEnd);
+  if (!rawEnd) {
+    endWall = "";
+  } else if (!endWall && rawEnd) {
+    const parsedEnd = DateTime.fromISO(rawEnd, { setZone: true });
+    endWall =
+      parsedEnd.isValid
+        ? parsedEnd.setZone(timezone).toFormat("yyyy-MM-dd")
+        : "";
+  }
+
+  let endHm = "";
+  if (endWall) {
+    endHm = coerceWallClockTime(
+      typeof source.endTime === "string" ? source.endTime : "",
+      timeHm,
+    );
+  }
+
   return {
     ...source,
     published,
@@ -115,12 +164,11 @@ function normalizeVideoEventConfig(value: unknown): VideoEventConfig {
           ? title.he
           : runtimeConfig.defaultVideoEventTitleHe,
     },
-    date:
-      typeof source.date === "string" ? source.date : new Date().toISOString(),
-    time:
-      typeof source.time === "string"
-        ? source.time
-        : runtimeConfig.defaultVideoEventTime,
+    timezone,
+    date: dateWall,
+    time: timeHm,
+    endDate: endWall || undefined,
+    endTime: endWall ? endHm : undefined,
     location:
       typeof source.location === "string"
         ? source.location

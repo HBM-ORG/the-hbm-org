@@ -28,8 +28,14 @@ export type VideoEventConfig = {
   /** When false, public site hides the video block and video registration is disabled. */
   published: boolean;
   title: LocalizedText;
+  /** yyyy-MM-dd in `timezone`. */
   date: string;
   time: string;
+  /** IANA zone for interpreting `date` / `time` / optional end fields. */
+  timezone: string;
+  /** yyyy-MM-dd end date (same zone). Omit with endTime when no explicit end. */
+  endDate?: string;
+  endTime?: string;
   location: string;
   image: string;
   participants: number;

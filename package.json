@@ -6,6 +6,9 @@
   "engines": {
     "node": "20.x"
   },
+  "dependencies": {
+    "luxon": "^3.7.2"
+  },
   "scripts": {
     "install:site": "npm ci --prefix apps/site",
     "install:admin": "npm ci --prefix apps/admin",

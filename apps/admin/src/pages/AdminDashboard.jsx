@@ -99,7 +99,14 @@ import { getApiBase, resolveAssetUrl } from "../utils/api";
 import { getStoredAdminPassword } from "../utils/admin-auth.js";
 import { deleteUploadedFile, uploadFile } from "../utils/upload";
 import { useAdminAuth } from "../hooks/useAdminAuth.js";
-import { toDateTimeLocalValue } from "../utils/datetime-local.js";
+import {
+  normalizeEventTimezone,
+  EVENT_TIMEZONE_OPTIONS,
+} from "../utils/datetime-local.js";
+import {
+  VideoWallScheduleBlock,
+  ZonedUtcScheduleRow,
+} from "../components/Admin/SchedulePickers.jsx";
 
 const AdminDashboard = () => {
   const {
@@ -553,6 +560,8 @@ const AdminDashboard = () => {
       id: newId,
       title: { en: "New Event", he: "אירוע חדש" },
       date: "2026-01-01",
+      endDate: "",
+      timezone: "Asia/Jerusalem",
       location: "HBM office, Raanana",
       description: { en: "Description here...", he: "תיאור כאן..." },
       image: "",
@@ -2096,44 +2105,20 @@ const AdminDashboard = () => {
                       dir="rtl"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
-                        Date
-                      </label>
-                      <input
-                        type="date"
-                        value={
-                          videoEventConfig.date
-                            ? videoEventConfig.date.split("T")[0]
-                            : ""
-                        }
-                        onChange={(e) =>
-                          setVideoEventConfig((p) => ({
-                            ...p,
-                            date: new Date(e.target.value).toISOString(),
-                          }))
-                        }
-                        className="w-full p-4 bg-gray-50 rounded-xl border-none font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
-                        Time
-                      </label>
-                      <input
-                        type="time"
-                        value={videoEventConfig.time}
-                        onChange={(e) =>
-                          setVideoEventConfig((p) => ({
-                            ...p,
-                            time: e.target.value,
-                          }))
-                        }
-                        className="w-full p-4 bg-gray-50 rounded-xl border-none font-bold"
-                      />
-                    </div>
-                  </div>
+                  <VideoWallScheduleBlock
+                    timezone={normalizeEventTimezone(
+                      typeof videoEventConfig.timezone === "string"
+                        ? videoEventConfig.timezone
+                        : "",
+                    )}
+                    dateYmd={videoEventConfig.date}
+                    timeHm={videoEventConfig.time}
+                    endDateYmd={videoEventConfig.endDate}
+                    endTimeHm={videoEventConfig.endTime}
+                    onPatch={(fragment) =>
+                      setVideoEventConfig((p) => ({ ...p, ...fragment }))
+                    }
+                  />
                   <div>
                     <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
                       Location
@@ -2323,24 +2308,64 @@ const AdminDashboard = () => {
                             placeholder="e.g. Community Evening"
                           />
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
-                            Time & Date
-                          </label>
-                          <input
-                            type="datetime-local"
-                            value={toDateTimeLocalValue(currentEvent.date)}
-                            onChange={(e) =>
-                              handleChange(
-                                "date",
-                                e.target.value
-                                  ? new Date(e.target.value).toISOString()
-                                  : "",
-                              )
-                            }
-                            className="w-full p-4 bg-gray-50 rounded-2xl border-none font-black text-gray-900"
-                          />
-                        </div>
+                        {(() => {
+                          const scheduleTz = normalizeEventTimezone(
+                            currentEvent.timezone,
+                          );
+                          return (
+                            <>
+                              <div>
+                                <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">
+                                  Event timezone
+                                </label>
+                                <p className="text-[9px] text-gray-500 mb-2 leading-relaxed">
+                                  Start and end are saved as this local time,
+                                  then converted to UTC for the database and
+                                  calendar links.
+                                </p>
+                                <select
+                                  value={scheduleTz}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "timezone",
+                                      normalizeEventTimezone(e.target.value),
+                                    )
+                                  }
+                                  className="w-full p-4 bg-gray-50 rounded-2xl border-none font-bold text-gray-900 text-sm"
+                                >
+                                  {EVENT_TIMEZONE_OPTIONS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <ZonedUtcScheduleRow
+                                labelDate="DATE"
+                                labelTime="TIME"
+                                timezone={scheduleTz}
+                                isoUtc={currentEvent.date}
+                                onIsoUtc={(iso) => handleChange("date", iso)}
+                                datePlaceholder="Select date"
+                              />
+                              <ZonedUtcScheduleRow
+                                labelDate="END DATE"
+                                labelTime="END TIME"
+                                timezone={scheduleTz}
+                                isoUtc={currentEvent.endDate || ""}
+                                allowIsoClear
+                                onIsoUtc={(iso) => handleChange("endDate", iso || "")}
+                                datePlaceholder="dd/mm/yyyy, --:--"
+                              />
+                              {!currentEvent.endDate ? (
+                                <p className="text-[9px] text-gray-400">
+                                  Optional. If empty, Add to Calendar uses three
+                                  hours after start by default on the site.
+                                </p>
+                              ) : null}
+                            </>
+                          );
+                        })()}
                       </div>
                       <div className="space-y-6">
                         <div>

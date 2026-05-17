@@ -157,6 +157,10 @@ model Event {
   title                   Json     // { en: string, he: string }
   description             Json     // { en: string, he: string }
   date                    DateTime
+  /// End instant (UTC stored). UI treats `date`/`endDate` wall times as `timezone` (IANA).
+  endDate                 DateTime?
+  /// IANA zone for interpreting admin/local schedule (e.g. Asia/Jerusalem).
+  timezone                String   @default("Asia/Jerusalem")
   location                String
   locationParams          Json?    // { addressText, googleMapsEmbedUrl }
   type                    String   // "Face to Face" | "Virtual"

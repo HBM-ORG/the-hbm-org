@@ -20,6 +20,11 @@ import { getApiBase, resolveAssetUrl } from "../../utils/api";
 import { getCtaFormFieldsForEvent } from "../../../../../lib/cta-form-fields.js";
 import { registerApiFailureUi } from "../../../../../lib/register-api-error.js";
 import { PUBLIC_BRAND } from "../../config/public-brand.js";
+import {
+  experienceEventUtcBounds,
+  experienceEventIsPast,
+} from "../../../../../lib/experience-event-schedule.js";
+import { normalizeEventTimezone } from "../../../../../lib/zoned-schedule.js";
 
 const NextEventHero = ({
   event,
@@ -69,11 +74,12 @@ const NextEventHero = ({
   const videoScale = visuals.videoScale || 1.0;
   const overlayOpacity = visuals.overlayOpacity ?? 40;
 
-  // Normalize dates to midnight to check if strictly past
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const eventDate = new Date(event.date);
-  const isPast = eventDate < today;
+  const scheduleUtc = experienceEventUtcBounds(event);
+  const eventTz = normalizeEventTimezone(event.timezone);
+  const isPast = experienceEventIsPast(event);
+  const countdownTarget = scheduleUtc.start?.isValid
+    ? scheduleUtc.start.toUTC().toISO()
+    : event.date;
 
   const toggleFaq = (index) => {
     setActiveFaq(activeFaq === index ? null : index);
@@ -244,7 +250,7 @@ const NextEventHero = ({
             >
               {/* Countdown Section (Separate Bubbles) */}
               <div className="mb-8 scale-110">
-                <CountdownTimer targetDate={event.date} />
+                <CountdownTimer targetDate={countdownTarget} />
               </div>
 
               {/* Registration Bubble */}
@@ -255,10 +261,20 @@ const NextEventHero = ({
                 {!isRegisterOpen ? (
                   <div className="flex flex-col items-center">
                     <h3 className="text-2xl font-black text-white mb-2 tracking-tight">
-                      {new Date(event.date).toLocaleDateString(
-                        effectiveLang === "he" ? "he-IL" : "en-US",
-                        { day: "numeric", month: "long", year: "numeric" },
-                      )}
+                      {scheduleUtc.start?.isValid
+                        ? new Date(scheduleUtc.start.toMillis()).toLocaleDateString(
+                            effectiveLang === "he" ? "he-IL" : "en-US",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                              timeZone: eventTz,
+                            },
+                          )
+                        : new Date(event.date).toLocaleDateString(
+                            effectiveLang === "he" ? "he-IL" : "en-US",
+                            { day: "numeric", month: "long", year: "numeric" },
+                          )}
                     </h3>
                     <div className="flex items-center gap-2 text-white/60 text-sm font-bold uppercase tracking-widest mb-8">
                       <MapPin className="w-3.5 h-3.5 text-hbm-orange" />{" "}
@@ -298,20 +314,30 @@ const NextEventHero = ({
                           )}
                         </p>
 
-                        <CalendarDropdown
-                          eventData={{
-                            title: t(event.title, effectiveLang),
-                            description: t(event.description, effectiveLang),
-                            location:
-                              event.locationParams?.addressText ||
-                              event.location,
-                            startTime: new Date(event.date),
-                            endTime: new Date(
-                              new Date(event.date).getTime() +
-                                3 * 60 * 60 * 1000,
-                            ),
-                          }}
-                        />
+                        {(() => {
+                          const startTime =
+                            scheduleUtc.start?.toJSDate() ??
+                            new Date(event.date);
+                          const endTime =
+                            scheduleUtc.end?.toJSDate() ?? startTime;
+                          return (
+                            <CalendarDropdown
+                              eventData={{
+                                title: t(event.title, effectiveLang),
+                                description: t(
+                                  event.description,
+                                  effectiveLang,
+                                ),
+                                location:
+                                  event.locationParams?.addressText ||
+                                  event.location,
+                                id: event.id ?? event.databaseId ?? "event",
+                                startTime,
+                                endTime,
+                              }}
+                            />
+                          );
+                        })()}
 
                         <button
                           type="button"
