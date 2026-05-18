@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import {
   getEffectiveBrevoListCatalog,
 } from "./brevo-catalog-resolve.service.js";
@@ -10,8 +10,6 @@ import {
   getVideoEventConfig,
   type SiteSettingsConfig,
 } from "./content.service.js";
-
-const prisma = new PrismaClient();
 
 type JsonRecord = Record<string, unknown>;
 

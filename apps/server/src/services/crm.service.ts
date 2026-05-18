@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import { getProviderStatusSummary } from "./provider-sync.service.js";
-
-const prisma = new PrismaClient();
 
 type EmailQueuePayload = {
   email?: string;

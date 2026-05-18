@@ -52,6 +52,15 @@ export const runtimeConfig = {
   get brevoListIds() {
     return readEnv("BREVO_LIST_IDS");
   },
+  /**
+   * Before registration upsert, remove the email from the same Brevo list IDs that will be POSTed
+   * (explicit CTA lists or heuristic-derived lists) so list automations can fire again on repeat signup.
+   * No effect unless the registration flow passes registrationListReentry and at least one target list id exists.
+   */
+  get brevoRegistrationListReentry() {
+    const raw = process.env.BREVO_REGISTRATION_LIST_REENTRY;
+    return typeof raw === "string" && /^(1|true|yes)$/i.test(raw.trim());
+  },
   get espoCrmUrl() {
     return readEnv("ESPOCRM_URL");
   },

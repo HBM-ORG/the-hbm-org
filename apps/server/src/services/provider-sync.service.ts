@@ -1,4 +1,5 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import { runtimeConfig } from "../config/runtime-config.js";
 import {
   checkBrevoConnection,
@@ -12,8 +13,6 @@ import { logEngagement } from "./email-tracking.service.js";
 import { unsubscribeEmail } from "./suppression.service.js";
 import type { BrevoListsForSync } from "./cta-brevo-lists.service.js";
 import { getSiteSettingsConfig } from "./content.service.js";
-
-const prisma = new PrismaClient();
 
 type JsonRecord = Record<string, unknown>;
 
@@ -219,6 +218,7 @@ export async function getProviderStatusSummary() {
 export async function syncContactToProviders(
   email: string,
   brevoLists?: BrevoListsForSync,
+  hooks?: { registrationListReentry?: boolean },
 ) {
   const payload = await getContactSyncPayloadByEmail(email);
   if (!payload) {
@@ -239,7 +239,10 @@ export async function syncContactToProviders(
   const results: GenericSyncResult[] = [];
 
   try {
-    const brevoResult = await upsertBrevoContact(payload, brevoOptions);
+    const brevoResult = await upsertBrevoContact(payload, {
+      ...brevoOptions,
+      registrationListReentry: hooks?.registrationListReentry === true,
+    });
     await persistProviderSync(payload.email, brevoResult);
     results.push(brevoResult);
   } catch (error) {

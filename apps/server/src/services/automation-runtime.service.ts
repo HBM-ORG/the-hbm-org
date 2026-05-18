@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import { runtimeConfig } from "../config/runtime-config.js";
 import type { SmtpConfigShape } from "./email-support.service.js";
 import { resolveEmailProviderConfig, type ResolvedEmailProviderConfig } from "./email-provider-config.service.js";
-
-const prisma = new PrismaClient();
 
 type JsonRecord = Record<string, unknown>;
 

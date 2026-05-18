@@ -181,6 +181,7 @@ export function createRegistrationController({
         const syncResults = await syncContactToProviders(
           automationPayload.email,
           brevoLists,
+          { registrationListReentry: true },
         );
 
         for (const r of syncResults) {

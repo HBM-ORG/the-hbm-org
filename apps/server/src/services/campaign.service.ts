@@ -1,7 +1,6 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
-
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma.js";
 
 export type CampaignDefinition = {
   id?: string;

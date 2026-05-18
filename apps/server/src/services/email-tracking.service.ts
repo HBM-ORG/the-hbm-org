@@ -1,7 +1,6 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { Buffer } from "buffer";
-
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma.js";
 
 type JsonRecord = Record<string, unknown>;
 

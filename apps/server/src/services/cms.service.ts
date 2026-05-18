@@ -1,12 +1,20 @@
-import { PrismaClient } from '@prisma/client';
 import { eventDateFieldToUtcIso } from '../shared/zoned-schedule.js';
+import { prisma } from '../db/prisma.js';
 import { runtimeConfig } from '../config/runtime-config.js';
 import {
   getPublicEmailProviderConfig,
   saveEmailProviderConfig,
 } from './email-provider-config.service.js';
 
-const prisma = new PrismaClient();
+type EventDbRow = Awaited<ReturnType<(typeof prisma)['event']['findMany']>>[number];
+
+function mapEventRow(row: EventDbRow) {
+  return {
+    ...row,
+    id: row.legacyId || row.id,
+    databaseId: row.id,
+  };
+}
 
 function withLegacyId<T extends { id: string; legacyId?: string | null }>(row: T) {
   return {
@@ -103,7 +111,7 @@ function getGlobalStylingData(globalStyling: any) {
 
 export async function listEvents() {
   const rows = await prisma.event.findMany({ orderBy: { date: 'desc' } });
-  return rows.map(withLegacyId);
+  return rows.map(mapEventRow);
 }
 
 export async function saveEventsBatch(events: any[]) {

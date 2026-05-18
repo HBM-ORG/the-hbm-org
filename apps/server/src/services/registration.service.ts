@@ -1,11 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import {
   normalizeRegistrationEmail,
   rebuildContactProfileByEmail,
   recordContactSubmission,
 } from "./contact-profile.service.js";
-
-const prisma = new PrismaClient();
 
 export type RegistrationAutomationPayload = {
   id: number;

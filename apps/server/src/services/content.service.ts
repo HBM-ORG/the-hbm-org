@@ -1,4 +1,5 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import type {
   ContentLockTarget,
   HowItWorksConfig,
@@ -15,7 +16,6 @@ import {
   normalizeEventTimezone,
 } from "../shared/zoned-schedule.js";
 
-const prisma = new PrismaClient();
 const VIDEO_EVENT_KEY = "videoEvent";
 const HOW_IT_WORKS_KEY = "howItWorks";
 const KNOWLEDGE_BASE_KEY = "knowledgeBase";

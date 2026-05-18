@@ -24,6 +24,7 @@ import {
   EVENT_TIMEZONE_OPTIONS,
   normalizeEventTimezone,
 } from "../../utils/datetime-local.js";
+import { toWallPartsFromUtcIso } from "../../../../../lib/zoned-schedule.js";
 import { ZonedUtcScheduleRow } from "./SchedulePickers.jsx";
 import CtaFormFieldsEditor from "./CtaFormFieldsEditor";
 
@@ -326,6 +327,11 @@ const VisualEventEditor = ({
                   timezone={scheduleTz}
                   isoUtc={event.endDate || ""}
                   allowIsoClear
+                  fallbackWallYmd={
+                    event.date
+                      ? toWallPartsFromUtcIso(event.date, scheduleTz).date || ""
+                      : ""
+                  }
                   onIsoUtc={(iso) => onUpdate("endDate", iso || "")}
                   datePlaceholder="dd/mm/yyyy, --:--"
                 />

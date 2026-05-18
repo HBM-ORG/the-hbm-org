@@ -18,6 +18,28 @@ function logCmsError(context: string, error: unknown) {
   console.error(`[cms.controller:${context}]`, error);
 }
 
+function isoFromMaybeDate(raw: unknown): string | null {
+  if (raw == null || raw === "") return null;
+  if (raw instanceof Date) {
+    if (Number.isNaN(raw.getTime())) return null;
+    return raw.toISOString();
+  }
+  if (typeof raw === "string") {
+    const t = Date.parse(raw);
+    if (Number.isNaN(t)) return null;
+    return new Date(t).toISOString();
+  }
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    const d = new Date(raw);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+  }
+  return null;
+}
+
+function timezoneString(raw: unknown, fallback = "Asia/Jerusalem"): string {
+  return typeof raw === "string" && raw.trim() ? raw.trim() : fallback;
+}
+
 function getEventStatus(event: unknown): string {
   const raw =
     typeof event === "object" && event !== null && "status" in event
@@ -35,6 +57,7 @@ function getEventStatus(event: unknown): string {
  */
 export async function getEvents(_req: Request, res: Response): Promise<void> {
   try {
+    res.setHeader("Cache-Control", "private, no-store, max-age=0, must-revalidate");
     const events = await listEvents();
     res.json(
       events.map((event) => ({
@@ -44,6 +67,8 @@ export async function getEvents(_req: Request, res: Response): Promise<void> {
         title: event.title,
         description: event.description,
         date: event.date.toISOString(),
+        endDate: isoFromMaybeDate((event as Record<string, unknown>).endDate),
+        timezone: timezoneString((event as Record<string, unknown>).timezone),
         location: event.location,
         locationParams: event.locationParams,
         type: event.type,

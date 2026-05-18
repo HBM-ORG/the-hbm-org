@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import { runtimeConfig } from "../config/runtime-config.js";
-
-const prisma = new PrismaClient();
 const CONFIG_ID = "default";
 
 type ProviderConfigInput = {

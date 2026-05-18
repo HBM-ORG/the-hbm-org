@@ -130,25 +130,163 @@ function isBrevoSmsAlreadyLinkedError(error: unknown): boolean {
   );
 }
 
+type BrevoFetchResult = {
+  ok: boolean;
+  status: number;
+  data: Record<string, unknown>;
+};
+
+/** Typical Brevo responses for POST /contacts; anything else successful is worth flagging in logs. */
+const BREVO_CONTACTS_POST_TYPICAL_SUCCESS = new Set([200, 201, 204]);
+
+function logStructuredBrevoUnusualContactsPost2xx(
+  postRes: BrevoFetchResult,
+  context: Record<string, unknown>,
+): void {
+  if (!postRes.ok || BREVO_CONTACTS_POST_TYPICAL_SUCCESS.has(postRes.status)) {
+    return;
+  }
+  const line = safeJsonSnippet(
+    {
+      kind: "brevo_contacts_post_unusual_2xx",
+      contactsPostHttpStatus: postRes.status,
+      contactsPostBody: postRes.data,
+      ...context,
+    },
+    4000,
+  );
+  console.warn(`[CRM] Brevo unusual 2xx on POST /contacts ${line}`);
+}
+
+function safeJsonSnippet(value: unknown, maxChars: number): string {
+  try {
+    const s = JSON.stringify(value);
+    return !s ? "" : s.length <= maxChars ? s : `${s.slice(0, maxChars)}…`;
+  } catch {
+    return String(value).slice(0, maxChars);
+  }
+}
+
+function formatBrevoHttpError(status: number, data: Record<string, unknown>): string {
+  const code = typeof data?.code === "string" ? data.code : "";
+  const message =
+    typeof data?.message === "string"
+      ? data.message
+      : `Brevo request failed (${status})`;
+  const detail =
+    data && typeof data === "object" && Object.keys(data).length
+      ? ` ${safeJsonSnippet(data, 620)}`
+      : "";
+  return code ? `${message} (${code})${detail}` : `${message}${detail}`;
+}
+
+async function brevoFetch(
+  path: string,
+  init: RequestInit,
+  config?: Pick<ResolvedEmailProviderConfig, "brevoApiUrl">,
+): Promise<BrevoFetchResult> {
+  const response = await fetch(`${getBrevoBaseUrl(config)}${path}`, init);
+  const rawText = await response.text();
+  let data: Record<string, unknown> = {};
+  if (rawText.trim()) {
+    try {
+      const parsed = JSON.parse(rawText) as unknown;
+      data =
+        parsed && typeof parsed === "object" && !Array.isArray(parsed)
+          ? (parsed as Record<string, unknown>)
+          : { _unexpectedShape: parsed };
+    } catch {
+      data = { _nonJsonResponse: rawText.slice(0, 400) };
+    }
+  }
+  return {
+    ok: response.ok,
+    status: response.status,
+    data,
+  };
+}
+
 async function brevoRequest(
   path: string,
   init: RequestInit,
   config?: Pick<ResolvedEmailProviderConfig, "brevoApiUrl">,
 ) {
-  const response = await fetch(`${getBrevoBaseUrl(config)}${path}`, init);
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const message =
-      typeof data?.message === "string"
-        ? data.message
-        : `Brevo request failed: ${response.status}`;
-    const detail =
-      data && typeof data === "object" && Object.keys(data).length
-        ? ` ${JSON.stringify(data).slice(0, 500)}`
-        : "";
-    throw new Error(`${message}${detail}`);
+  const r = await brevoFetch(path, init, config);
+  if (!r.ok) {
+    throw new Error(formatBrevoHttpError(r.status, r.data));
   }
-  return data as Record<string, unknown>;
+  return r.data;
+}
+
+/**
+ * POST /contacts/lists/{id}/contacts/add. After list re-entry we omit listIds on upsert so this add is the
+ * subscription step Brevo automations usually key off of. 400 "already in list" is treated as success.
+ */
+async function brevoTryAddEmailsToLists(
+  emails: string[],
+  listIds: number[],
+  config: ResolvedEmailProviderConfig,
+): Promise<void> {
+  const uniqueLists = [...new Set(listIds.filter((n) => Number.isFinite(n) && n > 0))];
+  const batch = emails.map((e) => String(e || "").trim().toLowerCase()).filter(Boolean);
+  if (batch.length === 0) return;
+  for (const listId of uniqueLists) {
+    const r = await brevoFetch(`/contacts/lists/${listId}/contacts/add`, {
+      method: "POST",
+      headers: getBrevoHeaders(config.brevoApiKey),
+      body: JSON.stringify({ emails: batch }),
+    }, config);
+    const line = safeJsonSnippet(
+      { listId, httpStatus: r.status, ok: r.ok, brevoBody: r.data },
+      700,
+    );
+    if (!r.ok) {
+      const msg =
+        typeof r.data?.message === "string"
+          ? r.data.message
+          : "";
+      const benignAlreadyInList =
+        r.status === 400
+        && msg.toLowerCase().includes("already")
+        && msg.toLowerCase().includes("list");
+      if (benignAlreadyInList) {
+        console.log(`[CRM] Brevo list add (already on list, ok): ${line}`);
+      } else {
+        console.warn(`[CRM] Brevo list add failed: ${line}`);
+      }
+    } else {
+      console.log(`[CRM] Brevo list add (explicit): ${line}`);
+    }
+  }
+}
+
+async function brevoTryRemoveEmailsFromLists(
+  emails: string[],
+  listIds: number[],
+  config: ResolvedEmailProviderConfig,
+): Promise<void> {
+  const uniqueLists = [...new Set(listIds.filter((n) => Number.isFinite(n) && n > 0))];
+  for (const listId of uniqueLists) {
+    const r = await brevoFetch(`/contacts/lists/${listId}/contacts/remove`, {
+      method: "POST",
+      headers: getBrevoHeaders(config.brevoApiKey),
+      body: JSON.stringify({ emails }),
+    }, config);
+    const line = safeJsonSnippet(
+      {
+        listId,
+        httpStatus: r.status,
+        ok: r.ok,
+        brevoBody: r.data,
+      },
+      700,
+    );
+    if (!r.ok) {
+      console.warn(`[CRM] Brevo list remove (may be OK if not on list): ${line}`);
+    } else {
+      console.log(`[CRM] Brevo list remove prior to re-add: ${line}`);
+    }
+  }
 }
 
 async function lookupBrevoContactByEmail(
@@ -169,6 +307,11 @@ export type UpsertBrevoContactOptions = {
    * Driven by site settings when syncing from registrations.
    */
   includeSmsAttribute?: boolean;
+  /**
+   * With env BREVO_REGISTRATION_LIST_REENTRY=true, removes the email from target list IDs (explicit CTA
+   * lists or heuristic-derived lists) immediately before POST /contacts so list automations can re-fire.
+   */
+  registrationListReentry?: boolean;
 };
 
 export async function upsertBrevoContact(
@@ -185,6 +328,7 @@ export async function upsertBrevoContact(
   }
 
   const { firstName, lastName } = splitName(payload.name);
+  const normalizedEmail = payload.email.trim().toLowerCase();
   const explicit = options?.explicitListIds;
   const catalog = await getEffectiveBrevoListCatalog();
   const listIds =
@@ -196,60 +340,165 @@ export async function upsertBrevoContact(
   const allowSms = options?.includeSmsAttribute !== false;
   const shouldSendSms = allowSms && Boolean(smsE164);
 
-  const postContact = (includeSms: boolean) =>
-    brevoRequest("/contacts", {
-      method: "POST",
-      headers: getBrevoHeaders(config.brevoApiKey),
-      body: JSON.stringify({
-        email: payload.email,
-        updateEnabled: true,
-        listIds: listIds.length > 0 ? listIds : undefined,
-        emailBlacklisted: payload.status.toLowerCase() === "unsubscribed",
-        smsBlacklisted: false,
-        attributes: {
-          FIRSTNAME: firstName,
-          LASTNAME: lastName,
-          ...(includeSms && smsE164 ? { SMS: smsE164 } : {}),
-          LANGUAGE: payload.language,
-          STATUS: payload.status,
-          CATEGORY: payload.categories.join(" | "),
-          EVENT_ID: payload.eventIds.join(" | "),
-          EVENT_NAME: payload.eventNames.join(" | "),
-          LAST_SOURCE: payload.lastSource,
-          ACQUISITION_SOURCE: payload.lastAcquisitionSource,
-          REGISTRATION_SOURCE: payload.lastRegistrationSource,
-          REGISTRATION_COUNT: payload.registrationCount,
-          CONTACT_SUBMISSION_COUNT: payload.contactSubmissionCount,
-          FIRST_SEEN_AT: payload.firstSeenAt || undefined,
-          LAST_SEEN_AT: payload.lastSeenAt || undefined,
-          LAST_REGISTERED_AT: payload.lastRegisteredAt || undefined,
-        },
-      }),
-    }, config);
+  const explicitApplied = !!(explicit?.length && explicit.some((id) => Number.isFinite(id) && id > 0));
+  const uniqueTargetListIds = [
+    ...new Set(listIds.filter((id) => Number.isFinite(id) && id > 0)),
+  ];
+  const shouldTryListReentry = Boolean(
+    options?.registrationListReentry
+      && runtimeConfig.brevoRegistrationListReentry
+      && uniqueTargetListIds.length > 0,
+  );
 
+  let listReentryRemoveExecuted = false;
+  if (shouldTryListReentry && config.brevoApiKey) {
+    await brevoTryRemoveEmailsFromLists([normalizedEmail], uniqueTargetListIds, config);
+    listReentryRemoveExecuted = true;
+  }
+
+  /** If we just removed from lists, do not pass listIds on POST /contacts — it re-adds immediately and blocks a clean "add to list" event (and makes contacts/add return "already in list"). */
+  const omitListIdsInContactPost = listReentryRemoveExecuted;
+
+  const buildContactJson = (includeSms: boolean) =>
+    JSON.stringify({
+      email: normalizedEmail,
+      updateEnabled: true,
+      listIds:
+        omitListIdsInContactPost || listIds.length === 0
+          ? undefined
+          : listIds,
+      emailBlacklisted: payload.status.toLowerCase() === "unsubscribed",
+      smsBlacklisted: false,
+      attributes: {
+        FIRSTNAME: firstName,
+        LASTNAME: lastName,
+        ...(includeSms && smsE164 ? { SMS: smsE164 } : {}),
+        LANGUAGE: payload.language,
+        STATUS: payload.status,
+        CATEGORY: payload.categories.join(" | "),
+        EVENT_ID: payload.eventIds.join(" | "),
+        EVENT_NAME: payload.eventNames.join(" | "),
+        LAST_SOURCE: payload.lastSource,
+        ACQUISITION_SOURCE: payload.lastAcquisitionSource,
+        REGISTRATION_SOURCE: payload.lastRegistrationSource,
+        REGISTRATION_COUNT: payload.registrationCount,
+        CONTACT_SUBMISSION_COUNT: payload.contactSubmissionCount,
+        FIRST_SEEN_AT: payload.firstSeenAt || undefined,
+        LAST_SEEN_AT: payload.lastSeenAt || undefined,
+        LAST_REGISTERED_AT: payload.lastRegisteredAt || undefined,
+      },
+    });
+
+  const postContacts = async (includeSms: boolean): Promise<BrevoFetchResult> =>
+    brevoFetch(
+      "/contacts",
+      {
+        method: "POST",
+        headers: getBrevoHeaders(config.brevoApiKey),
+        body: buildContactJson(includeSms),
+      },
+      config,
+    );
+
+  let postRes: BrevoFetchResult;
   try {
-    await postContact(shouldSendSms);
+    postRes = await postContacts(shouldSendSms);
+    if (!postRes.ok) {
+      throw new Error(formatBrevoHttpError(postRes.status, postRes.data));
+    }
+    logStructuredBrevoUnusualContactsPost2xx(postRes, {
+      normalizedEmail,
+      listsRequested: [...listIds],
+      listReentryRemoveExecuted,
+    });
   } catch (error) {
     if (shouldSendSms && smsE164 && isBrevoSmsAlreadyLinkedError(error)) {
       console.warn(
-        `[CRM] Brevo: SMS ${smsE164} is already linked to another contact; syncing ${payload.email} without SMS`,
+        `[CRM] Brevo: SMS ${smsE164} is already linked to another contact; syncing ${normalizedEmail} without SMS`,
       );
-      await postContact(false);
+      postRes = await postContacts(false);
+      if (!postRes.ok) {
+        throw new Error(formatBrevoHttpError(postRes.status, postRes.data));
+      }
+      logStructuredBrevoUnusualContactsPost2xx(postRes, {
+        normalizedEmail,
+        listsRequested: [...listIds],
+        listReentryRemoveExecuted,
+        smsRetryWithoutAttribute: true,
+      });
     } else {
       throw error;
     }
   }
 
-  const contact = await lookupBrevoContactByEmail(payload.email, config);
+  if (
+    (listReentryRemoveExecuted || explicitApplied)
+    && uniqueTargetListIds.length > 0
+  ) {
+    await brevoTryAddEmailsToLists([normalizedEmail], uniqueTargetListIds, config);
+  }
+
+  const contact = await lookupBrevoContactByEmail(normalizedEmail, config);
+
+  /**
+   * Brevo often returns 204 No Content on successful contact upsert — not a failure and not "filtered".
+   * Transactional / journey mail tied to "contact added to list" usually does not fire again if they were already on the list.
+   */
+  const contactsDeliveryHint =
+    postRes.status === 204 && listIds.length > 0 && !listReentryRemoveExecuted
+      ? "204_no_body=normal_for_update: list-add automations often skip when contact already on list; set BREVO_REGISTRATION_LIST_REENTRY=true (heuristic or explicit lists) or send transactional email from app."
+      : postRes.status === 204 && listReentryRemoveExecuted
+        ? "204_no_body=normal; list_reentry_ran—if mail still missing, check Brevo workflow rules (not HTTP rejection)."
+        : undefined;
+
+  const syncTrace = {
+    email: normalizedEmail,
+    contactsPostHttpStatus: postRes.status,
+    contactsPostBody: safeJsonSnippet(postRes.data, 620),
+    listsRequested: [...listIds],
+    listIdsOmittedInContactPost: omitListIdsInContactPost,
+    explicitListStrategy: explicitApplied,
+    listReentryRequested: Boolean(options?.registrationListReentry && runtimeConfig.brevoRegistrationListReentry),
+    listReentryRemoveExecuted,
+    ...(listReentryRemoveExecuted ? { listReentryRemoveListIds: [...uniqueTargetListIds] } : {}),
+    syncedAtUtc: new Date().toISOString(),
+    ...(contactsDeliveryHint ? { contactsDeliveryHint } : {}),
+  };
+
+  console.log(`[CRM] Brevo API summary ${safeJsonSnippet(syncTrace, 1200)}`);
+
+  const summaryMessage = [
+    `POST /contacts HTTP ${postRes.status}`,
+    typeof contact?.id === "number" || typeof contact?.id === "string"
+      ? `contact_id=${contact.id}`
+      : "contact_id=unknown",
+    `lists=${listIds.join("|")}`,
+    `email_blacklisted=${Boolean(contact?.emailBlacklisted)}`,
+    `sms_blacklisted=${Boolean(contact?.smsBlacklisted)}`,
+    explicitApplied ? "lists_mode=explicit" : "lists_mode=heuristic",
+    listReentryRemoveExecuted ? "list_reentry=executed" : "list_reentry=off_or_skipped",
+    postRes.status === 204 ? "post_body=brevo_204_typical_contact_upsert" : "",
+    contactsDeliveryHint ? `delivery_hint=${contactsDeliveryHint.slice(0, 220)}` : "",
+  ]
+    .filter(Boolean)
+    .join("; ");
+
+  const contactObj =
+    contact && typeof contact === "object" && !Array.isArray(contact)
+      ? ({ ...(contact as Record<string, unknown>) } as Record<string, unknown>)
+      : { lookupType: typeof contact, lookupSnippet: safeJsonSnippet(contact, 300) };
+
+  contactObj.syncTrace = syncTrace;
 
   return {
     provider: "brevo",
     status: "synced",
+    message: summaryMessage,
     externalId:
       typeof contact?.id === "number" || typeof contact?.id === "string"
         ? String(contact.id)
-        : payload.email,
-    details: contact,
+        : normalizedEmail,
+    details: contactObj,
     isUnsubscribed: Boolean(contact?.emailBlacklisted),
     isBlocklisted: Boolean(contact?.emailBlacklisted),
   };

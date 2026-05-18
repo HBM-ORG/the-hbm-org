@@ -18,7 +18,10 @@ export const EventsProvider = ({ children }) => {
     const fetchEvents = async () => {
       try {
         const apiUrl = `${getApiBase()}/api/events`;
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl, {
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        });
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data)) setEvents(data);

@@ -107,6 +107,7 @@ import {
   VideoWallScheduleBlock,
   ZonedUtcScheduleRow,
 } from "../components/Admin/SchedulePickers.jsx";
+import { toWallPartsFromUtcIso } from "../../../../lib/zoned-schedule.js";
 
 const AdminDashboard = () => {
   const {
@@ -692,6 +693,26 @@ const AdminDashboard = () => {
       if (result.success) {
         setSaveStatus("Saved successfully!");
         setGlobalEvents(data);
+        try {
+          const refresh = await fetch(`${base}/api/events`, {
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+          });
+          if (refresh.ok) {
+            const fresh = await refresh.json();
+            if (Array.isArray(fresh)) {
+              setEvents(fresh);
+              setGlobalEvents(fresh);
+              setCurrentEvent((prev) => {
+                if (!prev) return prev;
+                const match = fresh.find((e) => e.id === prev.id);
+                return match ? { ...prev, ...match } : prev;
+              });
+            }
+          }
+        } catch {
+          setEvents(data);
+        }
         setTimeout(() => setSaveStatus(""), 3000);
       }
     } catch (err) {
@@ -2354,6 +2375,14 @@ const AdminDashboard = () => {
                                 timezone={scheduleTz}
                                 isoUtc={currentEvent.endDate || ""}
                                 allowIsoClear
+                                fallbackWallYmd={
+                                  currentEvent.date
+                                    ? toWallPartsFromUtcIso(
+                                        currentEvent.date,
+                                        scheduleTz,
+                                      ).date || ""
+                                    : ""
+                                }
                                 onIsoUtc={(iso) => handleChange("endDate", iso || "")}
                                 datePlaceholder="dd/mm/yyyy, --:--"
                               />

@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import nodemailer from "nodemailer";
 import { v4 as uuidv4 } from "uuid";
 import { normalizeSmtpConfig } from "./email-support.service.js";
-
-const prisma = new PrismaClient();
 
 export async function listEmailQueueItems() {
   return prisma.emailQueue.findMany({

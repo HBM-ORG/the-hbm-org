@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import type { CtaFormFieldsConfig } from "../types/content.js";
 import {
   normalizePhoneForBrevo,
@@ -10,8 +10,6 @@ import {
   getCtaFormFieldsForEvent,
   getCtaFormFieldsForVideo,
 } from "../utils/cta-form-fields.js";
-
-const prisma = new PrismaClient();
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

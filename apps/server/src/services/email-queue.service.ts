@@ -1,4 +1,5 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { prisma } from "../db/prisma.js";
 import * as ics from "ics";
 import inlineCss from "inline-css";
 import { Liquid } from "liquidjs";
@@ -19,7 +20,6 @@ import { getCampaignById } from "./campaign.service.js";
 import { logEngagement } from "./email-tracking.service.js";
 import { listSuppression } from "./suppression.service.js";
 
-const prisma = new PrismaClient();
 const liquidEngine = new Liquid();
 
 type JsonRecord = Record<string, unknown>;
@@ -500,8 +500,10 @@ export function createEmailQueueEngine({
         (flow) => isPublishedFlow(flow) && flow.active && flow.trigger === triggerType,
       );
 
+      let brevoAutomationOnlySkips = 0;
       for (const flow of activeFlows) {
         if (getDeliveryMode(flow) === "brevo_automation") {
+          brevoAutomationOnlySkips += 1;
           console.log(
             `[Email] Flow ${flow.id || flow.trigger} uses Brevo automation only; skipping local queue.`,
           );
@@ -581,9 +583,21 @@ export function createEmailQueueEngine({
           console.error("[Email] Immediate process failed:", error),
         );
       } else {
+        const hints: string[] = [];
+        if (activeFlows.length > 0) {
+          hints.push(`${activeFlows.length} active flow(s)`);
+          if (brevoAutomationOnlySkips === activeFlows.length) {
+            hints.push(
+              "all are deliveryMode brevo_automation (no EmailQueue rows; repeat sends depend on Brevo journey/list rules)",
+            );
+          }
+        }
         console.log(
-          `[Email] No active flows or sequences found for trigger: ${triggerType}`,
+          `[Email] No queued sends for trigger [${triggerType}]${hints.length ? ` (${hints.join("; ")})` : ""}`,
         );
+        if (!activeFlows.length && !(activeSequences?.length ?? 0)) {
+          console.log(`[Email] Hint: publish a flow or sequence for "${triggerType}"`);
+        }
       }
     } catch (error) {
       console.error("[Email] triggerAutomationByEvent Error:", error);

@@ -168,7 +168,10 @@ function CalendarPopoverTrigger({
   );
 }
 
-/** Experience/events: converts wall date+time in `timezone` to UTC ISO for API storage. */
+/**
+ * Experience/events schedule row: converts wall date+time in `timezone` to UTC ISO for storage.
+ * `fallbackWallYmd` helps optional END rows: adjusting end time without an end date uses that calendar day (e.g. start date).
+ */
 export function ZonedUtcScheduleRow({
   labelDate,
   labelTime,
@@ -177,12 +180,30 @@ export function ZonedUtcScheduleRow({
   onIsoUtc,
   allowIsoClear = false,
   datePlaceholder,
+  fallbackWallYmd = "",
 }) {
   const tz = normalizeEventTimezone(timezone);
-  const parts = isoUtc
+  const committedIso = isoUtc && String(isoUtc).trim();
+  const parts = committedIso
     ? toWallPartsFromUtcIso(isoUtc, tz)
     : { date: "", time: "" };
   const todayYmd = () => DateTime.now().setZone(tz).toFormat("yyyy-MM-dd");
+  const fbYmd =
+    typeof fallbackWallYmd === "string"
+      ? fallbackWallYmd.trim().slice(0, 10)
+      : "";
+  const fbValid = /^\d{4}-\d{2}-\d{2}$/.test(fbYmd);
+
+  /** Optional end rows must not pretend a default time exists in the DOM when DB has no end instant. */
+  const timeControlValue =
+    allowIsoClear && !committedIso
+      ? parts.time || ""
+      : parts.time || "09:00";
+  const timeDisabled =
+    Boolean(allowIsoClear) &&
+    !committedIso &&
+    !fbValid &&
+    !(typeof parts.date === "string" && parts.date.trim());
 
   const pushIso = (dYmd, tHm) => {
     const dd = typeof dYmd === "string" ? dYmd.trim() : "";
@@ -221,11 +242,22 @@ export function ZonedUtcScheduleRow({
           <input
             type="time"
             step={300}
-            value={parts.time || "09:00"}
-            onChange={(e) =>
-              pushIso(parts.date || todayYmd(), e.target.value)
+            value={timeControlValue}
+            disabled={timeDisabled}
+            onChange={(e) => {
+              const y =
+                (typeof parts.date === "string" && parts.date.trim()) ||
+                (allowIsoClear && fbValid ? fbYmd : "") ||
+                (!allowIsoClear ? todayYmd() : "");
+              if (!y) return;
+              pushIso(y, e.target.value);
+            }}
+            title={
+              timeDisabled
+                ? "Pick an end date first (or set a valid start date for same-day default)"
+                : undefined
             }
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-mono text-sm focus:border-purple-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/20 min-h-[3rem]"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-mono text-sm focus:border-purple-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/20 min-h-[3rem] disabled:opacity-45"
           />
         </div>
       </div>
