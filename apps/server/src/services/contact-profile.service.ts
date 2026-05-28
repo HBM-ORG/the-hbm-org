@@ -1,6 +1,12 @@
 import { Prisma } from "@prisma/client";
+import { DateTime } from "luxon";
 import { prisma } from "../db/prisma.js";
 import { getVideoEventConfig } from "./content.service.js";
+import {
+  coerceWallCalendarDate,
+  coerceWallClockTime,
+  normalizeEventTimezone,
+} from "../shared/zoned-schedule.js";
 
 type JsonArray = string[];
 
@@ -82,15 +88,38 @@ function minDate(dates: Array<Date | null | undefined>): Date | null {
   );
 }
 
-function asDateOnly(value: Date | string | null | undefined): string {
+function asDateOnly(value: string | null | undefined): string {
   if (!value) return "";
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? "" : value.toISOString().slice(0, 10);
-  }
   const trimmed = value.trim();
   if (!trimmed) return "";
   const parsed = new Date(trimmed);
   return Number.isNaN(parsed.getTime()) ? trimmed.slice(0, 10) : parsed.toISOString().slice(0, 10);
+}
+
+function formatEventStartWallDateTime(
+  value: Date | string | null | undefined,
+  timezone: unknown,
+): string {
+  if (!value) return "";
+  const zone = normalizeEventTimezone(timezone);
+  const dt =
+    value instanceof Date
+      ? DateTime.fromJSDate(value, { zone: "utc" }).setZone(zone)
+      : DateTime.fromISO(String(value), { setZone: true }).setZone(zone);
+  return dt.isValid ? dt.toFormat("yyyy-MM-dd HH:mm:ss") : "";
+}
+
+function formatVideoEventStartWallDateTime(config: {
+  date?: unknown;
+  time?: unknown;
+  timezone?: unknown;
+}): string {
+  const zone = normalizeEventTimezone(config.timezone);
+  const date = coerceWallCalendarDate(config.date);
+  if (!date) return "";
+  const time = coerceWallClockTime(config.time, "09:00");
+  const dt = DateTime.fromISO(`${date}T${time}`, { zone });
+  return dt.isValid ? dt.toFormat("yyyy-MM-dd HH:mm:ss") : "";
 }
 
 async function resolveEventDates(eventIds: string[]): Promise<string[]> {
@@ -112,21 +141,21 @@ async function resolveEventDates(eventIds: string[]): Promise<string[]> {
             { legacyId: { in: physicalEventIds } },
           ],
         },
-        select: { id: true, legacyId: true, date: true },
+        select: { id: true, legacyId: true, date: true, timezone: true },
       })
       : Promise.resolve([]),
     hasVideoEvent ? getVideoEventConfig() : Promise.resolve(null),
   ]);
 
   for (const event of physicalEvents) {
-    const date = asDateOnly(event.date);
+    const date = formatEventStartWallDateTime(event.date, event.timezone);
     if (!date) continue;
     eventDateById.set(event.id, date);
     if (event.legacyId) eventDateById.set(event.legacyId, date);
   }
 
   if (videoEvent) {
-    const date = asDateOnly(videoEvent.date);
+    const date = formatVideoEventStartWallDateTime(videoEvent);
     if (date) eventDateById.set("video-event", date);
   }
 
@@ -300,7 +329,7 @@ export async function getContactSyncPayloadByEmail(
     eventIds,
     eventNames: asStringArray(profile.eventNames),
     eventDates,
-    latestEventDate: eventDates[0] || null,
+    latestEventDate: asDateOnly(eventDates[0]) || null,
     registrationCount: profile.registrationCount,
     contactSubmissionCount: profile.contactSubmissionCount,
     lastRegisteredAt: profile.lastRegistrationAt?.toISOString() || null,
