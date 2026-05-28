@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma.js";
+import { getVideoEventConfig } from "./content.service.js";
 
 type JsonArray = string[];
 
@@ -15,6 +16,8 @@ type ContactSyncPayload = {
   registrationSources: string[];
   eventIds: string[];
   eventNames: string[];
+  eventDates: string[];
+  latestEventDate: string | null;
   registrationCount: number;
   contactSubmissionCount: number;
   lastRegisteredAt: string | null;
@@ -77,6 +80,57 @@ function minDate(dates: Array<Date | null | undefined>): Date | null {
   return filtered.reduce((earliest, current) =>
     current.getTime() < earliest.getTime() ? current : earliest,
   );
+}
+
+function asDateOnly(value: Date | string | null | undefined): string {
+  if (!value) return "";
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? "" : value.toISOString().slice(0, 10);
+  }
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const parsed = new Date(trimmed);
+  return Number.isNaN(parsed.getTime()) ? trimmed.slice(0, 10) : parsed.toISOString().slice(0, 10);
+}
+
+async function resolveEventDates(eventIds: string[]): Promise<string[]> {
+  const normalizedEventIds = uniqueStrings(eventIds);
+  if (normalizedEventIds.length === 0) return [];
+
+  const eventDateById = new Map<string, string>();
+  const hasVideoEvent = normalizedEventIds.includes("video-event");
+  const physicalEventIds = normalizedEventIds.filter(
+    (id) => id !== "video-event" && id !== "newsletter" && id !== "general",
+  );
+
+  const [physicalEvents, videoEvent] = await Promise.all([
+    physicalEventIds.length
+      ? prisma.event.findMany({
+        where: {
+          OR: [
+            { id: { in: physicalEventIds } },
+            { legacyId: { in: physicalEventIds } },
+          ],
+        },
+        select: { id: true, legacyId: true, date: true },
+      })
+      : Promise.resolve([]),
+    hasVideoEvent ? getVideoEventConfig() : Promise.resolve(null),
+  ]);
+
+  for (const event of physicalEvents) {
+    const date = asDateOnly(event.date);
+    if (!date) continue;
+    eventDateById.set(event.id, date);
+    if (event.legacyId) eventDateById.set(event.legacyId, date);
+  }
+
+  if (videoEvent) {
+    const date = asDateOnly(videoEvent.date);
+    if (date) eventDateById.set("video-event", date);
+  }
+
+  return uniqueStrings(normalizedEventIds.map((id) => eventDateById.get(id)));
 }
 
 export function normalizeRegistrationEmail(email: string): string {
@@ -230,6 +284,9 @@ export async function getContactSyncPayloadByEmail(
       ? value.map((entry) => normalizeText(entry)).filter(Boolean)
       : [];
 
+  const eventIds = asStringArray(profile.eventIds);
+  const eventDates = await resolveEventDates(eventIds);
+
   return {
     email: profile.email,
     name: profile.name,
@@ -240,8 +297,10 @@ export async function getContactSyncPayloadByEmail(
     sourceChannels: asStringArray(profile.sourceChannels),
     acquisitionSources: asStringArray(profile.acquisitionSources),
     registrationSources: asStringArray(profile.registrationSources),
-    eventIds: asStringArray(profile.eventIds),
+    eventIds,
     eventNames: asStringArray(profile.eventNames),
+    eventDates,
+    latestEventDate: eventDates[0] || null,
     registrationCount: profile.registrationCount,
     contactSubmissionCount: profile.contactSubmissionCount,
     lastRegisteredAt: profile.lastRegistrationAt?.toISOString() || null,

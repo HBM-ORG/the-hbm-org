@@ -19,6 +19,8 @@ export type ContactSyncPayload = {
   registrationSources: string[];
   eventIds: string[];
   eventNames: string[];
+  eventDates: string[];
+  latestEventDate: string | null;
   registrationCount: number;
   contactSubmissionCount: number;
   lastRegisteredAt: string | null;
@@ -372,13 +374,18 @@ export async function upsertBrevoContact(
       attributes: {
         FIRSTNAME: firstName,
         LASTNAME: lastName,
+        FULL_NAME: payload.name,
+        LANDLINE_NUMBER: smsE164 || payload.phone || undefined,
         ...(includeSms && smsE164 ? { SMS: smsE164 } : {}),
         LANGUAGE: payload.language,
         STATUS: payload.status,
         CATEGORY: payload.categories.join(" | "),
         EVENT_ID: payload.eventIds.join(" | "),
         EVENT_NAME: payload.eventNames.join(" | "),
+        EVENT_DATE: payload.eventDates.join(" | ") || undefined,
+        EVENTS_DATE: payload.latestEventDate || undefined,
         LAST_SOURCE: payload.lastSource,
+        FROM: payload.lastSource || undefined,
         ACQUISITION_SOURCE: payload.lastAcquisitionSource,
         REGISTRATION_SOURCE: payload.lastRegistrationSource,
         REGISTRATION_COUNT: payload.registrationCount,
